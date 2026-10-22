@@ -1,0 +1,128 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "DataTableView",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Публикация таблиц",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "text",
+          "source": "DataTableView / Явная публикация\nТаблица — отдельное представление данных. notebook.show публикует её независимо от последнего выражения ячейки. В меню таблицы доступны CSV и Markdown.",
+          "mode": "manual"
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import DataTableView\nrows = [{name: \"Alpha\", count: 3, active: true}, {name: \"Beta | quoted\", count: 9223372036854775806, active: false}, {name: \"Line one\\nLine two\", count: null, active: true}]\nview = DataTableView(rows, columns: [:name, :count, :active])\ncsv = view.to_csv()\nmarkdown = view.to_markdown()\nnotebook.show(view, id: \"orders\", caption: \"Записи / DataTableView\")\nanswer = 42\nanswer\n"
+        },
+        {
+          "id": "3",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import DataTableView\nnotebook.show(DataTableView([], columns: [\"Заказ\", \"Вес\"]), id: \"empty\", caption: \"Пустая выборка сохраняет колонки\")\nnull\n"
+        },
+        {
+          "id": "4",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import DataTableView\nimport task\n[1, 2, 3].each |step|:\n  notebook.show(DataTableView([{step: step, state: \"Обновление\"}], columns: [:step, :state]), id: \"live\", caption: \"Один канал — актуальный снимок\")\n  task.sleep(200)\n\"Готово\"\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "inputs": [],
+  "boards": [
+    {
+      "id": "tables",
+      "title": "Таблицы",
+      "sheet": "main",
+      "columns": 1,
+      "rows": [
+        {
+          "id": "intro"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "data"
+        },
+        {
+          "id": "other"
+        }
+      ],
+      "components": [
+        {
+          "id": "intro",
+          "kind": "rich_text",
+          "title": "DataTableView",
+          "row": "intro",
+          "span": 12,
+          "text_mode": "markdown",
+          "text_content": {
+            "source": "# Таблицы как представления\n**DataTableView → notebook.show → лист и доска.** Меню ⋯: CSV и Markdown. Последнее выражение ячейки остаётся обычным результатом."
+          }
+        },
+        {
+          "id": "run",
+          "kind": "execution_controls",
+          "title": "Выполнить примеры",
+          "row": "controls",
+          "span": 6,
+          "p1": {
+            "target_kind": "sheet"
+          }
+        },
+        {
+          "id": "result",
+          "kind": "metric",
+          "title": "Результат ячейки с таблицей",
+          "row": "controls",
+          "span": 6,
+          "cell": "2",
+          "binding": "answer"
+        },
+        {
+          "id": "orders",
+          "kind": "table",
+          "title": "Записи",
+          "row": "data",
+          "span": 12,
+          "cell": "2",
+          "table_id": "orders"
+        },
+        {
+          "id": "empty",
+          "kind": "table",
+          "title": "Пустая таблица",
+          "row": "other",
+          "span": 6,
+          "cell": "3",
+          "table_id": "empty"
+        },
+        {
+          "id": "live",
+          "kind": "table",
+          "title": "Live-обновление",
+          "row": "other",
+          "span": 6,
+          "cell": "4",
+          "table_id": "live"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ]
+}

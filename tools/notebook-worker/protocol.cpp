@@ -80,7 +80,7 @@ Message decode(const std::string &bytes) {
   if (read(bytes, offset, 2) != kProtocolVersion)
     throw ProtocolError("unsupported worker protocol version");
   const auto kind = read(bytes, offset, 2);
-  if (kind < 1 || kind > static_cast<unsigned>(Kind::LiveEnd)) throw ProtocolError("unknown worker message");
+  if (kind < 1 || kind > static_cast<unsigned>(Kind::Watch)) throw ProtocolError("unknown worker message");
   Message result;
   result.kind = static_cast<Kind>(kind);
   result.generation = read(bytes, offset, 8);

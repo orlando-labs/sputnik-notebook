@@ -25,8 +25,10 @@ The macOS sheet and board figure viewer offer:
 - Drag a rectangle inside a 2D plot to select a data interval (either direction).
 - The corner **…** menu opens **Axes…** (explicit X/Y limits) or **Open…**.
   Axes settings are hidden initially; **Apply axes** or Return applies them.
+  The limits editor uses an inset panel with aligned label/input rows. Fields
+  and Apply axes share one height; narrow cards put X and Y on separate rows.
 - **Reset axes** / double-click restores the current frame's original domain.
-  The inline Reset link appears only while a different view is selected.
+  The corner Reset badge appears only while a different view is selected.
 - Click / **Open…** opens the lightbox. Its corner **…** menu contains axes
   settings, **Save PNG…**, and **Share…**; raster figures put image zoom there.
 - Escape cancels an in-progress selection. Invalid or numerically
@@ -67,13 +69,24 @@ layout, node count and numeric ranges. Malformed/unsupported scenes fall back
 to the raster viewer. Image and scene bytes both count against retained output
 budgets, including live replacement accounting.
 
-Worker framing is version 8; presentation schema is
-`sputnik.notebook.presentation.v5`. PNG and scene replace atomically in the same
+Worker framing is version 9; presentation schema is
+`sputnik.notebook.presentation.v8`. PNG and scene replace atomically in the same
 immutable output snapshot. Older workers are rejected by the normal handshake.
 Older plot packages without the method, `plot.Rendered`, and `Figure3D` remain
 raster-only. 3D camera manipulation, log/category axes, persistent UI ranges,
 pan/history and independently editable color normalization are not in this
 increment.
+
+Board-owned Live Chart components use an asynchronous numeric channel. Code
+publishes points with `notebook.ui.publish_point(channel_id, x, y)`; the board
+draws them at the component's current size. The same viewer controls supply
+explicit X/Y limits, the Reset axes badge and direct Save PNG. Live exports
+freeze the displayed samples and selected ranges, retain all available points,
+and use the display's backing scale. Static and live scenes share monospaced
+font metrics for titles, ticks, axis labels, annotations and colorbars, and
+the plot package's palette. See
+[notebook-board-live-charts.md](notebook-board-live-charts.md). Direct
+`notebook.show` plot preparation remains synchronous.
 
 ## Verification
 
@@ -87,7 +100,7 @@ To exercise the isolated-worker route as well:
 ```sh
 python3 tests/notebook_macos_plot_ui_smoke.py \
   'build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook' \
-  ../sputnik-plot/src/plot.s --isolated-worker
+  ../plot/src/plot.s --isolated-worker
 ```
 
 The smoke checks require a decodable interactive scene, not merely a PNG.

@@ -50,27 +50,38 @@ private struct ResultPreviewSizeKey: PreferenceKey {
 /// count alone cannot tell whether wrapping hides lines in a narrow board.
 struct NotebookResultPreview: View {
     let text: String
+    var wrapsLines = true
     let measured: (CGFloat, CGFloat) -> Void
     private var preview: String { NotebookResultSearch.preview(text) }
     var body: some View {
-        Text(preview).lineLimit(6).fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        Group {
+            if wrapsLines { content }
+            else {
+                ScrollView(.horizontal) { content }
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .onPreferenceChange(ResultPreviewSizeKey.self) { sizes in
+            if let natural = sizes["natural"], let preview = sizes["preview"] { measured(natural, preview) }
+        }
+    }
+
+    private var content: some View {
+        Text(preview).lineLimit(6).fixedSize(horizontal: !wrapsLines, vertical: true)
+            .frame(maxWidth: wrapsLines ? .infinity : nil, alignment: .leading)
             .background(GeometryReader { proxy in
                 Color.clear.preference(key: ResultPreviewSizeKey.self, value: ["preview": proxy.size.height])
             })
             .overlay(alignment: .topLeading) {
-                Text(preview).lineLimit(nil).fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(preview).lineLimit(nil).fixedSize(horizontal: !wrapsLines, vertical: true)
+                    .frame(maxWidth: wrapsLines ? .infinity : nil, alignment: .leading)
                     .background(GeometryReader { proxy in
                         Color.clear.preference(key: ResultPreviewSizeKey.self, value: ["natural": proxy.size.height])
                     })
                     .hidden().accessibilityHidden(true).allowsHitTesting(false)
             }
             .font(.system(size: 12, design: .monospaced))
-            .foregroundStyle(.primary).textSelection(.enabled)
-            .onPreferenceChange(ResultPreviewSizeKey.self) { sizes in
-                if let natural = sizes["natural"], let preview = sizes["preview"] { measured(natural, preview) }
-            }
+            .foregroundStyle(NotebookPalette.ink).textSelection(.enabled)
     }
 }
 
@@ -82,6 +93,7 @@ struct NotebookResultView: View {
     let prettyTruncated: Bool
     let tint: Color
     @State private var usePretty = false
+    @State private var wrapsLines = true
     @State private var expanded = false
     @State private var finding = false
     @State private var query = ""
@@ -114,6 +126,9 @@ struct NotebookResultView: View {
                         }.pickerStyle(.inline)
                         Divider()
                     }
+                    Toggle("Wrap lines", isOn: $wrapsLines)
+                        .help("Wrap long lines to fit the result width. Turn off to scroll horizontally.")
+                    Divider()
                     Button(finding ? "Close result search" : "Find in result…") {
                         finding.toggle()
                         searchFocused = finding
@@ -136,7 +151,7 @@ struct NotebookResultView: View {
                         .help("Match case").accessibilityLabel("Match case")
                         .onChange(of: matchCase) { selectedMatch = 0 }
                     Text(query.isEmpty ? "" : ranges.isEmpty ? "No matches" : "\(min(selectedMatch + 1, ranges.count)) / \(ranges.count)")
-                        .font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                        .font(.system(size: 11, design: .monospaced)).foregroundStyle(NotebookPalette.muted)
                     Button { selectedMatch = NotebookResultSearch.step(selectedMatch, by: -1, count: ranges.count) }
                         label: { Image(systemName: "chevron.up") }
                         .disabled(ranges.isEmpty).help("Previous match").accessibilityLabel("Previous match")
@@ -153,13 +168,14 @@ struct NotebookResultView: View {
             ZStack(alignment: .topLeading) {
                 // Keep measuring while expanded so a resize or shorter result
                 // can remove the disclosure rather than leave a stale control.
-                NotebookResultPreview(text: renderedText) { natural, preview in
+                NotebookResultPreview(text: renderedText, wrapsLines: wrapsLines) { natural, preview in
                     naturalHeight = natural; previewHeight = preview
                 }
                 .opacity(showingFullText ? 0 : 1).accessibilityHidden(showingFullText)
                 .allowsHitTesting(!showingFullText)
                 if showingFullText {
-                    NotebookResultText(text: renderedText, matches: ranges, selectedMatch: selectedMatch)
+                    NotebookResultText(text: renderedText, matches: ranges, selectedMatch: selectedMatch,
+                                       wrapsLines: wrapsLines)
                         .frame(height: canExpand ? 260 : max(28, previewHeight + 8))
                 }
             }
@@ -174,7 +190,7 @@ struct NotebookResultView: View {
                 }
                 if limited {
                     Label("Result limited · search covers captured text only", systemImage: "ellipsis.circle")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(NotebookPalette.muted)
                         .help("Snapshot budget: 64 KiB per format, 4,096 values, nesting depth 16. The value itself is unchanged.")
                 }
                 Spacer(minLength: 0)
@@ -194,6 +210,7 @@ struct NotebookResultText: NSViewRepresentable {
     let text: String
     let matches: [NSRange]
     let selectedMatch: Int
+    var wrapsLines = true
 
     func makeCoordinator() -> Coordinator { Coordinator() }
     func makeNSView(context: Context) -> NSScrollView {
@@ -217,11 +234,37 @@ struct NotebookResultText: NSViewRepresentable {
         view.textContainerInset = NSSize(width: 0, height: 4)
         view.setAccessibilityLabel("Result text")
         scroll.documentView = view
+        Self.setLineWrapping(wrapsLines, in: scroll)
         return scroll
     }
     func updateNSView(_ scroll: NSScrollView, context: Context) {
         guard let view = scroll.documentView as? NSTextView else { return }
+        let wrappingChanged = Self.setLineWrapping(wrapsLines, in: scroll)
         context.coordinator.update(view, text: text, matches: matches, selected: selectedMatch)
+        if wrappingChanged, matches.indices.contains(selectedMatch) {
+            view.scrollRangeToVisible(matches[selectedMatch])
+        }
+    }
+
+    @discardableResult
+    static func setLineWrapping(_ wrapsLines: Bool, in scroll: NSScrollView) -> Bool {
+        guard let view = scroll.documentView as? NSTextView,
+              let container = view.textContainer,
+              container.widthTracksTextView != wrapsLines else { return false }
+        scroll.hasHorizontalScroller = !wrapsLines
+        view.isHorizontallyResizable = !wrapsLines
+        view.autoresizingMask = wrapsLines ? [.width] : []
+        container.widthTracksTextView = wrapsLines
+        container.containerSize = NSSize(width: wrapsLines ? scroll.contentSize.width : .greatestFiniteMagnitude,
+                                         height: .greatestFiniteMagnitude)
+        // Discard the unwrapped document width when returning to the viewport.
+        view.setFrameSize(NSSize(width: scroll.contentSize.width, height: view.frame.height))
+        view.sizeToFit()
+        if wrapsLines {
+            scroll.contentView.scroll(to: NSPoint(x: 0, y: scroll.contentView.bounds.minY))
+            scroll.reflectScrolledClipView(scroll.contentView)
+        }
+        return true
     }
 
     final class Coordinator {
@@ -234,22 +277,28 @@ struct NotebookResultText: NSViewRepresentable {
             guard replaced || previousMatches != matches || previousSelection != selected else { return }
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: NSFont.monospacedSystemFont(ofSize: 12, weight: .regular),
-                .foregroundColor: NSColor.labelColor
+                .foregroundColor: NotebookPalette.nativeInk
             ]
             let storage = view.textStorage!
             storage.beginEditing()
             if replaced { storage.setAttributedString(NSAttributedString(string: text, attributes: attributes)) }
             else { storage.removeAttribute(.backgroundColor, range: NSRange(location: 0, length: storage.length)) }
             for range in matches where NSMaxRange(range) <= storage.length {
-                storage.addAttribute(.backgroundColor, value: NSColor.systemYellow.withAlphaComponent(0.3), range: range)
+                storage.addAttribute(.backgroundColor, value: NotebookPalette.nativeFoxglove.withAlphaComponent(0.25), range: range)
             }
             let active = matches.indices.contains(selected) ? matches[selected] : nil
             if let active, NSMaxRange(active) <= storage.length {
-                storage.addAttribute(.backgroundColor, value: NSColor.systemOrange.withAlphaComponent(0.6), range: active)
+                storage.addAttribute(.backgroundColor, value: NotebookPalette.nativeFoxglove.withAlphaComponent(0.6), range: active)
             }
             storage.endEditing()
+            if replaced && view.isHorizontallyResizable { view.sizeToFit() }
             if let active { view.scrollRangeToVisible(active) }
-            else if replaced { view.scrollRangeToVisible(NSRange(location: 0, length: 0)) }
+            else if replaced {
+                if let scroll = view.enclosingScrollView {
+                    scroll.contentView.scroll(to: .zero)
+                    scroll.reflectScrolledClipView(scroll.contentView)
+                } else { view.scrollRangeToVisible(NSRange(location: 0, length: 0)) }
+            }
             previousText = text
             previousMatches = matches
             previousSelection = selected

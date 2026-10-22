@@ -63,8 +63,25 @@ static void module_apply_tests(const std::filesystem::path &root, const char *wo
   const auto module_cell = first_cell(before, "module:helpers");
   require(command(host, "source", module_cell.c_str(), "package helpers\nexport answer\ndef answer(): 99\n", "module:helpers").empty(), "edit module inertly");
   require(command(host, "apply").find("Save modified") != std::string::npos, "Apply refuses unsaved module buffer");
-  require(command(host, "run", module_cell.c_str(), nullptr, "module:helpers").find("sheet execution only") != std::string::npos,
-          "module Run never falls back to an in-process runtime");
+  require(command(host, "run", module_cell.c_str(), nullptr, "module:helpers").empty(),
+          "unsaved module Run uses an isolated worker");
+  require(command(host, "source", module_cell.c_str(),
+      "package helpers\ntry:\n  notebook.progress(\"module\", 1, 2, \"Module\", false)\n  while true:\n    x = 1\nensure:\n  print(\"MODULE STOPPED\")\n", "module:helpers").empty(), "edit slow module buffer");
+  std::string module_error;
+  std::thread module_owner([&] { module_error = command(host, "run", module_cell.c_str(), nullptr, "module:helpers"); });
+  wait_running(control); std::this_thread::sleep_for(150ms);
+  char *live = sputnik_notebook_control_live(control);
+  require(live && std::string(live).find("module:helpers") != std::string::npos, "live module output carries its owner");
+  sputnik_notebook_string_free(live);
+  require(sputnik_notebook_control_stop(control, 0), "Stop is available during module Run");
+  module_owner.join(); require(module_error.empty(), module_error);
+  require(snapshot(host).find("MODULE STOPPED") != std::string::npos, "module Stop executes ensure and retains output");
+  module_owner = std::thread([&] { module_error = command(host, "run", module_cell.c_str(), nullptr, "module:helpers"); });
+  wait_running(control);
+  require(sputnik_notebook_control_stop(control, 1), "Force Stop is available during module Run");
+  module_owner.join(); require(!module_error.empty(), "module Force Stop cannot publish success");
+  require(command(host, "restart_worker", nullptr, nullptr, "module:helpers").empty(), "module worker restart is inert");
+  require(command(host, "source", module_cell.c_str(), "package helpers\nexport answer\ndef answer(): 99\n", "module:helpers").empty(), "restore module buffer");
   require(command(host, "save", nullptr, nullptr, "module:helpers").empty(), "host saves module");
   succeeds(host, "apply");
   auto state = snapshot(host);
@@ -86,9 +103,10 @@ static void module_apply_tests(const std::filesystem::path &root, const char *wo
   require(state.find("Cancelled") != std::string::npos && state.find("\"result\":\"99\"") != std::string::npos,
           "cancelled Apply retains prior results and reports cancellation");
   succeeds(host, "new_input", nullptr, "{\"id\":\"gain\",\"title\":\"Gain\",\"type\":\"number\",\"default\":1}");
-  require(command(host, "run_all").find("project inputs") != std::string::npos &&
-          command(host, "set_input", "gain", "2").find("not yet supported") != std::string::npos,
-          "input execution cannot silently fall back to local VM");
+  require(command(host, "source", module_cell.c_str(), "package helpers\nexport answer\ndef answer(): 123\n", "module:helpers").empty(), "repair module");
+  require(command(host, "save", nullptr, nullptr, "module:helpers").empty(), "save repaired module");
+  succeeds(host, "apply");
+  succeeds(host, "set_input", "gain", "2");
   sputnik_notebook_destroy(host); sputnik_notebook_control_destroy(control);
 }
 int main(int argc, char **argv) {
@@ -117,6 +135,15 @@ int main(int argc, char **argv) {
   std::string run_error;
   std::thread owner([&] { run_error = command(host, "run", cell.c_str()); });
   wait_running(control); std::this_thread::sleep_for(80ms);
+  bool observed_executing_cell = false;
+  for (int i = 0; i < 500 && !observed_executing_cell; ++i) {
+    if (auto *json = sputnik_notebook_control_live(control)) {
+      observed_executing_cell = std::string(json).find("\"executing_cell\":\"" + cell + "\"") != std::string::npos;
+      sputnik_notebook_string_free(json);
+    }
+    if (!observed_executing_cell) std::this_thread::sleep_for(10ms);
+  }
+  require(observed_executing_cell, "a silent infinite loop publishes its executing cell through the independent channel");
   require(sputnik_notebook_control_stop(control, 0), "cooperative Stop uses independent control lifetime");
   owner.join(); require(run_error.empty(), run_error);
   state = snapshot(host);
@@ -156,6 +183,44 @@ int main(int argc, char **argv) {
   succeeds(host, "source", cell.c_str(), "import task\nchild = task.spawn:\n  task.sleep(100)\n  1 / 0\n17\n");
   succeeds(host, "run_all");
   require(snapshot(host).find("unobserved child task") != std::string::npos, "late child failure reaches native host status");
+  succeeds(host, "source", cell.c_str(), "x = 1\nKernel.watch(x)\nx\n");
+  succeeds(host, "run_all");
+  char *pending_error = nullptr;
+  char *pending = sputnik_notebook_worker_pending(host, &pending_error);
+  require(pending && !pending_error && std::string(pending) == "sheet:main", "worker watch activity is discoverable while idle");
+  sputnik_notebook_string_free(pending);
+  succeeds(host, "watch_run");
+  pending = sputnik_notebook_worker_pending(host, &pending_error);
+  require(!pending && !pending_error, "Watch acknowledges events once without a local VM or busy loop");
+  // Overflow forces a conservative automatic resync, so Watch really runs
+  // source here rather than merely acknowledging registration metadata.
+  succeeds(host, "source", cell.c_str(),
+      "x = 1\nKernel.watch(x)\n70000.times:\n  x += 1\n"
+      "notebook.progress(\"hot\", 1, 2, \"Watch execution\", false)\ntask.sleep(800)\nx\n");
+  succeeds(host, "run_all");
+  pending = sputnik_notebook_worker_pending(host, &pending_error);
+  require(pending && !pending_error, "hot Watch work is scheduled");
+  sputnik_notebook_string_free(pending);
+  owner = std::thread([&] { run_error = command(host, "watch_run"); });
+  wait_running(control);
+  bool watch_live = false;
+  const auto watch_deadline = std::chrono::steady_clock::now() + 5s;
+  while (!watch_live && sputnik_notebook_control_phase(control) && std::chrono::steady_clock::now() < watch_deadline) {
+    if (char *json = sputnik_notebook_control_live(control)) {
+      watch_live = std::string(json).find("Watch execution") != std::string::npos;
+      sputnik_notebook_string_free(json);
+    }
+    std::this_thread::sleep_for(10ms);
+  }
+  require(watch_live && sputnik_notebook_control_stop(control, 0), "automatic Watch publishes live progress and accepts Stop");
+  owner.join(); require(run_error.empty(), run_error);
+  pending = sputnik_notebook_worker_pending(host, &pending_error);
+  require(!pending && !pending_error, "Stop prevents automatic replay of cancelled Watch work");
+  succeeds(host, "run_all");
+  owner = std::thread([&] { run_error = command(host, "watch_run"); });
+  wait_running(control);
+  require(sputnik_notebook_control_stop(control, 1), "automatic Watch accepts Force Stop");
+  owner.join(); require(!run_error.empty(), "forced Watch worker cannot publish success");
   const auto disk = sputnik::notebook::load_project(project.directory);
   require(disk.document.sheets[0].cells.size() == 1 && disk.document.sheets[0].cells[0].source == "1\n",
           "worker never saves source or unsaved sheet structure");

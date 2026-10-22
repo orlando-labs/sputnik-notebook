@@ -3,10 +3,30 @@
 Status: agreed direction; implementation proceeds in independently tested stages.
 This document is a design contract, not a claim that all APIs below exist.
 
+## Navigation during execution (2026-10-19)
+
+Sheets, modules and boards remain navigable while a worker is executing. The
+viewed tab is kept in the UI independently from the worker's command selection;
+completion preserves the user's view and newer drafts. Structural edits and
+additional local execution commands retain their existing busy guards.
+
+The worker reports the actual current root cell through live presentation
+metadata, including silent code. The marker advances during Run All and clears
+when evaluation ends, including Stop and Force Stop. The cell displays a spinner,
+RUNNING badge and highlighted border, and its sheet has a sidebar spinner.
+**Show Running Cell** is available above both sheets and boards: it opens the
+executing sheet, selects and expands its cell, and scrolls to it. Repeated clicks
+can return to the same cell after scrolling away. With concurrent remote runs,
+the focused sheet (or a board's controller) takes precedence. Compact remote
+registry replies carry cell identity without downloading other sheets' figures.
+
+Presentation schema v12 adds the executing cell ID. The decoder also accepts v11
+so saved remote results remain readable.
+
 ## Implemented slices (2026-09-27–2026-10-02)
 
-Isolated execution is opt-in for ordinary projects and automatic for macOS
-projects declaring prepared native dependencies. isputnik has not switched:
+The macOS GUI uses isolated execution for all projects by default, including
+module editors, Watch updates and boards. isputnik has not switched:
 
 - `tools/notebook-worker/`: reusable POSIX process supervisor and a single-sheet
   `sputnik-notebook-worker` executable. `posix_spawn` starts a fresh runtime; it
@@ -49,7 +69,7 @@ projects declaring prepared native dependencies. isputnik has not switched:
   locals/interpolation text, watch metadata, diagnostic ranges, separate stdout/
   stderr events with source/order metadata, environment output and ordered PNG
   panels/captions. Optional built-in plot renderers are shared by the native host
-  and worker; a linked sputnik-plot package is rendered inside the worker process.
+  and worker; a linked plot package is rendered inside the worker process.
 - Snapshots use 1 MiB chunks, a 128 MiB aggregate limit and a versioned binary
   schema; the existing 8 MiB frame limit remains. The host assembler publishes
   only after complete decoding and a matching Result; malformed/stale/out-of-order
@@ -82,8 +102,8 @@ projects declaring prepared native dependencies. isputnik has not switched:
   formatting, Watch mode, selection and document dirtiness remain host-owned.
   Main-thread drafts are overlaid independently and stay editable during a run.
   Status-only polling exists only while an explicit worker command is active.
-- `--isolated-worker` enables Stop / Force Stop / explicit Restart Worker in the
-  packaged macOS app. The control handle has independent shared ownership and
+- Stop / Force Stop / explicit Restart Worker are available without launch
+  flags in the packaged macOS app. The control handle has independent shared ownership and
   never touches the host Session from the main thread. Final publication is
   serialized against Force Stop; interrupted worlds require explicit restart.
   Last results/drafts survive; no process restart or cell replay happens implicitly.
@@ -116,14 +136,21 @@ Load/Source/Sync acknowledgements are not new execution outcomes and must not cl
 the host's last-run outcome. No heap values cross this API. Discard incomplete snapshots
 on EOF, Force Stop, or abandoned receive; never publish a partial figure.
 
+The P0 update (2026-10-15) adds ordinary project inputs and atomic form Apply
+to the isolated worker; see [P0 components](notebook-p0-components.md).
+
 Current limits before switching real hosts:
 
-- Ordinary non-native UI projects and the TUI retain the in-process runtime. The
-  preview supports sheet Run/Run All/Apply only, explicitly rejects module Run
-  and projects with inputs, and does not service idle runtime watch events.
-  These paths must move before changing the default backend. The preview does
-  not fall back to a local VM. Cross-sheet Apply invalidation is conservative;
-  source/structure Sync currently uses a single bounded command frame.
+- The TUI retains the in-process runtime. The GUI has no local VM fallback.
+  Protocol v12 adds LoadModule, inert Poll and cancellable Watch commands.
+  The GUI polls readiness of existing workers every 100 ms while idle and
+  starts ready Watch work through the same lifecycle as Run. RuntimePumpDispatch
+  coalesces notifications and backs off recovery inside the worker. Code drafts
+  suspend automatic dispatch; text drafts do not. Stop pauses automatic work
+  until the next explicit execution. Module Sync carries its unsaved source
+  separately from the project, preserving sheet and board metadata.
+  Cross-sheet Apply invalidation is conservative; source/structure Sync uses
+  a single bounded command frame.
 - Completion covers registered runtime tasks/VM invocations, not arbitrary OS
   threads secretly created by native extensions. Such extensions need an explicit
   lifetime/cancellation contract. This is not yet a production job supervisor.
@@ -160,7 +187,7 @@ require a test environment that permits local listening sockets.
 Presentation tests cover >8 MiB binary transfer, full metadata round-trips,
 truncated/duplicate/stale frames, invalid counts/booleans/PNG dimensions, late
 child cleanup and environment text, source revisions and compile diagnostics.
-When sputnik-plot is available on macOS, the same target also checks real worker
+When plot is available on macOS, the same target also checks real worker
 rendering, ordered captions and preservation of the previous figure after failure.
 
 Failure tests cover late cell/module errors, dropped handles, cross-scheduler
@@ -173,12 +200,11 @@ source-only opening, unsaved structure synchronization, preserved last results,
 control lifetime after host destruction and newer/reverted drafts during runs.
 Apply tests cover unsaved-module rejection, independent sheet workers, stale
 cross-sheet environments and cancellation during module initialization. GUI
-smoke tests render rich text, interpolation and real sputnik-plot panels through
-the packaged helper as well as the unchanged default backend.
+smoke tests render rich text, interpolation and real plot panels through
+the packaged helper with the default execution backend.
 
-Next: worker runtime-event pumping, board input bridge and isolated module Run,
-then general default-backend rollout and long-lived background jobs. Do not move
-document Save into the worker.
+Long-lived background jobs remain a separate lifecycle feature. Document Save
+belongs to the host, never to the worker.
 
 ## Execution and isolation
 

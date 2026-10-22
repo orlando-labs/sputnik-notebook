@@ -1,0 +1,108 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "Разметка аудио",
+  "active_sheet": "main",
+  "modules": [],
+  "auto_imports": [],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ],
+  "inputs": [],
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Audio labels",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from audio import AudioTrack\ntrack = AudioTrack.from_input(\"clip\")\nnotebook.player(track, id: \"original\")\nlabels = notebook.audio_annotations(\"labels\")\nlabels\n"
+        }
+      ]
+    }
+  ],
+  "boards": [
+    {
+      "id": "audio",
+      "title": "Сегменты, классы и транскрипт",
+      "sheet": "main",
+      "columns": 1,
+      "components": [
+        {
+          "id": "clip",
+          "title": "Аудиофайл · waveform / plasma spectrum",
+          "kind": "audio_annotator",
+          "audio_source": "file",
+          "audio_id": "clip",
+          "annotation_id": "labels",
+          "audio_asset": "audio/demo.wav",
+          "audio_name": "Тон и чирп · 4 s",
+          "audio_view": "spectrogram",
+          "audio_fft_size": 1024,
+          "annotation_classes": [
+            {
+              "id": "speech",
+              "title": "Speech",
+              "attributes": [
+                {
+                  "id": "speaker",
+                  "title": "Speaker",
+                  "type": "text",
+                  "options": []
+                },
+                {
+                  "id": "confidence",
+                  "title": "Confidence",
+                  "type": "number",
+                  "options": []
+                }
+              ]
+            },
+            {
+              "id": "noise",
+              "title": "Noise",
+              "attributes": [
+                {
+                  "id": "kind",
+                  "title": "Kind",
+                  "type": "choice",
+                  "options": [
+                    "Tone",
+                    "Chirp",
+                    "Other"
+                  ]
+                }
+              ]
+            }
+          ],
+          "audio_transcript_allowed": true,
+          "audio_transcript_required": false,
+          "audio_segment_transcript_allowed": true,
+          "audio_segment_transcript_required": false
+        },
+        {
+          "id": "run",
+          "kind": "run",
+          "cell": "1",
+          "title": "Прочитать принятые метки"
+        },
+        {
+          "id": "result",
+          "kind": "result",
+          "cell": "1",
+          "title": "notebook.audio_annotations(\"labels\")"
+        },
+        {
+          "id": "history",
+          "kind": "run_history",
+          "title": "История источников и разметки"
+        }
+      ]
+    }
+  ]
+}

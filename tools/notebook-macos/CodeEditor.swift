@@ -1,12 +1,19 @@
 import AppKit
 import SwiftUI
 
+enum NotebookEditorLanguage {
+    case sputnik, json, yaml, toml
+    var configTitle: String { self == .yaml ? "YAML" : self == .toml ? "TOML" : "JSON" }
+}
+
 /// A small AppKit-backed source editor. Keeping NSTextView alive across SwiftUI
 /// snapshots preserves its native selection and undo history while the text is
 /// unchanged.
 struct CodeEditor: NSViewRepresentable {
     @Binding var text: String
     var editable: Bool = true
+    var substituteGreekLetters: Bool = true
+    var language: NotebookEditorLanguage = .sputnik
     var onFocus: () -> Void = {}
     var onRun: () -> Void = {}
 
@@ -17,23 +24,24 @@ struct CodeEditor: NSViewRepresentable {
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
         scrollView.drawsBackground = true
-        scrollView.backgroundColor = NSColor(calibratedRed: 0.995, green: 0.990, blue: 0.976, alpha: 1)
+        scrollView.backgroundColor = NotebookPalette.nativeEditor
         scrollView.borderType = .noBorder
         scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.autohidesScrollers = true
 
         let textView = FocusTrackingTextView(frame: NSRect(x: 0, y: 0, width: 640, height: 100))
-        textView.delegate = context.coordinator
-        textView.onFocus = context.coordinator.parent.onFocus
+        context.coordinator.install(textView)
         textView.string = text
         textView.isRichText = false
         textView.isEditable = editable
         textView.isSelectable = true
         textView.allowsUndo = true
         textView.drawsBackground = false
-        textView.textColor = .labelColor
-        textView.insertionPointColor = NSColor(calibratedRed: 0.72, green: 0.39, blue: 0.12, alpha: 1)
+        textView.textColor = NotebookPalette.nativeInk
+        textView.insertionPointColor = NotebookPalette.nativeAccent
+        textView.selectedTextAttributes = [.backgroundColor: NotebookPalette.nativeFoxglove.withAlphaComponent(0.35),
+                                           .foregroundColor: NotebookPalette.nativeInk]
         textView.font = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
         textView.textContainerInset = NSSize(width: 16, height: 14)
         textView.isHorizontallyResizable = false
@@ -52,12 +60,9 @@ struct CodeEditor: NSViewRepresentable {
         textView.smartInsertDeleteEnabled = false
         textView.typingAttributes = Self.editorTypingAttributes
         if let storage = textView.textStorage {
-            SputnikSyntax.apply(to: storage,
-                              source: text,
-                              font: Self.editorFont,
-                              baseColor: Self.editorColor)
+            applySyntax(to: storage)
         }
-        textView.setAccessibilityLabel(editable ? "Sputnik source editor" : "Read-only Sputnik source")
+        textView.setAccessibilityLabel(language != .sputnik ? "\(language.configTitle) config editor" : editable ? "Sputnik source editor" : "Read-only Sputnik source")
         scrollView.documentView = textView
         return scrollView
     }
@@ -67,7 +72,7 @@ struct CodeEditor: NSViewRepresentable {
         guard let textView = scrollView.documentView as? NSTextView else { return }
 
         textView.isEditable = editable
-        textView.setAccessibilityLabel(editable ? "Sputnik source editor" : "Read-only Sputnik source")
+        textView.setAccessibilityLabel(language != .sputnik ? "\(language.configTitle) config editor" : editable ? "Sputnik source editor" : "Read-only Sputnik source")
         (textView as? FocusTrackingTextView)?.onFocus = onFocus
 
         // Runtime snapshots arrive frequently. Assign only when the source
@@ -82,6 +87,7 @@ struct CodeEditor: NSViewRepresentable {
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
         let width = max(240, proposal.width ?? 640)
+        if language != .sputnik { return CGSize(width: width, height: max(150, proposal.height ?? 220)) }
         let usableWidth = max(160, width - 44)
         let approximateCharacterWidth: CGFloat = 7.7
         let sourceLines = text.components(separatedBy: .newlines)
@@ -97,10 +103,20 @@ struct CodeEditor: NSViewRepresentable {
         var parent: CodeEditor
         private(set) var isApplyingExternalSource = false
         private(set) var isApplyingSyntax = false
+        private var isSubstitutingGreekLetter = false
         private var pendingExternalSource: String?
 
         init(_ parent: CodeEditor) {
             self.parent = parent
+        }
+
+        func install(_ textView: FocusTrackingTextView) {
+            textView.delegate = self
+            textView.onFocus = parent.onFocus
+            textView.onUndoRedo = { [weak self, weak textView] in
+                guard let textView else { return }
+                self?.sourceDidChange(in: textView)
+            }
         }
 
         func replaceExternalSource(_ source: String, in textView: NSTextView) {
@@ -117,6 +133,18 @@ struct CodeEditor: NSViewRepresentable {
             let newLength = (source as NSString).length
             let undoManager = textView.undoManager
             guard let storage = textView.textStorage else { return }
+            if parent.language != .sputnik {
+                // Format, Import and Reset are ordinary undoable draft edits.
+                textView.breakUndoCoalescing()
+                let range = NSRange(location: 0, length: storage.length)
+                if textView.shouldChangeText(in: range, replacementString: source) {
+                    storage.replaceCharacters(in: range, with: source)
+                    textView.didChangeText()
+                }
+                textView.setSelectedRange(NSRange(location: min(oldSelection.location, newLength), length: 0))
+                highlight(textView)
+                return
+            }
             undoManager?.disableUndoRegistration()
             isApplyingExternalSource = true
             storage.beginEditing()
@@ -150,18 +178,19 @@ struct CodeEditor: NSViewRepresentable {
             let undoManager = textView.undoManager
             undoManager?.disableUndoRegistration()
             isApplyingSyntax = true
-            SputnikSyntax.apply(to: storage,
-                              source: textView.string,
-                              font: CodeEditor.editorFont,
-                              baseColor: CodeEditor.editorColor)
+            parent.applySyntax(to: storage)
             isApplyingSyntax = false
             undoManager?.enableUndoRegistration()
             textView.typingAttributes = CodeEditor.editorTypingAttributes
         }
 
         func textDidChange(_ notification: Notification) {
-            guard let textView = notification.object as? NSTextView,
-                  !isApplyingExternalSource, !isApplyingSyntax else { return }
+            guard let textView = notification.object as? NSTextView else { return }
+            sourceDidChange(in: textView)
+        }
+
+        private func sourceDidChange(in textView: NSTextView) {
+            guard !isApplyingExternalSource, !isApplyingSyntax else { return }
             if parent.text != textView.string {
                 parent.text = textView.string
             }
@@ -177,6 +206,26 @@ struct CodeEditor: NSViewRepresentable {
             flushPendingSource(in: textView)
         }
 
+        func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange,
+                      replacementString: String?) -> Bool {
+            guard parent.editable, parent.language == .sputnik, parent.substituteGreekLetters,
+                  !isSubstitutingGreekLetter, !isApplyingExternalSource, !isApplyingSyntax,
+                  !textView.hasMarkedText(),
+                  textView.undoManager?.isUndoing != true,
+                  textView.undoManager?.isRedoing != true,
+                  let insertedText = replacementString,
+                  let replacement = SputnikGreekLetters.replacement(in: textView.string,
+                      range: affectedCharRange, insertedText: insertedText) else { return true }
+
+            // Submit one normal AppKit edit so selection, bindings and Undo /
+            // Redo all see the same replacement, including its delimiter.
+            isSubstitutingGreekLetter = true
+            textView.breakUndoCoalescing()
+            textView.insertText(replacement.text, replacementRange: replacement.range)
+            isSubstitutingGreekLetter = false
+            return false
+        }
+
         func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
             if commandSelector == #selector(NSResponder.insertTab(_:)) {
                 textView.insertText("  ", replacementRange: textView.selectedRange())
@@ -189,24 +238,66 @@ struct CodeEditor: NSViewRepresentable {
                 return true
             }
 
+            if parent.language != .sputnik, commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                let source = textView.string as NSString
+                let start = source.lineRange(for: NSRange(location: textView.selectedRange().location, length: 0)).location
+                let prefix = source.substring(with: NSRange(location: start, length: textView.selectedRange().location - start))
+                let indentation = String(prefix.prefix { $0 == " " || $0 == "\t" })
+                let previous = prefix.trimmingCharacters(in: .whitespaces).last
+                let indentMore = parent.language == .json ? previous == "{" || previous == "[" : parent.language == .yaml && previous == ":"
+                textView.insertText("\n" + indentation + (indentMore ? "  " : ""), replacementRange: textView.selectedRange())
+                return true
+            }
+
             return false
         }
     }
 
     fileprivate static let editorFont = NSFont.monospacedSystemFont(ofSize: 13,
                                                                      weight: .regular)
-    fileprivate static let editorColor = NSColor(calibratedRed: 0.153,
-                                                 green: 0.161,
-                                                 blue: 0.166,
-                                                 alpha: 1)
+    fileprivate static let editorColor = NotebookPalette.nativeInk
     fileprivate static let editorTypingAttributes: [NSAttributedString.Key: Any] = [
         .font: editorFont,
         .foregroundColor: editorColor,
     ]
+
+    private func applySyntax(to storage: NSTextStorage) {
+        if language != .sputnik {
+            let source = storage.string as NSString
+            storage.setAttributes(Self.editorTypingAttributes, range: NSRange(location: 0, length: source.length))
+            // Lexical highlighting also works with an unfinished document.
+            let pattern = language == .json
+                ? #""(?:[^"\\]|\\.)*"|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|\b(?:true|false|null)\b"#
+                : #""(?:[^"\\]|\\.)*"|'[^']*'|#[^\n]*|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|\b(?:true|false|null)\b"#
+            guard let regex = try? NSRegularExpression(pattern: pattern) else { return }
+            for token in regex.matches(in: storage.string, range: NSRange(location: 0, length: source.length)) {
+                let text = source.substring(with: token.range)
+                let category: SputnikSyntaxCategory = text.first == "#" ? .comment : text.first == "\"" || text.first == "'" ? .string : ["true", "false", "null"].contains(text) ? .keyword : .number
+                storage.addAttribute(.foregroundColor, value: SputnikSyntax.color(for: category), range: token.range)
+            }
+        } else {
+            SputnikSyntax.apply(to: storage, font: Self.editorFont, baseColor: Self.editorColor)
+        }
+    }
 }
 
-private final class FocusTrackingTextView: NSTextView {
+class FocusTrackingTextView: NSTextView {
     var onFocus: () -> Void = {}
+    var onUndoRedo: () -> Void = {}
+
+    // AppKit can restore the buffer without sending textDidChange on undo.
+    // Publish the restored source before the next Save or runtime snapshot.
+    @objc func undo(_ sender: Any?) {
+        guard isEditable, !hasMarkedText() else { return }
+        undoManager?.undo()
+        onUndoRedo()
+    }
+
+    @objc func redo(_ sender: Any?) {
+        guard isEditable, !hasMarkedText() else { return }
+        undoManager?.redo()
+        onUndoRedo()
+    }
 
     override func becomeFirstResponder() -> Bool {
         let didBecomeFirstResponder = super.becomeFirstResponder()

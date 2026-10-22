@@ -17,12 +17,36 @@ struct PlotViewport: Equatable {
 
 private enum PlotSceneError: Error { case invalid }
 
+/// Carry plot's monospaced chart aesthetic into native figures and live
+/// charts. Measurement, on-screen drawing and PNG export share font metrics.
+enum NotebookPlotTypography {
+    static func font(ofSize size: CGFloat, weight: NSFont.Weight = .regular) -> NSFont {
+        NSFont.monospacedSystemFont(ofSize: size, weight: weight)
+    }
+    static let title = font(ofSize: 20, weight: .semibold)
+    static let tick = font(ofSize: 11)
+    static let axis = font(ofSize: 13)
+    static let titleColor = PlotCommand.color("#111827")!
+    static let tickColor = PlotCommand.color("#4b5563")!
+    static let axisColor = PlotCommand.color("#374151")!
+    static let gridColor = PlotCommand.color("#e5e7eb")!
+    static let borderColor = PlotCommand.color("#9ca3af")!
+}
+
 struct PlotCommand: Decodable {
     let kind: Int
     var fill = "none", stroke = "none", text = ""
     var width = 0.0, opacity = 1.0, radius = 0.0, size = 12.0, align = 0
     var points: [[Double]] = [], rings: [[[Double]]] = [], dash: [Double] = []
     var position: [Double] = []
+
+    init(line: [[Double]], stroke: String, width: Double) {
+        kind = 2; points = line; self.stroke = stroke; self.width = width
+    }
+
+    init(point: [Double], color: String, radius: Double) {
+        kind = 3; points = [point]; fill = color; self.radius = radius
+    }
 
     init(from decoder: Decoder) throws {
         var c = try decoder.unkeyedContainer()
@@ -200,8 +224,8 @@ struct NotebookPlotScene: Decodable {
         let f = plotFrame(view: view, size: size)
         guard f.width > 0, f.height > 0 else { return }
         PlotCommand.color(background)!.setFill(); NSBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
-        func label(_ text: String, _ p: CGPoint, size: Double, color: NSColor, align: Int, clipped: Bool = false) {
-            let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: size), .foregroundColor: color]
+        func label(_ text: String, _ p: CGPoint, font: NSFont, color: NSColor, align: Int, clipped: Bool = false) {
+            let attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
             let string = text as NSString, extent = string.size(withAttributes: attributes)
             let r = CGRect(x: p.x - extent.width * Double(align) / 2, y: p.y, width: extent.width, height: extent.height)
             if !clipped || f.contains(r) { string.draw(at: r.origin, withAttributes: attributes) }
@@ -209,19 +233,36 @@ struct NotebookPlotScene: Decodable {
         func line(_ a: CGPoint, _ b: CGPoint, _ color: NSColor) {
             color.setStroke(); let path = NSBezierPath(); path.move(to: a); path.line(to: b); path.lineWidth = 1; path.stroke()
         }
-        if !title.isEmpty { label(title, CGPoint(x: size.width / 2, y: 18), size: 20, color: .darkGray, align: 1) }
+        if !title.isEmpty {
+            label(title, CGPoint(x: size.width / 2, y: 18), font: NotebookPlotTypography.title,
+                  color: NotebookPlotTypography.titleColor, align: 1)
+        }
         if axes {
-            for i in 0...5 {
-                let t = Double(i) / 5, x = f.minX + t * f.width, y = f.minY + t * f.height
-                line(CGPoint(x: x, y: f.minY), CGPoint(x: x, y: f.maxY), NSColor(white: 0.9, alpha: 1))
-                line(CGPoint(x: f.minX, y: y), CGPoint(x: f.maxX, y: y), NSColor(white: 0.9, alpha: 1))
-                let xv = view.xMin + t * (view.xMax - view.xMin)
-                let yv = y_down ? view.yMin + t * (view.yMax - view.yMin) : view.yMax - t * (view.yMax - view.yMin)
-                label(Self.tick(xv, span: view.xMax - view.xMin), CGPoint(x: x, y: f.maxY + 9), size: 11, color: .darkGray, align: 1)
-                label(Self.tick(yv, span: view.yMax - view.yMin), CGPoint(x: f.minX - 8, y: y - 5), size: 11, color: .darkGray, align: 2)
+            var xIntervals = max(2, min(5, Int(f.width / 85)))
+            let xSpan = view.xMax - view.xMin
+            if view.xMin.rounded() == view.xMin && view.xMax.rounded() == view.xMax {
+                while xIntervals > 1 && xSpan.truncatingRemainder(dividingBy: Double(xIntervals)) != 0 {
+                    xIntervals -= 1
+                }
             }
-            label(x_label, CGPoint(x: f.midX, y: f.maxY + 33), size: 13, color: .darkGray, align: 1)
-            label(y_label, CGPoint(x: f.minX, y: f.minY - 22), size: 13, color: .darkGray, align: 0)
+            for i in 0...xIntervals {
+                let t = Double(i) / Double(xIntervals), x = f.minX + t * f.width
+                line(CGPoint(x: x, y: f.minY), CGPoint(x: x, y: f.maxY), NotebookPlotTypography.gridColor)
+                let xv = view.xMin + t * (view.xMax - view.xMin)
+                label(Self.tick(xv, span: view.xMax - view.xMin), CGPoint(x: x, y: f.maxY + 9),
+                      font: NotebookPlotTypography.tick, color: NotebookPlotTypography.tickColor, align: 1)
+            }
+            for i in 0...5 {
+                let t = Double(i) / 5, y = f.minY + t * f.height
+                line(CGPoint(x: f.minX, y: y), CGPoint(x: f.maxX, y: y), NotebookPlotTypography.gridColor)
+                let yv = y_down ? view.yMin + t * (view.yMax - view.yMin) : view.yMax - t * (view.yMax - view.yMin)
+                label(Self.tick(yv, span: view.yMax - view.yMin), CGPoint(x: f.minX - 8, y: y - 5),
+                      font: NotebookPlotTypography.tick, color: NotebookPlotTypography.tickColor, align: 2)
+            }
+            label(x_label, CGPoint(x: f.midX, y: f.maxY + 33), font: NotebookPlotTypography.axis,
+                  color: NotebookPlotTypography.axisColor, align: 1)
+            label(y_label, CGPoint(x: f.minX, y: f.minY - 22), font: NotebookPlotTypography.axis,
+                  color: NotebookPlotTypography.axisColor, align: 0)
         }
         func drawCommand(_ c: PlotCommand, layer: PlotSceneLayer?) {
             func point(_ p: [Double]) -> CGPoint {
@@ -276,7 +317,8 @@ struct NotebookPlotScene: Decodable {
                     if layer.kind == "hline" { a.x = view.xMin + t * (view.xMax - view.xMin) }
                     p = screenPoint(a, view: view, frame: f); p.x += offset[0]; p.y += offset[1]
                 }
-                label(c.text, p, size: c.size, color: PlotCommand.color(c.fill)!, align: c.align, clipped: layer != nil)
+                label(c.text, p, font: NotebookPlotTypography.font(ofSize: c.size),
+                      color: PlotCommand.color(c.fill)!, align: c.align, clipped: layer != nil)
                 return
             default: return
             }
@@ -288,11 +330,20 @@ struct NotebookPlotScene: Decodable {
         NSBezierPath(rect: f).addClip()
         for layer in layers { for c in layer.commands { drawCommand(c, layer: layer) } }
         NSGraphicsContext.restoreGraphicsState()
-        if axes { NSColor.lightGray.setStroke(); let border = NSBezierPath(rect: f); border.lineWidth = 1; border.stroke() }
+        if axes { NotebookPlotTypography.borderColor.setStroke(); let border = NSBezierPath(rect: f); border.lineWidth = 1; border.stroke() }
         for c in decorations { drawCommand(c, layer: nil) }
     }
 
     func png(view: PlotViewport, width: Int, height: Int) -> Data? {
+        png(view: view, size: CGSize(width: width, height: height), scale: 1)
+    }
+
+    /// Export UI points at the display's backing scale, preserving font and
+    /// stroke proportions instead of laying out a larger, different chart.
+    func png(view: PlotViewport, size: CGSize, scale: Double) -> Data? {
+        guard size.width.isFinite, size.height.isFinite, scale.isFinite, scale >= 1, scale <= 4,
+              size.width > 0, size.height > 0, size.width * scale <= 8192, size.height * scale <= 8192 else { return nil }
+        let width = Int((size.width * scale).rounded()), height = Int((size.height * scale).rounded())
         guard width > 0, height > 0, width <= 8192, height <= 8192, width * height <= 16_000_000,
               let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
                                             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -301,8 +352,9 @@ struct NotebookPlotScene: Decodable {
         NSGraphicsContext.saveGraphicsState()
         let cg = graphics.cgContext
         cg.translateBy(x: 0, y: CGFloat(height)); cg.scaleBy(x: 1, y: -1)
+        cg.scaleBy(x: Double(width) / size.width, y: Double(height) / size.height)
         NSGraphicsContext.current = NSGraphicsContext(cgContext: cg, flipped: true)
-        draw(view: view, size: CGSize(width: width, height: height))
+        draw(view: view, size: size)
         NSGraphicsContext.restoreGraphicsState()
         return bitmap.representation(using: .png, properties: [:])
     }

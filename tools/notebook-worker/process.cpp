@@ -42,7 +42,8 @@ Process::~Process() {
   }
   if (control_ >= 0) ::close(control_);
 }
-void Process::start(const std::string &executable) {
+void Process::start(const std::string &executable, const std::string &working_directory,
+                    const std::vector<std::string> &grants, const std::string &environment_directory) {
   std::lock_guard<std::mutex> lock(control_mutex_);
   if (pid_ > 0) throw ProtocolError("worker has not exited; confirm exit before restarting");
   if (executable.empty() || executable[0] != '/') throw ProtocolError("worker executable must be absolute");
@@ -53,7 +54,25 @@ void Process::start(const std::string &executable) {
   const auto next_generation = generations.fetch_add(1);
   if (!next_generation) throw ProtocolError("worker generation exhausted");
   std::string generation = std::to_string(next_generation);
-  const char *args[]{executable.c_str(), "--notebook-worker", generation.c_str(), nullptr};
+  if (!working_directory.empty() && working_directory[0] != '/') throw ProtocolError("worker working directory must be absolute");
+  std::vector<std::string> arguments{executable, "--notebook-worker", generation};
+  if (!working_directory.empty()) { arguments.push_back("--working-directory"); arguments.push_back(working_directory); }
+  environment_ = Environment::discover(environment_directory.empty() ? working_directory : environment_directory);
+  if (!environment_.directory.empty()) {
+    arguments.push_back("--environment-directory"); arguments.push_back(environment_.directory);
+    arguments.push_back("--environment-fingerprint"); arguments.push_back(environment_.fingerprint);
+  }
+  std::size_t size = 0;
+  if (grants.size() > 128) throw ProtocolError("too many worker grants");
+  for (const auto &grant : grants) {
+    size += grant.size() + 1;
+    if (size > 32768 || grant.find_first_of("\n\r") != std::string::npos || grant.find('\0') != std::string::npos)
+      throw ProtocolError("invalid worker grant argument");
+    arguments.push_back("--grant"); arguments.push_back(grant);
+  }
+  std::vector<char *> args;
+  for (auto &argument : arguments) args.push_back(argument.data());
+  args.push_back(nullptr);
   posix_spawn_file_actions_t actions;
   if (posix_spawn_file_actions_init(&actions) != 0) throw ProtocolError("spawn actions init failed");
   int rc = posix_spawn_file_actions_adddup2(&actions, data.values[1], kDataFd);
@@ -61,9 +80,9 @@ void Process::start(const std::string &executable) {
   if (!rc) rc = posix_spawn_file_actions_addopen(&actions, STDIN_FILENO, "/dev/null", O_RDONLY, 0);
   if (!rc) rc = posix_spawn_file_actions_addopen(&actions, STDOUT_FILENO, "/dev/null", O_WRONLY, 0);
   pid_t child = -1;
-  if (!rc) rc = ::posix_spawn(&child, executable.c_str(), &actions, nullptr, const_cast<char **>(args), environ);
+  if (!rc) rc = ::posix_spawn(&child, executable.c_str(), &actions, nullptr, args.data(), environ);
   posix_spawn_file_actions_destroy(&actions);
-  if (rc) throw ProtocolError(std::string("start notebook worker: ") + std::strerror(rc));
+  if (rc) throw ProtocolError("start notebook worker: " + executable + ": " + std::strerror(rc));
   channel_ = std::move(next_channel);
   control_ = control.values[0]; control.values[0] = -1;
   pid_ = child; generation_ = next_generation;
@@ -73,6 +92,10 @@ void Process::start(const std::string &executable) {
 RequestId Process::send(Kind kind, std::vector<std::string> fields) {
   if (!channel_ || exit_) throw ProtocolError("worker is not running");
   if (in_flight_) throw ProtocolError("worker request already in flight");
+  if ((kind == Kind::Run || kind == Kind::Apply || kind == Kind::Watch || kind == Kind::Inputs) &&
+      !environment_.directory.empty() &&
+      Environment::discover(environment_.directory).fingerprint != environment_.fingerprint)
+    throw ProtocolError("worker environment changed; Restart Worker before running cells");
   if (next_request_ == std::numeric_limits<std::uint64_t>::max()) throw ProtocolError("worker request id exhausted");
   const auto id = next_request_++;
   channel_->send({kind, generation_, id, std::move(fields)}, std::chrono::seconds(2));

@@ -1,0 +1,145 @@
+{
+  "format": "sputnik-notebook",
+  "version": 4,
+  "title": "Cell Components",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Cell interfaces",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "text",
+          "source": "Parameters and results belong to their code cell. Use Components… to edit their placement. A post-cell component enables source collapsing."
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "mode": "watch",
+          "source": "from notebook.ui import publish_point, publish_image, image, DataTableView\nimport task\ngain = notebook.cell_input(\"gain\")\noffset = notebook.cell_input(\"offset\")\n[0, 1, 2, 3, 4].each |step|:\n  publish_point(\"curve\", step, gain * step + offset)\n  notebook.progress(\"calculation\", step + 1, 5, \"Computing\", step == 4)\n  task.sleep(100)\npublish_image(\"preview\", image([0, 64, 128, 255], width: 2, height: 2, format: :gray))\nnotebook.show(DataTableView([{step: 0, value: offset}, {step: 1, value: gain + offset}, {step: 2, value: gain * 2 + offset}], columns: [:step, :value]), id: \"values\")\nscore = gain * 10 + offset\nscore\n",
+          "cell_ui": {
+            "inputs": [
+              {
+                "id": "gain",
+                "title": "Gain",
+                "type": "number",
+                "default_json": "2",
+                "minimum": 0,
+                "maximum": 10
+              },
+              {
+                "id": "offset",
+                "title": "Offset",
+                "type": "number",
+                "default_json": "1"
+              }
+            ],
+            "pre": [
+              {
+                "id": "parameters",
+                "kind": "parameter_form",
+                "title": "Experiment parameters",
+                "fields": [
+                  {
+                    "input": "gain",
+                    "control": {
+                      "style": "slider",
+                      "minimum": 0,
+                      "maximum": 10,
+                      "step": 0.5
+                    }
+                  },
+                  {
+                    "input": "offset",
+                    "control": {
+                      "style": "number"
+                    }
+                  }
+                ]
+              }
+            ],
+            "post": [
+              {
+                "id": "score",
+                "kind": "metric",
+                "title": "Score",
+                "binding": "score"
+              },
+              {
+                "id": "curve",
+                "kind": "live_chart",
+                "title": "Live response",
+                "chart_id": "curve",
+                "x_label": "Step",
+                "y_label": "Value",
+                "stroke": "#86505f"
+              },
+              {
+                "id": "preview",
+                "kind": "image",
+                "title": "Preview",
+                "image_id": "preview",
+                "image_mode": "fit"
+              },
+              {
+                "id": "values",
+                "kind": "table",
+                "title": "Data Table",
+                "table_id": "values"
+              }
+            ]
+          }
+        },
+        {
+          "id": "3",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import publish_point\nother = notebook.cell_input(\"gain\")\npublish_point(\"curve\", 0, other)\nother\n",
+          "cell_ui": {
+            "inputs": [
+              {
+                "id": "gain",
+                "title": "Independent gain",
+                "type": "number",
+                "default_json": "50"
+              }
+            ],
+            "pre": [
+              {
+                "id": "gain",
+                "kind": "input",
+                "title": "Independent parameter",
+                "input": "gain"
+              }
+            ],
+            "post": [
+              {
+                "id": "curve",
+                "kind": "live_chart",
+                "title": "Another cell, same channel ID",
+                "chart_id": "curve"
+              }
+            ]
+          }
+        },
+        {
+          "id": "4",
+          "kind": "code",
+          "mode": "manual",
+          "source": "42\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "inputs": [],
+  "boards": [],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "Workstation",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Experiment",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "watch",
+          "source": "gain = notebook.input(\"gain\")\noffset = notebook.input(\"offset\")\naccuracy = 0.85 + gain / 100.0 + offset / 1000.0\nprint(\"Experiment finished\")\nnotebook.chart_point(\"train\", 1, accuracy - 0.03)\nnotebook.chart_point(\"train\", 2, accuracy)\nnotebook.chart_point(\"validation\", 1, accuracy - 0.05)\nnotebook.chart_point(\"validation\", 2, accuracy - 0.01)\naccuracy\n"
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "mode": "manual",
+          "source": "[{:path: \"assets/report.txt\", :name: \"Experiment report\", :caption: \"Bundled example · text preview and export\"}]\n"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "actions",
+      "path": "modules/actions.s"
+    }
+  ],
+  "auto_imports": [],
+  "inputs": [
+    {
+      "id": "gain",
+      "title": "Gain",
+      "type": "number",
+      "default": 1.0,
+      "minimum": 0,
+      "maximum": 10
+    },
+    {
+      "id": "offset",
+      "title": "Offset",
+      "type": "integer",
+      "default": 2,
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "id": "label",
+      "title": "Label",
+      "type": "string",
+      "default": "Baseline"
+    },
+    {
+      "id": "large",
+      "title": "Exact integer",
+      "type": "integer",
+      "default": 9223372036854775806
+    },
+    {
+      "id": "dataset",
+      "title": "Dataset path",
+      "type": "string",
+      "default": ""
+    }
+  ],
+  "boards": [
+    {
+      "id": "workstation",
+      "title": "Experiment console",
+      "sheet": "main",
+      "columns": 2,
+      "rows": [
+        {
+          "id": "intro"
+        },
+        {
+          "id": "settings"
+        },
+        {
+          "id": "monitor"
+        },
+        {
+          "id": "results"
+        },
+        {
+          "id": "files"
+        },
+        {
+          "id": "details"
+        }
+      ],
+      "components": [
+        {
+          "id": "summary",
+          "kind": "rich_text",
+          "title": "Experiment console",
+          "row": "intro",
+          "span": 12,
+          "text_mode": "markdown",
+          "text_content": {
+            "source": "# Experiment console\n\nScore: **{{accuracy}}** · Choose a preset, then run the experiment."
+          }
+        },
+        {
+          "id": "presets",
+          "kind": "parameter_presets",
+          "title": "Parameter Presets",
+          "row": "settings",
+          "span": 6,
+          "p1": {
+            "preset_inputs": [
+              "gain",
+              "offset",
+              "label",
+              "large"
+            ],
+            "presets": [
+              {
+                "id": "baseline",
+                "title": "Baseline",
+                "values": {
+                  "gain": "1.0",
+                  "offset": "2",
+                  "label": "\"Baseline\"",
+                  "large": "9223372036854775806"
+                }
+              },
+              {
+                "id": "fast",
+                "title": "Fast trial",
+                "values": {
+                  "gain": "2.0",
+                  "offset": "5",
+                  "label": "\"Fast trial\"",
+                  "large": "9223372036854775807"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "parameters",
+          "kind": "parameter_form",
+          "title": "Parameters",
+          "row": "settings",
+          "span": 6,
+          "fields": [
+            {
+              "input": "gain",
+              "control": {
+                "style": "slider",
+                "minimum": 0,
+                "maximum": 10,
+                "step": 0.1
+              }
+            },
+            {
+              "input": "offset",
+              "control": {
+                "style": "stepper",
+                "step": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "metric",
+          "kind": "metric",
+          "title": "Accuracy",
+          "row": "monitor",
+          "span": 4,
+          "cell": "1",
+          "binding": "accuracy",
+          "p1": {
+            "percentage": true,
+            "precision": 1,
+            "unit": "",
+            "target": 0.95,
+            "baseline": 0.85,
+            "improvement": "higher"
+          }
+        },
+        {
+          "id": "state",
+          "kind": "status",
+          "title": "Execution status",
+          "row": "monitor",
+          "span": 4,
+          "p1": {
+            "target_kind": "sheet"
+          }
+        },
+        {
+          "id": "controls",
+          "kind": "execution_controls",
+          "title": "Experiment",
+          "row": "monitor",
+          "span": 4,
+          "p1": {
+            "target_kind": "sheet"
+          }
+        },
+        {
+          "id": "chart",
+          "kind": "live_chart",
+          "title": "Training and validation",
+          "row": "results",
+          "span": 8,
+          "x_label": "Epoch",
+          "y_label": "Accuracy",
+          "p1": {
+            "series": [
+              {
+                "id": "train",
+                "title": "Train",
+                "stroke": "#87512c"
+              },
+              {
+                "id": "validation",
+                "title": "Validation",
+                "stroke": "#86505f"
+              }
+            ]
+          }
+        },
+        {
+          "id": "action",
+          "kind": "action",
+          "title": "Calibrate",
+          "row": "results",
+          "span": 4,
+          "module_id": "actions",
+          "function": "calibrate",
+          "p1": {
+            "arguments": [
+              {
+                "id": "a",
+                "input": "gain"
+              },
+              {
+                "id": "b",
+                "input": "offset"
+              },
+              {
+                "id": "c",
+                "input": "label"
+              }
+            ]
+          }
+        },
+        {
+          "id": "files",
+          "kind": "file_input",
+          "title": "Dataset",
+          "row": "files",
+          "span": 6,
+          "input": "dataset",
+          "p1": {
+            "extensions": "csv,json,txt"
+          }
+        },
+        {
+          "id": "artifacts",
+          "kind": "artifacts",
+          "title": "Experiment files",
+          "row": "files",
+          "span": 6,
+          "cell": "2"
+        },
+        {
+          "id": "details",
+          "kind": "group",
+          "title": "Diagnostics",
+          "row": "details",
+          "span": 12,
+          "p1": {
+            "collapsed": false
+          },
+          "panels": [
+            {
+              "id": "diagnostics",
+              "title": "Diagnostics",
+              "rows": [
+                {
+                  "id": "logs"
+                }
+              ],
+              "components": [
+                {
+                  "id": "log",
+                  "kind": "log",
+                  "title": "Run output",
+                  "row": "logs",
+                  "span": 12,
+                  "cell": "1"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}

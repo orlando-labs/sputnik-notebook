@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a notebook linked to a local sputnik-plot package (copy only with --bundle)."""
+"""Create a notebook linked to a local plot package (copy only with --bundle)."""
 import argparse
 import json
 from pathlib import Path
@@ -22,8 +22,8 @@ def create_sample(output: Path, plot_source: Path, board=False, bundle=False):
         source = '''import plot
 p = plot.figure(width: 800, height: 540).line([[0, 0], [1, 1], [2, 4], [3, 9]])
 q = plot.figure3d(width: 800, height: 540).surface([[0, 1, 0], [1, 3, 1], [0, 1, 0]])
-notebook.show(q, caption: "Surface · sputnik-plot 3D", order: 2)
-notebook.show(p, caption: "Quadratic curve · sputnik-plot 2D", order: 1)
+notebook.show(q, caption: "Surface · plot 3D", order: 2)
+notebook.show(p, caption: "Quadratic curve · plot 2D", order: 1)
 42
 '''
         document = {
@@ -70,7 +70,7 @@ value
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--plot-source", type=Path, default=Path("../sputnik-plot/src/plot.s"))
+    parser.add_argument("--plot-source", type=Path, default=Path("../plot/src/plot.s"))
     parser.add_argument("--board", action="store_true", help="Create an interactive dashboard sample")
     parser.add_argument("--bundle", action="store_true", help="Explicitly copy plot.s into modules instead of linking its directory")
     args = parser.parse_args()

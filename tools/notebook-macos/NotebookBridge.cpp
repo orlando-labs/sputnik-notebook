@@ -1,6 +1,8 @@
 #include "tools/notebook-macos/NotebookBridge.h"
 #include "tools/notebook-macos/NotebookExecution.h"
+#include "tools/notebook-worker/grants.h"
 #include "notebook/renderers.h"
+#include "runtime/context.h"
 
 #include "notebook/project.h"
 #include "tools/isputnik/session.h"
@@ -16,6 +18,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -30,7 +33,10 @@ struct SputnikNotebook {
   ProjectTabs tabs;
   std::size_t runtime_cursor = 0;
   bool commands_started = false;
+  bool external = false;
   std::unique_ptr<NotebookExecution> execution;
+  // Service runtimes never become editable sheets or persistent document cells.
+  std::map<std::string, std::unique_ptr<ProjectTab>> periodic;
 };
 struct SputnikNotebookControl { std::shared_ptr<NotebookExecutionControl> value; };
 
@@ -160,6 +166,10 @@ void append_output(std::string *out,
     append_json_string(out, events[index].stream);
     out->append(",\"text\":");
     append_json_string(out, events[index].text);
+    if (events[index].source.present) {
+      out->append(",\"source_file\":"); append_json_string(out, events[index].source.file);
+      out->append(",\"source_line\":" + std::to_string(events[index].source.line));
+    }
     out->push_back('}');
   }
   out->push_back(']');
@@ -340,17 +350,112 @@ void append_progress(std::string *out, const std::vector<sputnik::runtime::Noteb
   out->push_back(']');
 }
 
+void append_chart_series(std::string *out, const std::vector<sputnik::runtime::NotebookLiveEvent> &events) {
+  out->push_back('[');
+  for (std::size_t i = 0; i < events.size(); ++i) {
+    if (i) out->push_back(',');
+    const auto &chart = events[i];
+    out->append("{\"id\":"); append_json_string(out, chart.id);
+    out->append(",\"total_points\":" + std::to_string(chart.chart_total_points));
+    out->append(",\"replace_chart\":"); append_bool(out, chart.replace_chart);
+    out->append(",\"points\":[");
+    for (std::size_t point = 0; point < chart.chart_points.size(); ++point) {
+      if (point) out->push_back(',');
+      out->append("{\"x\":");
+      char buffer[64];
+      auto result = std::to_chars(buffer, buffer + sizeof(buffer), chart.chart_points[point][0],
+                                  std::chars_format::general, std::numeric_limits<double>::max_digits10);
+      if (result.ec != std::errc{}) throw std::runtime_error("could not serialize chart coordinate");
+      out->append(buffer, result.ptr);
+      out->append(",\"y\":");
+      result = std::to_chars(buffer, buffer + sizeof(buffer), chart.chart_points[point][1],
+                             std::chars_format::general, std::numeric_limits<double>::max_digits10);
+      if (result.ec != std::errc{}) throw std::runtime_error("could not serialize chart coordinate");
+      out->append(buffer, result.ptr);
+      out->push_back('}');
+    }
+    out->append("]}");
+  }
+  out->push_back(']');
+}
+
 void append_displays(std::string *out, const std::vector<sputnik::runtime::NotebookDisplay> &displays) {
   out->push_back('[');
   for (std::size_t i = 0; i < displays.size(); ++i) {
     if (i) out->push_back(',');
     const auto &display = displays[i];
     out->append("{\"mime\":"); append_json_string(out, display.mime);
+    out->append(",\"id\":"); append_json_string(out, display.id);
     out->append(",\"caption\":"); append_json_string(out, display.caption);
     out->append(",\"width\":" + std::to_string(display.width));
     out->append(",\"height\":" + std::to_string(display.height));
     out->append(",\"data\":"); append_json_string(out, display_base64(display.bytes));
     out->append(",\"plot_scene\":"); append_json_string(out, display.plot_scene);
+    out->push_back('}');
+  }
+  out->push_back(']');
+}
+
+void append_telemetry(std::string *out, const sputnik::runtime::RuntimeRunTelemetry &t) {
+  out->append("{\"revision\":" + std::to_string(t.revision) + ",\"dropped\":" + std::to_string(t.dropped) + ",\"active\":" + std::to_string(t.active) + ",\"total\":" + std::to_string(t.total) + ",\"sampled_ms\":" + std::to_string(t.sampled_ms));
+  out->append(",\"cpu_percent\":"); out->append(t.cpu_percent ? std::to_string(*t.cpu_percent) : "null");
+  out->append(",\"resident_bytes\":"); out->append(t.resident_bytes ? std::to_string(*t.resident_bytes) : "null");
+  out->append(",\"tasks\":[");
+  for (std::size_t i = 0; i < t.tasks.size(); ++i) {
+    if (i) out->append(","); const auto &task = t.tasks[i];
+    out->append("{\"id\":"); append_json_string(out, std::to_string(task.id));
+    out->append(",\"parent\":"); append_json_string(out, std::to_string(task.parent));
+    out->append(",\"cell\":"); append_json_string(out, std::to_string(task.cell));
+    out->append(",\"state\":"); append_json_string(out, task.state);
+    out->append(",\"error\":"); append_json_string(out, task.error);
+    out->append(",\"file\":"); append_json_string(out, task.file);
+    out->append(",\"line\":" + std::to_string(task.line) + ",\"elapsed_ms\":" + std::to_string(task.elapsed_ms) + "}");
+  }
+  out->append("]}");
+}
+void append_audio_controls(std::string *out, const std::vector<sputnik::runtime::NotebookLiveEvent> &events) {
+  out->append("[");
+  for (std::size_t i = 0; i < events.size(); ++i) {
+    if (i) out->append(","); const auto &c = events[i].audio_control;
+    out->append("{\"cell\":"); append_json_string(out, std::to_string(c.cell));
+    out->append(",\"channel\":"); append_json_string(out, c.channel);
+    auto integer = [&](const char *key, std::uint64_t n) { out->append(",\""); out->append(key); out->append("\":"); out->append(std::to_string(n)); };
+    integer("playback_revision", c.playback_revision); integer("seek_revision", c.seek_revision); integer("volume_revision", c.volume_revision); integer("playback", c.playback);
+    out->append(",\"position\":"); out->append(std::to_string(c.position));
+    out->append(",\"volume\":"); out->append(std::to_string(c.volume)); out->append("}");
+  }
+  out->append("]");
+}
+void append_audio_streams(std::string *out, const std::vector<sputnik::runtime::NotebookLiveEvent> &events) {
+  out->append("[");
+  for (std::size_t i = 0; i < events.size(); ++i) {
+    if (i) out->append(",");
+    const auto &event = events[i]; const auto &e = event.audio;
+    out->append("{\"id\":"); append_json_string(out, event.id);
+    out->append(",\"caption\":"); append_json_string(out, event.caption);
+    auto integer = [&](const char *key, std::uint64_t value) { out->append(",\""); out->append(key); out->append("\":"); out->append(std::to_string(value)); };
+    integer("token", e.token); integer("revision", e.revision); integer("offset", e.offset); integer("frames", e.frames);
+    integer("rate", e.rate); integer("channels", e.channels);
+    out->append(",\"sample_format\":"); append_json_string(out, e.sample_format);
+    out->append(",\"data\":"); append_json_string(out, display_base64(e.bytes));
+    out->append(",\"replace\":"); append_bool(out, e.replace);
+    out->append(",\"finished\":"); append_bool(out, e.finished);
+    out->append(",\"position\":"); out->append(std::to_string(e.player.position));
+    out->append(",\"volume\":"); out->append(std::to_string(e.player.volume));
+    out->append(",\"waveform\":"); append_bool(out, e.player.waveform);
+    out->append(",\"looped\":"); append_bool(out, e.player.loop);
+    out->append(",\"autoplay\":"); append_bool(out, e.player.autoplay); out->append("}");
+  }
+  out->append("]");
+}
+void append_image_series(std::string *out, const std::vector<sputnik::runtime::NotebookLiveEvent> &events) {
+  out->push_back('[');
+  for (std::size_t i = 0; i < events.size(); ++i) {
+    if (i) out->push_back(',');
+    const auto &series = events[i];
+    out->append("{\"id\":"); append_json_string(out, series.id);
+    out->append(",\"caption\":"); append_json_string(out, series.caption);
+    out->append(",\"images\":"); append_displays(out, series.images);
     out->push_back('}');
   }
   out->push_back(']');
@@ -378,6 +483,7 @@ void append_cell(std::string *out, const Cell &cell) {
   out->append(",\"is_container\":"); append_bool(out, cell.result_format.is_container);
   out->append(",\"truncated\":"); append_bool(out, cell.result_format.truncated);
   out->append(",\"pretty_truncated\":"); append_bool(out, cell.result_format.pretty_truncated);
+  out->append(",\"table_json\":"); append_json_string(out, cell.result_format.table_json);
   out->append("}");
   out->append(",\"error\":");
   append_json_string(out, cell.error);
@@ -385,6 +491,20 @@ void append_cell(std::string *out, const Cell &cell) {
   append_output(out, cell.output_events);
   out->append(",\"displays\":"); append_displays(out, cell.displays);
   out->append(",\"progress\":"); append_progress(out, cell.progress);
+  out->append(",\"charts\":"); append_chart_series(out, cell.charts);
+  out->append(",\"images\":"); append_image_series(out, cell.images);
+  out->append(",\"audio\":"); append_audio_streams(out, cell.audio);
+  out->append(",\"audio_controls\":"); append_audio_controls(out, cell.audio_controls);
+  out->append(",\"elapsed_ms\":"); out->append(cell.elapsed_ms ? std::to_string(*cell.elapsed_ms) : "null");
+  out->append(",\"stopwatches\":[");
+  for (std::size_t i = 0; i < cell.stopwatches.size(); ++i) {
+    if (i) *out += ',';
+    const auto &timer = cell.stopwatches[i];
+    *out += "{\"id\":"; append_json_string(out, timer.id);
+    *out += ",\"elapsed_ms\":" + std::to_string(timer.elapsed_ms) + ",\"done\":";
+    append_bool(out, timer.done); *out += '}';
+  }
+  *out += ']';
   out->append(",\"locals\":[");
   for (std::size_t index = 0; index < cell.locals.size(); ++index) {
     if (index != 0U)
@@ -418,6 +538,11 @@ std::string snapshot_json(const SputnikNotebook &notebook) {
   append_json_string(&out, project.document.title);
   out.append(",\"path\":");
   append_json_string(&out, project.directory.string());
+  const auto retention = project.document.extra.find("retain_cell_results");
+  if (retention != project.document.extra.end() && retention->second != "true" && retention->second != "false")
+    throw std::runtime_error("retain_cell_results must be a boolean");
+  out.append(",\"retain_cell_results\":");
+  append_bool(&out, retention == project.document.extra.end() || retention->second == "true");
   out.append(",\"selected_tab\":");
   append_json_string(&out, tab_id(*tabs[notebook.tabs.selected()]));
   out.append(",\"modified_count\":");
@@ -440,6 +565,8 @@ std::string snapshot_json(const SputnikNotebook &notebook) {
     out += ",\"type\":"; append_json_string(&out, input.type);
     out += ",\"value_json\":";
     append_json_string(&out, sputnik::notebook::serialize_project_input_value(notebook.tabs.inputs().at(input.id)));
+    out += ",\"default_json\":";
+    append_json_string(&out, sputnik::notebook::serialize_project_input_value(input.initial));
     if (input.minimum) out += ",\"minimum\":" + sputnik::notebook::serialize_project_input_value(*input.minimum);
     if (input.maximum) out += ",\"maximum\":" + sputnik::notebook::serialize_project_input_value(*input.maximum);
     out += '}';
@@ -448,6 +575,64 @@ std::string snapshot_json(const SputnikNotebook &notebook) {
   for (std::size_t i = 0; i < project.document.boards.size(); ++i) {
     if (i) out += ',';
     out += sputnik::notebook::serialize_project_board(project.document.boards[i]);
+  }
+  out += ']';
+  out += ",\"accepted_data\":[";
+  bool first_data = true;
+  for (const auto &[key, value] : notebook.tabs.inputs()) for (const auto &kind : {std::string("selection"), std::string("annotations"), std::string("audio_annotations")}) {
+    const auto prefix = sputnik::runtime::notebook_component_data_key(kind, "");
+    if (key.rfind(prefix, 0) != 0) continue;
+    if (!first_data) out += ','; first_data = false;
+    out += "{\"kind\":"; append_json_string(&out, kind);
+    out += ",\"id\":"; append_json_string(&out, key.substr(prefix.size()));
+    out += ",\"json\":"; append_json_string(&out, std::get<std::string>(value)); out += '}';
+  }
+  out += ']';
+  out += ",\"audio_inputs\":[";
+  bool first_audio_input = true;
+  for (const auto &tab : tabs) if (!tab->module && tab->session.project_audio_inputs) {
+    for (const auto &[id, input] : *tab->session.project_audio_inputs) {
+      if (!first_audio_input) out += ','; first_audio_input = false;
+      out += "{\"sheet\":"; append_json_string(&out, tab->session.project_sheet_id);
+      out += ",\"id\":"; append_json_string(&out, id);
+      out += ",\"name\":"; append_json_string(&out, input.name);
+      out += ",\"revision\":"; append_json_string(&out, input.revision);
+      out += ",\"panels\":";
+      std::vector<sputnik::runtime::NotebookDisplay> panels;
+      if (!input.audio.bytes.empty()) {
+        sputnik::runtime::NotebookDisplay panel; panel.mime = sputnik::runtime::kAudioMime;
+        panel.bytes = sputnik::runtime::audio_encode(input.audio); panel.caption = input.name; panel.id = id; panels.push_back(std::move(panel));
+      }
+      append_displays(&out, panels); out += '}';
+    }
+  }
+  out += ']';
+  out += ",\"image_inputs\":[";
+  bool first_image_input = true;
+  for (const auto &tab : tabs) if (!tab->module && tab->session.project_images) {
+    for (const auto &[id, input] : *tab->session.project_images) {
+      if (!first_image_input) out += ',';
+      first_image_input = false;
+      out += "{\"sheet\":"; append_json_string(&out, tab->session.project_sheet_id);
+      out += ",\"id\":"; append_json_string(&out, id);
+      out += ",\"caption\":"; append_json_string(&out, input.caption);
+      out += ",\"selected\":" + std::to_string(input.selected);
+      out += ",\"images\":"; append_displays(&out, input.images); out += '}';
+    }
+  }
+  out += ']';
+  out += ",\"periodic_results\":[";
+  bool first_periodic = true;
+  for (const auto &[key, tab] : notebook.periodic) {
+    if (!tab || tab->session.cells.empty()) continue;
+    if (!first_periodic) out += ',';
+    first_periodic = false;
+    const auto &cell = tab->session.cells[0];
+    out += "{\"id\":"; append_json_string(&out, key);
+    out += ",\"ok\":"; append_bool(&out, cell.ok);
+    out += ",\"result\":"; append_json_string(&out, cell.result);
+    out += ",\"error\":"; append_json_string(&out, cell.error);
+    out += '}';
   }
   out += ']';
   out.append(",\"tabs\":[");
@@ -474,6 +659,7 @@ std::string snapshot_json(const SputnikNotebook &notebook) {
     append_json_string(&out, session.environment_error);
     out.append(",\"environment_output\":");
     append_output(&out, session.environment_output);
+    out += ",\"telemetry\":"; append_telemetry(&out, session.run_telemetry);
     out.append(",\"selected_cell\":");
     if (session.selected < session.cells.size())
       append_json_string(&out,
@@ -486,6 +672,27 @@ std::string snapshot_json(const SputnikNotebook &notebook) {
       if (cell_index != 0U)
         out.push_back(',');
       append_cell(&out, session.cells[cell_index]);
+      const auto owner = session.cells[cell_index].id;
+      for (const auto &sheet : project.document.sheets) for (const auto &saved : sheet.cells) {
+        if (saved.id != owner || saved.kind != "code" || !saved.extra.count("cell_ui")) continue;
+        const auto &raw = saved.extra.at("cell_ui");
+        const auto ui = sputnik::notebook::parse_project_cell_ui(raw);
+        out.pop_back(); out += ",\"cell_ui\":" + raw + ",\"cell_inputs\":[";
+        for (std::size_t i = 0; i < ui.inputs.size(); ++i) {
+          const auto &input = ui.inputs[i]; if (i) out += ',';
+          out += "{\"id\":"; append_json_string(&out, input.id);
+          out += ",\"title\":"; append_json_string(&out, input.title);
+          out += ",\"type\":"; append_json_string(&out, input.type);
+          out += ",\"value_json\":";
+          append_json_string(&out, sputnik::notebook::serialize_project_input_value(notebook.tabs.inputs().at(sputnik::runtime::notebook_cell_input_key(owner, input.id))));
+          out += ",\"default_json\":";
+          append_json_string(&out, sputnik::notebook::serialize_project_input_value(input.initial));
+          if (input.minimum) out += ",\"minimum\":" + sputnik::notebook::serialize_project_input_value(*input.minimum);
+          if (input.maximum) out += ",\"maximum\":" + sputnik::notebook::serialize_project_input_value(*input.maximum);
+          out += '}';
+        }
+        out += "]}";
+      }
     }
     out.append("]}");
   }
@@ -579,30 +786,207 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
   if (notebook == nullptr)
     throw std::invalid_argument("notebook handle is null");
   const std::string action = require_text(action_raw, "action");
+  if (notebook->external && (action == "run" || action == "run_all" || action == "watch_run" || action == "apply" ||
+      action == "restart_worker" || action == "worker_grants" || action == "worker_environment" || action == "set_input" || action == "set_inputs" ||
+      action == "action_run" || action == "periodic_run" || action == "periodic_tick" || action == "watch_run"))
+    throw std::runtime_error("This operation must be handled by the remote backend.");
   notebook->commands_started = true;
-  if (notebook->execution && action == "set_input")
-    throw std::runtime_error("Project input execution is not yet supported in worker preview.");
+  if (action == "retain_cell_results") {
+    const auto value = require_text(text_raw, "retention setting");
+    if (value != "on" && value != "off") throw std::invalid_argument("retention setting must be on or off");
+    notebook->tabs.set_retain_cell_results(value == "on");
+    return;
+  }
   if (action == "add_dependency" || action == "remove_dependency") {
     const auto path = require_text(text_raw, "dependency path");
     if (action == "add_dependency") notebook->tabs.add_dependency(path);
     else notebook->tabs.remove_dependency(path);
     return;
   }
-  if (action == "set_input") {
-    (void)notebook->tabs.set_input(require_text(cell_raw, "input id"), require_text(text_raw, "value JSON"));
+  if (action == "set_input" || action == "set_inputs") {
+    const auto values = action == "set_inputs"
+        ? sputnik::notebook::parse_project_input_edits(require_text(text_raw, "input batch JSON"))
+        : std::map<std::string, std::string>{{require_text(cell_raw, "input id"), require_text(text_raw, "value JSON")}};
+    const bool changed = notebook->tabs.set_inputs(values, !notebook->execution);
+    if (changed && notebook->execution) notebook->execution->inputs_changed(notebook->tabs);
+    return;
+  }
+  if (action == "set_cell_inputs" || action == "save_cell_ui") {
+    SelectionRestore restore(notebook);
+    const auto wanted = parse_tab_id(tab_raw);
+    switch_to_index(notebook, find_tab_index(*notebook, wanted));
+    auto &session = notebook->tabs.active().session;
+    const auto owner = session.cells.at(find_cell_index(session, cell_raw)).id;
+    if (action == "save_cell_ui") notebook->tabs.save_cell_ui(owner, require_text(text_raw, "cell UI JSON"));
+    else {
+      const auto edits = sputnik::notebook::parse_project_input_edits(require_text(text_raw, "cell input batch JSON"));
+      const bool changed = notebook->tabs.set_cell_inputs(owner, edits, !notebook->execution && !notebook->external);
+      if (changed && notebook->external) {
+        const auto first = find_cell_index(session, cell_raw);
+        for (std::size_t i = first; i < session.cells.size(); ++i) if (session.cells[i].kind == "code") session.cells[i].dirty = true;
+      }
+      if (changed && notebook->execution && !notebook->external) notebook->execution->inputs_changed(notebook->tabs);
+    }
     return;
   }
   if (action == "save_board") {
-    notebook->tabs.save_board(sputnik::notebook::parse_project_board(require_text(text_raw, "board JSON")));
+    const auto board = sputnik::notebook::parse_project_board(require_text(text_raw, "board JSON"));
+    notebook->tabs.save_board(board);
+    for (auto entry = notebook->periodic.begin(); entry != notebook->periodic.end();) {
+      const auto prefix = board.id + ":";
+      if (entry->first.compare(0, prefix.size(), prefix) == 0 &&
+          [&] {
+            bool exists = false;
+            std::function<void(const std::vector<sputnik::notebook::ProjectComponent> &)> visit = [&](const auto &items) {
+              for (const auto &component : items) {
+                if ((component.kind == "periodic_work" || component.kind == "action") && entry->first == prefix + component.id) exists = true;
+                if (component.panels) for (const auto &panel : *component.panels) visit(panel.components);
+              }
+            };
+            visit(board.components); return !exists;
+          }()) {
+        if (notebook->execution && entry->second) notebook->execution->restart(*entry->second, "periodic:" + entry->first);
+        entry = notebook->periodic.erase(entry);
+      } else ++entry;
+    }
+    return;
+  }
+  if (action == "action_run" || action == "periodic_run" || action == "periodic_tick" || action == "periodic_dispose") {
+    const auto board_id = require_text(text_raw, "board id");
+    const auto component_id = require_text(cell_raw, "component id");
+    const auto key = board_id + ":" + component_id;
+    if (action == "periodic_dispose") {
+      const auto found = notebook->periodic.find(key);
+      if (found != notebook->periodic.end()) {
+        if (notebook->execution && found->second) notebook->execution->restart(*found->second, "periodic:" + key);
+        notebook->periodic.erase(found);
+      }
+      return;
+    }
+    const auto &project = notebook->tabs.project();
+    const auto board = std::find_if(project.document.boards.begin(), project.document.boards.end(),
+        [&](const auto &item) { return item.id == board_id; });
+    if (board == project.document.boards.end()) throw std::runtime_error("Periodic Work board unavailable");
+    const sputnik::notebook::ProjectComponent *component = nullptr;
+    std::function<void(const std::vector<sputnik::notebook::ProjectComponent> &)> find = [&](const auto &items) {
+      for (const auto &item : items) {
+        if (item.id == component_id && item.kind == (action == "action_run" ? "action" : "periodic_work")) component = &item;
+        if (item.panels) for (const auto &panel : *item.panels) find(panel.components);
+      }
+    };
+    find(board->components);
+    if (!component) throw std::runtime_error("Invocation component unavailable");
+    auto settings = sputnik::notebook::PeriodicWorkSettings{};
+    std::optional<sputnik::notebook::ProjectActionInvocation> invocation;
+    if (action == "action_run") {
+      invocation = sputnik::notebook::project_action_invocation(*component, notebook->tabs.inputs());
+      settings.module_id = std::get<std::string>(sputnik::notebook::parse_project_input_value(component->extra.at("module_id")));
+    } else settings = sputnik::notebook::project_periodic_work_settings(*component);
+    const auto module = std::find_if(project.document.modules.begin(), project.document.modules.end(),
+        [&](const auto &item) { return item.id == settings.module_id; });
+    if (module == project.document.modules.end()) throw std::runtime_error("Periodic Work module unavailable: " + settings.module_id);
+    for (std::size_t i = 0; i < notebook->tabs.tabs().size(); ++i)
+      if (notebook->tabs.tabs()[i]->module && notebook->tabs.modified(i))
+        throw std::runtime_error("Save modified module tabs before starting Periodic Work.");
+    const auto source = invocation ? invocation->source : "import " + settings.module_id + "\n" + settings.module_id + "." + settings.function + "()\n";
+    const auto bundled = load_project_bundled_sources(project);
+    auto &tab = notebook->periodic[key];
+    const auto same_sources = [](const auto &left, const auto &right) {
+      if (left.size() != right.size()) return false;
+      for (std::size_t i = 0; i < left.size(); ++i)
+        if (left[i].id != right[i].id || left[i].path != right[i].path || left[i].source != right[i].source ||
+            left[i].auto_import != right[i].auto_import) return false;
+      return true;
+    };
+    const bool changed = tab && (tab->session.cells.empty() || tab->session.project_sheet_id != board->sheet ||
+        tab->session.cells[0].source != source || !same_sources(tab->session.bundled_modules, bundled));
+    if (changed && action == "periodic_tick")
+      throw std::runtime_error("Modules changed. Start Periodic Work again to apply them.");
+    if (changed) {
+      if (notebook->execution) notebook->execution->restart(*tab, "periodic:" + key);
+      tab.reset();
+    }
+    if (!tab) {
+      auto candidate = std::make_unique<ProjectTab>();
+      load_project_into_session(&candidate->session, project, board->sheet);
+      Cell invocation;
+      invocation.id = sputnik::notebook::allocate_cell_id(); invocation.source = source; invocation.watch = false;
+      candidate->session.cells = {std::move(invocation)};
+      tab = std::move(candidate);
+    }
+    tab->session.project_inputs = invocation ? invocation->inputs : std::make_shared<const sputnik::runtime::NotebookInputSnapshot>(notebook->tabs.inputs());
+    if (notebook->execution) notebook->execution->run(notebook->tabs, *tab, "run", 0, "periodic:" + key, (action == "periodic_run" || action == "action_run"));
+    else {
+      auto token = std::make_shared<sputnik::runtime::RuntimeRunState>();
+      std::exception_ptr failure;
+      {
+        sputnik::runtime::RuntimeRunCancellationScope scope(token);
+        try { evaluate_from(&tab->session, 0, false, false, false); }
+        catch (...) { failure = std::current_exception(); token->request_cancel(); }
+        if (!tab->session.cells[0].ok) token->request_cancel();
+      }
+      token->close_root();
+      while (!token->wait_for_idle(std::chrono::milliseconds(100))) {}
+      if (failure) std::rethrow_exception(failure);
+      const auto failures = token->unobserved_failures();
+      if (!failures.empty()) {
+        tab->session.cells[0].ok = false;
+        tab->session.cells[0].error = failures[0].error_name + ": " + failures[0].message;
+      }
+    }
+    if (tab->session.status.find("Cancelled") != std::string::npos ||
+        tab->session.status.find("cancelled") != std::string::npos ||
+        tab->session.status.find("unobserved child task failure") != std::string::npos) {
+      tab->session.cells[0].ok = false;
+      tab->session.cells[0].error = tab->session.status;
+    }
+    if (!tab->session.cells[0].ok && tab->session.cells[0].error.empty())
+      tab->session.cells[0].error = tab->session.environment_error.empty() ? tab->session.status : tab->session.environment_error;
+    return;
+  }
+  if (action == "component_data_edit") {
+    notebook->tabs.edit_component_data(sputnik::notebook::parse_project_component_data_edit(require_text(text_raw, "component data edit JSON"))); return;
+  }
+  if (action == "restore_inputs") {
+    notebook->tabs.restore_inputs(sputnik::notebook::parse_project_input_edits(require_text(text_raw, "saved input JSON"))); return;
+  }
+  if (action == "audio_edit") {
+    notebook->tabs.edit_audio(sputnik::notebook::parse_project_audio_edit(require_text(text_raw, "audio edit JSON"))); return;
+  }
+  if (action == "image_edit") {
+    notebook->tabs.edit_images(sputnik::notebook::parse_project_image_edit(require_text(text_raw, "image edit JSON")));
+    return;
+  }
+  if (action == "image_select") {
+    const auto target = parse_tab_id(tab_raw);
+    if (target.module) throw std::runtime_error("image selection requires a sheet");
+    const auto value = sputnik::notebook::parse_project_input_value(require_text(text_raw, "image index"));
+    if (!std::holds_alternative<std::int64_t>(value) || std::get<std::int64_t>(value) < 0) throw std::runtime_error("invalid image index");
+    notebook->tabs.select_image(target.id, require_text(cell_raw, "image channel"), std::get<std::int64_t>(value));
     return;
   }
   if (action == "new_input") {
     notebook->tabs.create_input(sputnik::notebook::parse_project_input(require_text(text_raw, "input JSON")));
     return;
   }
+  if (action == "delete_input") {
+    notebook->tabs.delete_input(require_text(cell_raw, "input id"));
+    return;
+  }
 
   if (action == "new_sheet") {
-    notebook->tabs.create_sheet(require_text(text_raw, "text"));
+    const auto &sheets = notebook->tabs.project().document.sheets;
+    std::uint64_t number = sheets.size();
+    for (const auto &sheet : sheets) {
+      const std::string prefix = "Sheet ";
+      if (sheet.title.compare(0, prefix.size(), prefix) != 0) continue;
+      const auto suffix = sheet.title.substr(prefix.size());
+      std::uint64_t value = 0;
+      const auto parsed = std::from_chars(suffix.data(), suffix.data() + suffix.size(), value);
+      if (parsed.ec == std::errc{} && parsed.ptr == suffix.data() + suffix.size() && value < INT64_MAX)
+        number = std::max(number, value);
+    }
+    notebook->tabs.create_sheet(require_text(text_raw, "text"), "Sheet " + std::to_string(number + 1));
     return;
   }
   if (action == "new_module") {
@@ -628,18 +1012,42 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
   ProjectTab &tab = *notebook->tabs.tabs()[tab_index];
   Session &session = tab.session;
 
+  if (action == "set_cell_id") {
+    const auto index = find_cell_index(session, cell_raw);
+    require_sheet_cell_editable(tab, session.cells[index], action);
+    const auto text = require_text(text_raw, "Hard ID");
+    std::uint64_t replacement = 0;
+    const auto parsed = std::from_chars(text.data(), text.data() + text.size(), replacement);
+    if (text.empty() || parsed.ec != std::errc{} || parsed.ptr != text.data() + text.size())
+      throw std::invalid_argument("Hard ID must be an integer from 1 to 18446744073709551614.");
+    notebook->tabs.set_cell_id(session.cells[index].id, replacement);
+    return;
+  }
+
+  if (action == "worker_environment") {
+    if (!notebook->execution) throw std::runtime_error("Worker settings require isolated execution.");
+    notebook->execution->configure_environment(tab, text_raw ? text_raw : "");
+    return;
+  }
+
+  if (action == "worker_grants") {
+    if (!notebook->execution) throw std::runtime_error("Worker settings require isolated execution.");
+    notebook->execution->configure_grants(tab, text_raw ? text_raw : "");
+    return;
+  }
+
   if (action == "trust_native") {
     if (!notebook->execution) throw std::runtime_error("Native package execution requires an isolated worker.");
     notebook->execution->native_trusted = true;
     return;
   }
 
-  if (notebook->execution && (action == "run" || action == "run_all" || action == "apply" || action == "restart_worker")) {
+  if (notebook->execution && (action == "run" || action == "run_all" || action == "apply" || action == "restart_worker" || action == "watch_run")) {
     if (action == "restart_worker") { notebook->execution->restart(tab); return; }
     const auto index = action == "run" ? find_cell_index(session, cell_raw) : 0;
     if (action == "run" && session.cells[index].kind != "code")
       throw std::invalid_argument("Run applies only to code cells");
-    notebook->execution->run(notebook->tabs, tab, action, index);
+    notebook->execution->run(notebook->tabs, tab, action == "watch_run" ? "watch" : action, index);
     return;
   }
 
@@ -838,8 +1246,9 @@ SputnikNotebook *sputnik_notebook_open(const char *path, int create,
       std::string project_title = title == nullptr ? "Sputnik Notebook" : title;
       if (project_title.empty())
         project_title = "Sputnik Notebook";
-      project = sputnik::notebook::create_project(
-          path, sputnik::notebook::make_project_document(std::move(project_title)));
+      auto document = sputnik::notebook::make_project_document(std::move(project_title));
+      document.sheets.front().title = "Sheet 1";
+      project = sputnik::notebook::create_project(path, document);
     } else {
       project = sputnik::notebook::load_project(path);
     }
@@ -866,6 +1275,28 @@ void sputnik_notebook_string_free(char *value) {
   }
 }
 
+char *sputnik_notebook_normalize_grants(const char *text, char **error) {
+  if (error) *error = nullptr;
+  try {
+    return copy_c_string(sputnik::notebook::worker::grants_text(
+        sputnik::notebook::worker::parse_grants(text ? text : "")));
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
+char *sputnik_notebook_config_json(const char *text, int pretty, char **error) {
+  if (error) *error = nullptr;
+  try {
+    return copy_c_string(sputnik::notebook::project_config_json(text ? text : "", pretty != 0));
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
+char *sputnik_notebook_config_document(const char *text, const char *format, int pretty, char **error) {
+  if (error) *error = nullptr;
+  try {
+    return copy_c_string(sputnik::notebook::project_config_document(text ? text : "", format ? format : "json", pretty != 0));
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
 SputnikNotebookControl *sputnik_notebook_enable_worker(SputnikNotebook *notebook, const char *executable, char **error) {
   if (error) *error = nullptr;
   try {
@@ -887,24 +1318,210 @@ int sputnik_notebook_control_stop(SputnikNotebookControl *control, int force) {
   try { return control && control->value->stop(force != 0) ? 1 : 0; }
   catch (...) { return 0; }
 }
+void sputnik_notebook_control_prepare(SputnikNotebookControl *control) {
+  if (control) control->value->begin();
+}
+void sputnik_notebook_control_finish(SputnikNotebookControl *control) {
+  if (control) control->value->finish();
+}
 
-char *sputnik_notebook_control_live(SputnikNotebookControl *control) {
-  try {
-    if (!control) return nullptr;
-    const auto value = control->value->take_live();
-    if (!value) return nullptr;
-    std::string json = "{\"cells\":[";
+static char *presentation_live_json(const sputnik::notebook::worker::Presentation *value, const std::string &owner = {}) {
+    std::string json = "{\"tab\":";
+    append_json_string(&json, owner);
+    json += ",\"executing_cell\":";
+    append_json_string(&json, value->executing_cell ? std::to_string(value->executing_cell) : "");
+    json += ",\"telemetry_updated\":"; append_bool(&json, value->telemetry_updated);
+    json += ",\"telemetry\":"; append_telemetry(&json, value->telemetry);
+    json += ",\"cells\":[";
     for (std::size_t i = 0; i < value->cells.size(); ++i) {
       if (i) json += ',';
       const auto &cell = value->cells[i];
       json += "{\"id\":"; append_json_string(&json, std::to_string(cell.id));
+      json += ",\"output_updated\":"; append_bool(&json, cell.output_updated);
+      json += ",\"output\":"; append_output(&json, cell.output);
+      json += ",\"progress_updated\":"; append_bool(&json, cell.progress_updated);
+      json += ",\"displays_updated\":"; append_bool(&json, cell.displays_updated);
+      json += ",\"charts_updated\":"; append_bool(&json, cell.charts_updated);
+      json += ",\"images_updated\":"; append_bool(&json, cell.images_updated);
+      json += ",\"charts_reset\":"; append_bool(&json, cell.charts_reset);
       json += ",\"progress\":"; append_progress(&json, cell.progress);
       json += ",\"displays\":"; append_displays(&json, cell.displays);
+      json += ",\"charts\":"; append_chart_series(&json, cell.charts);
+      json += ",\"images\":"; append_image_series(&json, cell.images);
+      json += ",\"audio\":"; append_audio_streams(&json, cell.audio);
+      json += ",\"audio_controls\":"; append_audio_controls(&json, cell.audio_controls);
+      json += ",\"audio_controls_updated\":"; append_bool(&json, cell.audio_controls_updated);
+      json += ",\"audio_updated\":"; append_bool(&json, cell.audio_updated);
+      json += ",\"audio_reset\":"; append_bool(&json, cell.audio_reset);
+      json += ",\"elapsed_ms\":" + (cell.elapsed_ms ? std::to_string(*cell.elapsed_ms) : "null");
+      json += ",\"timing_running\":"; append_bool(&json, cell.timing_running);
+      json += ",\"stopwatches_updated\":"; append_bool(&json, cell.stopwatches_updated);
+      json += ",\"stopwatches\":[";
+      for (std::size_t j = 0; j < cell.stopwatches.size(); ++j) {
+        if (j) json += ',';
+        const auto &timer = cell.stopwatches[j];
+        json += "{\"id\":"; append_json_string(&json, timer.id);
+        json += ",\"elapsed_ms\":" + std::to_string(timer.elapsed_ms) + ",\"done\":";
+        append_bool(&json, timer.done); json += '}';
+      }
+      json += ']';
       json += '}';
     }
     json += "]}";
     return copy_c_string(json);
+}
+
+char *sputnik_notebook_control_live(SputnikNotebookControl *control) {
+  try {
+    if (!control) return nullptr;
+    std::string owner;
+    const auto value = control->value->take_live(&owner);
+    return value ? presentation_live_json(value.get(), owner) : nullptr;
   } catch (...) { return nullptr; }
+}
+
+char *sputnik_notebook_worker_pending(SputnikNotebook *notebook, char **error) {
+  if (error) *error = nullptr;
+  try {
+    if (!notebook || !notebook->execution || notebook->external) return nullptr;
+    const auto owner = notebook->execution->pending(notebook->tabs);
+    return owner.empty() ? nullptr : copy_c_string(owner);
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
+int sputnik_notebook_external(SputnikNotebook *notebook, int enabled, char **error) {
+  if (error) *error = nullptr;
+  try {
+    if (!notebook) throw std::invalid_argument("notebook handle is null");
+    if (enabled || notebook->external != (enabled != 0))
+      for (const auto &tab : notebook->tabs.tabs()) if (!tab->module) {
+        for (auto &cell : tab->session.cells) if (cell.kind == "code") cell.dirty = true;
+      }
+    notebook->external = enabled != 0;
+    return 1;
+  } catch (...) { report_current_exception(error); return 0; }
+}
+
+char *sputnik_notebook_export(SputnikNotebook *notebook, char **error) {
+  if (error) *error = nullptr;
+  try {
+    if (!notebook) throw std::invalid_argument("notebook handle is null");
+    auto project = notebook->tabs.project();
+    for (const auto &tab : notebook->tabs.tabs()) if (!tab->module)
+      project.document = project_document_from_session(tab->session, project);
+    std::string json = "{\"document\":";
+    const auto serialized = sputnik::notebook::serialize_project_document(project.document);
+    const auto saved = sputnik::notebook::serialize_project_document(sputnik::notebook::parse_project_document(project.baseline));
+    // Preserve the original JSON bytes when no document fields changed. Only
+    // an edited sheet needs a new serialization; unknown numeric fields retain
+    // their exact spelling in both cases.
+    append_json_string(&json, serialized == saved ? project.baseline : serialized);
+    json += ",\"modules\":{";
+    bool first = true;
+    for (const auto &tab : notebook->tabs.tabs()) if (tab->module) {
+      if (!first) json += ',';
+      first = false;
+      append_json_string(&json, tab->module->path);
+      json += ':';
+      append_json_string(&json, tab->session.cells.at(0).source);
+    }
+    return copy_c_string(json + "}}");
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
+char *sputnik_notebook_disk_export(SputnikNotebook *notebook, char **error) {
+  if (error) *error = nullptr;
+  try {
+    if (!notebook) throw std::invalid_argument("notebook handle is null");
+    SputnikNotebook disk(sputnik::notebook::load_project(notebook->tabs.project().directory));
+    return sputnik_notebook_export(&disk, error);
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
+int sputnik_notebook_restore_document(SputnikNotebook *notebook, const char *document, char **error) {
+  if (error) *error = nullptr;
+  try {
+    if (!notebook || !notebook->external) throw std::runtime_error("remote backend is not selected");
+    const auto restored = sputnik::notebook::parse_project_document(require_text(document, "restored document"));
+    std::vector<std::pair<Session *, std::vector<Cell>>> prepared;
+    for (const auto &tab : notebook->tabs.tabs()) if (!tab->module) {
+      const auto sheet = std::find_if(restored.sheets.begin(), restored.sheets.end(), [&](const auto &s) { return s.id == tab->session.project_sheet_id; });
+      if (sheet == restored.sheets.end()) throw std::runtime_error("local notebook structure changed; download a server copy");
+      std::vector<Cell> cells;
+      for (const auto &saved : sheet->cells) {
+        const auto original = std::find_if(tab->session.cells.begin(), tab->session.cells.end(), [&](const auto &c) { return c.id == saved.id; });
+        Cell cell = original == tab->session.cells.end() ? Cell{} : *original;
+        cell.id = saved.id; cell.kind = saved.kind; cell.source = saved.source;
+        cell.watch = saved.mode == sputnik::notebook::CellMode::Watch; cell.formatting = saved.formatting;
+        cell.cursor = cell.source.size(); cell.dirty = cell.kind == "code";
+        sputnik::notebook::reserve_cell_id(cell.id);
+        cells.push_back(std::move(cell));
+      }
+      prepared.emplace_back(&tab->session, std::move(cells));
+    }
+    for (auto &entry : prepared) {
+      entry.first->cells.swap(entry.second); entry.first->selected = 0;
+      entry.first->document_dirty = true;
+    }
+    return 1;
+  } catch (...) { report_current_exception(error); return 0; }
+}
+
+static sputnik::notebook::worker::Presentation remote_presentation(const unsigned char *bytes, size_t size) {
+  if (!bytes || size > sputnik::notebook::worker::kMaxPresentationBytes)
+    throw std::invalid_argument("invalid remote presentation size");
+  auto result = sputnik::notebook::worker::decode_presentation(std::string(reinterpret_cast<const char *>(bytes), size));
+  std::set<sputnik::notebook::CellId> ids;
+  for (const auto &cell : result.cells)
+    if (!ids.insert(cell.id).second) throw std::runtime_error("duplicate remote presentation cell");
+  return result;
+}
+
+char *sputnik_notebook_remote_live(const unsigned char *bytes, size_t size, char **error) {
+  if (error) *error = nullptr;
+  try { const auto value = remote_presentation(bytes, size); return presentation_live_json(&value); }
+  catch (...) { report_current_exception(error); return nullptr; }
+}
+
+int sputnik_notebook_remote_result(SputnikNotebook *notebook, const char *sheet,
+    const char *document, const unsigned char *bytes, size_t size, int stale, char **error) {
+  if (error) *error = nullptr;
+  try {
+    if (!notebook || !notebook->external) throw std::runtime_error("remote backend is not selected");
+    const auto id = require_text(sheet, "remote sheet");
+    const auto executed = sputnik::notebook::parse_project_document(require_text(document, "execution document"));
+    const auto origin = std::find_if(executed.sheets.begin(), executed.sheets.end(), [&](const auto &s) { return s.id == id; });
+    if (origin == executed.sheets.end()) throw std::runtime_error("remote execution sheet is missing");
+    const auto presentation = remote_presentation(bytes, size);
+    if (presentation.cells.size() != origin->cells.size()) throw std::runtime_error("remote sheet shape mismatch");
+    for (size_t i = 0; i < presentation.cells.size(); ++i)
+      if (presentation.cells[i].id != origin->cells[i].id) throw std::runtime_error("remote cell identity mismatch");
+    const auto target = std::find_if(notebook->tabs.tabs().begin(), notebook->tabs.tabs().end(),
+        [&](const auto &t) { return !t->module && t->session.project_sheet_id == id; });
+    if (target == notebook->tabs.tabs().end()) return 1; // A removed owner is never resurrected.
+    auto &session = (*target)->session;
+    auto cells = session.cells;
+    for (auto &cell : cells) {
+      const auto value = std::find_if(presentation.cells.begin(), presentation.cells.end(), [&](const auto &c) { return c.id == cell.id; });
+      if (value == presentation.cells.end()) continue;
+      const auto index = static_cast<size_t>(value - presentation.cells.begin());
+      cell.dirty = value->dirty || stale || cell.source != origin->cells[index].source;
+      cell.ok = value->ok; cell.result = value->result; cell.error = value->error;
+      cell.result_format = value->result_format; cell.locals = value->locals;
+      cell.output_events = value->output; cell.displays = value->displays;
+      cell.progress = value->progress; cell.charts = value->charts; cell.images = value->images; cell.audio = value->audio; cell.audio_controls = value->audio_controls;
+      cell.elapsed_ms = value->elapsed_ms; cell.stopwatches = value->stopwatches;
+      cell.error_ranges = value->error_ranges; cell.errors = value->errors; cell.selected_error = 0;
+      cell.watch_epoch = value->watch_epoch; cell.watch_event_count = value->watch_event_count;
+    }
+    session.run_telemetry = presentation.telemetry;
+    session.cells.swap(cells);
+    session.status = presentation.status;
+    session.environment_error = presentation.environment_error;
+    session.environment_output = presentation.environment_output;
+    session.environment_stale = presentation.environment_stale || stale;
+    return 1;
+  } catch (...) { report_current_exception(error); return 0; }
 }
 
 char *sputnik_notebook_snapshot(SputnikNotebook *notebook, char **error) {
@@ -958,7 +1575,7 @@ int sputnik_notebook_pump(SputnikNotebook *notebook, int *next_delay_ms,
     if (notebook == nullptr)
       throw std::invalid_argument("notebook handle is null");
 
-    if (notebook->execution) return 1; // No hidden local evaluation in worker mode.
+    if (notebook->execution || notebook->external) return 1; // No hidden local evaluation.
     const SessionActivityResult hints =
         notebook->tabs.activity_waiter().wait(std::chrono::milliseconds(0));
     if (hints.shutdown)

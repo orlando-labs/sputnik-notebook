@@ -1,5 +1,6 @@
 #pragma once
 #include "tools/notebook-worker/protocol.h"
+#include "tools/notebook-worker/environment.h"
 #include <memory>
 #include <mutex>
 #include <atomic>
@@ -19,7 +20,10 @@ public:
   ~Process();
   Process(const Process &) = delete;
   Process &operator=(const Process &) = delete;
-  void start(const std::string &executable);
+  void start(const std::string &executable, const std::string &working_directory = {},
+             const std::vector<std::string> &grants = {},
+             const std::string &environment_directory = {});
+  pid_t pid() { std::lock_guard<std::mutex> lock(control_mutex_); return pid_; }
   RequestId send(Kind kind, std::vector<std::string> fields = {});
   std::optional<Message> receive(std::chrono::milliseconds timeout);
   bool request_stop(RequestId request);
@@ -38,6 +42,7 @@ private:
   std::uint64_t in_flight_ = 0;
   std::atomic<std::uint64_t> last_sent_{0};
   std::optional<int> exit_;
+  Environment environment_;
 };
 constexpr int kDataFd = 198;
 constexpr int kControlFd = 199;

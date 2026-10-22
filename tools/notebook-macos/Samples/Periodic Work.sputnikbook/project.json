@@ -1,0 +1,35 @@
+{
+  "format": "sputnik-notebook",
+  "version": 2,
+  "title": "Periodic Work",
+  "active_sheet": "main",
+  "sheets": [{"id": "main", "title": "Controller", "cells": [
+    {"id": "1", "kind": "code", "source": "# The service calls jobs.tick() independently of this sheet.\n", "mode": "manual"}
+  ]}],
+  "modules": [{"id": "jobs", "path": "modules/jobs.s"}],
+  "auto_imports": [],
+  "inputs": [],
+  "boards": [{
+    "id": "jobs_board",
+    "title": "Periodic Jobs",
+    "sheet": "main",
+    "columns": 2,
+    "rows": [],
+    "components": [{
+      "id": "counter",
+      "kind": "periodic_work",
+      "title": "Counter",
+      "module_id": "jobs",
+      "function": "tick",
+      "period_seconds": 1,
+      "timing": "fixed_delay",
+      "retention": "tail",
+      "tail_limit": 25,
+      "store_values": true,
+      "store_errors": true,
+      "run_immediately": true,
+      "stop_on_error": false,
+      "pause_when_hidden": true
+    }]
+  }]
+}

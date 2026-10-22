@@ -18,13 +18,31 @@ struct CellPresentation {
   ResultFormat result_format;
   std::vector<LocalView> locals;
   std::vector<runtime::RuntimeTextOutputEvent> output;
+  bool output_updated = true;
+  std::uint64_t output_revision = 0;
   std::vector<runtime::NotebookDisplay> displays;
   std::vector<runtime::NotebookLiveEvent> progress;
+  std::vector<runtime::NotebookLiveEvent> charts;
+  std::vector<runtime::NotebookLiveEvent> images;
+  std::vector<runtime::NotebookLiveEvent> audio;
+  bool audio_updated = true, audio_reset = false;
+  std::vector<runtime::NotebookLiveEvent> audio_controls;
+  bool audio_controls_updated = true;
+  std::vector<runtime::NotebookLiveEvent> stopwatches;
+  bool stopwatches_updated = false;
+  std::optional<std::uint64_t> elapsed_ms;
+  bool timing_running = false;
+  bool images_updated = true;
+  bool displays_updated = true, progress_updated = true, charts_updated = true;
+  bool charts_reset = false;
   std::uint64_t watch_epoch = 0, watch_event_count = 0;
   std::vector<CodeErrorRange> error_ranges;
   std::vector<CellErrorView> errors;
 };
 struct Presentation {
+  // Current root evaluation, independent of which cells publish live output.
+  // Zero denotes environment preparation or no active cell.
+  CellId executing_cell = 0;
   // Root cell status remains independent from descendant outcomes. A host must
   // check cancellation and these failures as well as root diagnostics. Reading
   // task status never consumes a failure; wait/result/failure retrieval does.
@@ -34,12 +52,15 @@ struct Presentation {
   std::vector<runtime::RuntimeTextOutputEvent> environment_output;
   std::vector<runtime::RuntimeRunTaskFailure> unobserved_task_failures;
   std::vector<CellPresentation> cells;
+  runtime::RuntimeRunTelemetry telemetry;
+  bool telemetry_updated = true;
 };
 Presentation presentation_from_session(
     const Session &, const std::map<CellId, std::uint64_t> &source_revisions,
     bool cancelled);
 std::string encode_presentation(const Presentation &);
 Presentation decode_presentation(const std::string &);
+void merge_live_presentation(Presentation &target, Presentation update);
 void send_presentation(Channel &, std::uint64_t generation, std::uint64_t request,
                        const Presentation &, std::chrono::milliseconds timeout,
                        bool live = false);
@@ -56,6 +77,7 @@ private:
   std::uint64_t generation_, request_;
   bool live_;
   std::size_t expected_ = 0;
+  std::string schema_;
   std::string bytes_;
 };
 

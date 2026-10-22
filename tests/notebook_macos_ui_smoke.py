@@ -41,9 +41,13 @@ def main():
         source = json.dumps(manifest)
         (project / "project.json").write_text(source)
         png = root / "notebook.png"
+        dock_png = root / "notebook-dock-icon.png"
         flags = ["--isolated-worker"] if "--isolated-worker" in sys.argv[2:] else []
+        if "--theme-smoke-test" in sys.argv[2:]:
+            flags.append("--theme-smoke-test")
         result = subprocess.run([str(executable), *flags, "--smoke-test", str(project),
-                                 "--snapshot-png", str(png)],
+                                 "--snapshot-png", str(png),
+                                 "--snapshot-dock-icon-png", str(dock_png)],
                                 capture_output=True, text=True, timeout=60)
         print(result.stdout, end="")
         if result.returncode != 0:
@@ -55,8 +59,13 @@ def main():
                       file=sys.stderr)
             raise SystemExit(result.returncode)
         assert "notebook macOS UI smoke ok" in result.stdout
+        assert "notebook Dock icon smoke ok" in result.stdout
+        if "--theme-smoke-test" in flags:
+            assert "notebook theme switching smoke ok" in result.stdout
         assert png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
         assert png.stat().st_size > 10_000, "native view did not render"
+        assert dock_png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+        assert dock_png.stat().st_size > 500, "Dock icon did not render"
         assert (project / "project.json").read_text() == source, "Run must not save"
 
 

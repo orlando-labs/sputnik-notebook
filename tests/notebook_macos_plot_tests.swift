@@ -81,6 +81,17 @@ private enum NotebookPlotTests {
         let originalPNG = scene.png(view: scene.initialViewport, width: 800, height: 540)!
         let zoomPNG = scene.png(view: view, width: 800, height: 540)!
         precondition(originalPNG != zoomPNG && zoomPNG.count > 1000)
+        let streamFixture = fixture.deletingLastPathComponent().appendingPathComponent("chart-stream-scene.json")
+        if FileManager.default.fileExists(atPath: streamFixture.path) {
+            let streamJSON = try String(contentsOf: streamFixture, encoding: .utf8)
+            let streamPanel = NotebookFigurePanel(plot_scene: streamJSON, mime: "application/vnd.sputnik.plot+json",
+                caption: "Async loss", width: 900, height: 420, data: Data())
+            precondition(streamPanel.scene?.initialViewport.values == [0, 0, 2999, 10])
+            precondition(streamPanel.scene?.title == "Loss \"curve\"")
+            precondition(streamPanel.image() != nil, "native stream renders and exports without a source PNG")
+            let detail = streamPanel.scene!.png(view: PlotViewport([1000, 2, 2000, 8])!, width: 900, height: 420)!
+            precondition(NSBitmapImageRep(data: detail)?.pixelsWide == 900, "stream uses the same zoom/export renderer")
+        }
         let bitmap = NSBitmapImageRep(data: zoomPNG)!
         precondition(bitmap.pixelsWide == 800 && bitmap.pixelsHigh == 540)
         // The line starts outside the zoom. Clipping must not paint the margin.

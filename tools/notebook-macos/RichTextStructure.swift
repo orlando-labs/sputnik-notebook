@@ -125,7 +125,7 @@ enum RichTextStructure {
         block.setContentWidth(100 / CGFloat(table.numberOfColumns), type: .percentageValueType)
         block.setWidth(7, type: .absoluteValueType, for: .padding)
         block.setWidth(0.75, type: .absoluteValueType, for: .border)
-        block.setBorderColor(NSColor(calibratedWhite: 0.76, alpha: 1))
+        block.setBorderColor(NotebookPalette.nativeRule)
         block.setValue(24, type: .absoluteValueType, for: .minimumHeight)
         return block
     }

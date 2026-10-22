@@ -10,11 +10,12 @@
 namespace sputnik::notebook::worker {
 // Private, versioned host/worker protocol. Payloads are immutable bytes, never
 // runtime Values/pointers. The limit includes all fields of a single message.
-constexpr std::uint16_t kProtocolVersion = 8;
+constexpr std::uint16_t kProtocolVersion = 17;
 constexpr std::size_t kMaxMessageBytes = 8U * 1024U * 1024U;
 enum class Kind : std::uint16_t {
   Ready = 1, Load, Source, Run, Apply, Shutdown, Started, Result, Error, Stop, Draining,
-  SnapshotBegin, SnapshotChunk, Sync, LiveBegin, LiveChunk, LiveEnd
+  SnapshotBegin, SnapshotChunk, Sync, LiveBegin, LiveChunk, LiveEnd, Inputs,
+  LoadModule, Poll, Watch
 };
 struct Message {
   Kind kind = Kind::Error;

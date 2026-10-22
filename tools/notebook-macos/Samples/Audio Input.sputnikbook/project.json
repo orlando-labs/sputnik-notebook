@@ -1,0 +1,78 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "Audio Input / Recorder",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Аудио",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from audio import AudioTrack\naccepted = AudioTrack.from_input(\"voice\")\nnotebook.player(accepted, id: \"accepted\", caption: \"Accepted Audio Input\")\n42\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "inputs": [],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ],
+  "boards": [
+    {
+      "id": "audio",
+      "title": "Audio Input / Recorder",
+      "sheet": "main",
+      "columns": 1,
+      "rows": [
+        {
+          "id": "input"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "players"
+        }
+      ],
+      "components": [
+        {
+          "id": "voice_input",
+          "kind": "audio_input",
+          "title": "Аудиовход",
+          "audio_id": "voice",
+          "audio_asset": "audio/example.wav",
+          "audio_name": "Example.wav",
+          "audio_recording": true,
+          "row": "input",
+          "span": 12
+        },
+        {
+          "id": "run",
+          "kind": "run",
+          "title": "Опубликовать аудио",
+          "cell": "1",
+          "row": "controls",
+          "span": 12
+        },
+        {
+          "id": "accepted_player",
+          "kind": "audio",
+          "title": "Принятый вход",
+          "cell": "1",
+          "audio_id": "accepted",
+          "row": "players",
+          "span": 12
+        }
+      ]
+    }
+  ]
+}

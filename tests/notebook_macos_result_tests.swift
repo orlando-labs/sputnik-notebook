@@ -32,8 +32,8 @@ private enum NotebookResultTests {
         // Measure actual SwiftUI wrapping, including width changes while the
         // same preview stays mounted (as it does underneath an expanded view).
         var measuredNatural: CGFloat = 0, measuredPreview: CGFloat = 0
-        func previewView(_ text: String) -> NotebookResultPreview {
-            NotebookResultPreview(text: text) { measuredNatural = $0; measuredPreview = $1 }
+        func previewView(_ text: String, wrapsLines: Bool = true) -> NotebookResultPreview {
+            NotebookResultPreview(text: text, wrapsLines: wrapsLines) { measuredNatural = $0; measuredPreview = $1 }
         }
         let wrapping = String(repeating: "word ", count: 80)
         let host = NSHostingView(rootView: previewView(wrapping))
@@ -41,9 +41,9 @@ private enum NotebookResultTests {
                                          styleMask: [.titled, .resizable], backing: .buffered, defer: false)
         measurementWindow.contentView = host
         func settle() {
-            host.layoutSubtreeIfNeeded()
+            measurementWindow.contentView?.layoutSubtreeIfNeeded()
             RunLoop.main.run(until: Date().addingTimeInterval(0.08))
-            host.layoutSubtreeIfNeeded()
+            measurementWindow.contentView?.layoutSubtreeIfNeeded()
         }
         settle()
         precondition(measuredPreview > 0 && !NotebookResultLayout.canExpand(text: wrapping, naturalHeight: measuredNatural, previewHeight: measuredPreview),
@@ -51,12 +51,70 @@ private enum NotebookResultTests {
         measurementWindow.setContentSize(NSSize(width: 170, height: 400)); settle()
         precondition(NotebookResultLayout.canExpand(text: wrapping, naturalHeight: measuredNatural, previewHeight: measuredPreview),
                      "narrow width hides lines even below the character budget")
+        host.rootView = previewView(wrapping, wrapsLines: false); settle()
+        precondition(measuredPreview > 0 && measuredPreview < 30 && measuredNatural == measuredPreview,
+                     "horizontal preview keeps a long logical line on one visual line")
+        precondition(host.frame.width == 170 && !NotebookResultLayout.canExpand(text: wrapping, naturalHeight: measuredNatural, previewHeight: measuredPreview),
+                     "horizontal overflow scrolls inside the viewport without a disclosure")
+        host.rootView = previewView("1\n2\n3\n4\n5\n6\n7", wrapsLines: false); settle()
+        precondition(NotebookResultLayout.canExpand(text: "1\n2\n3\n4\n5\n6\n7", naturalHeight: measuredNatural, previewHeight: measuredPreview),
+                     "disabling wrapping retains the collapsed logical-line budget")
+        host.rootView = previewView(wrapping); settle()
+        precondition(NotebookResultLayout.canExpand(text: wrapping, naturalHeight: measuredNatural, previewHeight: measuredPreview),
+                     "re-enabling wrapping measures the current narrow viewport")
         measurementWindow.setContentSize(NSSize(width: 900, height: 400)); settle()
         precondition(!NotebookResultLayout.canExpand(text: wrapping, naturalHeight: measuredNatural, previewHeight: measuredPreview),
                      "widening removes obsolete disclosure")
         host.rootView = previewView("42"); settle()
         precondition(!NotebookResultLayout.canExpand(text: "42", naturalHeight: measuredNatural, previewHeight: measuredPreview),
                      "a shorter replacement cannot retain disclosure state")
+
+        let console = String(repeating: "0123456789 ", count: 80) + "needle\nsecond line"
+        let nativeHost = NSHostingView(rootView: NotebookResultText(text: console, matches: [], selectedMatch: 0))
+        measurementWindow.setContentSize(NSSize(width: 220, height: 120))
+        measurementWindow.contentView = nativeHost; settle()
+        func textScroll(in root: NSView) -> NSScrollView? {
+            if let scroll = root as? NSScrollView, scroll.documentView is NSTextView { return scroll }
+            return root.subviews.lazy.compactMap { textScroll(in: $0) }.first
+        }
+        let scroll = textScroll(in: nativeHost)!
+        let nativeText = scroll.documentView as! NSTextView
+        func textHeight() -> CGFloat {
+            nativeText.layoutManager!.ensureLayout(for: nativeText.textContainer!)
+            return nativeText.layoutManager!.usedRect(for: nativeText.textContainer!).height
+        }
+        let wrappedHeight = textHeight()
+        precondition(wrappedHeight > 100 && nativeText.frame.width <= scroll.contentSize.width + 1)
+        nativeHost.rootView = NotebookResultText(text: console, matches: [], selectedMatch: 0, wrapsLines: false); settle()
+        precondition(nativeText.string == console && textHeight() < 40, "unwrapped native text preserves logical lines")
+        precondition(scroll.hasHorizontalScroller && nativeText.frame.width > scroll.contentSize.width * 2,
+                     "unwrapped document exposes its real width for horizontal scrolling")
+        scroll.contentView.scroll(to: NSPoint(x: 300, y: 0)); scroll.reflectScrolledClipView(scroll.contentView)
+        precondition(scroll.contentView.bounds.minX > 0, "long output can scroll horizontally")
+        nativeText.setSelectedRange(NSRange(location: 3, length: 5))
+        nativeHost.rootView = NotebookResultText(text: console, matches: [], selectedMatch: 0); settle()
+        precondition(!scroll.hasHorizontalScroller && scroll.contentView.bounds.minX == 0 &&
+                     nativeText.frame.width <= scroll.contentSize.width + 1 && textHeight() == wrappedHeight,
+                     "re-enabling wrapping restores viewport width and clears horizontal offset")
+        precondition(nativeText.selectedRange() == NSRange(location: 3, length: 5), "wrapping preserves selection")
+        let consoleMatches = NotebookResultSearch.matches(in: console, query: "needle")
+        nativeHost.rootView = NotebookResultText(text: console, matches: consoleMatches, selectedMatch: 0, wrapsLines: false); settle()
+        precondition(scroll.contentView.bounds.minX > 0, "search reveals a match beyond the viewport horizontally")
+        precondition(nativeText.textStorage!.attribute(.backgroundColor, at: consoleMatches[0].location, effectiveRange: nil) != nil,
+                     "unwrapped search highlights the original text")
+        nativeHost.rootView = NotebookResultText(text: console, matches: consoleMatches, selectedMatch: 0); settle()
+        nativeHost.rootView = NotebookResultText(text: console, matches: consoleMatches, selectedMatch: 0, wrapsLines: false); settle()
+        precondition(scroll.contentView.bounds.minX > 0, "changing wrapping keeps the active search match visible")
+        nativeHost.rootView = NotebookResultText(text: "42", matches: [], selectedMatch: 0, wrapsLines: false); settle()
+        precondition(nativeText.string == "42" && scroll.contentView.bounds.minX <= 0 &&
+                     nativeText.frame.width <= scroll.contentSize.width && textHeight() < 30,
+                     "a shorter unwrapped result clears obsolete horizontal overflow")
+        let unwrappedHost = NSHostingView(rootView: NotebookResultText(text: console, matches: [], selectedMatch: 0, wrapsLines: false))
+        measurementWindow.contentView = unwrappedHost; settle()
+        let initialScroll = textScroll(in: unwrappedHost)!
+        precondition(initialScroll.hasHorizontalScroller && initialScroll.contentView.bounds.minX == 0 &&
+                     initialScroll.documentView!.frame.width > initialScroll.contentSize.width * 2,
+                     "opening an expanded unwrapped result starts at the first character")
         measurementWindow.orderOut(nil)
         let view = NSTextView(frame: NSRect(x: 0, y: 0, width: 500, height: 260))
         let coordinator = NotebookResultText.Coordinator()

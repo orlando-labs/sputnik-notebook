@@ -1,0 +1,65 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "Streaming PCM",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Аудио",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from audio import AudioTrack\nimport task\nstream = AudioTrack.stream(sample_format: :s16le, sample_rate: 24000, layout: :mono)\nnotebook.player(stream, id: \"stream\", volume: 0.1)\nchunk = fs.read_bytes(\"chunk.pcm\")\n[0,1,2,3,4,5,6,7,8,9].each |i|:\n  stream.append(chunk)\n  notebook.progress(\"audio\", i + 1, 10, \"PCM chunks\", false)\n  task.sleep(150)\nstream.finish()\nnotebook.progress(\"audio\", 10, 10, \"PCM chunks\", true)\n42\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "inputs": [],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ],
+  "boards": [
+    {
+      "id": "audio",
+      "title": "Streaming PCM",
+      "sheet": "main",
+      "columns": 1,
+      "rows": [
+        {
+          "id": "controls"
+        },
+        {
+          "id": "players"
+        }
+      ],
+      "components": [
+        {
+          "id": "run",
+          "kind": "run",
+          "title": "Опубликовать аудио",
+          "cell": "1",
+          "row": "controls",
+          "span": 12
+        },
+        {
+          "id": "waveform_player",
+          "kind": "audio",
+          "title": "PCM stream",
+          "cell": "1",
+          "audio_id": "stream",
+          "show_waveform": true,
+          "row": "players",
+          "span": 12
+        }
+      ]
+    }
+  ]
+}

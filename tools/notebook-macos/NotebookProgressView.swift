@@ -22,11 +22,11 @@ struct NotebookProgressView: View {
                         Spacer()
                         Text(complete ? "Finished" : item.done || !running ? "Stopped" : "Running")
                             .font(.system(size: 10, weight: .medium))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(NotebookPalette.muted)
                     }
                     if item.total > 0 {
                         ProgressView(value: min(item.current, item.total), total: item.total)
-                            .tint(complete ? Color.green : Color.accentColor)
+                            .tint(complete ? NotebookPalette.success : NotebookPalette.sputnik)
                     } else if running && !item.done {
                         ProgressView().controlSize(.small)
                     }
@@ -42,13 +42,13 @@ struct NotebookProgressView: View {
                         }
                     }
                     .font(.system(size: 11, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(NotebookPalette.muted)
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(item.description): \(number(item.current)) of \(number(item.total))")
             }
         }
         .padding(13)
-        .background(Color.accentColor.opacity(0.055), in: RoundedRectangle(cornerRadius: 9))
+        .background(NotebookPalette.sputnik.opacity(0.055), in: RoundedRectangle(cornerRadius: 9))
     }
 }

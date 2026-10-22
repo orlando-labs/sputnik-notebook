@@ -79,7 +79,7 @@ static void scope_tests() {
 int main(int argc, char **argv) {
   collector_tests();
   scope_tests();
-  require(argc == 2 || argc == 3, "pass sputnik-plot src/plot.s and optional snapshot output");
+  require(argc == 2 || argc == 3, "pass plot src/plot.s and optional snapshot output");
   const auto package = std::filesystem::canonical(argv[1]).parent_path().parent_path();
   char pattern[] = "/tmp/sputnik-notebook-plot-XXXXXX";
   const auto temp = mkdtemp(pattern);
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
     std::cerr << json.substr(0, 5000) << '\n';
   }
   require(json.find("\"result\":\"42\"") != std::string::npos && baseline.find("iVBOR") != std::string::npos,
-          "real sputnik-plot Figure must render PNG through notebook.show");
+          "real plot Figure must render PNG through notebook.show");
   require(baseline.find("early") < baseline.find("equal") && baseline.find("equal") < baseline.find("late"), "ordered subfigures");
   require(baseline.find("\\\"version\\\":1") != std::string::npos && baseline.find("plot_scene") != std::string::npos,
           "real Figure exports an immutable interactive scene through JSON");
@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
             "scheduler tasks must not inherit synchronous display publication");
   }
   command(host, "source", "notebook.show(42)\n"); command(host, "run_all");
-  require(state(host).find("currently supports sputnik-plot") != std::string::npos, "unsupported object gives a clear error");
+  require(state(host).find("currently supports plot") != std::string::npos, "unsupported object gives a clear error");
   command(host, "source", "notebook.show(figure(width: 9000), order: 1)\n"); command(host, "run_all");
   require(state(host).find("dimensions must fit") != std::string::npos, "oversized images rejected before rendering");
   command(host, "source", "notebook.show(figure(width: 320, height: 240), caption: 42)\n"); command(host, "run_all");

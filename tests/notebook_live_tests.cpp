@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <limits>
+#include <fstream>
 
 namespace {
 
@@ -127,12 +129,117 @@ void test_payload_limits() {
          "replacement remains possible at quota");
 }
 
+void test_board_point_deltas_and_rolling_window() {
+  NotebookLiveStore store;
+  const auto generation = store.begin_cell(21);
+  std::uint64_t cursor = 0;
+  NotebookLiveStore::Delta delta;
+  store.append_board_chart(21, generation, "loss", {0, -1});
+  expect(store.changes_since(&cursor, &delta) && delta.events.size() == 1 &&
+         delta.events[0].replace_chart && delta.events[0].chart_points.size() == 1 &&
+         delta.resets == std::vector<std::uint64_t>{21}, "first board sample accompanies its reset");
+  store.append_board_chart(21, generation, "loss", {1, -2});
+  expect(store.changes_since(&cursor, &delta) && delta.events.size() == 1 &&
+         !delta.events[0].replace_chart && delta.events[0].chart_points.size() == 1 &&
+         delta.events[0].chart_total_points == 2, "later samples are incremental numeric deltas");
+  expect(store.snapshot().size() == 1 && store.snapshot()[0].chart_points.size() == 2,
+         "whole-store snapshots include board points");
+  std::vector<sputnik::runtime::NotebookLiveEvent> snapshot;
+  std::uint64_t snapshot_cursor = 0;
+  expect(store.snapshot_if_changed(&snapshot_cursor, &snapshot) && snapshot[0].replace_chart &&
+         snapshot[0].chart_points.size() == 2, "changed-store snapshot carries complete chart history");
+  for (int i = 2; i < 65536; ++i) store.append_board_chart(21, generation, "loss", {double(i), 1});
+  store.changes_since(&cursor, &delta);
+  store.append_board_chart(21, generation, "loss", {65536, 99});
+  expect(store.changes_since(&cursor, &delta) && delta.events[0].chart_points.size() == 1 &&
+         !delta.events[0].replace_chart, "rolling window sends the new sample without retransmitting history");
+  for (int i = 65537; i <= 524288; ++i) store.append_board_chart(21, generation, "loss", {double(i), 2});
+  const auto rolling = store.snapshot_cell(21);
+  expect(rolling[0].chart_total_points == 524289 && rolling[0].chart_points.size() == 65536 &&
+         rolling[0].chart_points.back()[0] == 524288, "retained-point budget does not cap total published samples");
+  const auto next = store.begin_cell(21);
+  store.append_board_chart(21, next, "accuracy", {1, 98});
+  expect(store.changes_since(&cursor, &delta) && delta.resets.size() == 1 &&
+         delta.events.size() == 1 && delta.events[0].id == "accuracy", "rerun retires channels no longer published");
+  bool rejected = false;
+  try { store.append_board_chart(21, generation, "loss", {0, 1}); }
+  catch (const std::invalid_argument &) { rejected = true; }
+  expect(rejected, "previous generation cannot publish board samples");
+  rejected = false;
+  try { store.append_board_chart(21, next, std::string("bad\0id", 6), {0, 1}); }
+  catch (const std::invalid_argument &) { rejected = true; }
+  expect(rejected, "board channel rejects embedded NUL");
+}
+
 } // namespace
 
-int main() {
+int main(int argc, char **argv) {
   test_replacement_and_immutable_snapshot();
   test_throttle_terminal_frame_and_stale_generation();
   test_tls_scope_and_close();
   test_payload_limits();
+  test_board_point_deltas_and_rolling_window();
+  {
+    NotebookLiveStore store;
+    const auto generation = store.begin_cell(12);
+    sputnik::runtime::NotebookChartStyle style; style.id = "loss"; style.title = "Loss \"curve\"";
+    style.throttle_ms = 3600000;
+    const auto chart = store.begin_chart(12, generation, style);
+    std::uint64_t cursor = 0;
+    NotebookLiveStore::Delta delta;
+    expect(store.changes_since(&cursor, &delta) && delta.resets == std::vector<std::uint64_t>{12}, "initial delta records cell reset");
+    for (int i = 0; i < 3000; ++i) store.append_chart(chart, {double(i), double(i % 11)});
+    store.end_chart(chart);
+    const auto result = store.finish_charts(12, generation);
+    expect(result.size() == 1 && result[0].display.bytes.empty() &&
+               result[0].display.mime == "application/vnd.sputnik.plot+json", "asynchronous board chart never renders PNG on producer");
+    if (argc == 2) std::ofstream(argv[1]) << result[0].display.plot_scene;
+    expect(result[0].display.plot_scene.find("2999") != std::string::npos &&
+               result[0].display.plot_scene.find("Loss \\\"curve\\\"") != std::string::npos,
+           "terminal scene includes last point and escaped metadata despite throttle");
+    expect(store.changes_since(&cursor, &delta) && delta.events.size() == 1 &&
+               delta.events[0].kind == NotebookLiveEventKind::Figure, "new chart is a figure-only delta");
+    store.publish_progress(12, "training", 3, 10, "", false, 100, generation);
+    expect(store.changes_since(&cursor, &delta) && delta.events.size() == 1 &&
+               delta.events[0].kind == NotebookLiveEventKind::Progress,
+           "progress-only delta contains no retained graph buffers");
+    bool rejected = false;
+    try { store.append_chart(chart, {3000, 1}); } catch (const std::invalid_argument &) { rejected = true; }
+    expect(rejected, "ended stream rejects points");
+    store.begin_cell(12);
+    expect(store.changes_since(&cursor, &delta) && delta.resets.size() == 1 && delta.events.empty(),
+           "rerun clears both progress and scene explicitly");
+    rejected = false;
+    try { store.append_chart(chart, {3000, 1}); } catch (const std::invalid_argument &) { rejected = true; }
+    expect(rejected, "retired handle cannot enter next cell generation");
+    NotebookLiveStore next;
+    const auto nextGeneration = next.begin_cell(12);
+    const auto nextChart = next.begin_chart(12, nextGeneration, style);
+    expect(nextChart != chart, "handles are distinct across run stores");
+    rejected = false;
+    try { next.append_chart(nextChart, {std::numeric_limits<double>::infinity(), 1}); }
+    catch (const std::invalid_argument &) { rejected = true; }
+    expect(rejected, "nonfinite points reject before publication");
+    for (int i = 0; i < 70000; ++i) next.append_chart(nextChart, {double(i), double(i % 5)});
+    next.end_chart(nextChart);
+    const auto rolling = next.finish_charts(12, nextGeneration);
+    expect(rolling.size() == 1 && rolling[0].display.caption.find("of 70000 points") != std::string::npos &&
+               rolling[0].display.plot_scene.find("69999") != std::string::npos,
+           "long-running chart rolls its display window without interrupting producer");
+    next.close();
+    rejected = false;
+    try { next.append_chart(nextChart, {1, 1}); } catch (const std::invalid_argument &) { rejected = true; }
+    expect(rejected, "closed store rejects stream work");
+    NotebookLiveStore tiny;
+    const auto tinyGeneration = tiny.begin_cell(13);
+    const auto tinyChart = tiny.begin_chart(13, tinyGeneration, style);
+    tiny.append_chart(tinyChart, {1e-200, 1e-200});
+    tiny.append_chart(tinyChart, {2e-200, 2e-200});
+    const auto tinyResult = tiny.finish_charts(13, tinyGeneration);
+    expect(tinyResult.size() == 1 &&
+               tinyResult[0].display.plot_scene.find("\"bounds\":[-0.5,-0.5,0.5,0.5]") != std::string::npos,
+           "near-constant auto axes remain numerically resolvable by native viewer");
+  }
+  std::cout << "notebook_live_tests: ok\n";
   return 0;
 }

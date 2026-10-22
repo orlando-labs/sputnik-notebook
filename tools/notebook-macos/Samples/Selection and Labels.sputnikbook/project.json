@@ -1,0 +1,106 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "Выделение и разметка",
+  "active_sheet": "main",
+  "modules": [],
+  "auto_imports": [],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ],
+  "inputs": [],
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Корпус изображений",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import image, publish_images, DataTableView, read_images\n# Publish a tiny image corpus; identities refer to the encoded images.\npublish_images(\"frames\", [image([32, 96, 160, 224], width: 2, height: 2, format: :gray, caption: \"Sample A\"), image([224, 160, 96, 32], width: 2, height: 2, format: :gray, caption: \"Sample B\")])\nframes = read_images(\"frames\")\nrows = [{id: \"sample_a\", asset_id: frames[0][:asset_id], caption: \"Sample A\"}, {id: \"sample_b\", asset_id: frames[1][:asset_id], caption: \"Sample B\"}]\nnotebook.show(DataTableView(rows, columns: [:id, :caption, :asset_id]), id: \"corpus\")\nrows.count\n"
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "mode": "manual",
+          "source": "selection = notebook.selection(\"record\")\nlabels = notebook.annotations(\"labels\")\n{selected: selection, annotations: labels}\n"
+        }
+      ]
+    }
+  ],
+  "boards": [
+    {
+      "id": "corpus",
+      "title": "Выбор и разметка",
+      "sheet": "main",
+      "columns": 1,
+      "components": [
+        {
+          "id": "run",
+          "title": "Опубликовать корпус",
+          "kind": "run",
+          "cell": "1"
+        },
+        {
+          "id": "table",
+          "title": "Выберите строку и нажмите Apply selection",
+          "kind": "table",
+          "cell": "1",
+          "table_id": "corpus",
+          "selection_id": "record",
+          "selection_key": "id"
+        },
+        {
+          "id": "frame",
+          "title": "Текущее изображение · Annotate для разметки",
+          "kind": "image_carousel",
+          "image_id": "frames",
+          "image_allow_read": true,
+          "image_allow_save": true,
+          "image_annotator": true,
+          "annotation_id": "labels",
+          "selection_id": "record",
+          "selection_asset": "asset_id",
+          "annotation_classes": [
+            {
+              "id": "object",
+              "title": "Object",
+              "attributes": [
+                {
+                  "id": "kind",
+                  "title": "Kind",
+                  "type": "choice",
+                  "options": [
+                    "Foreground",
+                    "Background"
+                  ]
+                },
+                {
+                  "id": "note",
+                  "title": "Note",
+                  "type": "text",
+                  "options": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "labels_result",
+          "title": "Принятые данные доступны коду · Run ячейки 2",
+          "kind": "result",
+          "cell": "2"
+        },
+        {
+          "id": "history",
+          "kind": "run_history",
+          "title": "Run snapshots"
+        }
+      ]
+    }
+  ]
+}

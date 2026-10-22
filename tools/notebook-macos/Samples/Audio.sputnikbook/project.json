@@ -1,0 +1,75 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "AudioTrack / Audio Player",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Аудио",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from audio import AudioTrack\nfrom notebook.ui import AudioPlayer\ntrack = AudioTrack.from_file(\"tone.wav\")\nnotebook.player(track, id: \"tone\", caption: \"440 Hz / из файла\")\nraw = AudioTrack.from_pcm(fs.read_bytes(\"tone.pcm\"), sample_format: :s16le, sample_rate: 24000, channels: 1)\nnotebook.show(AudioPlayer.for(raw, position: 0.1, show_waveform: false), id: \"compact\", caption: \"Компактный плеер\")\n42\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "inputs": [],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ],
+  "boards": [
+    {
+      "id": "audio",
+      "title": "Аудиоплееры",
+      "sheet": "main",
+      "columns": 1,
+      "rows": [
+        {
+          "id": "controls"
+        },
+        {
+          "id": "players"
+        }
+      ],
+      "components": [
+        {
+          "id": "run",
+          "kind": "run",
+          "title": "Опубликовать аудио",
+          "cell": "1",
+          "row": "controls",
+          "span": 12
+        },
+        {
+          "id": "waveform_player",
+          "kind": "audio",
+          "title": "С waveform",
+          "cell": "1",
+          "audio_id": "tone",
+          "show_waveform": true,
+          "row": "players",
+          "span": 6
+        },
+        {
+          "id": "compact_player",
+          "kind": "audio",
+          "title": "Компактный",
+          "cell": "1",
+          "audio_id": "compact",
+          "show_waveform": false,
+          "row": "players",
+          "span": 6
+        }
+      ]
+    }
+  ]
+}

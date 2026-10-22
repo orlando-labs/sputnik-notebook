@@ -24,6 +24,7 @@ private struct NotebookMacOSRichTextTests {
             try testStructuredLists()
             try testNativeTables()
             try testInterpolation()
+            try testMarkdownInterpolation()
             try testTableBoundaryProtection()
             try testStructuralEdgeCases()
             print("notebook macOS rich-text tests passed")
@@ -31,6 +32,22 @@ private struct NotebookMacOSRichTextTests {
             fputs("notebook macOS rich-text tests failed: \(error)\n", stderr)
             exit(1)
         }
+    }
+
+    private static func testMarkdownInterpolation() throws {
+        let source = "# Summary\n\n**Answer:** {{answer}}\n\n- first\n- second"
+        let decoded = NotebookMarkdown.render(source)
+        try require(decoded.string == "Summary\nAnswer: {{answer}}\n• first\n• second", "Markdown renders block structure and inline styles")
+        let rendered = RichTextInterpolation.render(decoded, variables: [
+            NotebookTextVariable(name: "answer", value: "**literal** {{other}}", cellID: "1", stale: false)
+        ])
+        try require(rendered.string.contains("**literal** {{other}}"),
+                    "interpolated values are literal and cannot introduce Markdown or recursive tokens")
+        try require(source.contains("{{answer}}") && !decoded.string.contains("**Answer**"),
+                    "rendering does not overwrite the authored Markdown buffer")
+        let headingFont = decoded.attribute(.font, at: 0, effectiveRange: nil) as? NSFont
+        let bodyFont = decoded.attribute(.font, at: 8, effectiveRange: nil) as? NSFont
+        try require((headingFont?.pointSize ?? 0) > (bodyFont?.pointSize ?? 0), "Markdown and rich text share heading typography")
     }
 
     private static func testUnicodeAndPlainText() throws {

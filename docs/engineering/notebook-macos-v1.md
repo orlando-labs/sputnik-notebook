@@ -4,8 +4,8 @@ The first GUI is a **native SwiftUI/AppKit application**, not a browser or an
 Electron wrapper. `NSTextView` supplies syntax-colored source editing, rich-text
 blocks, selection, clipboard, native undo and two-space Tab insertion in code.
 The compiled C++ notebook
-kernel, compiler and runtime run in the same process through a small C ABI by
-default; the isolated-worker preview below moves sheet execution into a child process.
+host owns source and immutable presentation through a small C ABI. All code
+execution runs in separate worker processes by default.
 This is an opt-in development app, not a signed/notarized public release.
 
 ## Build and launch
@@ -22,16 +22,17 @@ open -a "build/Sputnik Notebook.app" "tools/notebook-macos/Samples/Rich Text.spu
 make test-notebook-macos
 ```
 
-### Isolated execution preview
+### Worker execution
 
 ```sh
-open -n "build/Sputnik Notebook.app" --args --isolated-worker
+open -n "build/Sputnik Notebook.app"
 make test-notebook-worker
 make test-notebook-worker-ui
 ```
 
-The preview banner is visible only in this mode. Run / Run All / Apply on a sheet
-use a lazy, persistent worker process per sheet. **Stop** (also ⌘.) requests
+Run / Run All / Apply and board inputs use a lazy, persistent worker per sheet.
+Module Run has its own worker. Automatic Watch evaluation uses the same
+execution lifecycle and controls. Progress and charts update during execution. **Stop** (also ⌘.) requests
 cooperative cancellation, including child tasks and ensure cleanup. **Force Stop**
 requires confirmation and terminates that worker; completion waits for confirmed
 process exit. **Restart Worker** resets runtime state without evaluating anything;
@@ -44,18 +45,14 @@ stale after forced termination. Only the host saves documents; the worker does
 not write source or project metadata. The helper executable and its libraries
 are included in the development `.app` bundle.
 
-This preview is **not the default backend**. Module-editor Run, projects with
-inputs, and board input execution are explicitly rejected; there is no silent
-in-process fallback. Ordinary static cell dependencies still work during Run,
-but automatic idle runtime-watch pumping has not moved to the worker yet.
+No launch flag is required, and GUI execution never falls back to a local VM.
 Apply uses saved module sources and rejects unsaved module tabs. Cross-sheet
-invalidation after Apply is conservative. Outputs are terminal snapshots, not
-live streaming/progress bars; source synchronization is currently limited by the
-8 MiB command-frame budget. isputnik remains on its existing backend.
+invalidation after Apply is conservative. Source synchronization is limited by
+the 8 MiB command-frame budget. isputnik retains its existing backend.
 
-When `../sputnik-plot/native/plot_png.c` exists, the build also links sputnik-plot's
+When `../plot/native/plot_png.c` exists, the build also links plot's
 2D/3D PNG renderer into the application. Override the checkout location with
-`SPUTNIK_PLOT_DIR=/path/to/sputnik-plot`. This is a bundled renderer, not a runtime
+`SPUTNIK_PLOT_DIR=/path/to/plot`. This is a bundled renderer, not a runtime
 download, plugin installation, or blanket FFI grant. The Sputnik module source
 is linked from its package directory, not copied into `modules`. Generate an example with:
 
@@ -66,9 +63,9 @@ open -a "build/Sputnik Notebook.app" build/notebook-macos/Plots.sputnikbook
 
 Run All in that project renders two panels. The generator refuses to overwrite
 an existing project. Without the renderer checkout, the rest of the native app
-still builds; PNG rendering reports sputnik-plot's unsupported-backend error.
+still builds; PNG rendering reports plot's unsupported-backend error.
 Use `--bundle` only when an explicit copy of the Sputnik sources is wanted.
-See [directory dependencies](notebook-dependencies-v1.md) for the shared
+See [directory dependencies](../../../sputnik-lang/docs/engineering/notebook-dependencies-v1.md) for the shared
 isputnik/macOS import workflow and native-extension limitations.
 
 The ordinary CLI/Linux build does not depend on Swift, AppKit or this target.
@@ -87,7 +84,7 @@ OpenSSL binaries too. Only the current build host has been verified.
 The app declares `org.sputniklang.notebook-project` and the `.sputnikbook` package
 document type. Finder can treat the project directory as one document after
 registering the app. No document migration is required: isputnik and the GUI
-open the same [`project.json` format](notebook-project-v1.md).
+open the same [`project.json` format](../../../sputnik-lang/docs/engineering/notebook-project-v1.md).
 
 ## Working in the app
 
@@ -175,25 +172,24 @@ failed source submission retains the unsubmitted Swift draft. Result snapshots
 cannot overwrite newer drafts. Editor views are keyed by CellId, not position,
 so reordering does not attach another cell's undo history to the source.
 
-In the default backend, a `DispatchSourceRead` observes the project activity mailbox. Only the C++
-mailbox consumer drains its borrowed descriptor. The bridge services at most
-one bounded round-robin runtime pump per turn; `RuntimePumpDispatch` provides
-coalescing and recovery deadlines. No timer runs at genuine idle. While Swift
-code drafts differ from the installed sources, automatic pumping is suspended; after
-submission, the existing Session source/environment barriers take over.
-Inert text drafts do not pause runtime watchers. An unrepresentable native editor
-buffer is marked unsaved and blocks Save/tab replacement until corrected or
-undone; it is never silently replaced by the last serializable snapshot.
-Replacement cancels/unregisters the old dispatch source before destroying its
-host, with balanced suspend/resume. Shutdown completion follows destruction.
+The GUI checks existing workers' activity every 100 ms while idle. Poll only
+consumes mailbox notifications; Watch handles runtime events and evaluations
+inside the worker with normal cancellation and live output. RuntimePumpDispatch
+provides coalescing and recovery deadlines. Code drafts suspend automatic
+execution; inert text drafts do not. Session source/environment barriers remain
+in force after submission. Stop pauses automatic work until explicit execution.
+An unrepresentable editor buffer remains unsaved and blocks replacement until
+corrected or undone. Shutdown completion follows host destruction.
 
 Save All is **not one multi-file transaction**: successful earlier tab saves
 remain committed if a later file conflicts. Module initialization can have
 external side effects; the runtime transaction does not roll those back.
-The host grants no extra runtime capabilities and does not claim App Sandbox
-isolation. Documents should still come from trusted sources before execution.
+Runtime capabilities can be explicitly configured per worker through
+**Worker Settings…**; see the [grant settings guide](notebook-remote-ui.md#worker-settings-и-runtime-grants).
+The app does not claim App Sandbox isolation. Documents should still come from
+trusted sources before execution.
 
-## Figures with sputnik-plot
+## Figures with plot
 
 `notebook` is a builtin; it does not need an import. `figure` / `figure3d` come
 from the `plot` module's exports, using the project's normal bundled-module
@@ -207,7 +203,7 @@ notebook.show(p, caption: "Curve", order: 1)
 ```
 
 - `notebook.show(obj, caption: null, order: 0)` returns `null` and stages a
-  PNG panel. It supports sputnik-plot `Figure`, `Figure3D`, and PNG `Rendered`
+  PNG panel. It supports plot `Figure`, `Figure3D`, and PNG `Rendered`
   objects. Figures render through their normal `bytes(format: :png)` method;
   explicitly rendered SVG objects are not embedded in this version.
 - All calls in one successful cell form one figure, sorted by ascending order.
@@ -261,7 +257,7 @@ view to PNG, and verifies that execution did not save the source document.
 Regression tests cover Unicode style ranges, style-only saving, Undo/Redo,
 malformed formatting, lexical edge cases and inert text in mixed sheets.
 Rendering uses the view itself, not screen recording or accessibility permission.
-With the sputnik-plot checkout present, the same target also checks real 2D/3D
+With the plot checkout present, the same target also checks real 2D/3D
 rendering, stable panel ordering, fault rollback, empty-batch replacement,
 dimension/type errors, UTF-8 captions and PNG decoding, then renders the plot
 sample in a second native-window smoke test. `make test-notebook-plots` runs
@@ -270,3 +266,31 @@ just this integration slice. `build/binder_tests` covers `self`, `fs` and
 The AppKit/model tests require a logged-in macOS desktop session. A process
 sandbox that denies application registration can abort inside macOS before the
 test code runs; execute these tests from a normal local terminal in that case.
+
+## UI palette
+
+The native host's default uses the light and dark website palettes in
+`tools/notebook-macos/NotebookPalette.swift`: Night Sky (`#2a2a35`), Foxglove
+(`#b98391`) and Lily White (`#e2e2da`). Its surfaces, muted text and readable
+rose accent (`#86505f`) match `site/public/styles.css`. SwiftUI controls and
+AppKit source, rich-text and result views share these colors; source syntax
+colors also match the website. Plot data retains its own declared colors.
+
+`Sputnik Notebook → Settings…` (`⌘,`) selects Light or Dark. The choice is
+saved in application preferences and applies immediately to the workspace,
+Settings and native dialogs. Dark surfaces use Night Sky with Lily White text
+and Foxglove accents. Adaptive AppKit colors update existing source, rich-text
+and result storage without replacing text or resetting selection and Undo.
+**Appearance → Color Scheme** adds thirteen reference palettes beside
+**Sputnik · Default**. `NotebookColorPreset` stores stable preference IDs and
+the reference HEX swatches; derived light/dark surfaces and text colors keep
+new presets readable (at least 4.5:1 text contrast). The original palette is
+preserved exactly and remains the fallback for missing or unknown
+`NotebookColorPreset` preferences. Light/dark and color-preset choices are independent.
+SwiftUI observes preset changes through `Observation`; AppKit's existing dynamic
+colors resolve the current preset and native views redraw without replacing text.
+`make test-notebook-themes` checks preference restoration, all presets in both
+themes, syntax contrast and a real-window switch, including changed rendered
+colors, editor identity, selection, Undo and closing Settings independently of
+the notebook. GUI smoke runs use in-memory preferences and do not change the
+user's saved appearance.

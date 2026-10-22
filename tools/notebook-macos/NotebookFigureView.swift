@@ -8,7 +8,8 @@ private struct FigureSelection: Identifiable {
     var viewport: PlotViewport? = nil
 }
 
-struct NotebookFigureView: View {
+struct NotebookFigureView: View, Equatable {
+    static func == (a: Self, b: Self) -> Bool { a.stale == b.stale && a.panels == b.panels }
     let panels: [NotebookFigurePanel]
     let stale: Bool
     @State private var selection: FigureSelection?
@@ -24,12 +25,12 @@ struct NotebookFigureView: View {
             HStack {
                 Label("FIGURE", systemImage: "chart.xyaxis.line").font(.system(size: 10, weight: .bold))
                 Spacer()
-                if stale { Text("Previous result · stale").font(.caption).foregroundStyle(.orange) }
-            }.foregroundStyle(.secondary)
+                if stale { Text("Previous result · stale").font(.caption).foregroundStyle(NotebookPalette.sputnik) }
+            }.foregroundStyle(NotebookPalette.muted)
             LazyVGrid(columns: columns, spacing: 18) {
                 ForEach(panels.indices, id: \.self) { index in
                     VStack(alignment: .leading, spacing: 7) {
-                        if let scene = NotebookPlotScene.decode(panels[index].plot_scene, width: panels[index].width, height: panels[index].height) {
+                        if let scene = panels[index].scene {
                             NotebookPlotView(scene: scene, width: panels[index].width, height: panels[index].height,
                                 viewport: Binding(get: { viewports[index] }, set: { viewports[index] = $0 }),
                                 onOpen: { selection = FigureSelection(index: index, viewport: viewports[index]) })
@@ -38,7 +39,7 @@ struct NotebookFigureView: View {
                             FigureImage(panel: panels[index])
                                 .frame(maxWidth: .infinity)
                                 .background(.white)
-                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(.gray.opacity(0.18)))
+                                .overlay(RoundedRectangle(cornerRadius: 6).stroke(NotebookPalette.rule))
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Open figure panel \(NotebookFigurePanel.label(index)) \(panels[index].caption)")
@@ -59,7 +60,7 @@ struct NotebookFigureView: View {
             }
         }
         .padding(13)
-        .background(Color.white.opacity(0.65), in: RoundedRectangle(cornerRadius: 9))
+        .background(NotebookPalette.card, in: RoundedRectangle(cornerRadius: 9))
         .sheet(item: $selection) { selected in
             if !panels.isEmpty {
                 FigureLightbox(panels: panels, initialIndex: min(selected.index, panels.count - 1), initialViewport: selected.viewport)
@@ -102,7 +103,7 @@ private struct FigureLightbox: View {
         _viewport = State(initialValue: initialViewport)
     }
     private var panel: NotebookFigurePanel { panels[min(index, panels.count - 1)] }
-    private var scene: NotebookPlotScene? { NotebookPlotScene.decode(panel.plot_scene, width: panel.width, height: panel.height) }
+    private var scene: NotebookPlotScene? { panel.scene }
     private func exportPanel() -> NotebookFigurePanel? {
         guard let scene else { return panel }
         guard let data = scene.png(view: viewport ?? scene.initialViewport, width: panel.width, height: panel.height) else { return nil }
@@ -150,7 +151,7 @@ private struct FigureLightbox: View {
             VStack(alignment: .leading, spacing: 4) {
                 if !panel.caption.isEmpty { Text(panel.caption).textSelection(.enabled) }
                 Text("\(panel.width) × \(panel.height) px · \(scene == nil ? "Raster image" : "2D plot · export uses current axes")")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(NotebookPalette.muted)
                 if let error { Text(error).foregroundStyle(.red).font(.caption) }
             }.frame(maxWidth: .infinity, alignment: .leading).padding(14)
         }

@@ -12,7 +12,7 @@ class NotebookExecutionControl {
 public:
   int phase() const;
   bool stop(bool force);
-  void begin();
+  void begin(std::string owner = {});
   void bind(std::shared_ptr<sputnik::notebook::worker::Process> process);
   void running(sputnik::notebook::worker::RequestId request);
   void draining();
@@ -20,7 +20,7 @@ public:
   bool commit();
   void finish();
   void publish_live(sputnik::notebook::worker::Presentation);
-  std::shared_ptr<const sputnik::notebook::worker::Presentation> take_live();
+  std::shared_ptr<const sputnik::notebook::worker::Presentation> take_live(std::string *owner = nullptr);
 private:
   mutable std::mutex mutex_;
   // 0 idle, 1 preparing, 2 running, 3 draining, 4 stopping, 5 terminating.
@@ -29,7 +29,8 @@ private:
   std::shared_ptr<sputnik::notebook::worker::Process> process_;
   sputnik::notebook::worker::RequestId request_;
   std::uint64_t generation_ = 0;
-  std::shared_ptr<const sputnik::notebook::worker::Presentation> live_;
+  std::optional<sputnik::notebook::worker::Presentation> live_;
+  std::string owner_;
 };
 
 // Owner-queue only. One persistent worker per sheet; host Sessions remain
@@ -38,14 +39,23 @@ class NotebookExecution {
 public:
   explicit NotebookExecution(std::string executable) : executable_(std::move(executable)) {}
   std::shared_ptr<NotebookExecutionControl> control = std::make_shared<NotebookExecutionControl>();
-  void run(ProjectTabs &, ProjectTab &, const std::string &action, std::size_t index);
-  void restart(ProjectTab &);
+  bool run(ProjectTabs &, ProjectTab &, const std::string &action, std::size_t index,
+           const std::string &runtime_key = {}, bool recover = false);
+  void restart(ProjectTab &, const std::string &runtime_key = {});
+  void configure_grants(ProjectTab &, const std::string &text);
+  void configure_environment(ProjectTab &, const std::string &directory);
+  void inputs_changed(ProjectTabs &);
+  std::string pending(ProjectTabs &);
   bool native_trusted = false;
 private:
   struct Sheet {
     std::shared_ptr<sputnik::notebook::worker::Process> process;
     bool interrupted = false;
+    std::string owner;
   };
   std::string executable_;
   std::map<std::string, Sheet> sheets_;
+  std::map<std::string, std::vector<std::string>> grants_;
+  std::map<std::string, std::string> environment_directories_;
+  std::size_t watch_cursor_ = 0;
 };

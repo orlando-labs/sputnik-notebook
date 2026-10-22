@@ -1,6 +1,6 @@
 # MNIST in the native macOS notebook
 
-Implemented on 2026-10-02; final native UI/regression recheck on 2026-10-03.
+Implemented on 2026-10-02; board-owned chart channels added on 2026-10-13.
 This is real Sputnik/LibTorch training,
 not simulated progress or prerecorded plots. No Python is involved in training,
 native package preparation or the MNIST verifier.
@@ -17,13 +17,33 @@ The settings cell controls `device`, `epochs`, `batch_size`, dataset limits and
 `plot_throttle_ms`. These are ordinary notebook locals. Changing them does not
 silently restart training. The training module imports the original MNIST reader,
 SmallResNet, optimizer and scheduler from the linked sputniktorch directory.
-Neither sputniktorch nor sputnik-plot sources are copied into project modules.
+Neither sputniktorch nor plot sources are copied into project modules.
+Prepared SputnikTorch dependencies now use a coherent versioned package
+snapshot; package preparation automatically updates registered projects.
+
+The board defines separate live-chart components for loss and held-out accuracy.
+Its **Progress** component binds to the training code cell (ID `5` in generated
+projects, displayed as position **04**) and channel `mnist-training`. The
+parameter cell (ID `3`, position **02**) does not
+publish training progress. For an existing board, select Progress in Design and
+choose the cell containing `metrics = train_mnist(...)`; set Progress ID to
+`mnist-training` or leave it empty for all channels from that training cell.
+The training module publishes numeric points to their channel IDs using
+`notebook.ui.publish_point`; it does not construct chart objects or fix their
+canvas size. The board renders each chart in its current grid bounds. Direct
+`notebook.show(plot.Figure)` remains the separate static-figure path. See
+[board chart details](notebook-board-live-charts.md) for the data contract.
 
 The sheet contains editable rich-text headings and interpolated result fields.
-The board shows the same cell's progress and two clickable figure panels:
-training cross-entropy and held-out accuracy. The existing lightbox offers zoom,
-save and share. Outputs are runtime state, not saved checkpoints: reopening the
-project requires an explicit run. Training does not write a model checkpoint.
+The board shows two responsive live charts, a final accuracy value and an image
+carousel with the final model's ten highest-loss validation samples. Each frame
+shows its true label, predicted label, confidence and cross-entropy; the series
+has its own caption. Rankings cover the entire held-out split and use dataset
+index to resolve ties. See [image component API](notebook-board-images.md).
+Static
+figures retain the existing lightbox actions. Outputs are runtime state, not
+saved checkpoints: reopening the project requires an explicit run. Training
+does not write a model checkpoint.
 
 ## Rebuild from sibling repositories
 
@@ -35,9 +55,21 @@ cd sputniktorch
 ./tools/build examples/showcase.s --prepare-notebook
 cd ../sputnik-notebook
 make -j2 notebook-macos build/notebook-mnist
-./build/notebook-mnist prepare ../sputniktorch ../sputnik-plot build/MNIST-Showcase.sputnikbook
+./build/notebook-mnist prepare ../sputniktorch ../plot build/MNIST-Showcase.sputnikbook
 open -a "$PWD/build/Sputnik Notebook.app" "$PWD/build/MNIST-Showcase.sputnikbook"
 ```
+
+For an existing edited notebook, update it in place instead of regenerating:
+
+```sh
+cd ../sputniktorch
+./tools/build --prepare-notebook --notebook-project ../sputnik-notebook/build/MNIST-Showcase.sputnikbook
+```
+
+The registration makes later successful package builds refresh its dependency
+automatically. Cells/settings remain unchanged; reopen the project after an
+external dependency update. New MNIST projects register automatically. See
+[package update contract](../../../sputniktorch/docs/notebook-packages.md).
 
 Preparation refuses to overwrite an existing project. Use a new output path
 when regenerating. Add `--smoke` for 1 epoch, 1,024 train / 256 test images.
@@ -59,22 +91,18 @@ separate operations). Only load native code from trusted directories.
 
 ```sputnik
 from progressbar import ProgressBar
+from notebook.ui import publish_point
 
 pb = ProgressBar(total: steps, desc: "Training", throttle: 0.1, id: "training")
-pb.inc!()
-notebook.show(plot, id: "loss", live: true, caption: "Loss", order: 0,
-              throttle_ms: 500)
-# Always flush the final plot explicitly, bypassing its throttle.
-notebook.show(final_plot, id: "loss", live: true, throttle_ms: 0)
+publish_point("loss", step, value)
+pb.inc!
 pb.end
 ```
 
-`throttle` is seconds; `throttle_ms` is milliseconds. Stable IDs replace panels.
-Plot throttling happens **before PNG rendering**. Coalesced, bounded live messages
-carry copied numbers/text/PNG bytes, never heap objects. The main thread renders
-them while the execution queue is busy. Stop retains the last count/frame; a
-partial count is not changed to 100%. Successful final frames also enter the
-ordinary cell figure batch. Progress is deliberately nontransactional telemetry.
+`publish_point` accepts a board chart channel ID and two numeric coordinates.
+The host coalesces numeric deltas and the native chart view renders them at the
+component's current size. Progress is separate, deliberately nontransactional
+telemetry.
 
 `array.with_progress(desc: ..., throttle: ...).each |item|: ...` is supported
 after importing progressbar. The package also supplies `with_progress(source, ...)`
@@ -93,13 +121,18 @@ PYTORCH_ENABLE_MPS_FALLBACK=0 ./build/notebook-mnist verify "$PWD/build/sputnik-
 
 Native AppKit/SwiftUI end-to-end harness (explicit test-only trust):
 
+The harness verifies intermediate and completed progress through the board's
+actual cell/channel bindings, so a progress event elsewhere in the sheet cannot
+make a misbound board component pass.
+
 ```sh
 PYTORCH_ENABLE_MPS_FALLBACK=0 'build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook' \
   --trust-native --showcase-test build/MNIST-Showcase.sputnikbook \
   --live-snapshot-png /tmp/mnist-live.png --snapshot-png /tmp/mnist-final.png
 ```
 
-Verified on macOS arm64, Homebrew LibTorch 2.14.0, MPS with CPU fallback disabled:
+Earlier end-to-end showcase verification on macOS arm64 with Homebrew LibTorch
+2.14.0 and MPS (CPU fallback disabled) recorded:
 
 - 19,706 parameters, 2,345 optimizer steps, 5 full epochs.
 - Test accuracy **98.69%**, test cross-entropy **0.0445108**.
@@ -114,6 +147,10 @@ Timings depend on hardware/load and include presentation overhead. The local
 app bundles Homebrew libraries requiring macOS 26; this is reflected in its
 Info.plist, despite the source compilation target being macOS 14.
 Verification artifacts are generated locally during validation and are not kept in the source tree.
+
+Those GUI chart-frame counts were recorded before the board-owned numeric
+channel refactor. They describe the training run and previous presentation path,
+not a verification of the current Live Chart view.
 
 ## Boundaries
 

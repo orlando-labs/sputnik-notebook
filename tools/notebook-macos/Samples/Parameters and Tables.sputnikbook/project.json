@@ -1,0 +1,238 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "Parameters and Tables",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Experiment",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "text",
+          "source": "Parameters and Tables\nUse Run once to publish results. The board form changes inputs together; manual results remain stale until Run."
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "source": "gain = notebook.input(\"gain\")\noffset = notebook.input(\"offset\")\nmode = notebook.input(\"mode\")\nscore = gain * 10 + offset\nevaluation_count = tick()\ndata = [{:name: \"Alpha\", :score: score, :device: mode, :count: notebook.input(\"large\")}, {:name: \"Beta, \\\"quoted\\\"\", :score: score / 2, :device: mode, :count: null}, {:name: \"Gamma 🌙\", :score: score * 3, :device: mode, :count: 10}]\ndata\n",
+          "mode": "watch"
+        },
+        {
+          "id": "3",
+          "kind": "text",
+          "source": "Score: {{score}} · Evaluations: {{evaluation_count}}"
+        },
+        {
+          "id": "4",
+          "kind": "code",
+          "source": "manual = notebook.input(\"gain\") * 100\nmanual\n",
+          "mode": "manual"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "audit",
+      "path": "modules/audit.s"
+    }
+  ],
+  "auto_imports": [
+    "audit"
+  ],
+  "inputs": [
+    {
+      "id": "gain",
+      "title": "Gain",
+      "type": "number",
+      "default": 1.0,
+      "minimum": 0,
+      "maximum": 10
+    },
+    {
+      "id": "offset",
+      "title": "Offset",
+      "type": "integer",
+      "default": 2,
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "id": "mode",
+      "title": "Device",
+      "type": "string",
+      "default": "cpu"
+    },
+    {
+      "id": "large",
+      "title": "Large integer",
+      "type": "integer",
+      "default": 9223372036854775806
+    }
+  ],
+  "boards": [
+    {
+      "id": "experiment",
+      "title": "Experiment dashboard",
+      "sheet": "main",
+      "columns": 2,
+      "rows": [
+        {
+          "id": "heading"
+        },
+        {
+          "id": "parameters"
+        },
+        {
+          "id": "results",
+          "height": 350
+        },
+        {
+          "id": "actions"
+        },
+        {
+          "id": "layout"
+        }
+      ],
+      "components": [
+        {
+          "id": "summary",
+          "kind": "rich_text",
+          "title": "Parameters and tables",
+          "text_mode": "markdown",
+          "text_content": {
+            "source": "# Experiment\n\nScore: **{{score}}** · Evaluations: {{evaluation_count}}\n\nApply the form once to publish its parameters together. Manual results refresh with Run."
+          },
+          "row": "heading",
+          "span": 12
+        },
+        {
+          "id": "parameters",
+          "kind": "parameter_form",
+          "title": "Experiment parameters",
+          "fields": [
+            {
+              "input": "gain",
+              "control": {
+                "style": "slider",
+                "minimum": 0,
+                "maximum": 10,
+                "step": 0.1,
+                "unit": "×",
+                "precision": 1
+              }
+            },
+            {
+              "input": "offset",
+              "control": {
+                "style": "stepper",
+                "minimum": 0,
+                "maximum": 100,
+                "step": 1
+              }
+            },
+            {
+              "input": "mode",
+              "control": {
+                "style": "segmented",
+                "options": [
+                  {
+                    "label": "CPU",
+                    "value_json": "\"cpu\""
+                  },
+                  {
+                    "label": "MPS",
+                    "value_json": "\"mps\""
+                  }
+                ]
+              }
+            }
+          ],
+          "row": "parameters",
+          "span": 7
+        },
+        {
+          "id": "large_control",
+          "kind": "input",
+          "title": "Exact integer",
+          "input": "large",
+          "control": {
+            "style": "stepper",
+            "step": 1
+          },
+          "row": "parameters",
+          "span": 5
+        },
+        {
+          "id": "results",
+          "kind": "table",
+          "title": "Data Table",
+          "cell": "2",
+          "row": "results",
+          "span": 12
+        },
+        {
+          "id": "manual",
+          "kind": "text",
+          "title": "Manual snapshot",
+          "cell": "4",
+          "binding": "manual",
+          "row": "actions",
+          "span": 6
+        },
+        {
+          "id": "refresh",
+          "kind": "run",
+          "title": "Refresh manual snapshot",
+          "cell": "4",
+          "row": "actions",
+          "span": 6
+        },
+        {
+          "id": "tabs",
+          "kind": "tabs",
+          "title": "Notes",
+          "row": "layout",
+          "span": 12,
+          "panels": [
+            {
+              "id": "notes",
+              "title": "Notes",
+              "rows": [
+                {
+                  "id": "r"
+                }
+              ],
+              "components": [
+                {
+                  "id": "tab_note",
+                  "kind": "rich_text",
+                  "title": "Readme",
+                  "row": "r",
+                  "span": 12,
+                  "text_mode": "markdown",
+                  "text_content": {
+                    "source": "## Shared components\n\nTable view is also available from the sheet result. Filtering and sorting change the view without rerunning code."
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "audit_service",
+          "kind": "periodic_work",
+          "title": "Independent audit counter",
+          "module_id": "audit",
+          "function": "tick",
+          "period_seconds": 60,
+          "retention": "tail",
+          "tail_limit": 10
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}

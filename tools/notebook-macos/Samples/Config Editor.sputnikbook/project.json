@@ -1,0 +1,186 @@
+{
+  "format": "sputnik-notebook",
+  "version": 4,
+  "title": "Config Editor",
+  "active_sheet": "main",
+  "inputs": [
+    {
+      "id": "training",
+      "title": "Training config",
+      "type": "string",
+      "default": "{\n  \"epochs\": 10,\n  \"optimizer\": {\"name\": \"adam\", \"rate\": 0.001},\n  \"seed\": 9223372036854775807\n}"
+    },
+    {
+      "id": "yaml",
+      "title": "YAML config",
+      "type": "string",
+      "default": "# Training settings\nepochs: 7\nseed: 9223372036854775807\noptimizer:\n  rate: 0.25\nnotes: |\n  Keep comments and multiline text.\n  Edit this config in a modal.\n"
+    },
+    {
+      "id": "toml",
+      "title": "TOML config",
+      "type": "string",
+      "default": "# Training settings\nepochs = 8\nseed = 9223372036854775807\nstarted = 2026-10-22T12:00:00Z\n[optimizer]\nrate = 0.5\n"
+    }
+  ],
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Configurations",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "text",
+          "source": "Config Editor keeps file text intact and stays compact. Click Edit… to open a modal. Apply accepts the text; Cancel discards the draft. For JSON, Format only edits the draft. YAML/TOML preserve comments and layout. The board demonstrates all three formats. Choose the format in Design; changing it does not convert the source. Code reads parsed values with notebook.config(\"yaml\", format: :yaml) or notebook.cell_config(\"training\", format: :json). Use notebook.serialize_config(value, format: :yaml) or :toml to create a new document. Accepted values remain session state; reopening restores saved defaults. Edit local defaults through Components…."
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "mode": "watch",
+          "source": "project_config = Json.parse(notebook.input(\"training\"), duplicate_keys: :reject)\nproject_epochs = project_config[:epochs]\nproject_epochs\n"
+        },
+        {
+          "id": "3",
+          "kind": "code",
+          "mode": "watch",
+          "source": "local_config = Json.parse(notebook.cell_input(\"training\"), duplicate_keys: :reject)\nlocal_score = local_config[:epochs] * local_config[:optimizer][:rate]\nlocal_score\n",
+          "cell_ui": {
+            "inputs": [
+              {
+                "id": "training",
+                "title": "Local training config",
+                "type": "string",
+                "default_json": "\"{\\n  \\\"epochs\\\": 3,\\n  \\\"optimizer\\\": {\\\"rate\\\": 0.5}\\n}\""
+              }
+            ],
+            "pre": [
+              {
+                "id": "training_editor",
+                "kind": "input",
+                "title": "Local training config",
+                "input": "training",
+                "control": {
+                  "style": "json"
+                }
+              }
+            ],
+            "post": [
+              {
+                "id": "local_score",
+                "kind": "metric",
+                "title": "Local score",
+                "binding": "local_score"
+              }
+            ]
+          }
+        },
+        {
+          "id": "4",
+          "kind": "code",
+          "mode": "manual",
+          "source": "manual_config = Json.parse(notebook.input(\"training\"), duplicate_keys: :reject)\nmanual_config[:epochs]\n"
+        },
+        {
+          "id": "5",
+          "kind": "code",
+          "mode": "watch",
+          "source": "Json.pretty_generate(project_config, indent: 2)\n"
+        },
+        {
+          "id": "6",
+          "kind": "code",
+          "mode": "watch",
+          "source": "yaml_config = notebook.config(\"yaml\", format: :yaml)\nyaml_config[:epochs] * yaml_config[:optimizer][:rate]\n"
+        },
+        {
+          "id": "7",
+          "kind": "code",
+          "mode": "watch",
+          "source": "toml_config = notebook.config(\"toml\", format: :toml)\ntoml_config[:epochs] * toml_config[:optimizer][:rate]\n"
+        },
+        {
+          "id": "8",
+          "kind": "code",
+          "mode": "watch",
+          "source": "yaml_text = notebook.serialize_config({epochs: 5, optimizer: {rate: 0.25}}, format: :yaml)\ntoml_text = notebook.serialize_config({epochs: 6, optimizer: {rate: 0.5}}, format: :toml)\nyaml_copy = notebook.parse_config(yaml_text, format: :yaml)\ntoml_copy = notebook.parse_config(toml_text, format: :toml)\nyaml_copy[:epochs] + toml_copy[:epochs]\n"
+        }
+      ]
+    }
+  ],
+  "boards": [
+    {
+      "id": "config",
+      "title": "Experiment configuration",
+      "sheet": "main",
+      "columns": 2,
+      "rows": [
+        {
+          "id": "edit"
+        },
+        {
+          "id": "result"
+        },
+        {
+          "id": "formats"
+        }
+      ],
+      "components": [
+        {
+          "id": "training_editor",
+          "kind": "input",
+          "title": "Training config",
+          "input": "training",
+          "control": {
+            "style": "json"
+          },
+          "row": "edit",
+          "span": 12
+        },
+        {
+          "id": "epochs",
+          "kind": "metric",
+          "title": "Accepted epochs",
+          "cell": "2",
+          "binding": "project_epochs",
+          "row": "result",
+          "span": 6
+        },
+        {
+          "id": "manual",
+          "kind": "result",
+          "title": "Manual snapshot",
+          "cell": "4",
+          "row": "result",
+          "span": 6
+        },
+        {
+          "id": "yaml_editor",
+          "kind": "input",
+          "title": "YAML config",
+          "input": "yaml",
+          "control": {
+            "style": "json",
+            "config_format": "yaml"
+          },
+          "row": "formats",
+          "span": 6
+        },
+        {
+          "id": "toml_editor",
+          "kind": "input",
+          "title": "TOML config",
+          "input": "toml",
+          "control": {
+            "style": "json",
+            "config_format": "toml"
+          },
+          "row": "formats",
+          "span": 6
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "dependencies": [],
+  "auto_imports": []
+}

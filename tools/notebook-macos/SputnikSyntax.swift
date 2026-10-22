@@ -49,10 +49,7 @@ public enum SputnikSyntax {
 #if canImport(AppKit)
     public static let defaultFont = NSFont.monospacedSystemFont(ofSize: 13,
                                                                  weight: .regular)
-    public static let defaultColor = NSColor(calibratedRed: 0.153,
-                                             green: 0.161,
-                                             blue: 0.166,
-                                             alpha: 1)
+    public static let defaultColor = NotebookPalette.nativeInk
 
     /// Applies syntax colors without changing the string. Callers that own an
     /// NSTextView should disable undo registration around this method; this
@@ -89,25 +86,25 @@ public enum SputnikSyntax {
     public static func color(for category: SputnikSyntaxCategory) -> NSColor {
         switch category {
         case .keyword:
-            return NSColor(calibratedRed: 0.665, green: 0.255, blue: 0.158, alpha: 1)
+            return NotebookPalette.syntaxKeyword
         case .constant:
-            return NSColor(calibratedRed: 0.470, green: 0.290, blue: 0.475, alpha: 1)
+            return NotebookPalette.syntaxKeyword
         case .className:
-            return NSColor(calibratedRed: 0.185, green: 0.365, blue: 0.505, alpha: 1)
+            return NotebookPalette.syntaxType
         case .number:
-            return NSColor(calibratedRed: 0.645, green: 0.350, blue: 0.145, alpha: 1)
+            return NotebookPalette.syntaxNumber
         case .string:
-            return NSColor(calibratedRed: 0.205, green: 0.435, blue: 0.285, alpha: 1)
+            return NotebookPalette.syntaxString
         case .comment:
-            return NSColor(calibratedRed: 0.455, green: 0.455, blue: 0.405, alpha: 1)
+            return NotebookPalette.syntaxComment
         case .variable:
-            return NSColor(calibratedRed: 0.585, green: 0.310, blue: 0.150, alpha: 1)
+            return NotebookPalette.syntaxVariable
         case .identifier:
             return defaultColor
         case .operator:
-            return NSColor(calibratedRed: 0.315, green: 0.290, blue: 0.270, alpha: 1)
+            return NotebookPalette.syntaxOperator
         case .punctuation:
-            return NSColor(calibratedRed: 0.390, green: 0.365, blue: 0.335, alpha: 1)
+            return NotebookPalette.syntaxOperator
         }
     }
 #endif

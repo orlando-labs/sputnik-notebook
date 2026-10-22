@@ -327,6 +327,7 @@ enum RichTextCodec {
     static func attributes(style: Style, bold: Bool, italic: Bool, underline: Bool) -> [NSAttributedString.Key: Any] {
         var result: [NSAttributedString.Key: Any] = [
             .font: font(style: style, bold: bold, italic: italic),
+            .foregroundColor: NotebookPalette.nativeInk,
             styleAttributeKey: style.rawValue,
             boldAttributeKey: bold,
             italicAttributeKey: italic,
@@ -413,10 +414,10 @@ struct RichTextEditor: View {
                     Spacer(minLength: 0)
                 }
                 .font(.system(size: 11))
-                .foregroundStyle(.orange)
+                .foregroundStyle(NotebookPalette.sputnik)
                 .padding(.horizontal, 11)
                 .padding(.vertical, 7)
-                .background(Color.orange.opacity(0.10))
+                .background(NotebookPalette.sputnik.opacity(0.10))
             }
             RichTextEditorRepresentable(text: text,
                                         formatting: formatting,
@@ -435,7 +436,7 @@ struct RichTextEditor: View {
                     .frame(minHeight: 96)
             }
         }
-        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.secondary.opacity(0.22)))
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(NotebookPalette.muted.opacity(0.22)))
         .clipShape(RoundedRectangle(cornerRadius: 7))
     }
 
@@ -498,7 +499,7 @@ struct RichTextEditor: View {
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 5)
-        .background(Color.secondary.opacity(0.07))
+        .background(NotebookPalette.muted.opacity(0.07))
         .disabled(!editable || controller.decodeFailed)
     }
 
@@ -584,7 +585,7 @@ struct RichTextEditorRepresentable: NSViewRepresentable {
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = RichTextScrollView()
         scrollView.drawsBackground = true
-        scrollView.backgroundColor = NSColor.textBackgroundColor
+        scrollView.backgroundColor = NotebookPalette.nativeEditor
         scrollView.borderType = .noBorder
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
@@ -603,6 +604,9 @@ struct RichTextEditorRepresentable: NSViewRepresentable {
         textView.isSelectable = true
         textView.allowsUndo = true
         textView.drawsBackground = false
+        textView.insertionPointColor = NotebookPalette.nativeAccent
+        textView.selectedTextAttributes = [.backgroundColor: NotebookPalette.nativeFoxglove.withAlphaComponent(0.35),
+                                           .foregroundColor: NotebookPalette.nativeInk]
         textView.textContainerInset = NSSize(width: 13, height: 11)
         textView.isHorizontallyResizable = false
         textView.isVerticallyResizable = true
@@ -648,7 +652,7 @@ struct RichTextEditorRepresentable: NSViewRepresentable {
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
-        let width = max(240, proposal.width ?? 640)
+        let width = max(48, proposal.width ?? 640)
         guard let view = nsView.documentView as? NSTextView else { return CGSize(width: width, height: 160) }
         return CGSize(width: width, height: RichTextLayout.height(view.attributedString(), width: width))
     }

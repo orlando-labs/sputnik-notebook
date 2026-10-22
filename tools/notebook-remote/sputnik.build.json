@@ -1,0 +1,88 @@
+{
+  "schema": "sputnik.build.v1",
+  "name": "notebook.remote.main",
+  "root": "notebook.remote.main",
+  "profiles": {
+    "required": [
+      "core.v1",
+      "ffi.v1",
+      "macro.v1"
+    ]
+  },
+  "modules": [
+    {
+      "name": "notebook.remote.main",
+      "path": "main.s"
+    },
+    {
+      "name": "notebook.remote.common",
+      "path": "common.s"
+    },
+    {
+      "name": "notebook.remote.core",
+      "path": "core.s"
+    },
+    {
+      "name": "notebook.remote.server",
+      "path": "server.s"
+    },
+    {
+      "name": "notebook.remote.client",
+      "path": "client.s"
+    },
+    {
+      "name": "notebook.remote.host",
+      "path": "host.s"
+    },
+    {
+      "name": "sqlite3",
+      "path": "../../../sqlite3/src/sqlite3.s"
+    },
+    {
+      "name": "notebook.remote.environments",
+      "path": "environments.s"
+    },
+    {
+      "name": "notebook.remote.dependencies",
+      "path": "dependencies.s"
+    },
+    {
+      "name": "notebook.remote.local_dependencies",
+      "path": "local_dependencies.s"
+    }
+  ],
+  "native_extensions": [
+    {
+      "name": "notebook_remote_host",
+      "language": "c++",
+      "include_dirs": [
+        "../.."
+      ],
+      "sources": [
+        "host.cpp",
+        "../notebook-worker/process.cpp",
+        "../notebook-worker/protocol.cpp",
+        "../notebook-worker/presentation.cpp"
+      ]
+    },
+    {
+      "name": "sqlite3",
+      "language": "c",
+      "sources": [
+        "../../../sqlite3/native/sqlite3_ext.c",
+        "../../../sqlite3/native/sqlite3.c"
+      ],
+      "headers": [
+        "../../../sqlite3/native/sqlite3.h"
+      ],
+      "defines": [
+        "SQLITE_THREADSAFE=1",
+        "SQLITE_ENABLE_COLUMN_METADATA=1",
+        "SQLITE_ENABLE_FTS5=1",
+        "SQLITE_ENABLE_JSON1=1",
+        "SQLITE_DQS=0",
+        "SQLITE_OMIT_LOAD_EXTENSION=1"
+      ]
+    }
+  ]
+}

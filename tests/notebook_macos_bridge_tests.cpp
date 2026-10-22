@@ -497,9 +497,60 @@ void test_external_directory_link_import_and_unlink() {
   sputnik_notebook_destroy(notebook);
 }
 
+void test_numbered_sheets_and_project_input_deletion() {
+  TempDirectory temporary;
+  const auto path = temporary.path / "structure.sputnikbook";
+  SputnikNotebook *notebook = open_new(path);
+  expect(sputnik::notebook::load_project(path).document.sheets.front().title == "Sheet 1",
+         "new notebooks start with Sheet 1");
+  command(notebook, "new_sheet", nullptr, nullptr, "analysis");
+  auto document = sputnik::notebook::load_project(path).document;
+  expect(document.sheets.back().id == "analysis" && document.sheets.back().title == "Sheet 2",
+         "new sheets receive numbered display titles and keep their stable identifiers");
+  command(notebook, "new_input", nullptr, nullptr,
+          R"({"id":"count","title":"Count","type":"integer","default":9223372036854775807})");
+  command(notebook, "new_input", nullptr, nullptr,
+          R"({"id":"label","title":"Label","type":"string","default":"hello"})");
+  const auto cell = first_cell_id(snapshot(notebook), "sheet:main");
+  command(notebook, "source", "sheet:main", cell.c_str(), "notebook.input(\"count\")\n");
+  command(notebook, "run_all", "sheet:main");
+  expect(snapshot(notebook).find("9223372036854775807") != std::string::npos, "integer input remains exact");
+  command(notebook, "source", "sheet:main", cell.c_str(), "notebook.input(\"count\") + 1\n");
+  command(notebook, "delete_input", nullptr, "count");
+  document = sputnik::notebook::load_project(path).document;
+  expect(document.inputs.size() == 1 && document.inputs.front().id == "label",
+         "deletion persists without changing other inputs");
+  expect(document.sheets.front().cells.front().source.empty(), "deleting inputs never saves source drafts");
+  expect(snapshot(notebook).find("notebook.input(\\\"count\\\") + 1") != std::string::npos,
+         "deleting inputs preserves unsaved code");
+  std::string message;
+  expect(command_fails(notebook, "set_input", nullptr, "count", "1", &message),
+         "deleted input is absent from the live input snapshot");
+  command(notebook, "save_board", nullptr, nullptr,
+          R"({"id":"board","title":"Board 7","sheet":"main","columns":1,"components":[{"id":"tabs","kind":"tabs","title":"Tabs","panels":[{"id":"panel","title":"Panel","rows":[{"id":"row"}],"components":[{"id":"field","kind":"input","title":"Label","input":"label","row":"row"}]}]}]})");
+  expect(command_fails(notebook, "delete_input", nullptr, "label", nullptr, &message) &&
+         message.find("Remove its board bindings") != std::string::npos,
+         "nested bindings prevent deletion with a clear error");
+  expect(sputnik::notebook::load_project(path).document.inputs.size() == 1,
+         "rejected deletion leaves the saved definition intact");
+  command(notebook, "save_board", nullptr, nullptr,
+          R"({"id":"board","title":"Board 7","sheet":"main","columns":1,"components":[]})");
+  command(notebook, "delete_input", nullptr, "label");
+  expect(command_fails(notebook, "delete_input", nullptr, "label", nullptr, &message), "unknown inputs cannot be deleted");
+  command(notebook, "new_sheet", nullptr, nullptr, "third");
+  expect(sputnik::notebook::load_project(path).document.sheets.back().title == "Sheet 3", "sheet numbering continues");
+  sputnik_notebook_destroy(notebook);
+  notebook = open_existing(path);
+  expect(snapshot(notebook).find("\"inputs\":[]") != std::string::npos, "deleted inputs stay deleted after reopening");
+  command(notebook, "new_sheet", nullptr, nullptr, "fourth");
+  expect(sputnik::notebook::load_project(path).document.sheets.back().title == "Sheet 4", "sheet numbering survives reopening");
+  sputnik_notebook_destroy(notebook);
+}
+
 } // namespace
 
 int main() {
+  test_numbered_sheets_and_project_input_deletion();
   test_container_result_formats();
   test_external_directory_link_import_and_unlink();
   test_interpolation_display_values();

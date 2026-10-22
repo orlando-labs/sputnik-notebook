@@ -1,0 +1,119 @@
+{
+  "format": "sputnik-notebook",
+  "version": 2,
+  "title": "Tabs and Panel Grids",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Controller",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "watch",
+          "source": "gain = notebook.input(\"gain\")\nvalue = gain * 21\nvalue\n"
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "mode": "manual",
+          "source": "snapshot = notebook.input(\"gain\") * 21\nsnapshot\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "inputs": [
+    {
+      "id": "gain",
+      "title": "Gain",
+      "type": "number",
+      "default": 2.0,
+      "minimum": 0,
+      "maximum": 100
+    }
+  ],
+  "boards": [
+    {
+      "id": "dashboard",
+      "title": "Tabs and Panel Grids",
+      "sheet": "main",
+      "columns": 2,
+      "components": [
+        {
+          "id": "workspace",
+          "kind": "tabs",
+          "title": "Interactive Workspace",
+          "row": "main_row",
+          "span": 12,
+          "panels": [
+            {
+              "id": "parameters",
+              "title": "Parameters",
+              "rows": [
+                {
+                  "id": "content"
+                }
+              ],
+              "components": [
+                {
+                  "id": "gain_control",
+                  "kind": "input",
+                  "title": "Parameter",
+                  "input": "gain",
+                  "row": "content",
+                  "span": 4
+                },
+                {
+                  "id": "computed",
+                  "kind": "text",
+                  "title": "Live value",
+                  "cell": "1",
+                  "binding": "value",
+                  "row": "content",
+                  "span": 8
+                }
+              ]
+            },
+            {
+              "id": "snapshot",
+              "title": "Snapshot",
+              "rows": [
+                {
+                  "id": "content",
+                  "height": 180
+                }
+              ],
+              "components": [
+                {
+                  "id": "refresh",
+                  "kind": "run",
+                  "title": "Refresh snapshot",
+                  "cell": "2",
+                  "row": "content",
+                  "span": 4
+                },
+                {
+                  "id": "snapshot",
+                  "kind": "text",
+                  "title": "Manual snapshot",
+                  "cell": "2",
+                  "binding": "snapshot",
+                  "row": "content",
+                  "span": 8
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "rows": [
+        {
+          "id": "main_row"
+        }
+      ]
+    }
+  ]
+}

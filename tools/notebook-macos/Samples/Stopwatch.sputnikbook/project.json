@@ -1,0 +1,57 @@
+{
+  "format": "sputnik-notebook",
+  "version": 2,
+  "title": "Stopwatch",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Timed blocks",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import Stopwatch\nimport task\nStopwatch.measure:\n  task.sleep(700)\n  21\n"
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import Stopwatch\nimport task\nStopwatch.measure(\"training\"):\n  task.sleep(2400)\n  42\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "inputs": [],
+  "boards": [
+    {
+      "id": "timing",
+      "title": "Stopwatch",
+      "sheet": "main",
+      "columns": 2,
+      "components": [
+        {
+          "id": "default_timer",
+          "kind": "stopwatch",
+          "title": "Loading",
+          "stopwatch_id": "default"
+        },
+        {
+          "id": "training_timer",
+          "kind": "stopwatch",
+          "title": "Training",
+          "stopwatch_id": "training"
+        },
+        {
+          "id": "result",
+          "kind": "result",
+          "title": "Training result",
+          "cell": "2"
+        }
+      ]
+    }
+  ]
+}

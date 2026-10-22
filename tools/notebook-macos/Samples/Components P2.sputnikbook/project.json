@@ -1,0 +1,200 @@
+{
+  "format": "sputnik-notebook",
+  "version": 3,
+  "title": "Компоненты P2",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "main",
+      "title": "Эксперимент",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "code",
+          "mode": "manual",
+          "source": "from notebook.ui import DataTableView\nimport task\ngain = notebook.input(\"gain\")\nsome_range = notebook.input(\"some_range\")\ntimestamp = notebook.input(\"when\")\nchild = task.async:\n  print(\"child started\")\n  task.sleep(700)\n  gain * 2\nprint(\"experiment started\")\nnotebook.show(DataTableView([{id: \"sample_a\", value: gain, date: timestamp}, {id: \"sample_b\", value: gain * 2, date: timestamp}], columns: [:id, :value, :date]), id: \"records\")\nnotebook.progress(\"experiment\", 1, 2, \"Computing\", false)\nscore = child.wait()\nnotebook.progress(\"experiment\", 2, 2, \"Done\", true)\nprint(\"experiment finished\")\nscore\n"
+        }
+      ]
+    }
+  ],
+  "modules": [],
+  "auto_imports": [],
+  "dependencies": [
+    {
+      "path": "../../../../../sputnik-lang/packages/notebook_ui",
+      "auto_import": false
+    }
+  ],
+  "inputs": [
+    {
+      "id": "gain",
+      "title": "Gain",
+      "type": "integer",
+      "default": 3,
+      "minimum": 0,
+      "maximum": 100
+    },
+    {
+      "id": "some_range",
+      "title": "Range",
+      "type": "range",
+      "default": {
+        "start": 0,
+        "finish": 15,
+        "inclusive_end": false,
+        "step": 3
+      }
+    },
+    {
+      "id": "when",
+      "title": "When",
+      "type": "string",
+      "default": "2026-10-20T12:00:00Z"
+    }
+  ],
+  "boards": [
+    {
+      "id": "p2",
+      "title": "Эксперименты и runtime",
+      "sheet": "main",
+      "columns": 1,
+      "rows": [
+        {
+          "id": "controls"
+        },
+        {
+          "id": "run"
+        },
+        {
+          "id": "split"
+        },
+        {
+          "id": "history"
+        }
+      ],
+      "components": [
+        {
+          "id": "gain",
+          "kind": "input",
+          "title": "Параметр",
+          "input": "gain",
+          "row": "controls",
+          "span": 3
+        },
+        {
+          "id": "range",
+          "kind": "range_input",
+          "title": "Диапазон",
+          "row": "controls",
+          "span": 4,
+          "input": "some_range"
+        },
+        {
+          "id": "date",
+          "kind": "date_input",
+          "title": "Дата и время",
+          "input": "when",
+          "date_mode": "date_time",
+          "date_time_zone": "Europe/Moscow",
+          "row": "controls",
+          "span": 5
+        },
+        {
+          "id": "run",
+          "kind": "run",
+          "title": "Запустить эксперимент",
+          "cell": "1",
+          "row": "run",
+          "span": 12
+        },
+        {
+          "id": "workspace",
+          "kind": "split",
+          "title": "Результат и runtime",
+          "row": "split",
+          "span": 12,
+          "split_fraction": 0.6,
+          "split_min": 180,
+          "panels": [
+            {
+              "id": "results",
+              "title": "Результат",
+              "rows": [
+                {
+                  "id": "row_0"
+                },
+                {
+                  "id": "row_1"
+                }
+              ],
+              "components": [
+                {
+                  "id": "records",
+                  "kind": "table",
+                  "title": "Данные",
+                  "cell": "1",
+                  "table_id": "records",
+                  "row": "row_0",
+                  "span": 12
+                },
+                {
+                  "id": "log",
+                  "kind": "log",
+                  "title": "Журнал",
+                  "cell": "1",
+                  "row": "row_1",
+                  "span": 12
+                }
+              ]
+            },
+            {
+              "id": "runtime",
+              "title": "Runtime",
+              "rows": [
+                {
+                  "id": "row_0"
+                },
+                {
+                  "id": "row_1"
+                }
+              ],
+              "components": [
+                {
+                  "id": "tasks",
+                  "kind": "task_monitor",
+                  "title": "Дочерние задачи",
+                  "row": "row_0",
+                  "span": 12
+                },
+                {
+                  "id": "state",
+                  "kind": "status",
+                  "title": "Worker",
+                  "p1": {
+                    "target_kind": "runtime"
+                  },
+                  "row": "row_1",
+                  "span": 12
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "runs",
+          "kind": "run_history",
+          "title": "Запуски",
+          "row": "history",
+          "span": 6
+        },
+        {
+          "id": "comparison",
+          "kind": "experiment_compare",
+          "title": "Сравнение",
+          "row": "history",
+          "span": 6
+        }
+      ]
+    }
+  ]
+}

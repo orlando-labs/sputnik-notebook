@@ -20,26 +20,30 @@ enum SputnikNotebookApplication {
 }
 
 final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuItemValidation {
-    let model = NotebookModel(workerExecutable: CommandLine.arguments.contains("--isolated-worker")
-        ? Bundle.main.executableURL?.deletingLastPathComponent().appendingPathComponent("sputnik-notebook-worker").path
-        : nil)
+    let model = NotebookModel()
+    private let preferences = NotebookPreferences(defaults:
+        CommandLine.arguments.contains("--smoke-test") || CommandLine.arguments.contains("--showcase-test")
+            ? nil : UserDefaults.standard)
+    private var settingsWindow: NSWindow?
     private var window: NSWindow!
     private var allowClose = false
     private var terminating = false
     private var pendingOpen: URL?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        installApplicationIcon()
+        preferences.applyAppearance()
         installMenus()
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1240, height: 840),
                           styleMask: [.titled, .closable, .miniaturizable, .resizable],
                           backing: .buffered, defer: false)
         window.title = "Sputnik Notebook"
-        window.appearance = NSAppearance(named: .aqua)
         window.minSize = NSSize(width: 920, height: 600)
         window.isReleasedWhenClosed = false
         window.setFrameAutosaveName("SputnikNotebookWorkspace")
         window.delegate = self
-        window.contentView = NSHostingView(rootView: NotebookView(model: model))
+        window.contentView = NSHostingView(rootView: NotebookAppearanceView(
+            preferences: preferences, content: NotebookView(model: model)))
         window.center()
         model.requestNew = { [weak self] in self?.newProject(nil) }
         model.requestOpen = { [weak self] in self?.openProject(nil) }
@@ -59,6 +63,22 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         }
     }
 
+    private func installApplicationIcon() {
+        // Finder uses CFBundleIconFile for the .app. The unbundled executable
+        // also needs explicit Dock content after AppKit has registered its tile.
+        guard let iconURL = Bundle.main.url(forResource: "AppIcon", withExtension: "icns")
+            ?? Bundle.main.executableURL?.deletingLastPathComponent()
+                .appendingPathComponent("AppIcon.icns"),
+              let icon = NSImage(contentsOf: iconURL) else { return }
+        NSApp.applicationIconImage = icon
+        let tile = NSApp.dockTile
+        let view = NSImageView(frame: NSRect(origin: .zero, size: tile.size))
+        view.image = icon
+        view.imageScaling = .scaleProportionallyUpOrDown
+        tile.contentView = view
+        tile.display()
+    }
+
     private func refreshWindow() {
         guard window != nil else { return }
         window.title = model.snapshot.map { "\($0.title) — Sputnik Notebook" } ?? "Sputnik Notebook"
@@ -70,6 +90,8 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         let menu = NSMenu()
         let app = NSMenu()
         add("About Sputnik Notebook", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), key: "", to: app, target: NSApp)
+        app.addItem(.separator())
+        add("Settings…", action: #selector(showSettings(_:)), key: ",", to: app)
         app.addItem(.separator())
         add("Quit Sputnik Notebook", action: #selector(NSApplication.terminate(_:)), key: "q", to: app, target: NSApp)
         attach("Sputnik Notebook", submenu: app, to: menu)
@@ -125,14 +147,15 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        if item.action == #selector(showSettings(_:)) { return true }
+        if let settingsWindow, item.action == #selector(closeWindow(_:)), NSApp.keyWindow === settingsWindow { return true }
         if item.action == #selector(stopExecution(_:)) { return model.canStop }
         guard !model.busy, !model.boardEditorOpen else { return false }
         switch item.action {
         case #selector(save(_:)), #selector(saveAll(_:)), #selector(runAll(_:)):
             return model.snapshot != nil
         case #selector(runCell(_:)):
-            return model.activeBoard == nil && model.selectedCell?.kind == "code" &&
-                !(model.isolatedExecution && model.activeTab?.kind == "module")
+            return model.activeBoard == nil && model.selectedCell?.kind == "code"
         case #selector(addCell(_:)), #selector(addText(_:)), #selector(applyModules(_:)):
             return model.activeBoard == nil && model.activeTab?.kind == "sheet"
         default: return true
@@ -161,7 +184,10 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
             guard let self else { return }
             if response == .alertFirstButtonReturn {
                 self.model.perform("save_all") { success in if success { continuation() } }
-            } else if response == .alertThirdButtonReturn { continuation() }
+            } else if response == .alertThirdButtonReturn {
+                do { try self.model.remote.discardLocalCheckpoint(); continuation() }
+                catch { self.model.error = error.localizedDescription }
+            }
         }
     }
 
@@ -223,7 +249,21 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     @objc private func addCell(_ sender: Any?) { model.perform("add_cell") }
     @objc private func addText(_ sender: Any?) { model.perform("add_text") }
     @objc private func applyModules(_ sender: Any?) { model.perform("apply") }
-    @objc private func closeWindow(_ sender: Any?) { window.performClose(sender) }
+    @objc private func closeWindow(_ sender: Any?) { (NSApp.keyWindow ?? window).performClose(sender) }
+
+    @objc private func showSettings(_ sender: Any?) {
+        if settingsWindow == nil {
+            let settings = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 548, height: 660),
+                                    styleMask: [.titled, .closable], backing: .buffered, defer: false)
+            settings.title = "Settings"
+            settings.isReleasedWhenClosed = false
+            settings.contentView = NSHostingView(rootView: NotebookAppearanceView(
+                preferences: preferences, content: NotebookSettingsView(preferences: preferences)))
+            settings.center()
+            settingsWindow = settings
+        }
+        settingsWindow?.makeKeyAndOrderFront(sender)
+    }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         if allowClose { return true }
@@ -288,6 +328,7 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
             var previousFrame: Data?
             var liveFrames = 0
             var sawProgress = false
+            var sawBoardProgress = false
             var captured = false
             let started = Date()
             let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] timer in
@@ -296,11 +337,25 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
                     for p in cell.progress where p.current > 0 && p.current < p.total {
                         sawProgress = true
                     }
-                    if let panel = cell.displays.first, panel.data != previousFrame {
-                        previousFrame = panel.data; liveFrames += 1
+                    if let panel = cell.displays.first {
+                        let frame = panel.data.isEmpty ? Data((panel.plot_scene ?? "").utf8) : panel.data
+                        if frame != previousFrame { previousFrame = frame; liveFrames += 1 }
+                    } else if let chart = cell.charts.first(where: { $0.id == "loss" }) {
+                        let frame = Data(String(chart.total_points).utf8)
+                        if frame != previousFrame { previousFrame = frame; liveFrames += 1 }
                     }
                 }
-                if !captured && sawProgress && liveFrames >= 2,
+                if let tab = self.model.controller(for: board) {
+                    for component in board.allComponents where component.kind == "progress" {
+                        guard let cell = tab.cells.first(where: { $0.id == component.cell }) else { continue }
+                        let state = self.model.presentation(for: cell, in: tab)
+                        if state.running && state.progress.contains(where: {
+                            (component.progress_id?.isEmpty != false || $0.id == component.progress_id) &&
+                            $0.current > 0 && $0.current < $0.total
+                        }) { sawBoardProgress = true }
+                    }
+                }
+                if !captured && sawBoardProgress && liveFrames >= 2,
                    let index = arguments.firstIndex(of: "--live-snapshot-png"), arguments.count > index + 1 {
                     captured = self.renderSnapshot(to: arguments[index + 1])
                 }
@@ -313,12 +368,26 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
                 timer.invalidate()
                 let cells = self.model.controller(for: board)?.cells ?? []
                 let complete = cells.contains { cell in
-                    cell.ok && cell.displays?.count == 2 &&
+                    cell.ok &&
                     cell.progress?.contains { $0.done && $0.current == $0.total && $0.total > 0 } == true
                 }
                 let imagesValid = cells.flatMap { $0.displays ?? [] }.allSatisfy { $0.image() != nil }
-                let verified = success && complete && imagesValid && sawProgress && liveFrames >= 2
-                print("MNIST GUI: \(liveFrames) live frames, progress \(sawProgress), completed \(complete)")
+                let series = self.model.controller(for: board).flatMap { self.model.imageSeries("worst-validation", in: $0) }
+                let validationValid = series?.images.count == 10 && series?.images.allSatisfy { $0.image() != nil && !$0.caption.isEmpty } == true
+                let chartsComplete = ["loss", "accuracy"].allSatisfy { id in
+                    self.model.controller(for: board).flatMap { self.model.liveChart(id, in: $0) }?.points.isEmpty == false
+                }
+                let boardComplete = self.model.controller(for: board).map { tab in
+                    board.allComponents.contains { component in
+                        guard component.kind == "progress", let cell = tab.cells.first(where: { $0.id == component.cell }), cell.ok else { return false }
+                        return self.model.presentation(for: cell, in: tab).progress.contains {
+                            (component.progress_id?.isEmpty != false || $0.id == component.progress_id) &&
+                            $0.done && $0.current == $0.total && $0.total > 0
+                        }
+                    }
+                } ?? false
+                let verified = success && complete && boardComplete && imagesValid && validationValid && chartsComplete && sawProgress && sawBoardProgress && liveFrames >= 2
+                print("MNIST GUI: \(liveFrames) live frames, progress \(sawProgress), board progress \(sawBoardProgress), completed \(complete), board completed \(boardComplete)")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     var rendered = verified
                     if let index = arguments.firstIndex(of: "--snapshot-png"), arguments.count > index + 1 {
@@ -354,6 +423,16 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
                     if let index = arguments.firstIndex(of: "--snapshot-png"), arguments.count > index + 1 {
                         rendered = self.renderSnapshot(to: arguments[index + 1]) && rendered
                     }
+                    if let index = arguments.firstIndex(of: "--snapshot-dock-icon-png"), arguments.count > index + 1 {
+                        if let iconView = NSApp.dockTile.contentView {
+                            let iconRendered = self.renderSnapshot(view: iconView, to: arguments[index + 1])
+                            print(iconRendered ? "notebook Dock icon smoke ok" : "notebook Dock icon smoke FAILED")
+                            rendered = iconRendered && rendered
+                        } else {
+                            fputs("Notebook Dock icon is missing\n", stderr)
+                            rendered = false
+                        }
+                    }
                     self.finishSmoke(rendered)
                   }
                 }
@@ -367,19 +446,96 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
                               first.displays?.first?.data != previous else { self.finishSmoke(false); return }
                         finish()
                     }
+                } else if arguments.contains("--theme-smoke-test") {
+                    self.verifyThemeSwitching { success in
+                        if success { finish() } else { self.finishSmoke(false) }
+                    }
                 } else {
                     finish()
                 }
             }
         }
     }
+
+    private func nativeEditors(in view: NSView) -> [NSTextView] {
+        (view as? NSTextView).map { [$0] } ?? view.subviews.flatMap { nativeEditors(in: $0) }
+    }
+
+    private func verifyThemeSwitching(_ completion: @escaping (Bool) -> Void) {
+        guard let root = window.contentView else { completion(false); return }
+        root.layoutSubtreeIfNeeded()
+        let editors = nativeEditors(in: root)
+        guard !editors.isEmpty else { completion(false); return }
+        let sources = editors.map(\.string)
+        for editor in editors {
+            editor.setSelectedRange(NSRange(location: min(2, editor.string.utf16.count), length: 0))
+        }
+        let selections = editors.map { $0.selectedRange() }
+        let undoManagers = editors.map { $0.undoManager }
+        for (editor, undo) in zip(editors, undoManagers) {
+            undo?.registerUndo(withTarget: editor) { _ in }
+        }
+        let undoStates = undoManagers.map { $0?.canUndo ?? false }
+        // Use the same Settings window and preference as the menu action.
+        showSettings(nil)
+        let states = [NotebookTheme.dark, .light].flatMap { theme in
+            NotebookColorPreset.allCases.map { (theme, $0) }
+        }
+        var previousFrame: Data?
+        func verifyState(_ index: Int) {
+            guard index < states.count else {
+                self.preferences.colorPreset = .sputnik
+                self.preferences.theme = .light
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    // Exercise Command-W when Settings owns focus.
+                    if NSApp.keyWindow === self.settingsWindow { self.closeWindow(nil) }
+                    else { self.settingsWindow?.performClose(nil) }
+                    let current = self.nativeEditors(in: root)
+                    let ok = self.verifySmokeEditors() && self.window.isVisible &&
+                        self.settingsWindow?.isVisible == false &&
+                        current.map(ObjectIdentifier.init) == editors.map(ObjectIdentifier.init) &&
+                        current.map(\.string) == sources && current.map { $0.selectedRange() } == selections &&
+                        undoManagers.map { $0?.canUndo ?? false } == undoStates
+                    print(ok ? "notebook theme switching smoke ok" : "notebook theme switching smoke FAILED")
+                    completion(ok)
+                }
+                return
+            }
+            let (theme, preset) = states[index]
+            self.preferences.theme = theme
+            self.preferences.colorPreset = preset
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                let appearance: NSAppearance.Name = theme == .dark ? .darkAqua : .aqua
+                let current = self.nativeEditors(in: root)
+                var ok = self.verifySmokeEditors() &&
+                    self.window.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == appearance &&
+                    self.settingsWindow?.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == appearance &&
+                    current.map(ObjectIdentifier.init) == editors.map(ObjectIdentifier.init) &&
+                    current.map(\.string) == sources && current.map { $0.selectedRange() } == selections &&
+                    undoManagers.map { $0?.canUndo ?? false } == undoStates
+                // Verify visible workspace colors change even when the theme
+                // stays the same. Settings has its own hosting tree.
+                if let bitmap = root.bitmapImageRepForCachingDisplay(in: root.bounds) {
+                    root.cacheDisplay(in: root.bounds, to: bitmap)
+                    let frame = bitmap.representation(using: .png, properties: [:])
+                    ok = ok && frame != nil && (previousFrame == nil || frame != previousFrame)
+                    previousFrame = frame
+                } else { ok = false }
+                guard ok else {
+                    fputs("Theme/preset smoke failed: \(theme.title), \(preset.title)\n", stderr)
+                    completion(false)
+                    return
+                }
+                verifyState(index + 1)
+            }
+        }
+        verifyState(0)
+    }
+
     private func verifySmokeEditors() -> Bool {
         guard let root = window.contentView, let tab = model.activeTab else { return false }
         root.layoutSubtreeIfNeeded()
-        func editors(in view: NSView) -> [NSTextView] {
-            (view as? NSTextView).map { [$0] } ?? view.subviews.flatMap { editors(in: $0) }
-        }
-        let views = editors(in: root)
+        let views = nativeEditors(in: root)
         for cell in tab.cells where cell.kind == "code" || cell.kind == "text" {
             for panel in cell.displays ?? [] where panel.image() == nil {
                 fputs("Figure image failed to decode in cell \(cell.id): \(panel.caption)\n", stderr)
@@ -418,6 +574,9 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
     private func renderSnapshot(to path: String) -> Bool {
         guard let view = window.contentView else { return false }
+        return renderSnapshot(view: view, to: path)
+    }
+    private func renderSnapshot(view: NSView, to path: String) -> Bool {
         view.layoutSubtreeIfNeeded()
         guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return false }
         view.cacheDisplay(in: view.bounds, to: bitmap)

@@ -25,10 +25,13 @@ template<class F> static void rejects(F f, const std::string &message) {
   try { f(); } catch (const ProtocolError &) { return; }
   require(false, message);
 }
-static std::optional<Message> receive_nonlive(Process &process) {
+static std::optional<Message> receive_nonlive(Process &process, std::chrono::milliseconds timeout = 5s) {
   std::optional<PresentationAssembler> live;
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
   while (true) {
-    const auto message = process.receive(5s);
+    const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now());
+    if (left <= 0ms) return std::nullopt;
+    const auto message = process.receive(left);
     if (!message) return std::nullopt;
     if (message->kind == Kind::LiveBegin || message->kind == Kind::LiveChunk || message->kind == Kind::LiveEnd) {
       if (!live) live.emplace(message->generation, message->request, true);
@@ -103,7 +106,7 @@ static void presentation_tests() {
   const auto png = [](std::size_t size, std::uint32_t width, std::uint32_t height) {
     // Header fixture; the transport never decompresses image data.
     std::string bytes(size, '\0');
-    bytes.replace(0, 8, "\x89PNG\r\n\x1a\n", 8); bytes.replace(12, 4, "IHDR");
+    bytes.replace(0, 8, "\x89PNG\r\n\x1a\n", 8); bytes[11] = 13; bytes.replace(12, 4, "IHDR");
     for (unsigned i = 0; i < 4; ++i) {
       bytes[16 + i] = static_cast<char>(width >> ((3 - i) * 8));
       bytes[20 + i] = static_cast<char>(height >> ((3 - i) * 8));
@@ -135,14 +138,73 @@ static void presentation_tests() {
   cell.displays.push_back({"image/png", png(kMaxMessageBytes + 31, 320, 240), "a) caption", 320, 240});
   cell.displays.push_back({"image/png", png(33, 64, 48), "b) caption", 64, 48});
   cell.displays[0].plot_scene = "{\"version\":1,\"bounds\":[0,0,1,1]}";
+  cell.displays[0].id = "figure";
+  cell.displays.push_back({"application/vnd.sputnik.table+json",
+      "{\"columns\":[{\"id\":\"0\",\"title\":\"A\",\"type\":\"null\"}],\"rows\":[],\"total_rows\":0,\"truncated\":false}",
+      "Published table", 0, 0, "", "rows"});
   sputnik::runtime::NotebookLiveEvent progress;
   progress.id = "train"; progress.current = 2.5; progress.total = 100;
   progress.description = "MNIST"; progress.elapsed_ms = 725; progress.done = false;
   cell.progress.push_back(progress);
   original.cells.push_back(cell);
+  original.executing_cell = cell.id;
   const auto bytes = encode_presentation(original);
   const auto decoded = decode_presentation(bytes);
   require(encode_presentation(decoded) == bytes, "all inert presentation fields round trip losslessly");
+  require(decoded.executing_cell == cell.id, "executing cell preserves its full 64-bit identity");
+  auto timed = original;
+  timed.cells[0].elapsed_ms = 1234; timed.cells[0].timing_running = true;
+  sputnik::runtime::NotebookLiveEvent stopwatch;
+  stopwatch.kind = sputnik::runtime::NotebookLiveEventKind::Stopwatch;
+  stopwatch.id = "training"; stopwatch.elapsed_ms = 456; stopwatch.done = false;
+  timed.cells[0].stopwatches = {stopwatch}; timed.cells[0].stopwatches_updated = true;
+  const auto timed_copy = decode_presentation(encode_presentation(timed));
+  require(timed_copy.cells[0].elapsed_ms == 1234 && timed_copy.cells[0].timing_running &&
+          timed_copy.cells[0].stopwatches[0].elapsed_ms == 456 && !timed_copy.cells[0].stopwatches[0].done,
+          "cell timing and running Stopwatch channels survive worker transport");
+  auto media_previous = bytes.substr(0, bytes.size() - 88 - original.cells.size() * 16);
+  media_previous.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v14");
+  require(decode_presentation(media_previous).telemetry.tasks.empty(), "v14 snapshots remain readable without live logs and telemetry");
+  auto audio_previous = bytes.substr(0, bytes.size() - 88 - original.cells.size() * 56);
+  audio_previous.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v13");
+  require(decode_presentation(audio_previous).cells[0].audio.empty(), "v13 snapshots remain readable without audio metadata");
+  auto previous = bytes.substr(0, bytes.size() - 88 - original.cells.size() * 96);
+  previous.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v12");
+  require(decode_presentation(previous).executing_cell == cell.id && !decode_presentation(previous).cells[0].elapsed_ms,
+          "v12 snapshots remain readable without timing metadata");
+  auto legacy = bytes.substr(0, bytes.size() - 96 - original.cells.size() * 96);
+  legacy.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v11");
+  require(decode_presentation(legacy).executing_cell == 0, "older saved presentations remain readable");
+  auto legacy_empty = encode_presentation(Presentation{});
+  legacy_empty.resize(legacy_empty.size() - 96);
+  legacy_empty.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v11");
+  PresentationAssembler legacy_assembler(11, 12);
+  legacy_assembler.accept({Kind::SnapshotBegin, 11, 12, {"sputnik.notebook.presentation.v11", std::to_string(legacy_empty.size())}});
+  legacy_assembler.accept({Kind::SnapshotChunk, 11, 12, {"0", legacy_empty}});
+  require(legacy_assembler.accept({Kind::Result, 11, 12, {"sputnik.notebook.presentation.v11"}}).has_value(),
+          "older remote presentation frames remain readable");
+  auto execution_only = Presentation{};
+  execution_only.executing_cell = 42;
+  auto retained = original;
+  merge_live_presentation(retained, execution_only);
+  require(retained.executing_cell == 42 && retained.cells.size() == 1,
+          "execution-only updates move the marker without clearing output");
+  merge_live_presentation(retained, Presentation{});
+  require(retained.executing_cell == 0, "empty execution update clears the marker");
+  auto progress_only = original;
+  progress_only.cells[0].displays.clear(); progress_only.cells[0].displays_updated = false;
+  const auto progress_bytes = encode_presentation(progress_only);
+  require(progress_bytes.size() < 4096, "progress delta never carries the retained multi-megabyte graph");
+  auto merged = original;
+  progress_only.cells[0].progress[0].current = 5;
+  merge_live_presentation(merged, progress_only);
+  require(merged.cells[0].displays[0].bytes == original.cells[0].displays[0].bytes &&
+              merged.cells[0].progress[0].current == 5, "merging progress keeps graph without replacing it");
+  progress_only.cells[0].progress_updated = false; progress_only.cells[0].progress.clear();
+  progress_only.cells[0].displays_updated = true;
+  merge_live_presentation(merged, progress_only);
+  require(merged.cells[0].displays.empty() && merged.cells[0].progress[0].current == 5,
+          "empty figure delta explicitly clears figures and preserves progress");
   auto large_scene = original;
   large_scene.cells[0].displays[0].plot_scene.assign(4 * 1024 * 1024 + 1, 'x');
   rejects([&] { encode_presentation(large_scene); }, "oversized plot scene");
@@ -153,6 +215,8 @@ static void presentation_tests() {
   rejects([&] { encode_presentation(large_result); }, "oversized result snapshot");
   large_result = original; large_result.cells[0].result_format.pretty.assign(65537, 'x');
   rejects([&] { encode_presentation(large_result); }, "oversized pretty snapshot");
+  large_result = original; large_result.cells[0].result_format.table_json.assign(1024 * 1024 + 1, 'x');
+  rejects([&] { encode_presentation(large_result); }, "oversized typed table snapshot");
   require(decoded.cells[0].id == cell.id && decoded.cells[0].locals[0].watch_revision == 27,
           "64-bit identities/revisions are not JSON doubles");
   rejects([&] { decode_presentation(bytes.substr(0, bytes.size() - 1)); }, "truncated presentation");
@@ -165,18 +229,22 @@ static void presentation_tests() {
   rejects([&] { encode_presentation(duplicate); }, "zero failure identity");
   auto invalid_png = original; invalid_png.cells[0].displays[0].width = 1;
   rejects([&] { encode_presentation(invalid_png); }, "mismatched PNG dimensions");
+  auto invalid_table = original; invalid_table.cells[0].displays.back().width = 1;
+  rejects([&] { encode_presentation(invalid_table); }, "table displays have no raster dimensions");
+  invalid_table = original; invalid_table.cells[0].displays.back().bytes.assign(1024 * 1024 + 1, 'x');
+  rejects([&] { encode_presentation(invalid_table); }, "table payload has its own one-MiB limit");
   auto malformed = bytes; malformed[8] = 'X';
   rejects([&] { decode_presentation(malformed); }, "unknown presentation schema");
   auto invalid_count = encode_presentation(Presentation{});
   invalid_count.replace(invalid_count.size() - 8, 8, std::string(8, '\xff'));
   rejects([&] { decode_presentation(invalid_count); }, "invalid collection count before allocation");
   // Header is one length-prefixed string; next field is a canonical Bool.
-  malformed = bytes; malformed[8 + std::string("sputnik.notebook.presentation.v5").size() + 7] = 2;
+  malformed = bytes; malformed[8 + std::string("sputnik.notebook.presentation.v15").size() + 7] = 2;
   rejects([&] { decode_presentation(malformed); }, "invalid presentation bool");
   const Message begin{Kind::SnapshotBegin, 11, 12,
-      {"sputnik.notebook.presentation.v5", std::to_string(bytes.size())}};
+      {"sputnik.notebook.presentation.v15", std::to_string(bytes.size())}};
   const Message chunk{Kind::SnapshotChunk, 11, 12, {"0", bytes.substr(0, kPresentationChunkBytes)}};
-  const Message end{Kind::Result, 11, 12, {"sputnik.notebook.presentation.v5"}};
+  const Message end{Kind::Result, 11, 12, {"sputnik.notebook.presentation.v15"}};
   PresentationAssembler incomplete(11, 12);
   require(!incomplete.accept(begin) && !incomplete.accept(chunk), "partial snapshot stays unpublished");
   rejects([&] { incomplete.accept(end); }, "premature Result");
@@ -189,7 +257,7 @@ static void presentation_tests() {
   rejects([&] { generation.accept(begin); }, "stale generation");
   PresentationAssembler overflow(11, 12);
   rejects([&] { overflow.accept({Kind::SnapshotBegin, 11, 12,
-      {"sputnik.notebook.presentation.v5", std::to_string(kMaxPresentationBytes + 1)}}); }, "oversized total before allocation");
+      {"sputnik.notebook.presentation.v12", std::to_string(kMaxPresentationBytes + 1)}}); }, "oversized total before allocation");
   PresentationAssembler no_begin(11, 12);
   rejects([&] { no_begin.accept(chunk); }, "chunk without begin");
   int fds[2]; require(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0, "presentation socketpair");
@@ -224,6 +292,58 @@ static void presentation_tests() {
   auto live_begin = begin; live_begin.kind = Kind::LiveBegin;
   rejects([&] { terminal.accept(live_begin); }, "live telemetry cannot commit cell variables");
 }
+static void chart_presentation_tests() {
+  const auto sample = [](std::string id, double x, double y, std::uint64_t total, bool replace) {
+    sputnik::runtime::NotebookLiveEvent event;
+    event.kind = sputnik::runtime::NotebookLiveEventKind::ChartPoints;
+    event.id = std::move(id); event.chart_points = {{x, y}};
+    event.chart_total_points = total; event.replace_chart = replace;
+    return event;
+  };
+  const auto delta = [](bool updated) {
+    Presentation value;
+    CellPresentation cell; cell.id = 1; cell.source_revision = 2;
+    cell.displays_updated = cell.progress_updated = false; cell.charts_updated = updated;
+    value.cells.push_back(std::move(cell));
+    return value;
+  };
+  auto full = delta(true);
+  full.cells[0].charts = {sample("loss", -1, -2, 524289, true), sample("accuracy", 1, 98, 1, true)};
+  const auto decoded = decode_presentation(encode_presentation(full));
+  require(decoded.cells[0].charts[0].chart_total_points == 524289 &&
+          decoded.cells[0].charts[0].chart_points[0][1] == -2,
+          "negative coordinates and lifetime counters beyond retained-point budget survive IPC");
+  auto invalid = full; invalid.cells[0].charts[0].chart_total_points = 0;
+  rejects([&] { encode_presentation(invalid); }, "chart counter cannot be smaller than points");
+  auto malformed = encode_presentation(full);
+  const auto counter = malformed.find("accuracy") + std::string("accuracy").size();
+  malformed.replace(counter, 8, std::string(8, '\0'));
+  rejects([&] { decode_presentation(malformed); }, "decoder validates chart count after reading points");
+  invalid = full; invalid.cells[0].charts.push_back(invalid.cells[0].charts[0]);
+  rejects([&] { encode_presentation(invalid); }, "duplicate chart channels are rejected");
+  auto partial = delta(true);
+  partial.cells[0].charts = {sample("loss", 2, 3, 524290, false)};
+  auto pending = delta(false); // A progress-only packet can arrive before chart data.
+  merge_live_presentation(pending, partial);
+  require(!pending.cells[0].charts[0].replace_chart,
+          "pending IPC batch must preserve delta semantics for an existing UI chart");
+  merge_live_presentation(full, decode_presentation(encode_presentation(pending)));
+  require(full.cells[0].charts[0].chart_points.size() == 2 && full.cells[0].charts.size() == 2,
+          "UI history is retained across separate polling batches");
+  auto reset = delta(true); reset.cells[0].charts_reset = true;
+  reset.cells[0].charts = {sample("loss", 0, 9, 1, true)};
+  merge_live_presentation(full, reset);
+  require(full.cells[0].charts.size() == 1 && full.cells[0].charts[0].chart_points.size() == 1 &&
+          full.cells[0].charts_reset, "reset plus samples clears obsolete channels in the same packet");
+  auto later = delta(true); later.cells[0].charts = {sample("loss", 1, 8, 2, false)};
+  merge_live_presentation(reset, later);
+  const auto reset_roundtrip = decode_presentation(encode_presentation(reset));
+  require(reset_roundtrip.cells[0].charts_reset && reset_roundtrip.cells[0].charts[0].chart_points.size() == 2,
+          "coalesced reset remains visible after subsequent samples");
+  invalid = delta(false); invalid.cells[0].charts_reset = true;
+  rejects([&] { encode_presentation(invalid); }, "reset requires a chart update flag");
+}
+
 static void output_capture_tests() {
   Session session;
   Cell cell; cell.id = 1; cell.source = "UNSAVED SOURCE SENTINEL";
@@ -264,6 +384,16 @@ static void process_tests(const std::string &worker, const std::string &fixture)
   const auto path = project.directory.string();
   const auto original = read_file(project.directory / "project.json");
   Process process;
+  const auto missing_worker = (root / "missing notebook worker").string();
+  bool missing_rejected = false;
+  try { process.start(missing_worker); }
+  catch (const ProtocolError &error) {
+    missing_rejected = true;
+    require(std::string(error.what()).find(missing_worker) != std::string::npos,
+            "failed worker launch identifies the executable path");
+  }
+  require(missing_rejected && process.generation() == 0 && !process.poll_exit(),
+          "missing executable leaves no worker to reap and permits retry");
   process.start(worker);
   const auto generation = process.generation();
   reply(process, Kind::Ready);
@@ -282,6 +412,30 @@ static void process_tests(const std::string &worker, const std::string &fixture)
   require(container.cells[0].ok && container.cells[0].result_format.is_container &&
           container.cells[0].result_format.pretty.find("\n  :loss: [\n") != std::string::npos &&
           !container.cells[0].result_format.truncated, "real container inspection crosses worker boundary");
+  process.send(Kind::Source, {cell, "[{:name: \"A, B\", :value: 9223372036854775807}, {:name: \"Other\", :value: null}]\n", "1"}); finish(process);
+  process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
+  const auto table = finish(process);
+  require(table.cells[0].result_format.table_json.find("9223372036854775807") != std::string::npos &&
+          table.cells[0].result_format.table_json.find("\"total_rows\":2") != std::string::npos,
+          "table captures exact scalars and rows through worker IPC without parsing preview text");
+  const auto long_key = std::string(300, 'k');
+  process.send(Kind::Source, {cell, "[{\"" + long_key + "A\": 11, \"" + long_key + "B\": 22}]\n", "1"}); finish(process);
+  process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
+  const auto long_columns = finish(process).cells[0].result_format.table_json;
+  require(long_columns.find("\"values\":[11,22]") != std::string::npos && long_columns.find("\"truncated\":true") != std::string::npos,
+          "bounded column titles cannot merge distinct record keys");
+  std::string many_rows = "[0";
+  for (int i = 1; i < 4097; ++i) many_rows += ',' + std::to_string(i);
+  many_rows += "]\n";
+  process.send(Kind::Source, {cell, many_rows, "1"}); finish(process);
+  process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
+  const auto limited = finish(process).cells[0].result_format.table_json;
+  require(limited.size() <= 1024 * 1024 && limited.find("\"total_rows\":4097") != std::string::npos &&
+          limited.find("\"truncated\":true") != std::string::npos && limited.find("\"id\":\"4096\"") == std::string::npos,
+          "oversized tables retain a bounded snapshot with explicit truncation");
+  process.send(Kind::Source, {cell, "1 / 0\n", "1"}); finish(process);
+  process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
+  require(finish(process).cells[0].result_format.table_json.empty(), "failed evaluation clears the committed table");
   process.send(Kind::Source, {cell,
       "try:\n  while true:\n    x = 1 + 2\nensure:\n  print(\"cleanup\")\n", "1"});
   finish(process);
@@ -302,7 +456,7 @@ static void process_tests(const std::string &worker, const std::string &fixture)
   const auto next_run = process.send(Kind::Run, {cell, "1"});
   reply(process, Kind::Started);
   require(process.request_stop(cancelled_run), "late Stop queued");
-  require(!process.receive(150ms), "late Stop must not cancel the next run");
+  require(!receive_nonlive(process, 150ms), "late Stop must not cancel the next run (a live reset is allowed)");
   require(process.request_stop(next_run), "current Stop queued");
   require(finish(process).cancelled, "new run independently cancellable");
   const auto early_run = process.send(Kind::Run, {cell, "1"});
@@ -402,6 +556,39 @@ static void process_tests(const std::string &worker, const std::string &fixture)
   process.request_force_stop(process.generation()); exited(process);
   fs::remove_all(root);
 }
+static void foreign_environment_process_tests(const std::string &worker) {
+  char pattern[] = "/tmp/sputnik-foreign-environment-XXXXXX";
+  const auto directory = mkdtemp(pattern); require(directory, "temporary foreign environment");
+  const fs::path root(directory), env = root / "project", work = root / "work";
+  fs::create_directories(env / ".venv/bin"); fs::create_directories(env / "venv/bin"); fs::create_directories(work);
+  std::ofstream(env / ".venv/pyvenv.cfg") << "version = 3.14.0\n";
+  std::ofstream(env / "venv/pyvenv.cfg") << "version = 3.13.0\n";
+  fs::create_symlink("/usr/bin/true", env / ".venv/bin/python");
+  fs::create_symlink("/usr/bin/true", env / "venv/bin/python");
+  std::ofstream(env / "Gemfile") << "source 'https://rubygems.org'\n";
+  std::ofstream(env / "Gemfile.lock") << "first\n";
+  const auto initial = Environment::discover(env.string());
+  require(initial.python == (fs::weakly_canonical(env) / ".venv/bin/python").string(), ".venv precedes venv without resolving its executable symlink");
+  auto document = make_project_document("Foreign environment");
+  document.sheets[0].cells.resize(1);
+  document.sheets[0].cells[0].source = "import system\nsystem.command(\"/usr/bin/env\").output()\n";
+  auto project = create_project(root / "Environment.sputnikbook", document);
+  Process process; process.start(worker, work.string(), {"process.spawn=/usr/bin/env"}, env.string());
+  reply(process, Kind::Ready);
+  process.send(Kind::Load, {project.directory.string(), ""}); finish(process);
+  process.send(Kind::Run, {std::to_string(document.sheets[0].cells[0].id), "0"}); reply(process, Kind::Started);
+  const auto result = finish(process);
+  require(result.cells[0].ok && result.cells[0].result.find(initial.python) != std::string::npos &&
+      result.cells[0].result.find(initial.gemfile) != std::string::npos, "worker receives environment independently of its cwd");
+  std::ofstream(env / "Gemfile.lock") << "second\n";
+  rejects([&] { process.send(Kind::Run, {std::to_string(document.sheets[0].cells[0].id), "0"}); }, "environment changes require worker restart");
+  process.send(Kind::Shutdown); reply(process, Kind::Result); exited(process);
+  process.start(worker, work.string(), {}, env.string()); reply(process, Kind::Ready);
+  process.send(Kind::Shutdown); reply(process, Kind::Result); exited(process);
+  require(Environment::discover(env.string()).fingerprint != initial.fingerprint, "restarted worker adopts changed bundle lock");
+  fs::remove_all(root);
+}
+
 static void environment_process_tests(const std::string &worker) {
   char pattern[] = "/tmp/sputnik-worker-environment-XXXXXX";
   const char *directory = mkdtemp(pattern); require(directory, "temporary module project");
@@ -441,6 +628,37 @@ static void environment_process_tests(const std::string &worker) {
   process.send(Kind::Shutdown); reply(process, Kind::Result); exited(process);
   fs::remove_all(root);
 }
+static void input_process_tests(const std::string &worker) {
+  char pattern[] = "/tmp/sputnik-worker-inputs-XXXXXX";
+  const char *directory = mkdtemp(pattern); require(directory, "temporary input project");
+  const fs::path root(directory);
+  auto document = make_project_document("Independent inputs");
+  document.version = 2;
+  document.inputs = {{"a", "A", "integer", std::int64_t(1)}, {"b", "B", "integer", std::int64_t(2)}};
+  document.sheets[0].cells = {{1, "code", "a = notebook.input(\"a\")\n[a, tick()]\n"},
+                             {2, "code", "b = notebook.input(\"b\")\n[b, tick()]\n"}};
+  auto project = create_project(root / "Inputs.sputnikbook", document);
+  document.modules.push_back({"audit", "audit.s", {}}); document.auto_imports = {"audit"};
+  std::ofstream(project.directory / "audit.s") <<
+      "package audit\nclass Counter:\n  def init(): @value = 0\n  def next():\n    @value += 1\n    @value\n"
+      "State = Counter()\ndef tick(): State.next()\nexport tick\n";
+  save_project(&project, document);
+  Process process; process.start(worker); reply(process, Kind::Ready);
+  process.send(Kind::Load, {project.directory.string(), ""}); finish(process);
+  document.inputs[1].initial = std::int64_t(3);
+  process.send(Kind::Sync, {serialize_project_document(document), "0"}); finish(process);
+  process.send(Kind::Run, {"1", "1"}); reply(process, Kind::Started);
+  const auto first = finish(process);
+  require(first.cells[0].result == "[1, 1]" && first.cells[1].result == "[3, 2]", "first Run uses synchronized inputs");
+  document.inputs[0].initial = std::int64_t(4);
+  process.send(Kind::Sync, {serialize_project_document(document), "0"}); finish(process);
+  process.send(Kind::Inputs); reply(process, Kind::Started);
+  const auto changed = finish(process);
+  require(changed.cells[0].result == "[4, 3]" && changed.cells[1].result == "[3, 2]",
+          "input wave cannot replay synchronized keys consumed by an earlier Run");
+  process.send(Kind::Shutdown); reply(process, Kind::Result); exited(process);
+  fs::remove_all(root);
+}
 static void plot_process_tests(const std::string &worker, const std::string &plot_source) {
   char pattern[] = "/tmp/sputnik-worker-plots-XXXXXX";
   const char *directory = mkdtemp(pattern); require(directory, "temporary plot project");
@@ -471,6 +689,17 @@ static void plot_process_tests(const std::string &worker, const std::string &plo
   require(!failed.cells[0].ok && failed.cells[0].displays.size() == 2 &&
           failed.cells[0].displays[0].bytes == panels[0].bytes && failed.cells[0].displays[0].caption == "first",
           "failed run preserves last successful figure across IPC");
+  process.send(Kind::Source, {cell,
+      "h = notebook.chart_begin(\"board-loss\", title: \"Live loss\", throttle_ms: 3600000)\n"
+      "1000.times |i|: notebook.chart_point(h, i, i % 17)\nnotebook.chart_end(h)\n42\n", "1"}); finish(process);
+  process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
+  const auto streamed = finish(process);
+  require(streamed.cells[0].ok && streamed.cells[0].displays.size() == 1,
+          "stream runs in real VM and drains at cell return: " + streamed.cells[0].error);
+  const auto &chart = streamed.cells[0].displays[0];
+  require(chart.mime == "application/vnd.sputnik.plot+json" && chart.bytes.empty() &&
+              chart.plot_scene.find("999") != std::string::npos,
+          "complete stream scene crosses IPC without synchronous raster work");
   process.send(Kind::Shutdown); reply(process, Kind::Result); exited(process);
   fs::remove_all(root);
 }
@@ -511,9 +740,12 @@ int main(int argc, char **argv) {
   alarm(60);
   protocol_tests();
   presentation_tests();
+  chart_presentation_tests();
   output_capture_tests();
   process_tests(fs::absolute(argv[1]), fs::absolute(argv[0]));
   environment_process_tests(fs::absolute(argv[1]));
+  foreign_environment_process_tests(fs::absolute(argv[1]));
+  input_process_tests(fs::absolute(argv[1]));
   if (argc == 3) plot_process_tests(fs::absolute(argv[1]), argv[2]);
   alarm(0);
   std::cout << "notebook_worker_tests: ok\n";
