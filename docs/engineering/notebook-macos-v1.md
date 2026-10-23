@@ -283,7 +283,9 @@ and Foxglove accents. Adaptive AppKit colors update existing source, rich-text
 and result storage without replacing text or resetting selection and Undo.
 **Appearance → Color Scheme** adds thirteen reference palettes beside
 **Sputnik · Default**. `NotebookColorPreset` stores stable preference IDs and
-the reference HEX swatches; derived light/dark surfaces and text colors keep
+the reference HEX swatches. New presets use neutral paper/graphite surfaces
+with subtle palette tints; stronger reference hues stay in accents and swatch
+previews. Main text also uses a lightly tinted neutral. Derived text colors keep
 new presets readable (at least 4.5:1 text contrast). The original palette is
 preserved exactly and remains the fallback for missing or unknown
 `NotebookColorPreset` preferences. Light/dark and color-preset choices are independent.
@@ -294,3 +296,9 @@ themes, syntax contrast and a real-window switch, including changed rendered
 colors, editor identity, selection, Undo and closing Settings independently of
 the notebook. GUI smoke runs use in-memory preferences and do not change the
 user's saved appearance.
+
+Additional presets separate the sidebar from the workspace by lightness,
+with at least 1.2:1 surface contrast and 1.25:1 between selected navigation
+rows and their sidebar. Selected sheets, modules and boards also use a readable
+accent outline. `--theme-snapshot-dir <directory>` on the theme smoke test saves
+the actual workspace in every preset and light/dark mode for visual review.

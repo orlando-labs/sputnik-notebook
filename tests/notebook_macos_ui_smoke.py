@@ -45,6 +45,9 @@ def main():
         flags = ["--isolated-worker"] if "--isolated-worker" in sys.argv[2:] else []
         if "--theme-smoke-test" in sys.argv[2:]:
             flags.append("--theme-smoke-test")
+        if "--theme-snapshot-dir" in sys.argv[2:]:
+            option = sys.argv.index("--theme-snapshot-dir")
+            flags.extend(["--theme-snapshot-dir", str(pathlib.Path(sys.argv[option + 1]).resolve())])
         result = subprocess.run([str(executable), *flags, "--smoke-test", str(project),
                                  "--snapshot-png", str(png),
                                  "--snapshot-dock-icon-png", str(dock_png)],

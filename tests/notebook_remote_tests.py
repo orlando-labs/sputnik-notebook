@@ -21,6 +21,8 @@ import urllib.error
 import urllib.request
 import uuid
 
+from notebook_package_catalog_test import PackageCatalogFixture
+
 TOOLS = Path(__file__).resolve().parents[1] / "tools" / "notebook-remote"
 TERMINAL = {"succeeded", "failed", "cancelled", "force-stopped", "interrupted"}
 
@@ -72,6 +74,10 @@ class RemoteTests(unittest.TestCase):
         cls.root = cls.directory / "new" / "state"
         cls.logs = []
         cls.process_env = dict(os.environ)
+        compiler = Path(__file__).resolve().parents[2] / "sputnik-lang/build/sputnik"
+        cls.catalog_fixture = PackageCatalogFixture(compiler)
+        cls.process_env["SPUTNIK_PKG_REGISTRY"] = cls.catalog_fixture.origin
+        cls.process_env.pop("SPUTNIK_PKG_CREDENTIALS", None)
         if OPTIONS.bridges:
             workspace = Path(__file__).resolve().parents[2]
             compiler = workspace / "sputnik-lang/build/sputnik"
@@ -131,6 +137,7 @@ class RemoteTests(unittest.TestCase):
                     process.wait()
         for log in cls.logs:
             log.close()
+        cls.catalog_fixture.close()
         if not OPTIONS.keep:
             shutil.rmtree(str(cls.directory))
         else:
@@ -309,6 +316,43 @@ class RemoteTests(unittest.TestCase):
         run, _ = self.start(revision)
         self.assertEqual(self.wait_run(run)["state"], "failed")
         self.assertTrue(source.exists(), "removing an installation preserves original source")
+
+    def test_package_catalog_uses_execution_host_without_retiring_workers(self):
+        revision, _ = self.upload(document())
+        run, _ = self.start(revision)
+        self.assertEqual(self.wait_run(run)["state"], "succeeded")
+        route = "/v1/projects/" + self.project + "/package-catalog"
+        body = dict(command_id=uuid.uuid4().hex, query="versions", source="editor-probe")
+        self.assertEqual(self.request("POST", route, body, token=False)[0], 401)
+        status, versions = self.request("POST", route, body)
+        self.assertEqual(status, 200, versions)
+        self.assertEqual(versions["package_ref"], "test/editor-probe")
+        self.assertEqual([r["version"] for r in versions["versions"]], ["3.0.0", "2.0.0-rc.1", "1.1.0", "1.0.0", "0.9.0"])
+        body.update(command_id=uuid.uuid4().hex, query="variants", source="test/editor-probe@1.0.0")
+        request_file = self.directory / (uuid.uuid4().hex + ".json")
+        request_file.write_text(json.dumps(body))
+        checked = subprocess.run([OPTIONS.core, "--mode", "cli", "--url", "http://127.0.0.1:" + str(self.port),
+                                  "--token-file", str(self.root / "token"), "--command", "package_catalog",
+                                  "--project", self.project, "--request-file", str(request_file)],
+                                 capture_output=True, text=True, timeout=30, env=self.process_env)
+        self.assertEqual(checked.returncode, 0, checked.stderr)
+        builds = json.loads(checked.stdout)
+        self.assertEqual(builds["recommended_variant"], "source")
+        selections = {a["variant"]: a["host_selection"] for a in builds["artifacts"]}
+        self.assertTrue(selections["source"]["compatible"])
+        self.assertFalse(selections["foreign"]["compatible"])
+        self.assertIn(builds["host"]["os"], ["macos", "linux"])
+        self.assertEqual(self.request("POST", route, dict(query="install", source="editor-probe"))[0], 400)
+        self.assertEqual(self.request("POST", route, dict(query="versions", source="--help"))[0], 400)
+        self.assertEqual(self.request("POST", route, dict(query="versions", source="missing"))[0], 422)
+        dependencies = self.request("GET", "/v1/projects/" + self.project + "/dependencies")[1]
+        self.assertEqual(dependencies["packages"], [])
+        self.assertEqual(dependencies["jobs"], [])
+        registry = self.request("GET", "/v1/projects/" + self.project + "/registry")[1]
+        self.assertNotIn(run["runtime_epoch"], registry["reset_epochs"])
+        again, _ = self.start(revision)
+        self.assertEqual(self.wait_run(again)["state"], "succeeded")
+        self.assertEqual(again["runtime_epoch"], run["runtime_epoch"], "catalog inspection keeps the execution runtime")
 
     def test_dependency_operation_rejects_active_run_and_resolves_ruby_lock(self):
         revision, _ = self.upload(document('import task\ntask.sleep(1500)\n42\n'), {"Gemfile": b'source "https://rubygems.org"\n'})

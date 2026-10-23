@@ -217,6 +217,11 @@ $(BUILD_DIR)/notebook_dependencies_tests: tests/notebook_dependencies_tests.swif
 .PHONY: test-notebook-dependencies
 test-notebook-dependencies: $(BUILD_DIR)/notebook_dependencies_tests remote-core
 	$(BUILD_DIR)/notebook_dependencies_tests "$(abspath $(BUILD_DIR)/sputnik-notebook-remote)"
+.PHONY: test-notebook-package-catalog
+test-notebook-package-catalog: $(BUILD_DIR)/notebook_dependencies_tests remote-core
+	python3 tests/notebook_package_catalog_test.py "$(SPUTNIK_REMOTE_COMPILER)" "$(abspath $(BUILD_DIR)/notebook_dependencies_tests)" "$(abspath $(BUILD_DIR)/sputnik-notebook-remote)"
+	python3 tests/notebook_remote_tests.py --core "$(abspath $(BUILD_DIR)/sputnik-notebook-remote)" --worker "$(abspath $(BUILD_DIR)/sputnik-notebook-worker)" --test RemoteTests.test_package_catalog_uses_execution_host_without_retiring_workers
+
 $(BUILD_DIR)/notebook_macos_audio_tests: tests/notebook_macos_audio_tests.swift $(BOARD_LAYOUT_TEST_SWIFT) tools/notebook-macos/NotebookBridge.h $(BUILD_DIR)/notebook-macos/libNotebookBackend.a
 	xcrun swiftc -swift-version 5 -Onone -target $(MAC_NOTEBOOK_TARGET) -module-cache-path $(BUILD_DIR)/notebook-macos/swift-cache -import-objc-header tools/notebook-macos/NotebookBridge.h tests/notebook_macos_audio_tests.swift $(BOARD_LAYOUT_TEST_SWIFT) $(BUILD_DIR)/notebook-macos/libNotebookBackend.a -framework AppKit -framework SwiftUI -lc++ $(LDFLAGS) -o $@
 

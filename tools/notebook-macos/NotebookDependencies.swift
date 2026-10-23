@@ -25,6 +25,50 @@ struct NotebookDependencyInventory: Decodable {
     var ready: Ready?
 }
 
+struct NotebookPackageRelease: Decodable, Identifiable {
+    let version: String
+    let yanked: Bool
+    var id: String { version }
+    var stable: Bool { !version.contains("-") }
+}
+struct NotebookPackageVersions: Decodable {
+    let package_ref: String
+    let versions: [NotebookPackageRelease]
+    var available: [NotebookPackageRelease] { versions.filter { !$0.yanked } }
+    var latest: String? { available.first(where: \.stable)?.version ?? available.first?.version }
+}
+struct NotebookPackageVariant: Decodable, Identifiable {
+    struct Selection: Decodable {
+        let compatible: Bool, reason: String, backend: String, bundle: String
+        let allow_native: Bool, build_from_source: Bool
+    }
+    struct Target: Decodable { let os: String?, arch: String?, min_os: String?, compute_backend: String? }
+    let variant: String
+    let target: Target?
+    let native_mode: String?
+    let size: UInt64?
+    let host_selection: Selection
+    var id: String { variant }
+    var detail: String {
+        var parts = [target?.os, target?.arch].compactMap { $0 }.filter { $0 != "any" }
+        if let minimum = target?.min_os, !minimum.isEmpty { parts.append("OS ≥ " + minimum) }
+        if host_selection.backend != "cpu" || target?.compute_backend == "cpu" { parts.append(host_selection.backend.uppercased()) }
+        if native_mode == "prebuilt" { parts.append("Prebuilt") }
+        if host_selection.build_from_source { parts.append("Build from source") }
+        if host_selection.bundle != "none" { parts.append(host_selection.bundle.capitalized + " bundle") }
+        if let size { parts.append(ByteCountFormatter.string(fromByteCount: Int64(clamping: size), countStyle: .file)) }
+        return parts.isEmpty ? "Portable Sputnik package" : parts.joined(separator: " · ")
+    }
+}
+struct NotebookPackageVariants: Decodable {
+    struct Host: Decodable { let os: String, arch: String }
+    let package_ref: String, version: String
+    let yanked: Bool
+    let artifacts: [NotebookPackageVariant]
+    let recommended_variant: String?
+    let host: Host
+}
+
 // Only these authored inputs can be changed by the editor. Byte comparisons
 // prevent overwriting a lockfile changed by an external package manager.
 struct NotebookDependencyFiles {
@@ -67,8 +111,18 @@ final class NotebookDependencyController: ObservableObject {
     @Published var requirementFile = "requirements.txt"
     @Published var requirements = ""
     @Published var gemfile = ""
+    @Published var packageName = "" {
+        didSet { if packageName.trimmingCharacters(in: .whitespacesAndNewlines) != oldValue.trimmingCharacters(in: .whitespacesAndNewlines) { clearPackageCatalog() } }
+    }
+    @Published private(set) var packageCatalog: NotebookPackageVersions?
+    @Published private(set) var packageBuilds: NotebookPackageVariants?
+    @Published private(set) var catalogBusy = false
+    @Published private(set) var catalogError: String?
     @Published var packageSource = ""
-    @Published var packageVersion = ""
+    @Published var packageVersion = "" {
+        didSet { if packageVersion != oldValue { packageBuilds = nil; registryVariant = "" } }
+    }
+    @Published var registryVariant = ""
     @Published var packageVariant = ""
     @Published var packageBackend = "cpu"
     @Published var packageBundle = "none"
@@ -86,9 +140,11 @@ final class NotebookDependencyController: ObservableObject {
     private let execution: String?
     private var files: NotebookDependencyFiles?
     private var logTask: Task<Void, Never>?
+    private var catalogGeneration = UUID()
+    private var catalogName = ""
     var isRemote: Bool { execution != nil }
     var current: Bool { model.documentIdentity == document && model.remote.selected == execution }
-    var canChange: Bool { current && !busy && !model.busy && !model.executingWorker && !model.remote.busy && !model.remote.active && !inventory.jobs.contains(where: \.active) }
+    var canChange: Bool { current && !busy && !catalogBusy && !model.busy && !model.executingWorker && !model.remote.busy && !model.remote.active && !inventory.jobs.contains(where: \.active) }
     var manifestChanged: Bool { requirements != files?.text(requirementFile) || gemfile != files?.text("Gemfile") }
     var lockedPython: Bool { requirementFile == "requirements.lock" }
 
@@ -99,7 +155,7 @@ final class NotebookDependencyController: ObservableObject {
         python = ProcessInfo.processInfo.environment["SPUTNIK_PYTHON_EXECUTABLE"].flatMap { $0.isEmpty ? nil : $0 } ?? "python3"
     }
     func load(reloadFiles: Bool = false) async {
-        guard current, !busy, let path = model.snapshot?.path else { return }
+        guard current, !busy, !catalogBusy, let path = model.snapshot?.path else { return }
         busy = true; error = nil
         defer { busy = false }
         do {
@@ -125,12 +181,79 @@ final class NotebookDependencyController: ObservableObject {
         try files.save(changes); self.files = files
     }
     func installPackage() async {
-        var options: [String: Any] = ["backend": packageBackend, "bundle": packageBundle,
+        var options: [String: Any] = ["local_source": true,
             "allow_native": packageAllowNative, "build_from_source": packageBuildFromSource,
             "allow_native_large": packageAllowNativeLarge]
+        if packageBackend != "cpu" { options["backend"] = packageBackend }
+        if packageBundle != "none" { options["bundle"] = packageBundle }
         let variant = packageVariant.trimmingCharacters(in: .whitespacesAndNewlines)
         if !variant.isEmpty { options["variant"] = variant }
-        await change(action: "install_sputnik", source: packageSource.trimmingCharacters(in: .whitespacesAndNewlines), version: packageVersion.trimmingCharacters(in: .whitespacesAndNewlines), options: options)
+        await change(action: "install_sputnik", source: packageSource.trimmingCharacters(in: .whitespacesAndNewlines), version: "", options: options)
+    }
+    var selectedPackageVariant: NotebookPackageVariant? { packageBuilds?.artifacts.first { $0.variant == registryVariant } }
+    var canInstallRegistryPackage: Bool {
+        canChange && catalogName == packageName.trimmingCharacters(in: .whitespacesAndNewlines) &&
+        packageBuilds?.version == packageVersion && packageBuilds?.yanked == false &&
+        selectedPackageVariant?.host_selection.compatible == true
+    }
+    private func clearPackageCatalog() {
+        catalogGeneration = UUID(); catalogName = ""; packageCatalog = nil; packageBuilds = nil
+        packageVersion = ""; registryVariant = ""; catalogError = nil
+    }
+    func findPackageVersions() async {
+        guard current, !busy, !catalogBusy else { return }
+        let name = packageName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        clearPackageCatalog(); error = nil
+        let generation = catalogGeneration
+        catalogBusy = true
+        defer { catalogBusy = false }
+        do {
+            let catalog: NotebookPackageVersions = try decode(await catalog(query: "versions", source: name))
+            guard current, generation == catalogGeneration else { return }
+            packageCatalog = catalog; catalogName = name
+            packageVersion = catalog.latest ?? ""
+            if packageVersion.isEmpty { catalogError = "No available releases in this registry."; return }
+            try await fetchPackageVariants(generation: generation)
+        } catch { if current && generation == catalogGeneration { catalogError = error.localizedDescription } }
+    }
+    func findPackageVariants() async {
+        guard current, !busy, !catalogBusy, let catalog = packageCatalog,
+              catalog.available.contains(where: { $0.version == packageVersion }) else { return }
+        catalogGeneration = UUID()
+        let generation = catalogGeneration
+        packageBuilds = nil; registryVariant = ""; catalogError = nil; catalogBusy = true
+        defer { catalogBusy = false }
+        do { try await fetchPackageVariants(generation: generation) }
+        catch { if current && generation == catalogGeneration { catalogError = error.localizedDescription } }
+    }
+    private func fetchPackageVariants(generation: UUID) async throws {
+        guard let packageCatalog else { return }
+        let version = packageVersion
+        let builds: NotebookPackageVariants = try decode(await catalog(query: "variants", source: packageCatalog.package_ref + "@" + version))
+        guard current, generation == catalogGeneration, packageVersion == version else { return }
+        guard builds.package_ref == packageCatalog.package_ref, builds.version == version else { throw NotebookFailure(message: "Registry returned a different package release.") }
+        packageBuilds = builds
+        registryVariant = builds.artifacts.first { $0.variant == builds.recommended_variant && $0.host_selection.compatible }?.variant ?? ""
+        if builds.yanked { catalogError = "This release has been withdrawn. Choose another version." }
+    }
+    private func catalog(query: String, source: String) async throws -> [String: Any] {
+        let body: [String: Any] = ["query": query, "source": source, "command_id": UUID().uuidString.lowercased()]
+        return isRemote ? try await model.remote.dependencyRequest("package_catalog", body: body) : try await local("catalog", body: body)
+    }
+    func installRegistryPackage() async {
+        guard canInstallRegistryPackage, let build = selectedPackageVariant, let catalog = packageCatalog else { return }
+        let selection = build.host_selection
+        guard !selection.allow_native || packageAllowNative else { error = "Allow native code to install this build."; return }
+        guard !selection.build_from_source || packageBuildFromSource else { error = "Allow building native code from source to install this build."; return }
+        guard (build.size ?? 0) <= 67_108_864 || packageAllowNativeLarge else { error = "Allow packages up to 2 GiB to install this build."; return }
+        await change(action: "install_sputnik", source: catalog.package_ref, version: packageVersion,
+            options: ["variant": build.variant, "backend": selection.backend, "bundle": selection.bundle,
+                "allow_native": packageAllowNative, "build_from_source": selection.build_from_source && packageBuildFromSource,
+                "allow_native_large": packageAllowNativeLarge])
+    }
+    func chooseLocalPackage(_ path: String) {
+        packageSource = path; packageVariant = ""; packageBackend = "cpu"; packageBundle = "none"
     }
     func removePackage(_ package: NotebookInstalledPackage) async {
         await change(action: "remove_sputnik", source: package.name, version: package.version,
@@ -229,7 +352,7 @@ final class NotebookDependencyController: ObservableObject {
         }
     }
     private func perform(_ title: String, mutation: Bool = true, _ operation: () async throws -> Void) async {
-        guard current, !busy, !model.busy, !model.remote.busy else { return }
+        guard current, !busy, !catalogBusy, !model.busy, !model.remote.busy else { return }
         guard !mutation || canChange else { error = "Stop active runs and wait for dependency operations to finish."; return }
         busy = true; error = nil; message = title
         if mutation { model.pauseForDependencyChanges() }
@@ -254,7 +377,7 @@ final class NotebookDependencyController: ObservableObject {
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("sputnik-dependency-\(UUID().uuidString).json")
         defer { try? FileManager.default.removeItem(at: file) }
         if let body { try JSONSerialization.data(withJSONObject: body).write(to: file); arguments += ["--request-file", file.path] }
-        if command != "status" {
+        if command != "status" && command != "catalog" {
             log = ""
             logTask = Task { [weak self] in
                 while !Task.isCancelled {

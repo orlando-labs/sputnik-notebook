@@ -141,6 +141,7 @@ final class NotebookRemoteController: ObservableObject {
     @Published private(set) var supportsCellInputs = false
     @Published private(set) var supportsRunDocument = false
     @Published private(set) var supportsDependencyManagement = false
+    @Published private(set) var supportsPackageCatalog = false
     var dependencyOperationActive = false
     private(set) var frozenRunDocuments: Set<String> = []
     private var cellInputVersion = "0"
@@ -298,7 +299,7 @@ final class NotebookRemoteController: ObservableObject {
         generation += 1; timer?.invalidate(); timer = nil; syncTimer?.invalidate(); syncTimer = nil
         if tunnel?.isRunning == true { tunnel?.terminate() }; tunnel = nil
         client = nil; connected = false; busy = false; polling = false; pendingEdits = false
-        supportsWorkerGrants = false; supportsCellInputs = false; supportsRunDocument = false; supportsDependencyManagement = false; frozenRunDocuments = []; cellInputVersion = "0"
+        supportsWorkerGrants = false; supportsCellInputs = false; supportsRunDocument = false; supportsDependencyManagement = false; supportsPackageCatalog = false; frozenRunDocuments = []; cellInputVersion = "0"
         runs = []; runtimes = []; resetEpochs = []; projects = []; completed = []; revisionDocuments = [:]; remoteHead = nil; conflict = false
         status = isSelected ? "Disconnected · server work continues" : "Local"
         onChange?()
@@ -366,6 +367,7 @@ final class NotebookRemoteController: ObservableObject {
                         supportsCellInputs = (health["capabilities"] as? [String])?.contains("cell_inputs") == true
                         supportsRunDocument = (health["capabilities"] as? [String])?.contains("run_document") == true
                         supportsDependencyManagement = (health["capabilities"] as? [String])?.contains("dependency_management") == true
+                        supportsPackageCatalog = (health["capabilities"] as? [String])?.contains("package_catalog") == true
                         ready = true; break
                     } catch {
                         if let error = error as? NotebookRemoteFailure, error.status != 0 { throw error }
@@ -630,6 +632,9 @@ final class NotebookRemoteController: ObservableObject {
     @MainActor func dependencyRequest(_ command: String, body: [String: Any]? = nil, operation: String? = nil, synchronizeFiles: Bool = false) async throws -> [String: Any] {
         guard connected, !busy, supportsDependencyManagement, let client, let projectID else {
             throw NotebookFailure(message: "Connect to a core with dependency management support.")
+        }
+        if command == "package_catalog" && !supportsPackageCatalog {
+            throw NotebookFailure(message: "Update the remote core to browse package versions and builds.")
         }
         let stamp = generation; busy = true; onChange?()
         defer { if stamp == generation { busy = false; onChange?() } }

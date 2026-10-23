@@ -54,8 +54,20 @@ private enum NotebookMacOSThemeTests {
                 // palettes additionally guarantee contrast on every surface.
                 let backgrounds = preset == .sputnik ? [] : [NotebookPalette.nativeCanvas,
                     NotebookPalette.nativeSidebar, NotebookPalette.nativeSurface, NotebookPalette.nativeEditor]
+                if preset != .sputnik {
+                    let sidebar = resolved(NotebookPalette.nativeSidebar, in: theme.appearance)
+                    require(contrast(sidebar, resolved(NotebookPalette.nativeCanvas, in: theme.appearance)) >= 1.2,
+                            "Sidebar must remain distinct from the workspace in \(preset.title), \(theme.title)")
+                    require(contrast(sidebar, resolved(NotebookPalette.nativeSurface, in: theme.appearance)) >= 1.25,
+                            "Selected navigation rows must stand out in \(preset.title), \(theme.title)")
+                }
                 for background in backgrounds {
-                    for foreground in [NotebookPalette.nativeInk, NotebookPalette.nativeMuted] {
+                    let color = resolved(background, in: theme.appearance)
+                    let channels = [color.redComponent, color.greenComponent, color.blueComponent]
+                    require(channels.max()! - channels.min()! <= 0.08,
+                            "Window surfaces should use subdued tints in \(preset.title), \(theme.title)")
+                    for foreground in [NotebookPalette.nativeInk, NotebookPalette.nativeSlate,
+                                       NotebookPalette.nativeMuted, NotebookPalette.nativeAccent] {
                         require(contrast(resolved(foreground, in: theme.appearance),
                                          resolved(background, in: theme.appearance)) >= 4.5,
                                 "UI text should be readable in \(preset.title), \(theme.title)")
@@ -71,6 +83,16 @@ private enum NotebookMacOSThemeTests {
                     == NotebookPalette.native(0xe2e2da), "Default light canvas must remain unchanged")
         require(resolved(NotebookPalette.nativeCanvas, in: NotebookTheme.dark.appearance)
                     == NotebookPalette.native(0x2a2a35), "Default dark canvas must remain unchanged")
+        for (color, light, dark) in [
+            (NotebookPalette.nativeSidebar, UInt32(0xdad1d2), UInt32(0x35313c)),
+            (NotebookPalette.nativeSurface, UInt32(0xedede6), UInt32(0x22222c)),
+            (NotebookPalette.nativeEditor, UInt32(0xf7f7f2), UInt32(0x22222c))
+        ] {
+            require(resolved(color, in: NotebookTheme.light.appearance) == NotebookPalette.native(light),
+                    "Default light surfaces must remain unchanged")
+            require(resolved(color, in: NotebookTheme.dark.appearance) == NotebookPalette.native(dark),
+                    "Default dark surfaces must remain unchanged")
+        }
         transient.colorPreset = .espresso
         require(NotebookPreferences(defaults: nil).colorPreset == .sputnik,
                 "Smoke tests must not persist color presets")
@@ -94,8 +116,10 @@ private enum NotebookMacOSThemeTests {
                               styleMask: [.titled], backing: .buffered, defer: false)
         window.contentView = view
         window.orderFront(nil)
-        for (preset, theme) in [(NotebookColorPreset.sputnik, NotebookTheme.light),
-                                (.espresso, .light), (.riverJade, .dark)] {
+        let previews = [NotebookTheme.light, .dark].flatMap { theme in
+            NotebookColorPreset.allCases.map { ($0, theme) }
+        }
+        for (preset, theme) in previews {
             preferences.colorPreset = preset
             preferences.theme = theme
             RunLoop.current.run(until: Date().addingTimeInterval(0.1))

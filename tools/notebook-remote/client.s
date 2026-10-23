@@ -52,6 +52,7 @@ class RemoteClient:
     identifier(project) if project
     route = "/v1/projects/" + (project or "")
     case command:
+      when "package_catalog": request("POST", route + "/package-catalog", decode(fs.read_text(@args[:request_file])))
       when "dependencies": request("GET", route + "/dependencies")
       when "dependency": request("GET", route + "/dependencies/" + identifier(@args[:run_id]))
       when "change_dependency": request("POST", route + "/dependencies", decode(fs.read_text(@args[:request_file])))

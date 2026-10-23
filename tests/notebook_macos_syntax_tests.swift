@@ -10,6 +10,7 @@ private struct SyntaxTestError: Error, CustomStringConvertible {
 private enum NotebookMacOSSyntaxTests {
     static func main() throws {
         try unicodeRangesAndNumbers()
+        try sequencingAndScopedExitKeywords()
         try commentsDoNotEatCode()
         try stringsWinOverKeywordsAndComments()
         try macroSplicesUseSputnikHashRules()
@@ -43,6 +44,59 @@ private enum NotebookMacOSSyntaxTests {
                 "an incomplete string should still begin at its delimiter")
         require(!incomplete.contains { $0.category == .keyword || $0.category == .comment },
                 "incomplete strings must not leak keyword/comment highlighting")
+    }
+
+    private static func sequencingAndScopedExitKeywords() throws {
+        let sources: [(String, [String])] = [
+            ("load() then normalize($_) then save($_)", ["then", "then"]),
+            ("Model.rollback then break if invalid?", ["then", "break"]),
+            ("Model.transaction(): break :cancelled", ["break"]),
+            ("items.map |x|: prepare(x) then next x if skip?(x)", ["then", "next"]),
+            ("items.map |x|: next x", ["next"]),
+            ("items.map |x|: next", ["next"]),
+            ("next if ready?", ["next"]),
+            ("ready() then next", ["then", "next"]),
+            ("(if ready? then start() else wait()) then finish()", ["then", "then"]),
+            ("if ready? then (prepare() then run()) else fallback()", ["then", "then"]),
+            ("obj.then() then obj.next()", ["then"]),
+            ("next = 1 then print(next)", ["then"]),
+            ("f(next) then next", ["then", "next"]),
+            ("π = load() then normalize($_)", ["then"]),
+            ("α then β", ["then"]),
+            ("этап then следующий", ["then"]),
+        ]
+        for (source, expected) in sources {
+            let controls = SputnikSyntax.tokens(in: source).filter {
+                $0.category == .keyword && ["then", "next", "break"].contains($0.text)
+            }
+            require(controls.map(\.text) == expected,
+                    "Control keywords must follow their expression context: " + source)
+            for control in controls {
+                require((source as NSString).substring(with: control.range) == control.text,
+                        "Control keyword ranges must retain UTF-16 source offsets")
+            }
+        }
+        for source in [
+            "then = 1",
+            "next = 1",
+            "next(1)",
+            "fn(then, next)",
+            "symbols = [:then, :next]",
+            "def then(): null",
+            "def next(): null",
+            "then? = false",
+            "next! = false",
+            "labels = {then: 1, next: 2}",
+            "obj.then next",
+            "foo_then next",
+            "message = \"then next break\"",
+            "# then next break",
+        ] {
+            let tokens = SputnikSyntax.tokens(in: source)
+            require(!tokens.contains {
+                $0.category == .keyword && ["then", "next", "break"].contains($0.text)
+            }, "Names, strings and comments must preserve their original role: " + source)
+        }
     }
 
     private static func commentsDoNotEatCode() throws {

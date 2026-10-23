@@ -17,6 +17,10 @@ def local_dependencies(args):
   command = args[:command]
   result = {}
   if command == "status": result = core.handle("dependency.status", {project_id: "local"})
+  elif command == "catalog":
+    params = decode(fs.read_text(args[:request_file]))
+    params[:project_id] = "local"
+    result = core.handle("dependency.catalog", params)
   elif command == "prepare":
     accepted = core.handle("environment.prepare", {project_id: "local", command_id: SecureRandom.hex(16), retry: true})
     if accepted[?:id]:

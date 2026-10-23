@@ -8,6 +8,59 @@ struct NotebookDependencyTests {
     static func require(_ condition: @autoclosure () -> Bool, _ message: String) throws {
         if !condition() { throw Failure(message: message) }
     }
+    @MainActor static func capture(_ model: NotebookModel, _ controller: NotebookDependencyController, _ build: URL, ecosystem: String = "Sputnik", name: String) async throws {
+        let view = NSHostingView(rootView: NotebookDependenciesView(model: model, initialEcosystem: ecosystem, controller: controller))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 690), styleMask: [.borderless], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false; window.contentView = view
+        defer { window.close() }
+        try await Task.sleep(nanoseconds: 600_000_000)
+        view.layoutSubtreeIfNeeded()
+        if let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
+            view.cacheDisplay(in: view.bounds, to: bitmap)
+            try bitmap.representation(using: .png, properties: [:])?.write(to: build.appendingPathComponent(name + ".png"))
+        }
+    }
+    @MainActor static func testCatalog(_ controller: NotebookDependencyController, model: NotebookModel, build: URL) async throws {
+        controller.packageName = "editor-probe"
+        await controller.findPackageVersions()
+        try require(controller.catalogError == nil, controller.catalogError ?? "find versions")
+        try require(controller.packageCatalog?.latest == "1.1.0" && controller.packageVersion == "1.1.0", "select latest stable, excluding yanked releases")
+        try require(controller.registryVariant == "source" && controller.canInstallRegistryPackage, "recommend a compatible portable build")
+        try require(controller.selectedPackageVariant?.host_selection.allow_native == false, "portable packages do not need native consent")
+        try require(controller.inventory.packages.isEmpty && !model.dependencyOperationActive, "discovery never installs or takes worker ownership")
+        try await capture(model, controller, build, name: "dependency-editor-registry")
+        controller.packageVersion = "0.9.0"
+        try require(!controller.canInstallRegistryPackage && controller.packageBuilds == nil, "changing version invalidates stale variants immediately")
+        await controller.findPackageVariants()
+        try require(controller.catalogError == nil && controller.registryVariant.isEmpty && !controller.canInstallRegistryPackage, "disable installation when no build is compatible")
+        controller.packageVersion = "1.0.0"
+        await controller.findPackageVariants()
+        try require(controller.catalogError == nil && controller.registryVariant == "source", "reload builds for an older exact version")
+        controller.registryVariant = "foreign"
+        try require(!controller.canInstallRegistryPackage, "incompatible build cannot be installed")
+        controller.registryVariant = "source"
+        // Local-install settings must not override the selected registry build.
+        controller.packageBackend = "cuda"; controller.packageBundle = "sdk"; controller.packageVariant = "wrong-local-variant"
+        await controller.installRegistryPackage()
+        try require(controller.error == nil, controller.error ?? "install selected registry build")
+        try require(controller.inventory.packages.first?.name == "test/editor-probe" && controller.inventory.packages.first?.version == "1.0.0" && controller.inventory.packages.first?.variant == "source", "install exact selected version and variant")
+        await controller.removePackage(controller.inventory.packages.first!)
+        try require(controller.error == nil && controller.inventory.packages.isEmpty, "remove registry installation")
+        controller.chooseLocalPackage("")
+        controller.packageName = "missing"
+        try require(controller.packageCatalog == nil && controller.packageBuilds == nil && !controller.canInstallRegistryPackage, "changing name invalidates catalog")
+        await controller.findPackageVersions()
+        try require(controller.catalogError != nil && controller.packageCatalog == nil, "display registry lookup errors")
+        controller.packageName = "empty"
+        await controller.findPackageVersions()
+        try require(controller.catalogError != nil && controller.packageVersion.isEmpty, "handle an empty release index")
+        controller.packageName = "slow"
+        let pending = Task { await controller.findPackageVersions() }
+        try await Task.sleep(nanoseconds: 80_000_000)
+        controller.packageName = "editor-probe"
+        await pending.value
+        try require(controller.packageCatalog == nil && controller.packageBuilds == nil && !controller.catalogBusy, "ignore replies for a package name changed during lookup")
+    }
     @MainActor static func main() async {
         let app = NSApplication.shared; app.setActivationPolicy(.prohibited)
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("notebook-dependencies-\(UUID().uuidString)")
@@ -40,6 +93,13 @@ struct NotebookDependencyTests {
             let controller = NotebookDependencyController(model: model)
             await controller.load()
             try require(controller.error == nil, controller.error ?? "load dependency editor")
+            if ProcessInfo.processInfo.environment["SPUTNIK_TEST_PACKAGE_CATALOG"] == "1" {
+                try await testCatalog(controller, model: model, build: build)
+                await withCheckedContinuation { c in model.shutdown { c.resume() } }
+                try FileManager.default.removeItem(at: root)
+                print("notebook package catalog tests passed")
+                return
+            }
             controller.python = ProcessInfo.processInfo.environment["SPUTNIK_TEST_PYTHON"] ?? "/opt/homebrew/bin/python3.14"
             controller.requirements = "\n"
             await controller.prepare()
@@ -57,16 +117,7 @@ struct NotebookDependencyTests {
             try require(controller.error == nil, controller.error ?? "install local package through editor")
             try require(controller.inventory.packages.first?.name == "editor-probe", "show installed notebook package")
             for ecosystem in ["Sputnik", "Python", "Ruby"] {
-                let view = NSHostingView(rootView: NotebookDependenciesView(model: model, initialEcosystem: ecosystem, controller: controller))
-                let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 780, height: 690), styleMask: [.borderless], backing: .buffered, defer: false)
-                window.isReleasedWhenClosed = false; window.contentView = view
-                try await Task.sleep(nanoseconds: 600_000_000)
-                view.layoutSubtreeIfNeeded()
-                if let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
-                    view.cacheDisplay(in: view.bounds, to: bitmap)
-                    try bitmap.representation(using: .png, properties: [:])?.write(to: build.appendingPathComponent("dependency-editor-\(ecosystem.lowercased()).png"))
-                }
-                window.close()
+                try await capture(model, controller, build, ecosystem: ecosystem, name: "dependency-editor-" + ecosystem.lowercased())
             }
             await controller.removePackage(controller.inventory.packages.first!)
             try require(controller.error == nil && controller.inventory.packages.isEmpty, controller.error ?? "remove local package through editor")
@@ -94,7 +145,8 @@ struct NotebookDependencyTests {
             let arch = "x86_64"
             #endif
             for variant in ["cpu-a", "cpu-b"] {
-                let manifest = "schema=\"sputnik.package-manifest.v1\"\n[package]\nname=\"editor-native\"\nversion=\"1.0.0\"\nroot=\"editor_native\"\n[artifact]\nvariant=\"\(variant)\"\n[target]\nos=\"macos\"\narch=\"\(arch)\"\nmin_os=\"14.0\"\ncompute_backend=\"cpu\"\n[[modules]]\nname=\"editor_native\"\nsource=\"main.s\"\n[[native]]\nname=\"answer\"\nkind=\"prebuilt\"\nlibrary=\"answer.dylib\"\nsputnik_ext_abi=1\n"
+                let bundle = variant == "cpu-b" ? "runtime" : "none"
+                let manifest = "schema=\"sputnik.package-manifest.v1\"\n[package]\nname=\"editor-native\"\nversion=\"1.0.0\"\nroot=\"editor_native\"\n[artifact]\nvariant=\"\(variant)\"\nbundle=\"\(bundle)\"\n[target]\nos=\"macos\"\narch=\"\(arch)\"\nmin_os=\"14.0\"\ncompute_backend=\"cpu\"\n[[modules]]\nname=\"editor_native\"\nsource=\"main.s\"\n[[native]]\nname=\"answer\"\nkind=\"prebuilt\"\nlibrary=\"answer.dylib\"\nsputnik_ext_abi=1\n"
                 try Data(manifest.utf8).write(to: native.appendingPathComponent("sputnik.toml"))
                 try command(sdk, ["pkg", "build", native.path, "--out", root.appendingPathComponent(variant + ".sputnikpkg").path])
             }
@@ -106,8 +158,7 @@ struct NotebookDependencyTests {
             await controller.installPackage()
             try require(controller.error != nil && controller.inventory.packages.isEmpty, "explicit variant must reach the installer")
             for variant in ["cpu-a", "cpu-b"] {
-                controller.packageSource = root.appendingPathComponent(variant + ".sputnikpkg").path
-                controller.packageVariant = variant
+                controller.chooseLocalPackage(root.appendingPathComponent(variant + ".sputnikpkg").path)
                 await controller.installPackage()
                 try require(controller.error == nil, controller.error ?? "install native variant through editor")
             }

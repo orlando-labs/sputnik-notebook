@@ -2,7 +2,6 @@ import SwiftUI
 
 struct NotebookView: View {
     @Environment(\.greekLetterSubstitutionEnabled) private var substituteGreekLetters
-    @State private var confirmForceStop = false
     @ObservedObject var model: NotebookModel
 
     @State private var collapsedCells = Set<String>()
@@ -47,12 +46,6 @@ struct NotebookView: View {
         .foregroundStyle(NotebookPalette.ink)
         .tint(NotebookPalette.sputnik)
         .accentColor(NotebookPalette.sputnik)
-        .confirmationDialog("Terminate this sheet's worker?", isPresented: $confirmForceStop, titleVisibility: .visible) {
-            Button("Force Stop", role: .destructive) { model.stopExecution(force: true) }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Runtime state will be lost. Drafts and the last displayed results stay here. Restart Worker will be required; cells will not be replayed automatically.")
-        }
         .frame(minWidth: 930, minHeight: 640)
         .alert("Notebook", isPresented: Binding(
             get: { model.error != nil },
@@ -102,32 +95,6 @@ struct NotebookView: View {
         } detail: {
             VStack(spacing: 0) {
                 NotebookServerBar(model: model, remote: model.remote)
-                if model.isolatedExecution {
-                    HStack(spacing: 12) {
-                        Text("\(model.remote.isSelected ? model.remote.serverName : "Execution") · \(model.executionLabel)").font(.system(size: 12, weight: .medium))
-                        if let label = model.executingCellLabel {
-                            ProgressView().controlSize(.small)
-                            Text(label).font(.system(size: 12)).lineLimit(1)
-                            Button("Show Running Cell", systemImage: "location.fill") { model.showExecutingCell() }
-                                .disabled(!model.canNavigate)
-                                .help("Open the executing sheet and scroll to its current cell")
-                        }
-                        Spacer()
-                        if model.executingCurrentWorker {
-                            Button("Stop") { model.stopExecution() }.disabled(!model.canStop)
-                            Button("Force Stop…", role: .destructive) { confirmForceStop = true }
-                                .disabled(!model.canForceStop)
-                        } else {
-                            Button("Restart Worker") {
-                                let tab = model.activeBoard.flatMap { model.controller(for: $0) } ?? activeTab
-                                if let tab { model.perform("restart_worker", tab: tab) }
-                            }.disabled(model.busy)
-                        }
-                    }
-                    .padding(.horizontal, 19).padding(.vertical, 8)
-                    .background(NotebookPalette.sputnik.opacity(0.08))
-                    .help("Execution runs in a separate worker. Stop cancels the current work; Force Stop terminates its worker.")
-                }
                 if let board = model.activeBoard {
                     NotebookBoardView(model: model, board: board) { boardPrompt = board }
                 } else if let tab = activeTab {
@@ -213,6 +180,12 @@ struct NotebookView: View {
                                 Label(board.title, systemImage: "square.grid.2x2")
                                     .frame(maxWidth: .infinity, alignment: .leading).padding(9)
                                     .background(model.selectedBoardID == board.id ? NotebookPalette.card : .clear, in: RoundedRectangle(cornerRadius: 8))
+                                    .overlay {
+                                        if model.selectedBoardID == board.id && NotebookPalette.currentPreset != .sputnik {
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(NotebookPalette.sidebarSelectionOutline, lineWidth: 1)
+                                        }
+                                    }
                             }.buttonStyle(.plain).disabled(!model.canNavigate)
                         }
                     }
@@ -354,7 +327,7 @@ struct NotebookView: View {
             .overlay {
                 if selected {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .stroke(NotebookPalette.rule, lineWidth: 1)
+                        .stroke(NotebookPalette.sidebarSelectionOutline, lineWidth: 1)
                 }
             }
         }

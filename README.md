@@ -131,12 +131,16 @@ Remote execution also supports component editing and atomic cell-parameter Apply
 `tools/notebook-macos/Samples/Remote Cell Components.sputnikbook` runs without
 external dependencies on an updated remote core and worker.
 
-The Sputnik dependency editor supports CPU/CUDA/MPS selection, explicit native
-variants and runtime/SDK bundles for local or remote installs. Native code,
-source compilation and packages up to 2 GiB each require their own opt-in.
-Installed variants have separate rows and can be removed independently. For
-`sputniktorch@0.1.2` on a compatible CUDA host, choose CUDA, Runtime, Allow native
-code and Allow packages up to 2 GiB. Worker FFI grants are configured separately.
+The Sputnik dependency editor looks up a package name in the configured registry,
+selects the latest stable version and recommends a compatible build for the
+execution machine. Choose another version or build before installing. Backend
+and bundle settings come from the selected build; packages such as `sqlite3`
+do not need a GPU backend selector. In remote mode, discovery and hardware
+checks run on the server. **Choose Folder or .sputnikpkg…** installs a local
+source directory or archive as an alternative; remote paths refer to the server.
+Native code, source compilation and archives over 64 MiB require explicit opt-in
+when the selected build needs them. Installed variants have separate rows and
+can be removed independently. Worker FFI grants are configured separately.
 See [native installation and exact locks](../sputnik-lang/docs/engineering/package-native-install-v1.md).
 
 New boards use project-wide numbered names (`Board 1`, `Board 2`, …); sheets use

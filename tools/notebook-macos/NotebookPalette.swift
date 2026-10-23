@@ -145,11 +145,14 @@ enum NotebookPalette {
         let swatches = preset.swatches
         let night = preset == .tangerine ? mix(swatches[0], 0, 0.70) : swatches[0]
         let accent = swatches[1], paper = swatches[2]
-        let ink = dark ? paper : night
-        let canvas = dark ? night : paper
-        let sidebar = dark ? mix(night, paper, 0.06) : mix(paper, accent, 0.15)
-        let surface = dark ? mix(night, 0, 0.14) : mix(paper, 0xffffff, 0.22)
-        let editor = dark ? surface : mix(paper, 0xffffff, 0.60)
+        // Large surfaces use a restrained tint over neutral paper/graphite.
+        // Reference colors guide the mood; accents carry their stronger hues.
+        let ink = dark ? mix(0xe5e5e2, paper, 0.12) : mix(0x2c2d32, night, 0.12)
+        let canvas = mix(dark ? 0x26272b : 0xebebe8, dark ? night : paper, 0.14)
+        // Navigation needs a distinct lightness, even with a restrained tint.
+        let sidebar = mix(mix(canvas, accent, 0.025), ink, 0.12)
+        let surface = mix(canvas, 0xffffff, dark ? 0.025 : 0.28)
+        let editor = dark ? mix(canvas, 0, 0.12) : mix(canvas, 0xffffff, 0.65)
         let backgrounds = [canvas, sidebar, surface, editor]
         func text(_ value: UInt32) -> UInt32 { readable(value, on: backgrounds, toward: ink) }
         let secondary = swatches.count > 3 ? swatches[3] : mix(accent, ink, 0.25)
@@ -188,6 +191,7 @@ enum NotebookPalette {
     static let nativeFoxglove = adaptive("selection")
     static var canvas: Color { color("canvas") }
     static var sidebar: Color { color("sidebar") }
+    static var sidebarSelectionOutline: Color { currentPreset == .sputnik ? rule : sputnik }
     static var topBar: Color { color("surface") }
     static var card: Color { topBar }
     static var cardSelected: Color { topBar }

@@ -618,6 +618,10 @@ class Core:
     response
 
   def handle(method, params):
+    if method == "dependency.catalog":
+      @mutex.synchronize: project(identifier(params[?:project_id]))
+      # A registry request must not hold the core lock or delay running cells.
+      return @dependencies.catalog(params)
     @mutex.synchronize: dispatch(method, params)
 
   def environment_prepare(params):
@@ -657,7 +661,7 @@ class Core:
       when "runtime.restart": return restart(params)
       when "worker.configure": return configure_worker(params)
       when "project.delete": return delete_project(params)
-      when "health": return {protocol: 1, agent_pid: pid(), implementation: "sputnik", capabilities: ["sheet_run", "bundled_modules", "project_revisions", "reattach", "stop", "force_stop", "gui_reconnect", "live_presentation", "revision_document", "compact_registry", "worker_grants", "worker_environment", "managed_environments", "orphan_gc", "dependency_management", "cell_inputs", "run_document"]}
+      when "health": return {protocol: 1, agent_pid: pid(), implementation: "sputnik", capabilities: ["sheet_run", "bundled_modules", "project_revisions", "reattach", "stop", "force_stop", "gui_reconnect", "live_presentation", "revision_document", "compact_registry", "worker_grants", "worker_environment", "managed_environments", "orphan_gc", "dependency_management", "package_catalog", "cell_inputs", "run_document"]}
       when "project.list":
         projects = @db.query("SELECT p.*,r.document FROM projects p JOIN revisions r ON r.id=p.head ORDER BY p.id")
         projects.each |project|:

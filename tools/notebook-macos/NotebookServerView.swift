@@ -9,39 +9,13 @@ struct NotebookServerBar: View {
     @State private var publish = false
     @State private var workerSettings: NotebookTab?
     @State private var bookSettings = false
+    @State private var confirmForceStop = false
     private var workerTab: NotebookTab? { model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab }
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            HStack(spacing: 10) {
-                Image(systemName: remote.isSelected ? "server.rack" : "laptopcomputer")
-                Picker("Execution", selection: Binding(get: { remote.selected ?? "local" }, set: { remote.choose($0 == "local" ? nil : $0) })) {
-                    Text("This Mac").tag("local")
-                    if let id = remote.selected, !remote.servers.contains(where: { $0.id == id }) {
-                        Text("Unavailable server").tag(id)
-                    }
-                    ForEach(remote.servers) { server in Text(server.name).tag(server.id) }
-                }.labelsHidden().frame(maxWidth: 220).disabled(model.busy || remote.busy)
-                Button("Servers…") { editServer = true }.disabled(model.busy || remote.busy)
-                Button("Worker Settings…") { workerSettings = workerTab }
-                    .disabled(workerTab == nil || model.busy || remote.busy || model.executingCurrentWorker ||
-                        (remote.isSelected && (!remote.connected || workerTab?.kind != "sheet")))
-                Button("Notebook Settings…", systemImage: "gearshape") { bookSettings = true }
-                    .labelStyle(.iconOnly).help("Notebook Settings…")
-                    .accessibilityLabel("Notebook Settings")
-                    .disabled(model.busy || remote.busy)
-                if remote.isSelected {
-                    if remote.busy { ProgressView().controlSize(.small) }
-                    Text(remote.status).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)
-                    Spacer()
-                    if remote.connected {
-                        Button("Sync") { remote.sync() }.disabled(remote.busy || remote.conflict)
-                        Button("Projects…") { remote.reloadProjects(); browse = true }.disabled(remote.busy)
-                        Button("Disconnect") { remote.detach() }.disabled(remote.busy)
-                    } else {
-                        if remote.hasPending { Button("Reconnect without resending") { remote.discardPending() }.disabled(remote.busy) }
-                        Button("Reconnect") { remote.reconnect() }.disabled(remote.busy)
-                    }
-                } else { Spacer() }
+        VStack(alignment: .leading, spacing: 6) {
+            ViewThatFits(in: .horizontal) {
+                workerToolbar(compact: false)
+                workerToolbar(compact: true)
             }
             if remote.conflict {
                 HStack {
@@ -52,8 +26,12 @@ struct NotebookServerBar: View {
                 }.foregroundStyle(NotebookPalette.categoryControls)
             }
         }
-        .padding(.horizontal, 19).padding(.vertical, 9)
+        .font(.system(size: 11))
+        .controlSize(.small)
+        .padding(.horizontal, 19).padding(.vertical, 6)
         .background(NotebookPalette.topBar)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Worker toolbar")
         .sheet(isPresented: $editServer) { NotebookServerEditor(remote: remote) }
         .sheet(isPresented: $bookSettings) { NotebookBookSettingsView(model: model) }
         .sheet(isPresented: $browse) { NotebookRemoteProjects(remote: remote) }
@@ -61,11 +39,119 @@ struct NotebookServerBar: View {
             NotebookWorkerSettingsEditor(model: model, remote: remote, tab: tab,
                 document: model.documentIdentity, execution: remote.selected)
         }
+        .confirmationDialog("Terminate this sheet's worker?", isPresented: $confirmForceStop, titleVisibility: .visible) {
+            Button("Force Stop", role: .destructive) { model.stopExecution(force: true) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Runtime state will be lost. Drafts and the last displayed results stay here. Restart Worker will be required; cells will not be replayed automatically.")
+        }
         .confirmationDialog("Publish the local version?", isPresented: $publish, titleVisibility: .visible) {
             Button("Publish local version") { remote.sync(publish: true) }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This updates the server from your local modules, sheets, boards and resources. The previous server revision stays in history. A concurrent server edit will still cause a conflict.")
+        }
+    }
+
+    private func workerToolbar(compact: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: remote.isSelected ? "server.rack" : "laptopcomputer")
+                .foregroundStyle(NotebookPalette.muted)
+            Picker("Execution", selection: Binding(get: { remote.selected ?? "local" }, set: { remote.choose($0 == "local" ? nil : $0) })) {
+                Text("This Mac").tag("local")
+                if let id = remote.selected, !remote.servers.contains(where: { $0.id == id }) {
+                    Text("Unavailable server").tag(id)
+                }
+                ForEach(remote.servers) { server in Text(server.name).tag(server.id) }
+            }
+            .labelsHidden().frame(maxWidth: compact ? 132 : 170)
+            .disabled(model.busy || remote.busy)
+
+            if model.isolatedExecution {
+                Text(model.executionLabel)
+                    .fontWeight(.medium)
+                    .fixedSize()
+                    .padding(.horizontal, 7).padding(.vertical, 3)
+                    .background(NotebookPalette.sputnik.opacity(0.08), in: Capsule())
+                    .accessibilityLabel("Execution · \(model.executionLabel)")
+                if let label = model.executingCellLabel {
+                    ProgressView().controlSize(.mini)
+                    Button { model.showExecutingCell() } label: {
+                        Label(label, systemImage: "location.fill").lineLimit(1)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!model.canNavigate)
+                    .help("Show Running Cell · \(label)")
+                    .accessibilityLabel("Show Running Cell")
+                    .accessibilityValue(label)
+                }
+            }
+            if remote.isSelected {
+                if remote.busy { ProgressView().controlSize(.mini) }
+                Text(remote.status).foregroundStyle(.secondary).lineLimit(1).help(remote.status)
+            }
+            Spacer(minLength: 8)
+
+            Button { editServer = true } label: {
+                toolbarLabel("Servers…", systemImage: "server.rack", compact: compact)
+            }
+            .disabled(model.busy || remote.busy)
+            .help("Servers…").accessibilityLabel("Servers…")
+            Button { workerSettings = workerTab } label: {
+                toolbarLabel("Worker Settings…", systemImage: "slider.horizontal.3", compact: compact)
+            }
+            .disabled(workerTab == nil || model.busy || remote.busy || model.executingCurrentWorker ||
+                (remote.isSelected && (!remote.connected || workerTab?.kind != "sheet")))
+            .help("Worker Settings…").accessibilityLabel("Worker Settings…")
+            Button("Notebook Settings…", systemImage: "gearshape") { bookSettings = true }
+                .labelStyle(.iconOnly).help("Notebook Settings…")
+                .accessibilityLabel("Notebook Settings")
+                .disabled(model.busy || remote.busy)
+
+            if remote.isSelected {
+                if compact {
+                    Menu { connectionButtons } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .fixedSize()
+                    .help("Server actions").accessibilityLabel("Server actions")
+                } else {
+                    connectionButtons
+                }
+            }
+            if model.isolatedExecution {
+                if model.executingCurrentWorker {
+                    Button("Stop") { model.stopExecution() }.disabled(!model.canStop)
+                        .help("Cancel the current work")
+                    Button("Force Stop…", role: .destructive) { confirmForceStop = true }
+                        .disabled(!model.canForceStop)
+                        .help("Terminate this sheet's worker")
+                } else {
+                    Button {
+                        if let tab = workerTab { model.perform("restart_worker", tab: tab) }
+                    } label: {
+                        toolbarLabel("Restart Worker", systemImage: "arrow.clockwise", compact: compact)
+                    }
+                    .disabled(model.busy)
+                    .help("Restart Worker").accessibilityLabel("Restart Worker")
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private func toolbarLabel(_ title: String, systemImage: String, compact: Bool) -> some View {
+        if compact { Image(systemName: systemImage) }
+        else { Text(title).fixedSize() }
+    }
+
+    @ViewBuilder private var connectionButtons: some View {
+        if remote.connected {
+            Button("Sync") { remote.sync() }.disabled(remote.busy || remote.conflict)
+            Button("Projects…") { remote.reloadProjects(); browse = true }.disabled(remote.busy)
+            Button("Disconnect") { remote.detach() }.disabled(remote.busy)
+        } else {
+            if remote.hasPending { Button("Reconnect without resending") { remote.discardPending() }.disabled(remote.busy) }
+            Button("Reconnect") { remote.reconnect() }.disabled(remote.busy)
         }
     }
 }

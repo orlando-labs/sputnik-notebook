@@ -142,8 +142,8 @@ private final class Scanner {
     // These words are contextual in the parser, but highlighting them makes
     // the editor agree with Sputnik's shipped Vim/VS Code grammars.
     private static let contextualKeywords: Set<String> = [
-        "as", "get", "set", "var", "native", "macro", "string_tag", "next",
-        "pattern", "then", "with", "numeric", "quote", "owned", "borrowed",
+        "as", "get", "set", "var", "native", "macro", "string_tag",
+        "pattern", "with", "numeric", "quote", "owned", "borrowed",
         "collected",
     ]
 
@@ -299,6 +299,9 @@ private final class Scanner {
         if expectingClassName {
             category = .className
             expectingClassName = false
+        } else if word == "then" || word == "next" {
+            let memberName = [".", "#", "&"].contains(result.last?.text ?? "")
+            category = !memberName && isControlKeyword(word, at: start) ? .keyword : .identifier
         } else if Self.keywords.contains(word) || Self.contextualKeywords.contains(word) {
             category = word == "true" || word == "false" || word == "null" ? .constant : .keyword
         } else if startsWithUppercase(word) {
@@ -314,6 +317,43 @@ private final class Scanner {
 
         if word == "class" || word == "mixin" { expectingClassName = true }
         recordMacroIdentifier(word, category: category)
+    }
+
+    private func isControlKeyword(_ word: String, at start: Int) -> Bool {
+        let previous = result.last
+        let gapStart = previous.map { NSMaxRange($0.range) } ?? 0
+        let gapEnd = scalars[start].utf16Start
+        let gap = (source as NSString).substring(with:
+            NSRange(location: gapStart, length: gapEnd - gapStart))
+        let beginsLine = previous == nil || gap.contains("\n") || gap.contains("\r")
+        // A suffix belongs to an identifier such as next? or then!, not a
+        // control keyword. The scanner keeps its existing separate suffix token.
+        if current == 63 || current == 33 { return false }
+        if word == "then" {
+            guard !beginsLine, let previous = previous else { return false }
+            switch previous.category {
+            case .identifier, .variable, .className, .number, .string, .constant:
+                return previous.text != "def"
+            case .punctuation:
+                return [")", "]", "}"].contains(previous.text)
+            default:
+                return previous.text == "?" || previous.text == "!"
+            }
+        }
+        let afterThen = previous?.text == "then" && previous?.category == .keyword
+        let beforeColon = result.dropLast().last?.text ?? ""
+        let afterBlockColon = previous?.text == ":" &&
+            (bracketDepth == 0 || [")", "|"].contains(beforeColon)) &&
+            !["", "=", "return", "throw", "(", "[", "{"].contains(beforeColon)
+        guard beginsLine || afterThen || afterBlockColon else { return false }
+        var following = index
+        while following < scalars.count && [32, 9].contains(scalars[following].value) {
+            following += 1
+        }
+        guard following < scalars.count else { return true }
+        let value = scalars[following].value
+        return [10, 13, 35, 44, 41, 93, 125, 34, 39, 64, 36].contains(value) ||
+            isDigit(value) || isIdentifierStart(value)
     }
 
     private func scanNumber() {

@@ -520,6 +520,17 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
                     let frame = bitmap.representation(using: .png, properties: [:])
                     ok = ok && frame != nil && (previousFrame == nil || frame != previousFrame)
                     previousFrame = frame
+                    if let frame, let option = CommandLine.arguments.firstIndex(of: "--theme-snapshot-dir"),
+                       CommandLine.arguments.count > option + 1 {
+                        do {
+                            let folder = URL(fileURLWithPath: CommandLine.arguments[option + 1])
+                            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                            try frame.write(to: folder.appendingPathComponent("workspace-\(preset.rawValue)-\(theme.rawValue).png"))
+                        } catch {
+                            fputs("Theme snapshot failed: \(error)\n", stderr)
+                            ok = false
+                        }
+                    }
                 } else { ok = false }
                 guard ok else {
                     fputs("Theme/preset smoke failed: \(theme.title), \(preset.title)\n", stderr)

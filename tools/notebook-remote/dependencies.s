@@ -41,6 +41,18 @@ class Dependencies:
     fail(404, "dependency operation not found") unless record
     record.merge(decode(environment_log(record[:directory])))
 
+  # Metadata inspection never retires workers, installs code or creates a job.
+  def catalog(params):
+    query = params[?:query]
+    source = params[?:source]
+    fail(400, "unsupported package query") unless ["versions", "variants"].include?(query)
+    fail(400, "invalid package name") unless Str === source and source.bytes.count > 0 and source.bytes.count <= 257 and not source.starts_with?("-") and not source.contains?("\u{0}")
+    arguments = ["pkg", query, source, "--json"]
+    arguments = arguments + ["--check-host"] if query == "variants"
+    checked = system.command(@compiler, *arguments).capture(timeout: 20.0, check: false)
+    fail(422, checked.stderr.to_str) unless checked.success?
+    decode(checked.stdout.to_str)
+
   def request(project, revision, params):
     action = params[?:action]
     fail(400, "unsupported dependency operation") unless ["install_sputnik", "remove_sputnik", "lock_ruby"].include?(action)
@@ -52,7 +64,7 @@ class Dependencies:
     ["variant", "backend", "bundle", "registry"].each |key|:
       value = params[?key]
       fail(400, "invalid package option") if value and (not (Str === value) or value.bytes.count > 4096 or value.contains?("\u{0}") or value.starts_with?("-"))
-    ["allow_native", "build_from_source", "allow_native_large"].each |key|:
+    ["allow_native", "build_from_source", "allow_native_large", "local_source"].each |key|:
       value = params[?key]
       fail(400, "invalid package flag") unless value == null or value == true or value == false
     fail(422, "Gemfile is missing") if action == "lock_ruby" and not fs.exists?(revision[:directory] + "/Gemfile")
@@ -91,6 +103,16 @@ class Dependencies:
         command(directory, ruby, ["-S", "bundle", "lock"], {BUNDLE_GEMFILE: directory + "/Gemfile", BUNDLE_APP_CONFIG: directory + "/.bundle", BUNDLE_FROZEN: "false"})
         result = {gemfile_lock: fs.read_text(directory + "/Gemfile.lock", limit: 1048576)}
       else:
+        if action == "install_sputnik" and params[?:local_source] and source.ends_with?(".sputnikpkg") and fs.exists?(source) and not fs.dir?(source):
+          # A chosen archive already identifies its build. Read its own selectors
+          # instead of imposing the registry installer's CPU/none defaults.
+          inspected = system.command(@compiler, "pkg", "inspect", source).capture(timeout: 120.0, check: false)
+          raise IOError(inspected.stderr.to_str) unless inspected.success?
+          metadata = decode(inspected.stdout.to_str)
+          params[:variant] = metadata[:variant] unless params[?:variant]
+          params[:bundle] = metadata[:bundle] unless params[?:bundle]
+          backend = metadata[:target][:compute_backend]
+          params[:backend] = backend if not params[?:backend] and ["cpu", "cuda", "mps"].include?(backend)
         arguments = ["pkg", (if action == "install_sputnik" then "install" else "uninstall"), source]
         arguments = arguments + ["--version", version] if version != ""
         arguments = arguments + ["--variant", params[:variant]] if params[?"variant"]
