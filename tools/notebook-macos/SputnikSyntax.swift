@@ -352,6 +352,7 @@ private final class Scanner {
         }
         guard following < scalars.count else { return true }
         let value = scalars[following].value
+        if value == 58 { return following > index }
         return [10, 13, 35, 44, 41, 93, 125, 34, 39, 64, 36].contains(value) ||
             isDigit(value) || isIdentifierStart(value)
     }
