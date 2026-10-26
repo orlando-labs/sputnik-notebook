@@ -1,0 +1,30 @@
+{
+  "created_at": "2026-10-26T08:36:21.792367+00:00",
+  "app_bundle": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/Sputnik Notebook.app",
+  "source_commits": {
+    "sputnik-lang": "28fe1f0bbf7d7284b26c03715d21deb6111821ee",
+    "sputnik-notebook": "a877de60beec13db3e97b0862f41d82c4d5a070d",
+    "sqlite3": "7af7fd0143e1ca98bc9f59e2219ab3df82ab494c",
+    "orm": "f80405ee97ce75c2757aff9fe16b2cb17c2e0845",
+    "orbit": "d1fef4704cff36c3c455dc5395f52aeaea07ecde"
+  },
+  "binaries": {
+    "SputnikNotebook": "83e450be054952ff020431ecac8f9c888c2f97e9eb79a113a4628e316328edd5",
+    "sputnik": "213a3c16a9c54b7cde7141e7438f1b6df45479621af56dd1c217c44d37fad508",
+    "sputnik-notebook-worker": "c5821e9587182815e5bea8a7f3bc9f7af856c820fcfe1cdcccc74f820f753277",
+    "sputnik-notebook-remote": "a50cc3538e9b16f9349dc9e894b6bbf82a378108fed8d15521942caf36ff6f3f"
+  },
+  "checks": {
+    "macos_app_build": "passed",
+    "codesign_deep_strict": "passed",
+    "bundled_compiler_external_templates_vm": "passed",
+    "remote_integration": {
+      "tests": 45,
+      "status": "passed"
+    },
+    "remote_worker_template_loop": "passed",
+    "macos_app_isolated_worker_template_ui": "passed",
+    "watch_vm_tests": "passed"
+  },
+  "template_feature_commit": "2622f9d23b61e2db27bba9d1137fa7e14a886298"
+}

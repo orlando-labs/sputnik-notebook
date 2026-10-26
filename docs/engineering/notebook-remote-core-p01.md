@@ -134,6 +134,33 @@ SQLite `quick_check` — `ok`; тестовые проекты удалены, �
 [финальную проверку](../evidence/2026-10-25/remote-work-final-health.json) и
 [проверку клиента](../evidence/2026-10-25/remote-work-production-gui.json).
 
+2026-10-26 компилятор, worker и native core пересобраны в
+`releases/20261026-templates-2622f9d`. SDK содержит runtime `%for` и внешние
+шаблоны (`2622f9d`), а также исправление больших timeout Watch для старой Linux
+standard library (`28fe1f0`). Исходники notebook — `a877de6`; точные коммиты всех
+локальных пакетов и SHA-256 архивов закреплены в
+[release manifest](../evidence/2026-10-26/release.json).
+
+Внешние `.html.sv`, `.sql.sv` и `.cmd.sv` подключаются через `@template` и
+`source_formats` build manifest. Они встраиваются при сборке; notebook cell не
+получает неявный filesystem loader. Runtime `%for` работает и в isolated worker.
+Linux-проверки включают parser/VM/session tests, язык и внешние шаблоны в
+VM/full-native, 45 remote API-интеграций и Orbit HTML/SQL/cmd без fallback.
+Рабочий HTTP API отдельно проверяет шаблон в ячейке, результат `42` и replay
+CommandId без повторного запуска. См.
+[результаты сборки](../evidence/2026-10-26/build-result.json) и
+[production smoke](../evidence/2026-10-26/production-smoke.json).
+
+Переключение выполнено после повторной проверки отсутствия активных Run,
+живых runtime и включённых services под SQLite writer lock. Сохранены backup,
+metadata, история запусков и прежний token; SQLite `quick_check` — `ok`.
+Backup — `backups/before-templates-20261026T084237Z`. Тестовый проект удалён через API, его runtime завершён. Точные пути backup и
+процессов — в [отчёте обновления](../evidence/2026-10-26/deploy-result.json),
+состояние сервиса — в [финальной проверке](../evidence/2026-10-26/final-health.json).
+macOS bundle пересобран с тем же SDK; проверены подпись, bundled compiler,
+45 remote-интеграций и UI smoke с шаблоном через isolated worker:
+[локальная сборка](../evidence/2026-10-26/local-build.json).
+
 Из серверного checkout:
 
 ```sh

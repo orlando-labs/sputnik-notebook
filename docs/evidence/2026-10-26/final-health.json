@@ -1,0 +1,48 @@
+{
+  "health": {
+    "protocol": 1,
+    "agent_pid": 2028052,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "processes": {
+    "agent": {
+      "pid": 2028052,
+      "executable": "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/sputnik-notebook-remote",
+      "sha256": "c0c333ab8bad33f2c4438c57b9ab4cda5a3dd1e623f23741d3b636a7d353c8f1"
+    },
+    "gateway": {
+      "pid": 2028053,
+      "executable": "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/sputnik-notebook-remote",
+      "sha256": "c0c333ab8bad33f2c4438c57b9ab4cda5a3dd1e623f23741d3b636a7d353c8f1"
+    }
+  },
+  "sqlite_quick_check": "ok",
+  "test_project_deleted": true,
+  "test_runtimes_retired": true,
+  "compiler_sha256": "bb321b1e5e852cde08d483cf1bdf181e3b902676837946b18f2c02b06b49fade",
+  "worker_sha256": "8f3c1dfe8c5f24238e6996ba0493a59068326f64e6f7d02d7b65aaf67b85af57"
+}

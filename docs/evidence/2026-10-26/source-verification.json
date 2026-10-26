@@ -1,0 +1,35 @@
+{
+  "verified_at": "2026-10-26T08:36:46.586851+00:00",
+  "repositories": {
+    "sputnik-lang": {
+      "commit": "28fe1f0bbf7d7284b26c03715d21deb6111821ee",
+      "sha256": "d5f9ed33761bb6d290184030815cd38dfacea63f33df9bd7726c1e12216b7820",
+      "source_files": 2058,
+      "archive_matches_source": true
+    },
+    "sputnik-notebook": {
+      "commit": "a877de60beec13db3e97b0862f41d82c4d5a070d",
+      "sha256": "e027d2399072e1d8b524c60b7c8b6405c49aa3543f34d93903af223b4b84a982",
+      "source_files": 262,
+      "archive_matches_source": true
+    },
+    "sqlite3": {
+      "commit": "7af7fd0143e1ca98bc9f59e2219ab3df82ab494c",
+      "sha256": "8ea5a9db1a1ca946674c3c692bc404dfc263cefa4181a30a3f8d724afc376b66",
+      "source_files": 27,
+      "archive_matches_source": true
+    },
+    "orm": {
+      "commit": "f80405ee97ce75c2757aff9fe16b2cb17c2e0845",
+      "sha256": "cf1431b55a47343dfdc460753eab6180c66423f97aae91cfcd1d55dfde50ad4b",
+      "source_files": 22,
+      "archive_matches_source": true
+    },
+    "orbit": {
+      "commit": "d1fef4704cff36c3c455dc5395f52aeaea07ecde",
+      "sha256": "a9f75495e3b6e596aa58b0e1f1f5e37bb2b6c612608c6bc5407bcb3bcf3588ce",
+      "source_files": 137,
+      "archive_matches_source": true
+    }
+  }
+}

@@ -5,6 +5,11 @@ macOS interface. The curses console `isputnik` is built and distributed by
 [`sputnik-lang`](../sputnik-lang/README.md). Both hosts use `.sputnikbook`
 projects and the language-owned session/engine sources.
 Modules accept `.s`, `.spu`, and `.sputnik`; newly created modules use `.s`.
+The bundled compiler and isolated workers support runtime `%for` in string-tag
+templates. External `.html.sv`, `.sql.sv`, and `.cmd.sv` files use `@template`
+declarations and `source_formats` in a build manifest; notebook cells do not
+implicitly load filesystem views. See the
+[external template contract](../sputnik-lang/docs/engineering/external-templates-v1.md).
 
 ## Build
 

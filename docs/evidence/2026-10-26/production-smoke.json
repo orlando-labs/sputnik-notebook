@@ -1,0 +1,11 @@
+{
+  "project": "template_smoke_2f1013b655b8428386851dc05d9ae3ff",
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d",
+  "run_id": "76e61a746b77c552bccb378eb64a3be4",
+  "state": "succeeded",
+  "result": "42",
+  "template_argv_preserved": true,
+  "receipt_replay_preserved": true,
+  "test_project_deleted": true,
+  "test_runtimes_retired": true
+}

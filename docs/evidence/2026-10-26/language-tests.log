@@ -1,0 +1,5 @@
+parser_tests: ok
+vm_tests: ok
+isputnik_tests ok
+external_templates_test: VM/full-native, source diagnostics and cache invalidation passed
+string_template_loops_test: VM, full native and diagnostics passed

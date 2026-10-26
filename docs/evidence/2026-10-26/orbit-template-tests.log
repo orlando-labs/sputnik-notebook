@@ -1,0 +1,16 @@
+PASS external template providers
+true
+/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/orbit-native/app.external_templates.native.cpp: In constructor ‘{anonymous}::NativeArgsView::NativeArgsView(std::initializer_list<{anonymous}::NativeValue>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/orbit-native/app.external_templates.native.cpp:48291:27: warning: initializing ‘{anonymous}::NativeArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeValue>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+48291 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/orbit-native/app.external_templates.native.cpp: In constructor ‘{anonymous}::NativeKeywordArgsView::NativeKeywordArgsView(std::initializer_list<{anonymous}::NativeCallKeyword>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/orbit-native/app.external_templates.native.cpp:48320:27: warning: initializing ‘{anonymous}::NativeKeywordArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeCallKeyword>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+48320 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/orbit-native/app.external_templates.native.cpp: In function ‘int64_t {anonymous}::native_numeric_wrap_to_width(int64_t)’:
+/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/orbit-native/app.external_templates.native.cpp:51972:48: warning: left shift count >= width of type [-Wshift-count-overflow]
+51972 |   const std::uint64_t mask = (std::uint64_t{1} << kNativeNumericPolicy.bits) - 1U;
+      |                                    ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PASS external template providers
+true

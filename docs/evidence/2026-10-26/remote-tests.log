@@ -1,0 +1,50 @@
+test_auth_and_snapshot_roundtrip (__main__.RemoteTests.test_auth_and_snapshot_roundtrip) ... ok
+test_board_actions_isolate_controller_keep_state_and_capture_arguments (__main__.RemoteTests.test_board_actions_isolate_controller_keep_state_and_capture_arguments) ... ok
+test_cell_inputs_atomic_watch_manual_scope_and_receipts (__main__.RemoteTests.test_cell_inputs_atomic_watch_manual_scope_and_receipts) ... ok
+test_cell_inputs_busy_runtime_and_frozen_run_snapshot (__main__.RemoteTests.test_cell_inputs_busy_runtime_and_frozen_run_snapshot) ... ok
+test_cell_inputs_persist_and_revalidate_changed_definitions (__main__.RemoteTests.test_cell_inputs_persist_and_revalidate_changed_definitions) ... ok
+test_child_failure_is_not_reported_as_success (__main__.RemoteTests.test_child_failure_is_not_reported_as_success) ... ok
+test_cli_snapshots_dependency_inputs_and_rejects_symlink_parents (__main__.RemoteTests.test_cli_snapshots_dependency_inputs_and_rejects_symlink_parents) ... ok
+test_deleting_project_stops_owner_and_preserves_history (__main__.RemoteTests.test_deleting_project_stops_owner_and_preserves_history) ... ok
+test_dependency_operation_rejects_active_run_and_resolves_ruby_lock (__main__.RemoteTests.test_dependency_operation_rejects_active_run_and_resolves_ruby_lock) ... ok
+test_dependency_packages_install_remove_receipts_and_worker_imports (__main__.RemoteTests.test_dependency_packages_install_remove_receipts_and_worker_imports) ... ok
+test_disconnected_client_and_restarted_gateway (__main__.RemoteTests.test_disconnected_client_and_restarted_gateway) ... ok
+test_edit_during_run_and_reuse_live_runtime (__main__.RemoteTests.test_edit_during_run_and_reuse_live_runtime) ... ok
+test_first_run_prepares_python_environment (__main__.RemoteTests.test_first_run_prepares_python_environment) ... ok
+test_idle_watch_agent_pump_quiets_and_never_executes_new_drafts (__main__.RemoteTests.test_idle_watch_agent_pump_quiets_and_never_executes_new_drafts) ... ok
+test_live_presentation_can_be_restored_by_another_client (__main__.RemoteTests.test_live_presentation_can_be_restored_by_another_client) ... ok
+test_lost_response_does_not_duplicate_run (__main__.RemoteTests.test_lost_response_does_not_duplicate_run) ... ok
+test_managed_environment_reuse_restart_failure_and_logs (__main__.RemoteTests.test_managed_environment_reuse_restart_failure_and_logs) ... ok
+test_native_cli_upload_run_and_receipt (__main__.RemoteTests.test_native_cli_upload_run_and_receipt) ... ok
+test_orphan_gc_schedule (__main__.RemoteTests.test_orphan_gc_schedule) ... ok
+test_orphan_gc_uses_registry_ownership_and_first_seen_age (__main__.RemoteTests.test_orphan_gc_uses_registry_ownership_and_first_seen_age) ... ok
+test_owner_removal_stops_run_and_prevents_id_reuse (__main__.RemoteTests.test_owner_removal_stops_run_and_prevents_id_reuse) ... ok
+test_package_catalog_uses_execution_host_without_retiring_workers (__main__.RemoteTests.test_package_catalog_uses_execution_host_without_retiring_workers) ... ok
+test_parallel_request_correlation (__main__.RemoteTests.test_parallel_request_correlation) ... ok
+test_prepared_gui_snapshot_is_immutable_and_can_be_checked_out (__main__.RemoteTests.test_prepared_gui_snapshot_is_immutable_and_can_be_checked_out) ... ok
+test_project_inputs_atomic_multi_sheet_and_frozen_snapshots (__main__.RemoteTests.test_project_inputs_atomic_multi_sheet_and_frozen_snapshots) ... ok
+test_project_inputs_busy_sheet_rejects_whole_batch_and_persists (__main__.RemoteTests.test_project_inputs_busy_sheet_rejects_whole_batch_and_persists) ... ok
+test_restart_is_durable_before_destroying_heap (__main__.RemoteTests.test_restart_is_durable_before_destroying_heap) ... ok
+test_restart_then_delete_waits_for_all_runtime_owners (__main__.RemoteTests.test_restart_then_delete_waits_for_all_runtime_owners) ... ok
+test_retry_after_cancelled_preparation_requires_runtime_restart (__main__.RemoteTests.test_retry_after_cancelled_preparation_requires_runtime_restart) ... ok
+test_runtime_has_a_private_working_directory (__main__.RemoteTests.test_runtime_has_a_private_working_directory) ... ok
+test_server_periodic_error_policy_and_module_edit_pause (__main__.RemoteTests.test_server_periodic_error_policy_and_module_edit_pause) ... ok
+test_server_periodic_gateway_restart_pause_receipt_and_agent_restart (__main__.RemoteTests.test_server_periodic_gateway_restart_pause_receipt_and_agent_restart) ... ok
+test_service_once_receipt_stop_and_removed_owner (__main__.RemoteTests.test_service_once_receipt_stop_and_removed_owner) ... ok
+test_snapshot_nested_tree_survives_agent_restart (__main__.RemoteTests.test_snapshot_nested_tree_survives_agent_restart) ... ok
+test_snapshot_publication_failure_preserves_head_and_receipt (__main__.RemoteTests.test_snapshot_publication_failure_preserves_head_and_receipt) ... ok
+test_stop_during_preparation (__main__.RemoteTests.test_stop_during_preparation) ... ok
+test_stop_force_stop_and_stale_epoch (__main__.RemoteTests.test_stop_force_stop_and_stale_epoch) ... ok
+test_template_loops_in_remote_worker (__main__.RemoteTests.test_template_loops_in_remote_worker) ... ok
+test_unsafe_upload_and_project_inputs (__main__.RemoteTests.test_unsafe_upload_and_project_inputs) ... ok
+test_watch_completion_delete_race_reaps_owner (__main__.RemoteTests.test_watch_completion_delete_race_reaps_owner) ... ok
+test_worker_environment_override_requires_restart_when_changed (__main__.RemoteTests.test_worker_environment_override_requires_restart_when_changed) ... ok
+test_worker_grants_refuse_active_runtime (__main__.RemoteTests.test_worker_grants_refuse_active_runtime) ... ok
+test_worker_grants_scope_revoke_receipts_and_stale_settings (__main__.RemoteTests.test_worker_grants_scope_revoke_receipts_and_stale_settings) ... ok
+test_worker_settings_retire_action_worlds (__main__.RemoteTests.test_worker_settings_retire_action_worlds) ... ok
+test_z_agent_failure_is_interrupted_without_replay (__main__.RemoteTests.test_z_agent_failure_is_interrupted_without_replay) ... ok
+
+----------------------------------------------------------------------
+Ran 45 tests in 56.207s
+
+OK

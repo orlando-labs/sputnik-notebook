@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-26",
+  "release": "20261026-templates-2622f9d",
+  "repositories": {
+    "sputnik-lang": {
+      "commit": "28fe1f0bbf7d7284b26c03715d21deb6111821ee",
+      "sha256": "d5f9ed33761bb6d290184030815cd38dfacea63f33df9bd7726c1e12216b7820",
+      "archive": "sputnik-lang.tar.gz",
+      "bytes": 7762662
+    },
+    "sputnik-notebook": {
+      "commit": "a877de60beec13db3e97b0862f41d82c4d5a070d",
+      "sha256": "e027d2399072e1d8b524c60b7c8b6405c49aa3543f34d93903af223b4b84a982",
+      "archive": "sputnik-notebook.tar.gz",
+      "bytes": 2059438
+    },
+    "sqlite3": {
+      "commit": "7af7fd0143e1ca98bc9f59e2219ab3df82ab494c",
+      "sha256": "8ea5a9db1a1ca946674c3c692bc404dfc263cefa4181a30a3f8d724afc376b66",
+      "archive": "sqlite3.tar.gz",
+      "bytes": 2634889
+    },
+    "orm": {
+      "commit": "f80405ee97ce75c2757aff9fe16b2cb17c2e0845",
+      "sha256": "cf1431b55a47343dfdc460753eab6180c66423f97aae91cfcd1d55dfde50ad4b",
+      "archive": "orm.tar.gz",
+      "bytes": 41081
+    },
+    "orbit": {
+      "commit": "d1fef4704cff36c3c455dc5395f52aeaea07ecde",
+      "sha256": "a9f75495e3b6e596aa58b0e1f1f5e37bb2b6c612608c6bc5407bcb3bcf3588ce",
+      "archive": "orbit.tar.gz",
+      "bytes": 209448
+    }
+  },
+  "template_feature_commit": "2622f9d23b61e2db27bba9d1137fa7e14a886298",
+  "built_at": "2026-10-26T08:41:43.140226+00:00",
+  "binaries": {
+    "sputnik": "bb321b1e5e852cde08d483cf1bdf181e3b902676837946b18f2c02b06b49fade",
+    "sputnik-notebook-worker": "8f3c1dfe8c5f24238e6996ba0493a59068326f64e6f7d02d7b65aaf67b85af57",
+    "sputnik-notebook-remote": "c0c333ab8bad33f2c4438c57b9ab4cda5a3dd1e623f23741d3b636a7d353c8f1"
+  },
+  "checks": {
+    "language_tests": "passed",
+    "remote_integration": "passed"
+  },
+  "additional_checks": {
+    "orbit_html_sql_cmd_vm_and_full_native": "passed",
+    "test_python": "3.11"
+  }
+}

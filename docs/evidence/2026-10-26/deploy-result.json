@@ -1,0 +1,104 @@
+{
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d",
+  "backup": "/home/slowpilot/sputnik-remote-core/backups/before-templates-20261026T084237Z",
+  "source_commits": {
+    "sputnik-lang": "28fe1f0bbf7d7284b26c03715d21deb6111821ee",
+    "sputnik-notebook": "a877de60beec13db3e97b0862f41d82c4d5a070d",
+    "sqlite3": "7af7fd0143e1ca98bc9f59e2219ab3df82ab494c",
+    "orm": "f80405ee97ce75c2757aff9fe16b2cb17c2e0845",
+    "orbit": "d1fef4704cff36c3c455dc5395f52aeaea07ecde"
+  },
+  "previous_health": {
+    "protocol": 1,
+    "agent_pid": 1541954,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "health": {
+    "protocol": 1,
+    "agent_pid": 2028052,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "metadata_preserved": true,
+  "token_preserved": true,
+  "project_count": 15,
+  "run_history_count": 84,
+  "active_runs_interrupted": 0,
+  "idle_runtimes_reset": 0,
+  "sqlite_quick_check": "ok",
+  "processes": {
+    "agent": {
+      "pid": 2028052,
+      "argv": [
+        "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/sputnik-notebook-remote",
+        "--mode",
+        "agent",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--worker",
+        "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/sputnik-notebook-worker",
+        "--sputnik",
+        "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/src/sputnik-lang/build/sputnik"
+      ]
+    },
+    "gateway": {
+      "pid": 2028053,
+      "argv": [
+        "/ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d/sputnik-notebook-remote",
+        "--mode",
+        "gateway",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--port",
+        "18765"
+      ]
+    }
+  }
+}

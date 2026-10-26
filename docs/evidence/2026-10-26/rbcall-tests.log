@@ -1,0 +1,7 @@
+PASS rbcall smoke
+0
+PASS rbcall smoke
+0
+PASS invalid handle callback terminates with a lifetime error
+PASS invalid handle callback terminates with a lifetime error
+rbcall: all requested checks passed
