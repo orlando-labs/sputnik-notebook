@@ -1,0 +1,3 @@
+Remote work tests passed: project inputs, idle Watch, action receipt recovery, server periodic close/reconnect/pause and retained history
+remote UI artifacts: /tmp/spr-test-1gjqn8us/client
+remote test state: /tmp/spr-test-1gjqn8us/new/state

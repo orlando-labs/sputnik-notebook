@@ -1,0 +1,14 @@
+Remote work tests passed: project inputs, idle Watch, action receipt recovery, server periodic close/reconnect/pause and retained history
+Production GUI evidence: /tmp/sputnik-production-gui-ymjdf7uv/result.json
+Traceback (most recent call last):
+  File "/tmp/sputnik-remote-deploy-b205tkc5/production-gui-check.py", line 79, in <module>
+    if cleanup_error is not None:raise cleanup_error
+  File "/tmp/sputnik-remote-deploy-b205tkc5/production-gui-check.py", line 67, in <module>
+    print(result.stdout,end='');assert result.returncode==0,result.stderr
+AssertionError:   File "<stdin>", line 2
+    from pathlib import Path
+IndentationError: unexpected indent
+
+
+Cleanup retry completed separately: {"project": "78c8f07c-af5e-4f6e-8ab4-e5a4c4e78b77", "state": "deleted"}
+Temporary authentication files removed.

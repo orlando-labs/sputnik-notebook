@@ -1,0 +1,117 @@
+{
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261025-remote-inputs-watch-actions",
+  "alias": "/home/slowpilot/sputnik-remote-core/releases/20261025-remote-inputs-watch-actions",
+  "previous_release": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a",
+  "backup": "/home/slowpilot/sputnik-remote-core/backups/before-remote-work-20261025T173906Z",
+  "language_commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+  "previous_health": {
+    "protocol": 1,
+    "agent_pid": 683267,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document"
+    ]
+  },
+  "health": {
+    "protocol": 1,
+    "agent_pid": 1541954,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "smoke": {
+    "project": "remote_work_smoke_b2a144e5a53148daa07bdd23a80abced",
+    "revision": "813c1800309ab10eeae3745072ea75441483410241bbd606200738b6930c8863",
+    "run_id": "6bf07358992695152f4d86bfe4412ca8",
+    "input_run_id": "2182060cf94c4f3c9910e559eccf920b",
+    "action_run_id": "44021482ac93ac5bdd8946bdf6a3cd14",
+    "initial_result": "8",
+    "applied_result": "14",
+    "action_result": "[1, 7]",
+    "idle_watch_run_id": "a360d20a7953ce2dd7e2836717a994a5",
+    "service_runs": 3,
+    "service_history": 2,
+    "checks": [
+      "project inputs before worker creation",
+      "atomic input Apply",
+      "exact Int64",
+      "input receipt replay",
+      "idle Watch",
+      "isolated board action",
+      "agent-owned fixed-rate Periodic Work",
+      "durable Pause receipt",
+      "Tail retention"
+    ]
+  },
+  "metadata_preserved": true,
+  "token_preserved": true,
+  "active_runs_interrupted": 0,
+  "idle_runtimes_reset": 0,
+  "processes": {
+    "agent": {
+      "pid": 1541954,
+      "argv": [
+        "/home/slowpilot/sputnik-remote-core/releases/20261025-remote-inputs-watch-actions/sputnik-notebook-remote",
+        "--mode",
+        "agent",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--worker",
+        "/home/slowpilot/sputnik-remote-core/releases/20261025-remote-inputs-watch-actions/sputnik-notebook-worker",
+        "--sputnik",
+        "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang/build/sputnik"
+      ]
+    },
+    "gateway": {
+      "pid": 1542199,
+      "argv": [
+        "/home/slowpilot/sputnik-remote-core/releases/20261025-remote-inputs-watch-actions/sputnik-notebook-remote",
+        "--mode",
+        "gateway",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--port",
+        "18765"
+      ]
+    }
+  }
+}

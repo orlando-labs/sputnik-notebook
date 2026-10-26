@@ -572,6 +572,18 @@ final class NotebookModel: ObservableObject {
         remote.importCellInputs = { [weak self] values in
             guard let self else { throw CancellationError() }
             let identity = self.documentIdentity
+            let projectValues = values.filter { $0.key.hasPrefix("project:") }
+            if !projectValues.isEmpty {
+                let text = String(decoding: try JSONEncoder().encode(projectValues), as: UTF8.self)
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                    self.worker.execute(edits: [], action: "restore_inputs", tab: "", cell: "", text: text) { state, failure in
+                        guard self.documentIdentity == identity, self.remote.isSelected else { continuation.resume(throwing: CancellationError()); return }
+                        if let state { self.accept(state) }
+                        if let failure { continuation.resume(throwing: NotebookRemoteFailure(status: 422, message: failure)) }
+                        else { continuation.resume() }
+                    }
+                }
+            }
             for tab in self.snapshot?.tabs ?? [] where tab.kind == "sheet" {
                 for cell in tab.cells {
                     var edits: [String: String] = [:]
@@ -618,6 +630,9 @@ final class NotebookModel: ObservableObject {
             executionTimer?.invalidate(); executionTimer = nil
             if executingWorker && !remote.active { freezeLiveTiming() }
             executingWorker = remote.active
+            executingTargetID = remote.runs.last(where: { $0.active && $0.board != nil }).flatMap { run in
+                guard let board = run.board, let component = run.component else { return nil }; return board + ":" + component
+            }
             let activeTabs = Set(remote.runs.filter(\.active).map { "sheet:" + $0.sheet })
             executingCells = executingCells.filter { activeTabs.contains($0.key) }
             for run in remote.runs where run.active { updateExecutingCell(run.executingCell, tab: "sheet:" + run.sheet) }
@@ -828,7 +843,7 @@ final class NotebookModel: ObservableObject {
     }
     private var currentRemoteRun: NotebookRemoteRun? {
         guard let sheet = remote.focusedSheet?() else { return nil }
-        return remote.runs.last { $0.sheet == sheet && $0.active }
+        return remote.runs.last { ($0.sheet == sheet || $0.controller == sheet) && $0.active }
     }
     var executingCurrentWorker: Bool { remote.isSelected ? currentRemoteRun != nil : executingWorker }
     var canStop: Bool {
@@ -1167,10 +1182,30 @@ final class NotebookModel: ObservableObject {
         } catch { self.error = error.localizedDescription; completion(false) }
     }
 
+    func invocationResult(_ key: String) -> NotebookPeriodicResult? {
+        remote.isSelected ? remote.invocationResults[key] : snapshot?.periodic_results?.first { $0.id == key }
+    }
     func periodicState(board: NotebookBoard, component: NotebookBoardComponent) -> NotebookPeriodicState {
-        periodicStates[board.id + ":" + component.id] ?? NotebookPeriodicState(settings: component.periodicSettings)
+        if remote.isSelected {
+            var state = NotebookPeriodicState(settings: component.periodicSettings)
+            if let saved = remote.services.first(where: { $0["board"] as? String == board.id && $0["component"] as? String == component.id }) {
+                state.enabled = saved["enabled"] as? Bool ?? false; state.running = saved["running"] as? Bool ?? false
+                state.runs = saved["runs"] as? Int ?? 0; state.failures = saved["failures"] as? Int ?? 0; state.skipped = saved["skipped"] as? Int ?? 0
+                state.status = saved["status"] as? String ?? "Stopped"
+                state.history = (saved["history"] as? [[String: Any]] ?? []).compactMap { item in
+                    guard let id = item["id"] as? Int, let started = item["started"] as? Double, let duration = item["duration"] as? Double, let ok = item["ok"] as? Bool else { return nil }
+                    return NotebookPeriodicRun(id: id, started: Date(timeIntervalSince1970: started), duration: duration, ok: ok, value: item["value"] as? String, error: item["error"] as? String)
+                }
+            }
+            return state
+        }
+        return periodicStates[board.id + ":" + component.id] ?? NotebookPeriodicState(settings: component.periodicSettings)
     }
     func startPeriodic(board: NotebookBoard, component: NotebookBoardComponent) {
+        if remote.isSelected {
+            guard authorizeExecution() else { return }
+            remote.invoke(board: board.id, component: component.id, operation: "start") { _ in }; return
+        }
         guard !busy, !closing else { return }
         if let message = component.periodicSettings.validationError { error = message; return }
         guard !(snapshot?.tabs.contains { $0.kind == "module" && isModified($0) } ?? false) else {
@@ -1184,11 +1219,16 @@ final class NotebookModel: ObservableObject {
         schedulePeriodic()
     }
     func pausePeriodic(board: NotebookBoard, component: NotebookBoardComponent) {
+        if remote.isSelected { remote.invoke(board: board.id, component: component.id, operation: "pause") { _ in }; return }
         let key = board.id + ":" + component.id
         periodicStates[key]?.pause()
         schedulePeriodic()
     }
     func runPeriodicOnce(board: NotebookBoard, component: NotebookBoardComponent) {
+        if remote.isSelected {
+            guard authorizeExecution() else { return }
+            remote.invoke(board: board.id, component: component.id, operation: "once") { _ in }; return
+        }
         guard !busy, !closing, component.periodicSettings.validationError == nil else { return }
         guard !(snapshot?.tabs.contains { $0.kind == "module" && isModified($0) } ?? false) else {
             error = "Save modified module tabs before running Periodic Work."; return
@@ -1199,6 +1239,7 @@ final class NotebookModel: ObservableObject {
         invokePeriodic(board: board, component: component, explicit: true)
     }
     func clearPeriodicHistory(board: NotebookBoard, component: NotebookBoardComponent) {
+        if remote.isSelected { remote.invoke(board: board.id, component: component.id, operation: "clear") { _ in }; return }
         periodicStates[board.id + ":" + component.id]?.history.removeAll()
     }
     private func reconcilePeriodic() {
@@ -1221,7 +1262,7 @@ final class NotebookModel: ObservableObject {
     }
     private func schedulePeriodic() {
         periodicTimer?.invalidate(); periodicTimer = nil
-        guard !closing, periodicStates.values.contains(where: \.enabled) else { return }
+        guard !closing, !remote.isSelected, periodicStates.values.contains(where: \.enabled) else { return }
         let now = ProcessInfo.processInfo.systemUptime
         let deadline = periodicStates.values.filter { $0.enabled && !$0.running }.compactMap(\.nextDeadline).min()
         let delay = max(0.01, min(0.25, (deadline ?? now + 0.25) - now))
@@ -1564,8 +1605,21 @@ final class NotebookModel: ObservableObject {
                 } catch { self.error = error.localizedDescription; completion?(false) }
                 return
             }
-            if ["apply", "set_input", "set_inputs", "action_run", "periodic_run", "periodic_tick"].contains(action) {
-                error = "This remote core does not support Apply, project inputs or Periodic Work yet."; completion?(false); return
+            if ["set_input", "set_inputs"].contains(action) {
+                guard authorizeExecution() else { completion?(false); return }
+                do {
+                    let values = action == "set_input" ? [commandCellID ?? targetCell?.id ?? "": text] : try JSONDecoder().decode([String: String].self, from: Data(text.utf8))
+                    remote.setCellInputs(sheet: "", cell: "project", values: values) { completion?($0) }
+                } catch { self.error = error.localizedDescription; completion?(false) }
+                return
+            }
+            if ["action_run", "periodic_run"].contains(action) {
+                guard authorizeExecution(), let component = commandCellID else { completion?(false); return }
+                remote.invoke(board: text, component: component, operation: action == "periodic_run" ? "once" : nil) { completion?($0) }; return
+            }
+            if action == "apply" || action == "periodic_tick" {
+                error = action == "apply" ? "Sync modules and restart the server worker to apply a new environment." : "Server schedules belong to the agent. Use Start or Run Once."
+                completion?(false); return
             }
         }
         let edits = drafts.map { SourceEdit(key: $0.key, draft: $0.value) }.sorted {

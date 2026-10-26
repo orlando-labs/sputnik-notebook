@@ -1,0 +1,1017 @@
+make: Entering directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c frontend/binder/binder.cpp -o build/obj/frontend/binder/binder.o
+ar rcs build/libsputnik.a build/obj/buildsys/build.o build/obj/bytecode/emitter.o build/obj/bytecode/format.o build/obj/bytecode/graph_linker.o build/obj/frontend/ast/expr.o build/obj/frontend/binder/binder.o build/obj/frontend/checker/checker.o build/obj/frontend/hir/hir.o build/obj/frontend/lexer/lexer.o build/obj/frontend/lexer/token.o build/obj/frontend/lint/one_liners.o build/obj/frontend/parser/parser.o build/obj/frontend/pattern/pattern.o build/obj/frozen/image.o build/obj/optimizer/mir.o build/obj/optimizer/native.o build/obj/package/distribution.o build/obj/package/package.o build/obj/package/registry.o build/obj/package/selection.o build/obj/package/store.o build/obj/profile/capabilities.o build/obj/profile/data.o build/obj/profile/effects.o build/obj/profile/modern.o build/obj/profile/replay.o build/obj/profile/wasm_accel.o build/obj/runtime/concurrency.o build/obj/runtime/config_document.o build/obj/runtime/context.o build/obj/runtime/digest.o build/obj/runtime/errors.o build/obj/runtime/frozen_image.o build/obj/runtime/heap.o build/obj/runtime/http_codec.o build/obj/runtime/io.o build/obj/runtime/macro_expander.o build/obj/runtime/module_loader.o build/obj/runtime/native_bridge.o build/obj/runtime/net_http.o build/obj/runtime/net_http_server.o build/obj/runtime/net_http_transport.o build/obj/runtime/numeric.o build/obj/runtime/objects.o build/obj/runtime/reactor.o build/obj/runtime/sputnik_ext.o build/obj/runtime/stdlib_argparser.o build/obj/runtime/stdlib_benchmark.o build/obj/runtime/stdlib_bool.o build/obj/runtime/stdlib_codecs.o build/obj/runtime/stdlib_digest.o build/obj/runtime/stdlib_fs.o build/obj/runtime/stdlib_io.o build/obj/runtime/stdlib_json.o build/obj/runtime/stdlib_math.o build/obj/runtime/stdlib_net.o build/obj/runtime/stdlib_net_http.o build/obj/runtime/stdlib_notebook_ui.o build/obj/runtime/stdlib_regexp.o build/obj/runtime/stdlib_registry.o build/obj/runtime/stdlib_secure_random.o build/obj/runtime/stdlib_signature.o build/obj/runtime/stdlib_task.o build/obj/runtime/stdlib_time.o build/obj/runtime/stdlib_url.o build/obj/runtime/stdlib_uuid.o build/obj/runtime/stdlib_yaml.o build/obj/runtime/system.o build/obj/runtime/text.o build/obj/runtime/tls.o build/obj/runtime/value.o build/obj/runtime/value_display.o build/obj/runtime/vm.o build/obj/runtime/watch.o build/obj/runtime/world.o
+/home/slowpilot/sputnik-remote-core/cxx -std=c++17 -Wall -Wextra -Wpedantic -O1 build/obj/tools/sputnik/main.o build/libsputnik.a  -L/home/slowpilot/sputnik-remote-core/deps/openssl/lib -lssl -lcrypto -L/usr/lib64 -lyaml  -larchive -lz -pthread -Wl,--export-dynamic -ldl -o build/sputnik
+make: Leaving directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+make: Entering directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tests/notebook_compiler_tests.cpp -o build/obj/tests/notebook_compiler_tests.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/session.cpp -o build/obj/tools/isputnik/session.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/project_session.cpp -o build/obj/tools/isputnik/project_session.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/tabs.cpp -o build/obj/tools/isputnik/tabs.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/environment.cpp -o build/obj/tools/isputnik/environment.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/dependencies.cpp -o build/obj/tools/isputnik/dependencies.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/activity.cpp -o build/obj/tools/isputnik/activity.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/dispatch.cpp -o build/obj/tools/isputnik/dispatch.o
+In file included from ./runtime/audio_system.h:2,
+                 from tools/isputnik/tabs.cpp:1:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/project.cpp -o build/obj/notebook/project.o
+In file included from ./notebook/project.h:6,
+                 from ./tools/isputnik/project_session.h:3,
+                 from tools/isputnik/project_session.cpp:1:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ./notebook/project.h:6,
+                 from ./tools/isputnik/dependencies.h:2,
+                 from tools/isputnik/dependencies.cpp:1:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ./notebook/project.h:6,
+                 from notebook/project.cpp:1:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ./runtime/notebook_live.h:6,
+                 from ./runtime/world.h:10,
+                 from ./notebook/vm_cell_executor.h:5,
+                 from ./notebook/notebook.h:12,
+                 from ./tools/isputnik/session.h:5,
+                 from tools/isputnik/session.cpp:1:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ./runtime/notebook_live.h:6,
+                 from ./runtime/world.h:10,
+                 from ./notebook/vm_cell_executor.h:5,
+                 from ./notebook/notebook.h:12,
+                 from ./tools/isputnik/session.h:5,
+                 from tools/isputnik/environment.cpp:2:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ./runtime/notebook_live.h:6,
+                 from ./runtime/world.h:10,
+                 from ./notebook/vm_cell_executor.h:5,
+                 from ./notebook/notebook.h:12,
+                 from ./tools/isputnik/session.h:5,
+                 from tools/isputnik/dispatch.cpp:3:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/project_json.cpp -o build/obj/notebook/project_json.o
+In file included from ./notebook/project.h:6,
+                 from notebook/project_json.cpp:2:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectSheet sputnik::notebook::{anonymous}::parse_sheet(const JsonValue&, const std::string&, const std::string&)’:
+notebook/project_json.cpp:585:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+  585 |   const auto &cells =
+      |               ^~~~~
+notebook/project_json.cpp:586:20: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & value), std::__cxx11::basic_string<char>(((const char*)"cells"), std::allocator<char>()), (* & path))), std::operator+(const __cxx11::basic_string<_CharT, _Traits, _Allocator>&, const _CharT*) [with _CharT = char; _Traits = char_traits<char>; _Alloc = allocator<char>](((const char*)".cells")))’
+  586 |       require_array(require_member(value, "cells", path), path + ".cells");
+      |       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘std::vector<sputnik::notebook::ProjectImageAsset> sputnik::notebook::project_image_assets(const ProjectComponent&)’:
+notebook/project_json.cpp:1331:71: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1331 |   for (const auto &item : require_array(value, "component.image_items")) {
+      |                                                                       ^
+notebook/project_json.cpp:1331:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array(value, std::__cxx11::basic_string<char>(((const char*)"component.image_items"), std::allocator<char>()))’
+ 1331 |   for (const auto &item : require_array(value, "component.image_items")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘sputnik::notebook::AnnotationClassDefinitions sputnik::notebook::parse_annotation_classes(const {anonymous}::JsonValue&)’:
+notebook/project_json.cpp:1384:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1384 |   const auto &items = require_array(definitions, "annotation classes");
+      |               ^~~~~
+notebook/project_json.cpp:1384:36: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & definitions), std::__cxx11::basic_string<char>(((const char*)"annotation classes"), std::allocator<char>()))’
+ 1384 |   const auto &items = require_array(definitions, "annotation classes");
+      |                       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:1390:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1390 |     const auto &attributes = require_array(require_member(definition, "attributes", "annotation class"), "attributes");
+      |                 ^~~~~~~~~~
+notebook/project_json.cpp:1390:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & definition), std::__cxx11::basic_string<char>(((const char*)"attributes"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"annotation class"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"attributes"), std::allocator<char>()))’
+ 1390 |     const auto &attributes = require_array(require_member(definition, "attributes", "annotation class"), "attributes");
+      |                              ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:1397:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1397 |       const auto &options = require_array(require_member(attribute, "options", "attribute"), "options");
+      |                   ^~~~~~~
+notebook/project_json.cpp:1397:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & attribute), std::__cxx11::basic_string<char>(((const char*)"options"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"attribute"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"options"), std::allocator<char>()))’
+ 1397 |       const auto &options = require_array(require_member(attribute, "options", "attribute"), "options");
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_annotation_region(const std::string&, const {anonymous}::JsonValue&, const AnnotationClassDefinitions&, bool)’:
+notebook/project_json.cpp:1411:69: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1411 |     for (const auto &value : require_array(*values, "region classes")) {
+      |                                                                     ^
+notebook/project_json.cpp:1411:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)values), std::__cxx11::basic_string<char>(((const char*)"region classes"), std::allocator<char>()))’
+ 1411 |     for (const auto &value : require_array(*values, "region classes")) {
+      |                              ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_project_annotation_data(const ProjectComponent&, const std::string&, const std::string&)’:
+notebook/project_json.cpp:1477:109: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1477 |   for (const auto &segment : require_array(require_member(root, "segments", "audio annotations"), "segments")) transcript(segment, true);
+      |                                                                                                             ^
+notebook/project_json.cpp:1477:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"audio annotations"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()))’
+ 1477 |   for (const auto &segment : require_array(require_member(root, "segments", "audio annotations"), "segments")) transcript(segment, true);
+      |                              ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_audio_annotations(const std::string&, const {anonymous}::JsonValue&)’:
+notebook/project_json.cpp:1498:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1498 |   const auto &segments = require_array(require_member(root, "segments", "audio annotations"), "segments");
+      |               ^~~~~~~~
+notebook/project_json.cpp:1498:39: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & root), std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"audio annotations"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()))’
+ 1498 |   const auto &segments = require_array(require_member(root, "segments", "audio annotations"), "segments");
+      |                          ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_project_component_data_impl(const std::string&, const std::string&, bool)’:
+notebook/project_json.cpp:1537:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1537 |     const auto &row = require_member(root, "row", "selection"); require_object(row, "selected row");
+      |                 ^~~
+notebook/project_json.cpp:1537:37: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"row"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"selection"), std::allocator<char>()))’
+ 1537 |     const auto &row = require_member(root, "row", "selection"); require_object(row, "selected row");
+      |                       ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:1564:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1564 |   const auto &shapes = require_array(require_member(root, "shapes", "annotations"), "shapes");
+      |               ^~~~~~
+notebook/project_json.cpp:1564:37: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"shapes"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"annotations"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"shapes"), std::allocator<char>()))’
+ 1564 |   const auto &shapes = require_array(require_member(root, "shapes", "annotations"), "shapes");
+      |                        ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectImageEdit sputnik::notebook::parse_project_image_edit(const std::string&)’:
+notebook/project_json.cpp:1674:96: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1674 |   for (const auto &item : require_array(require_member(value, "images", "image edit"), "images")) {
+      |                                                                                                ^
+notebook/project_json.cpp:1674:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(value, std::__cxx11::basic_string<char>(((const char*)"images"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"image edit"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"images"), std::allocator<char>()))’
+ 1674 |   for (const auto &item : require_array(require_member(value, "images", "image edit"), "images")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In lambda function:
+notebook/project_json.cpp:1681:7: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+ 1681 |       if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |       ^~
+notebook/project_json.cpp:1681:49: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+ 1681 |       if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                                 ^~
+notebook/project_json.cpp:1682:7: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+ 1682 |       if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |       ^~
+notebook/project_json.cpp:1682:54: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+ 1682 |       if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                      ^~
+notebook/project_json.cpp: In lambda function:
+notebook/project_json.cpp:1712:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1712 |       const auto &field = require_member(value, key, "range");
+      |                   ^~~~~
+notebook/project_json.cpp:1712:41: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member((* & value), std::__cxx11::basic_string<char>(key, std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"range"), std::allocator<char>()))’
+ 1712 |       const auto &field = require_member(value, key, "range");
+      |                           ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘sputnik::runtime::NotebookInputValue sputnik::notebook::parse_project_input_value(const std::string&)’:
+notebook/project_json.cpp:1720:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1720 |     const auto &inclusive = require_member(value, "inclusive_end", "range");
+      |                 ^~~~~~~~~
+notebook/project_json.cpp:1720:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(value, std::__cxx11::basic_string<char>(((const char*)"inclusive_end"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"range"), std::allocator<char>()))’
+ 1720 |     const auto &inclusive = require_member(value, "inclusive_end", "range");
+      |                             ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In instantiation of ‘sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)> [with auto:34 = std::vector<sputnik::notebook::ProjectComponent>; sputnik::notebook::CellId = long unsigned int]’:
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2558:26:   required by substitution of ‘template<class _Fn, class ... _Args> static std::__result_of_success<decltype (declval<_Fn>()((declval<_Args>)()...)), std::__invoke_other> std::__result_of_other_impl::_S_test(int) [with _Fn = sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&; _Args = {const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2569:55:   required from ‘struct std::__result_of_impl<false, false, sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int>’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   recursively required by substitution of ‘template<class _Result, class _Ret> struct std::__is_invocable_impl<_Result, _Ret, true, std::__void_t<typename _CTp::type> > [with _Result = std::__invoke_result<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int>; _Ret = void]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   required from ‘struct std::function<void(const std::vector<sputnik::notebook::ProjectComponent>&, long unsigned int)>::_Callable<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, std::__invoke_result<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int> >’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:353:8:   required by substitution of ‘template<class _Res, class ... _ArgTypes> template<class _Cond, class _Tp> using std::function<_Res(_ArgTypes ...)>::_Requires = std::__enable_if_t<_Cond::value, _Tp> [with _Cond = std::function<void(const std::vector<sputnik::notebook::ProjectComponent>&, long unsigned int)>::_Callable<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, std::__invoke_result<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int> >; _Tp = void; _Res = void; _ArgTypes = {const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:434:9:   required by substitution of ‘template<class _Functor, class _Constraints> std::function<void(const std::vector<sputnik::notebook::ProjectComponent>&, long unsigned int)>::function(_Functor&&) [with _Functor = sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>; _Constraints = <missing>]’
+notebook/project_json.cpp:1965:3:   required from here
+notebook/project_json.cpp:1952:9: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1952 |         for (const auto &item : require_array(parsed, "form.fields")) if (const auto control = find_member(item, "control"))
+      |         ^~~
+notebook/project_json.cpp:1952:46: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array(parsed, std::__cxx11::basic_string<char>(((const char*)"form.fields"), std::allocator<char>()))’
+ 1952 |         for (const auto &item : require_array(parsed, "form.fields")) if (const auto control = find_member(item, "control"))
+      |                                 ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘std::vector<sputnik::notebook::ProjectBoardRow> sputnik::notebook::parse_board_rows(const {anonymous}::JsonValue&, const std::string&)’:
+notebook/project_json.cpp:2040:60: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2040 |   for (const auto &item : require_array(rows, "layout.rows")) {
+      |                                                            ^
+notebook/project_json.cpp:2040:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & rows), std::__cxx11::basic_string<char>(((const char*)"layout.rows"), std::allocator<char>()))’
+ 2040 |   for (const auto &item : require_array(rows, "layout.rows")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘std::vector<sputnik::notebook::ProjectComponent> sputnik::notebook::parse_board_components(const {anonymous}::JsonValue&, const std::string&, unsigned int)’:
+notebook/project_json.cpp:2059:67: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2059 |   for (const auto &item : require_array(items, "layout.components")) {
+      |                                                                   ^
+notebook/project_json.cpp:2059:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & items), std::__cxx11::basic_string<char>(((const char*)"layout.components"), std::allocator<char>()))’
+ 2059 |   for (const auto &item : require_array(items, "layout.components")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2079:78: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2079 |       for (const auto &panel_item : require_array(*panels, "component.panels")) {
+      |                                                                              ^
+notebook/project_json.cpp:2079:50: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)panels), std::__cxx11::basic_string<char>(((const char*)"component.panels"), std::allocator<char>()))’
+ 2079 |       for (const auto &panel_item : require_array(*panels, "component.panels")) {
+      |                                     ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectCellUI sputnik::notebook::parse_project_cell_ui(const std::string&)’:
+notebook/project_json.cpp:2201:100: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2201 |   for (const auto &item : require_array(require_member(root, "inputs", "cell_ui"), "cell_ui.inputs")) {
+      |                                                                                                    ^
+notebook/project_json.cpp:2201:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"inputs"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"cell_ui"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"cell_ui.inputs"), std::allocator<char>()))’
+ 2201 |   for (const auto &item : require_array(require_member(root, "inputs", "cell_ui"), "cell_ui.inputs")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectDocument sputnik::notebook::parse_project_document(const std::string&)’:
+notebook/project_json.cpp:2287:20: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2287 |   const JsonValue &format = require_member(root, "format", "$");
+      |                    ^~~~~~
+notebook/project_json.cpp:2287:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"format"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))’
+ 2287 |   const JsonValue &format = require_member(root, "format", "$");
+      |                             ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2292:20: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2292 |   const JsonValue &version = require_member(root, "version", "$");
+      |                    ^~~~~~~
+notebook/project_json.cpp:2292:44: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"version"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))’
+ 2292 |   const JsonValue &version = require_member(root, "version", "$");
+      |                              ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2302:88: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2302 |     for (const auto &item : require_array(require_member(root, "inputs", "$"), "inputs")) {
+      |                                                                                        ^
+notebook/project_json.cpp:2302:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"inputs"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"inputs"), std::allocator<char>()))’
+ 2302 |     for (const auto &item : require_array(require_member(root, "inputs", "$"), "inputs")) {
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2305:88: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2305 |     for (const auto &item : require_array(require_member(root, "boards", "$"), "boards"))
+      |                                                                                        ^
+notebook/project_json.cpp:2305:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"boards"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"boards"), std::allocator<char>()))’
+ 2305 |     for (const auto &item : require_array(require_member(root, "boards", "$"), "boards"))
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2311:100: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2311 |     for (const auto &item : require_array(require_member(root, "dependencies", "$"), "dependencies")) {
+      |                                                                                                    ^
+notebook/project_json.cpp:2311:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"dependencies"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"dependencies"), std::allocator<char>()))’
+ 2311 |     for (const auto &item : require_array(require_member(root, "dependencies", "$"), "dependencies")) {
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2322:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2322 |   const auto &sheets =
+      |               ^~~~~~
+notebook/project_json.cpp:2323:20: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"sheets"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$.sheets"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"$.sheets"), std::allocator<char>()))’
+ 2323 |       require_array(require_member(root, "sheets", "$.sheets"), "$.sheets");
+      |       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2329:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2329 |   const auto &modules =
+      |               ^~~~~~~
+notebook/project_json.cpp:2330:20: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"modules"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$.modules"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"$.modules"), std::allocator<char>()))’
+ 2330 |       require_array(require_member(root, "modules", "$.modules"), "$.modules");
+      |       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2336:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2336 |   const auto &auto_imports = require_array(
+      |               ^~~~~~~~~~~~
+notebook/project_json.cpp:2336:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"auto_imports"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$.auto_imports"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"$.auto_imports"), std::allocator<char>()))’
+ 2336 |   const auto &auto_imports = require_array(
+      |                              ~~~~~~~~~~~~~^
+ 2337 |       require_member(root, "auto_imports", "$.auto_imports"), "$.auto_imports");
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_board_input_control(const std::string&, const ProjectInput&)’:
+notebook/project_json.cpp:2476:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2476 |     const auto &items = require_array(*options, "control.options");
+      |                 ^~~~~
+notebook/project_json.cpp:2476:38: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)options), std::__cxx11::basic_string<char>(((const char*)"control.options"), std::allocator<char>()))’
+ 2476 |     const auto &items = require_array(*options, "control.options");
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectActionInvocation sputnik::notebook::project_action_invocation(const ProjectComponent&, const sputnik::runtime::NotebookInputSnapshot&)’:
+notebook/project_json.cpp:2508:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2508 |       const auto &items = require_array(*arguments, "action.arguments");
+      |                   ^~~~~
+notebook/project_json.cpp:2508:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)arguments), std::__cxx11::basic_string<char>(((const char*)"action.arguments"), std::allocator<char>()))’
+ 2508 |       const auto &items = require_array(*arguments, "action.arguments");
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_p1(const ProjectComponent&, const ProjectDocument&)’:
+notebook/project_json.cpp:2570:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2570 |     const auto &items = require_array(*series, "series");
+      |                 ^~~~~
+notebook/project_json.cpp:2570:38: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)series), std::__cxx11::basic_string<char>(((const char*)"series"), std::allocator<char>()))’
+ 2570 |     const auto &items = require_array(*series, "series");
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2582:127: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2582 |   if (const auto selected = p1_member(root, "preset_inputs")) for (const auto &item : require_array(*selected, "preset inputs")) {
+      |                                                                                                                               ^
+notebook/project_json.cpp:2582:100: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)selected), std::__cxx11::basic_string<char>(((const char*)"preset inputs"), std::allocator<char>()))’
+ 2582 |   if (const auto selected = p1_member(root, "preset_inputs")) for (const auto &item : require_array(*selected, "preset inputs")) {
+      |                                                                                       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2587:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2587 |     const auto &items = require_array(*presets, "presets");
+      |                 ^~~~~
+notebook/project_json.cpp:2587:38: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)presets), std::__cxx11::basic_string<char>(((const char*)"presets"), std::allocator<char>()))’
+ 2587 |     const auto &items = require_array(*presets, "presets");
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp:2594:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2594 |       const auto &values = require_member(item, "values", "preset");
+      |                   ^~~~~~
+notebook/project_json.cpp:2594:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member((* & item), std::__cxx11::basic_string<char>(((const char*)"values"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"preset"), std::allocator<char>()))’
+ 2594 |       const auto &values = require_member(item, "values", "preset");
+      |                            ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+notebook/project_json.cpp: In instantiation of ‘sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)> [with auto:41 = std::vector<sputnik::notebook::ProjectBoardRow>; auto:42 = std::vector<sputnik::notebook::ProjectComponent>]’:
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2558:26:   required by substitution of ‘template<class _Fn, class ... _Args> static std::__result_of_success<decltype (declval<_Fn>()((declval<_Args>)()...)), std::__invoke_other> std::__result_of_other_impl::_S_test(int) [with _Fn = sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&; _Args = {const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2569:55:   required from ‘struct std::__result_of_impl<false, false, sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int>’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   recursively required by substitution of ‘template<class _Result, class _Ret> struct std::__is_invocable_impl<_Result, _Ret, true, std::__void_t<typename _CTp::type> > [with _Result = std::__invoke_result<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int>; _Ret = void]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   required from ‘struct std::function<void(const std::vector<sputnik::notebook::ProjectBoardRow>*, const std::vector<sputnik::notebook::ProjectComponent>&, unsigned int)>::_Callable<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, std::__invoke_result<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int> >’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:353:8:   required by substitution of ‘template<class _Res, class ... _ArgTypes> template<class _Cond, class _Tp> using std::function<_Res(_ArgTypes ...)>::_Requires = std::__enable_if_t<_Cond::value, _Tp> [with _Cond = std::function<void(const std::vector<sputnik::notebook::ProjectBoardRow>*, const std::vector<sputnik::notebook::ProjectComponent>&, unsigned int)>::_Callable<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, std::__invoke_result<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int> >; _Tp = void; _Res = void; _ArgTypes = {const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:434:9:   required by substitution of ‘template<class _Functor, class _Constraints> std::function<void(const std::vector<sputnik::notebook::ProjectBoardRow>*, const std::vector<sputnik::notebook::ProjectComponent>&, unsigned int)>::function(_Functor&&) [with _Functor = sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>; _Constraints = <missing>]’
+notebook/project_json.cpp:2948:5:   required from here
+notebook/project_json.cpp:2768:23: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2768 |           const auto &items = require_array(parsed, "form.fields");
+      |                       ^~~~~
+notebook/project_json.cpp:2768:44: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array(parsed, std::__cxx11::basic_string<char>(((const char*)"form.fields"), std::allocator<char>()))’
+ 2768 |           const auto &items = require_array(parsed, "form.fields");
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/model.cpp -o build/obj/notebook/model.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/analysis.cpp -o build/obj/notebook/analysis.o
+notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectTextContent sputnik::notebook::parse_project_text_content(const std::string&)’:
+notebook/project_json.cpp:3104:20: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 3104 |   const JsonValue &source = require_member(root, "source", "$text");
+      |                    ^~~~~~
+notebook/project_json.cpp:3104:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"source"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$text"), std::allocator<char>()))’
+ 3104 |   const JsonValue &source = require_member(root, "source", "$text");
+      |                             ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/dependency_graph.cpp -o build/obj/notebook/dependency_graph.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/scheduler.cpp -o build/obj/notebook/scheduler.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/slot_table.cpp -o build/obj/notebook/slot_table.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/kernel.cpp -o build/obj/notebook/kernel.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/vm_cell_executor.cpp -o build/obj/notebook/vm_cell_executor.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/compiler.cpp -o build/obj/notebook/compiler.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c notebook/renderers.cpp -o build/obj/notebook/renderers.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tools/isputnik/terminal_wait.cpp -o build/obj/tools/isputnik/terminal_wait.o
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O1 -MMD -MP -c tests/isputnik_tests.cpp -o build/obj/tests/isputnik_tests.o
+In file included from ./runtime/notebook_live.h:6,
+                 from ./runtime/world.h:10,
+                 from ./notebook/vm_cell_executor.h:5,
+                 from notebook/vm_cell_executor.cpp:1:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ./runtime/notebook_live.h:6,
+                 from ./runtime/world.h:10,
+                 from ./notebook/vm_cell_executor.h:5,
+                 from ./notebook/notebook.h:12,
+                 from ./tools/isputnik/session.h:5,
+                 from tests/isputnik_tests.cpp:1:
+./runtime/audio.h: In lambda function:
+./runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+./runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+./runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+./runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+ar rcs build/libisputnik.a build/obj/tools/isputnik/session.o build/obj/tools/isputnik/project_session.o build/obj/tools/isputnik/tabs.o build/obj/tools/isputnik/environment.o build/obj/tools/isputnik/dependencies.o build/obj/tools/isputnik/activity.o build/obj/tools/isputnik/dispatch.o build/obj/notebook/project.o build/obj/notebook/project_json.o build/obj/notebook/model.o build/obj/notebook/analysis.o build/obj/notebook/dependency_graph.o build/obj/notebook/scheduler.o build/obj/notebook/slot_table.o build/obj/notebook/kernel.o build/obj/notebook/vm_cell_executor.o build/obj/notebook/compiler.o build/obj/notebook/renderers.o build/obj/tools/isputnik/terminal_wait.o
+/home/slowpilot/sputnik-remote-core/cxx -std=c++17 -Wall -Wextra -Wpedantic -O1 build/obj/tests/notebook_compiler_tests.o build/libisputnik.a build/libsputnik.a  -L/home/slowpilot/sputnik-remote-core/deps/openssl/lib -lssl -lcrypto -L/usr/lib64 -lyaml  -larchive -lz -pthread -Wl,--export-dynamic -ldl -o build/notebook_compiler_tests
+/home/slowpilot/sputnik-remote-core/cxx -std=c++17 -Wall -Wextra -Wpedantic -O1 build/obj/tests/isputnik_tests.o build/libisputnik.a build/libsputnik.a  -L/home/slowpilot/sputnik-remote-core/deps/openssl/lib -lssl -lcrypto -L/usr/lib64 -lyaml  -larchive -lz -pthread -Wl,--export-dynamic -ldl -o build/isputnik_tests
+make: Leaving directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+notebook_compiler_tests ok
+isputnik_tests ok
+make: Entering directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook'
+make -C ../sputnik-lang BUILD_DIR="build" runtime
+make[1]: Entering directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+make[1]: Nothing to be done for 'runtime'.
+make[1]: Leaving directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+make -C ../sputnik-lang BUILD_DIR="build" "build/sputnik"
+make[1]: Entering directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+/home/slowpilot/sputnik-remote-core/cxx  -I. -I/home/slowpilot/sputnik-remote-core/deps/openssl/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/home/slowpilot/sputnik-remote-core/deps/openssl/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib64"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang"' -std=c++17 -Wall -Wextra -Wpedantic -O1 tools/notebook-worker/main.cpp tools/notebook-worker/protocol.cpp tools/notebook-worker/presentation.cpp ../sputnik-lang/tools/isputnik/session.cpp ../sputnik-lang/tools/isputnik/project_session.cpp ../sputnik-lang/tools/isputnik/tabs.cpp ../sputnik-lang/tools/isputnik/environment.cpp ../sputnik-lang/tools/isputnik/dependencies.cpp ../sputnik-lang/tools/isputnik/activity.cpp ../sputnik-lang/tools/isputnik/dispatch.cpp ../sputnik-lang/notebook/project.cpp ../sputnik-lang/notebook/project_json.cpp ../sputnik-lang/notebook/model.cpp ../sputnik-lang/notebook/analysis.cpp ../sputnik-lang/notebook/dependency_graph.cpp ../sputnik-lang/notebook/scheduler.cpp ../sputnik-lang/notebook/slot_table.cpp ../sputnik-lang/notebook/kernel.cpp ../sputnik-lang/notebook/vm_cell_executor.cpp ../sputnik-lang/notebook/compiler.cpp ../sputnik-lang/notebook/renderers.cpp /ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang/build/libsputnik.a  -L/home/slowpilot/sputnik-remote-core/deps/openssl/lib -lssl -lcrypto -L/usr/lib64 -lyaml  -larchive -lz -pthread -Wl,--export-dynamic -ldl -pthread -o build/sputnik-notebook-worker.tmp
+make[1]: 'build/sputnik' is up to date.
+make[1]: Leaving directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang'
+SPUTNIK_NATIVE_CXX="/home/slowpilot/sputnik-remote-core/cxx" "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang/build/sputnik" build tools/notebook-remote/sputnik.build.json --target native --require-full-native --out-dir "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native" --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant net.listen --grant net.connect --grant random.secure --grant process.spawn
+In file included from ../sputnik-lang/notebook/project.h:6,
+                 from ../sputnik-lang/notebook/audio_components.h:2,
+                 from tools/notebook-worker/main.cpp:2:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/runtime/notebook_live.h:6,
+                 from ../sputnik-lang/runtime/world.h:10,
+                 from ../sputnik-lang/notebook/vm_cell_executor.h:5,
+                 from ../sputnik-lang/notebook/notebook.h:12,
+                 from ../sputnik-lang/tools/isputnik/session.h:5,
+                 from ./tools/notebook-worker/presentation.h:4,
+                 from tools/notebook-worker/presentation.cpp:1:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/runtime/notebook_live.h:6,
+                 from ../sputnik-lang/runtime/world.h:10,
+                 from ../sputnik-lang/notebook/vm_cell_executor.h:5,
+                 from ../sputnik-lang/notebook/notebook.h:12,
+                 from ../sputnik-lang/tools/isputnik/session.h:5,
+                 from ../sputnik-lang/tools/isputnik/session.cpp:1:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/notebook/project.h:6,
+                 from ../sputnik-lang/tools/isputnik/project_session.h:3,
+                 from ../sputnik-lang/tools/isputnik/project_session.cpp:1:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/runtime/audio_system.h:2,
+                 from ../sputnik-lang/tools/isputnik/tabs.cpp:1:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp: In constructor ‘{anonymous}::NativeArgsView::NativeArgsView(std::initializer_list<{anonymous}::NativeValue>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:35021:27: warning: initializing ‘{anonymous}::NativeArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeValue>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+35021 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp: In constructor ‘{anonymous}::NativeKeywordArgsView::NativeKeywordArgsView(std::initializer_list<{anonymous}::NativeCallKeyword>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:35050:27: warning: initializing ‘{anonymous}::NativeKeywordArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeCallKeyword>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+35050 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp: In function ‘int64_t {anonymous}::native_numeric_wrap_to_width(int64_t)’:
+/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:38190:48: warning: left shift count >= width of type [-Wshift-count-overflow]
+38190 |   const std::uint64_t mask = (std::uint64_t{1} << kNativeNumericPolicy.bits) - 1U;
+      |                                    ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from ../sputnik-lang/runtime/notebook_live.h:6,
+                 from ../sputnik-lang/runtime/world.h:10,
+                 from ../sputnik-lang/notebook/vm_cell_executor.h:5,
+                 from ../sputnik-lang/notebook/notebook.h:12,
+                 from ../sputnik-lang/tools/isputnik/session.h:5,
+                 from ../sputnik-lang/tools/isputnik/environment.cpp:2:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/notebook/project.h:6,
+                 from ../sputnik-lang/tools/isputnik/dependencies.h:2,
+                 from ../sputnik-lang/tools/isputnik/dependencies.cpp:1:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/runtime/notebook_live.h:6,
+                 from ../sputnik-lang/runtime/world.h:10,
+                 from ../sputnik-lang/notebook/vm_cell_executor.h:5,
+                 from ../sputnik-lang/notebook/notebook.h:12,
+                 from ../sputnik-lang/tools/isputnik/session.h:5,
+                 from ../sputnik-lang/tools/isputnik/dispatch.cpp:3:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/notebook/project.h:6,
+                 from ../sputnik-lang/notebook/project.cpp:1:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+In file included from ../sputnik-lang/notebook/project.h:6,
+                 from ../sputnik-lang/notebook/project_json.cpp:2:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectSheet sputnik::notebook::{anonymous}::parse_sheet(const JsonValue&, const std::string&, const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:585:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+  585 |   const auto &cells =
+      |               ^~~~~
+../sputnik-lang/notebook/project_json.cpp:586:20: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & value), std::__cxx11::basic_string<char>(((const char*)"cells"), std::allocator<char>()), (* & path))), std::operator+(const __cxx11::basic_string<_CharT, _Traits, _Allocator>&, const _CharT*) [with _CharT = char; _Traits = char_traits<char>; _Alloc = allocator<char>](((const char*)".cells")))’
+  586 |       require_array(require_member(value, "cells", path), path + ".cells");
+      |       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘std::vector<sputnik::notebook::ProjectImageAsset> sputnik::notebook::project_image_assets(const ProjectComponent&)’:
+../sputnik-lang/notebook/project_json.cpp:1331:71: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1331 |   for (const auto &item : require_array(value, "component.image_items")) {
+      |                                                                       ^
+../sputnik-lang/notebook/project_json.cpp:1331:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array(value, std::__cxx11::basic_string<char>(((const char*)"component.image_items"), std::allocator<char>()))’
+ 1331 |   for (const auto &item : require_array(value, "component.image_items")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::notebook::AnnotationClassDefinitions sputnik::notebook::parse_annotation_classes(const {anonymous}::JsonValue&)’:
+../sputnik-lang/notebook/project_json.cpp:1384:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1384 |   const auto &items = require_array(definitions, "annotation classes");
+      |               ^~~~~
+../sputnik-lang/notebook/project_json.cpp:1384:36: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & definitions), std::__cxx11::basic_string<char>(((const char*)"annotation classes"), std::allocator<char>()))’
+ 1384 |   const auto &items = require_array(definitions, "annotation classes");
+      |                       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:1390:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1390 |     const auto &attributes = require_array(require_member(definition, "attributes", "annotation class"), "attributes");
+      |                 ^~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:1390:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & definition), std::__cxx11::basic_string<char>(((const char*)"attributes"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"annotation class"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"attributes"), std::allocator<char>()))’
+ 1390 |     const auto &attributes = require_array(require_member(definition, "attributes", "annotation class"), "attributes");
+      |                              ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:1397:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1397 |       const auto &options = require_array(require_member(attribute, "options", "attribute"), "options");
+      |                   ^~~~~~~
+../sputnik-lang/notebook/project_json.cpp:1397:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & attribute), std::__cxx11::basic_string<char>(((const char*)"options"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"attribute"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"options"), std::allocator<char>()))’
+ 1397 |       const auto &options = require_array(require_member(attribute, "options", "attribute"), "options");
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_annotation_region(const std::string&, const {anonymous}::JsonValue&, const AnnotationClassDefinitions&, bool)’:
+../sputnik-lang/notebook/project_json.cpp:1411:69: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1411 |     for (const auto &value : require_array(*values, "region classes")) {
+      |                                                                     ^
+../sputnik-lang/notebook/project_json.cpp:1411:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)values), std::__cxx11::basic_string<char>(((const char*)"region classes"), std::allocator<char>()))’
+ 1411 |     for (const auto &value : require_array(*values, "region classes")) {
+      |                              ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_project_annotation_data(const ProjectComponent&, const std::string&, const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:1477:109: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1477 |   for (const auto &segment : require_array(require_member(root, "segments", "audio annotations"), "segments")) transcript(segment, true);
+      |                                                                                                             ^
+../sputnik-lang/notebook/project_json.cpp:1477:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"audio annotations"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()))’
+ 1477 |   for (const auto &segment : require_array(require_member(root, "segments", "audio annotations"), "segments")) transcript(segment, true);
+      |                              ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_audio_annotations(const std::string&, const {anonymous}::JsonValue&)’:
+../sputnik-lang/notebook/project_json.cpp:1498:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1498 |   const auto &segments = require_array(require_member(root, "segments", "audio annotations"), "segments");
+      |               ^~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:1498:39: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member((* & root), std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"audio annotations"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"segments"), std::allocator<char>()))’
+ 1498 |   const auto &segments = require_array(require_member(root, "segments", "audio annotations"), "segments");
+      |                          ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_project_component_data_impl(const std::string&, const std::string&, bool)’:
+../sputnik-lang/notebook/project_json.cpp:1537:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1537 |     const auto &row = require_member(root, "row", "selection"); require_object(row, "selected row");
+      |                 ^~~
+../sputnik-lang/notebook/project_json.cpp:1537:37: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"row"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"selection"), std::allocator<char>()))’
+ 1537 |     const auto &row = require_member(root, "row", "selection"); require_object(row, "selected row");
+      |                       ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:1564:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1564 |   const auto &shapes = require_array(require_member(root, "shapes", "annotations"), "shapes");
+      |               ^~~~~~
+../sputnik-lang/notebook/project_json.cpp:1564:37: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"shapes"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"annotations"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"shapes"), std::allocator<char>()))’
+ 1564 |   const auto &shapes = require_array(require_member(root, "shapes", "annotations"), "shapes");
+      |                        ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectImageEdit sputnik::notebook::parse_project_image_edit(const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:1674:96: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1674 |   for (const auto &item : require_array(require_member(value, "images", "image edit"), "images")) {
+      |                                                                                                ^
+../sputnik-lang/notebook/project_json.cpp:1674:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(value, std::__cxx11::basic_string<char>(((const char*)"images"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"image edit"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"images"), std::allocator<char>()))’
+ 1674 |   for (const auto &item : require_array(require_member(value, "images", "image edit"), "images")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In lambda function:
+../sputnik-lang/notebook/project_json.cpp:1681:7: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+ 1681 |       if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |       ^~
+../sputnik-lang/notebook/project_json.cpp:1681:49: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+ 1681 |       if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                                 ^~
+../sputnik-lang/notebook/project_json.cpp:1682:7: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+ 1682 |       if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |       ^~
+../sputnik-lang/notebook/project_json.cpp:1682:54: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+ 1682 |       if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                      ^~
+../sputnik-lang/notebook/project_json.cpp: In lambda function:
+../sputnik-lang/notebook/project_json.cpp:1712:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1712 |       const auto &field = require_member(value, key, "range");
+      |                   ^~~~~
+../sputnik-lang/notebook/project_json.cpp:1712:41: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member((* & value), std::__cxx11::basic_string<char>(key, std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"range"), std::allocator<char>()))’
+ 1712 |       const auto &field = require_member(value, key, "range");
+      |                           ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::runtime::NotebookInputValue sputnik::notebook::parse_project_input_value(const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:1720:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1720 |     const auto &inclusive = require_member(value, "inclusive_end", "range");
+      |                 ^~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:1720:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(value, std::__cxx11::basic_string<char>(((const char*)"inclusive_end"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"range"), std::allocator<char>()))’
+ 1720 |     const auto &inclusive = require_member(value, "inclusive_end", "range");
+      |                             ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In instantiation of ‘sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)> [with auto:34 = std::vector<sputnik::notebook::ProjectComponent>; sputnik::notebook::CellId = long unsigned int]’:
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2558:26:   required by substitution of ‘template<class _Fn, class ... _Args> static std::__result_of_success<decltype (declval<_Fn>()((declval<_Args>)()...)), std::__invoke_other> std::__result_of_other_impl::_S_test(int) [with _Fn = sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&; _Args = {const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2569:55:   required from ‘struct std::__result_of_impl<false, false, sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int>’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   recursively required by substitution of ‘template<class _Result, class _Ret> struct std::__is_invocable_impl<_Result, _Ret, true, std::__void_t<typename _CTp::type> > [with _Result = std::__invoke_result<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int>; _Ret = void]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   required from ‘struct std::function<void(const std::vector<sputnik::notebook::ProjectComponent>&, long unsigned int)>::_Callable<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, std::__invoke_result<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int> >’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:353:8:   required by substitution of ‘template<class _Res, class ... _ArgTypes> template<class _Cond, class _Tp> using std::function<_Res(_ArgTypes ...)>::_Requires = std::__enable_if_t<_Cond::value, _Tp> [with _Cond = std::function<void(const std::vector<sputnik::notebook::ProjectComponent>&, long unsigned int)>::_Callable<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>, std::__invoke_result<sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>&, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int> >; _Tp = void; _Res = void; _ArgTypes = {const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, long unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:434:9:   required by substitution of ‘template<class _Functor, class _Constraints> std::function<void(const std::vector<sputnik::notebook::ProjectComponent>&, long unsigned int)>::function(_Functor&&) [with _Functor = sputnik::notebook::validate_project_control_values(const ProjectDocument&, const sputnik::runtime::NotebookInputSnapshot&)::<lambda(const auto:34&, sputnik::notebook::CellId)>; _Constraints = <missing>]’
+../sputnik-lang/notebook/project_json.cpp:1965:3:   required from here
+../sputnik-lang/notebook/project_json.cpp:1952:9: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 1952 |         for (const auto &item : require_array(parsed, "form.fields")) if (const auto control = find_member(item, "control"))
+      |         ^~~
+../sputnik-lang/notebook/project_json.cpp:1952:46: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array(parsed, std::__cxx11::basic_string<char>(((const char*)"form.fields"), std::allocator<char>()))’
+ 1952 |         for (const auto &item : require_array(parsed, "form.fields")) if (const auto control = find_member(item, "control"))
+      |                                 ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘std::vector<sputnik::notebook::ProjectBoardRow> sputnik::notebook::parse_board_rows(const {anonymous}::JsonValue&, const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:2040:60: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2040 |   for (const auto &item : require_array(rows, "layout.rows")) {
+      |                                                            ^
+../sputnik-lang/notebook/project_json.cpp:2040:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & rows), std::__cxx11::basic_string<char>(((const char*)"layout.rows"), std::allocator<char>()))’
+ 2040 |   for (const auto &item : require_array(rows, "layout.rows")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘std::vector<sputnik::notebook::ProjectComponent> sputnik::notebook::parse_board_components(const {anonymous}::JsonValue&, const std::string&, unsigned int)’:
+../sputnik-lang/notebook/project_json.cpp:2059:67: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2059 |   for (const auto &item : require_array(items, "layout.components")) {
+      |                                                                   ^
+../sputnik-lang/notebook/project_json.cpp:2059:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & items), std::__cxx11::basic_string<char>(((const char*)"layout.components"), std::allocator<char>()))’
+ 2059 |   for (const auto &item : require_array(items, "layout.components")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2079:78: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2079 |       for (const auto &panel_item : require_array(*panels, "component.panels")) {
+      |                                                                              ^
+../sputnik-lang/notebook/project_json.cpp:2079:50: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)panels), std::__cxx11::basic_string<char>(((const char*)"component.panels"), std::allocator<char>()))’
+ 2079 |       for (const auto &panel_item : require_array(*panels, "component.panels")) {
+      |                                     ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectCellUI sputnik::notebook::parse_project_cell_ui(const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:2201:100: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2201 |   for (const auto &item : require_array(require_member(root, "inputs", "cell_ui"), "cell_ui.inputs")) {
+      |                                                                                                    ^
+../sputnik-lang/notebook/project_json.cpp:2201:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"inputs"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"cell_ui"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"cell_ui.inputs"), std::allocator<char>()))’
+ 2201 |   for (const auto &item : require_array(require_member(root, "inputs", "cell_ui"), "cell_ui.inputs")) {
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectDocument sputnik::notebook::parse_project_document(const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:2287:20: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2287 |   const JsonValue &format = require_member(root, "format", "$");
+      |                    ^~~~~~
+../sputnik-lang/notebook/project_json.cpp:2287:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"format"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))’
+ 2287 |   const JsonValue &format = require_member(root, "format", "$");
+      |                             ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2292:20: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2292 |   const JsonValue &version = require_member(root, "version", "$");
+      |                    ^~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2292:44: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"version"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))’
+ 2292 |   const JsonValue &version = require_member(root, "version", "$");
+      |                              ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2302:88: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2302 |     for (const auto &item : require_array(require_member(root, "inputs", "$"), "inputs")) {
+      |                                                                                        ^
+../sputnik-lang/notebook/project_json.cpp:2302:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"inputs"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"inputs"), std::allocator<char>()))’
+ 2302 |     for (const auto &item : require_array(require_member(root, "inputs", "$"), "inputs")) {
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2305:88: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2305 |     for (const auto &item : require_array(require_member(root, "boards", "$"), "boards"))
+      |                                                                                        ^
+../sputnik-lang/notebook/project_json.cpp:2305:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"boards"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"boards"), std::allocator<char>()))’
+ 2305 |     for (const auto &item : require_array(require_member(root, "boards", "$"), "boards"))
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2311:100: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2311 |     for (const auto &item : require_array(require_member(root, "dependencies", "$"), "dependencies")) {
+      |                                                                                                    ^
+../sputnik-lang/notebook/project_json.cpp:2311:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"dependencies"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"dependencies"), std::allocator<char>()))’
+ 2311 |     for (const auto &item : require_array(require_member(root, "dependencies", "$"), "dependencies")) {
+      |                             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2322:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2322 |   const auto &sheets =
+      |               ^~~~~~
+../sputnik-lang/notebook/project_json.cpp:2323:20: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"sheets"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$.sheets"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"$.sheets"), std::allocator<char>()))’
+ 2323 |       require_array(require_member(root, "sheets", "$.sheets"), "$.sheets");
+      |       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2329:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2329 |   const auto &modules =
+      |               ^~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2330:20: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"modules"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$.modules"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"$.modules"), std::allocator<char>()))’
+ 2330 |       require_array(require_member(root, "modules", "$.modules"), "$.modules");
+      |       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2336:15: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2336 |   const auto &auto_imports = require_array(
+      |               ^~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2336:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((* & sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"auto_imports"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$.auto_imports"), std::allocator<char>()))), std::__cxx11::basic_string<char>(((const char*)"$.auto_imports"), std::allocator<char>()))’
+ 2336 |   const auto &auto_imports = require_array(
+      |                              ~~~~~~~~~~~~~^
+ 2337 |       require_member(root, "auto_imports", "$.auto_imports"), "$.auto_imports");
+      |       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_board_input_control(const std::string&, const ProjectInput&)’:
+../sputnik-lang/notebook/project_json.cpp:2476:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2476 |     const auto &items = require_array(*options, "control.options");
+      |                 ^~~~~
+../sputnik-lang/notebook/project_json.cpp:2476:38: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)options), std::__cxx11::basic_string<char>(((const char*)"control.options"), std::allocator<char>()))’
+ 2476 |     const auto &items = require_array(*options, "control.options");
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectActionInvocation sputnik::notebook::project_action_invocation(const ProjectComponent&, const sputnik::runtime::NotebookInputSnapshot&)’:
+../sputnik-lang/notebook/project_json.cpp:2508:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2508 |       const auto &items = require_array(*arguments, "action.arguments");
+      |                   ^~~~~
+../sputnik-lang/notebook/project_json.cpp:2508:40: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)arguments), std::__cxx11::basic_string<char>(((const char*)"action.arguments"), std::allocator<char>()))’
+ 2508 |       const auto &items = require_array(*arguments, "action.arguments");
+      |                           ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘void sputnik::notebook::validate_p1(const ProjectComponent&, const ProjectDocument&)’:
+../sputnik-lang/notebook/project_json.cpp:2570:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2570 |     const auto &items = require_array(*series, "series");
+      |                 ^~~~~
+../sputnik-lang/notebook/project_json.cpp:2570:38: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)series), std::__cxx11::basic_string<char>(((const char*)"series"), std::allocator<char>()))’
+ 2570 |     const auto &items = require_array(*series, "series");
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2582:127: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2582 |   if (const auto selected = p1_member(root, "preset_inputs")) for (const auto &item : require_array(*selected, "preset inputs")) {
+      |                                                                                                                               ^
+../sputnik-lang/notebook/project_json.cpp:2582:100: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)selected), std::__cxx11::basic_string<char>(((const char*)"preset inputs"), std::allocator<char>()))’
+ 2582 |   if (const auto selected = p1_member(root, "preset_inputs")) for (const auto &item : require_array(*selected, "preset inputs")) {
+      |                                                                                       ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2587:17: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2587 |     const auto &items = require_array(*presets, "presets");
+      |                 ^~~~~
+../sputnik-lang/notebook/project_json.cpp:2587:38: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array((*(const sputnik::notebook::{anonymous}::JsonValue*)presets), std::__cxx11::basic_string<char>(((const char*)"presets"), std::allocator<char>()))’
+ 2587 |     const auto &items = require_array(*presets, "presets");
+      |                         ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp:2594:19: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2594 |       const auto &values = require_member(item, "values", "preset");
+      |                   ^~~~~~
+../sputnik-lang/notebook/project_json.cpp:2594:42: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member((* & item), std::__cxx11::basic_string<char>(((const char*)"values"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"preset"), std::allocator<char>()))’
+ 2594 |       const auto &values = require_member(item, "values", "preset");
+      |                            ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In instantiation of ‘sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)> [with auto:41 = std::vector<sputnik::notebook::ProjectBoardRow>; auto:42 = std::vector<sputnik::notebook::ProjectComponent>]’:
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2558:26:   required by substitution of ‘template<class _Fn, class ... _Args> static std::__result_of_success<decltype (declval<_Fn>()((declval<_Args>)()...)), std::__invoke_other> std::__result_of_other_impl::_S_test(int) [with _Fn = sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&; _Args = {const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/type_traits:2569:55:   required from ‘struct std::__result_of_impl<false, false, sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int>’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   recursively required by substitution of ‘template<class _Result, class _Ret> struct std::__is_invocable_impl<_Result, _Ret, true, std::__void_t<typename _CTp::type> > [with _Result = std::__invoke_result<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int>; _Ret = void]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:348:9:   required from ‘struct std::function<void(const std::vector<sputnik::notebook::ProjectBoardRow>*, const std::vector<sputnik::notebook::ProjectComponent>&, unsigned int)>::_Callable<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, std::__invoke_result<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int> >’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:353:8:   required by substitution of ‘template<class _Res, class ... _ArgTypes> template<class _Cond, class _Tp> using std::function<_Res(_ArgTypes ...)>::_Requires = std::__enable_if_t<_Cond::value, _Tp> [with _Cond = std::function<void(const std::vector<sputnik::notebook::ProjectBoardRow>*, const std::vector<sputnik::notebook::ProjectComponent>&, unsigned int)>::_Callable<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>, std::__invoke_result<sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>&, const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int> >; _Tp = void; _Res = void; _ArgTypes = {const std::vector<sputnik::notebook::ProjectBoardRow, std::allocator<sputnik::notebook::ProjectBoardRow> >*, const std::vector<sputnik::notebook::ProjectComponent, std::allocator<sputnik::notebook::ProjectComponent> >&, unsigned int}]’
+/opt/rh/gcc-toolset-13/root/usr/include/c++/13/bits/std_function.h:434:9:   required by substitution of ‘template<class _Functor, class _Constraints> std::function<void(const std::vector<sputnik::notebook::ProjectBoardRow>*, const std::vector<sputnik::notebook::ProjectComponent>&, unsigned int)>::function(_Functor&&) [with _Functor = sputnik::notebook::validate_project_document(const ProjectDocument&)::<lambda(const auto:41*, const auto:42&, unsigned int)>; _Constraints = <missing>]’
+../sputnik-lang/notebook/project_json.cpp:2948:5:   required from here
+../sputnik-lang/notebook/project_json.cpp:2768:23: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 2768 |           const auto &items = require_array(parsed, "form.fields");
+      |                       ^~~~~
+../sputnik-lang/notebook/project_json.cpp:2768:44: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_array(parsed, std::__cxx11::basic_string<char>(((const char*)"form.fields"), std::allocator<char>()))’
+ 2768 |           const auto &items = require_array(parsed, "form.fields");
+      |                               ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~
+../sputnik-lang/notebook/project_json.cpp: In function ‘sputnik::notebook::ProjectTextContent sputnik::notebook::parse_project_text_content(const std::string&)’:
+../sputnik-lang/notebook/project_json.cpp:3104:20: warning: possibly dangling reference to a temporary [-Wdangling-reference]
+ 3104 |   const JsonValue &source = require_member(root, "source", "$text");
+      |                    ^~~~~~
+../sputnik-lang/notebook/project_json.cpp:3104:43: note: the temporary was destroyed at the end of the full expression ‘sputnik::notebook::{anonymous}::require_member(root, std::__cxx11::basic_string<char>(((const char*)"source"), std::allocator<char>()), std::__cxx11::basic_string<char>(((const char*)"$text"), std::allocator<char>()))’
+ 3104 |   const JsonValue &source = require_member(root, "source", "$text");
+      |                             ~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from ../sputnik-lang/runtime/notebook_live.h:6,
+                 from ../sputnik-lang/runtime/world.h:10,
+                 from ../sputnik-lang/notebook/vm_cell_executor.h:5,
+                 from ../sputnik-lang/notebook/vm_cell_executor.cpp:1:
+../sputnik-lang/runtime/audio.h: In lambda function:
+../sputnik-lang/runtime/audio.h:81:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |     ^~
+../sputnik-lang/runtime/audio.h:81:47: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   81 |     if (c >= 'A' && c <= 'Z') return c - 'A'; if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+      |                                               ^~
+../sputnik-lang/runtime/audio.h:82:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |     ^~
+../sputnik-lang/runtime/audio.h:82:52: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   82 |     if (c >= '0' && c <= '9') return c - '0' + 52; if (c == '+') return 62; if (c == '/') return 63; return -1;
+      |                                                    ^~
+mv -f build/sputnik-notebook-worker.tmp build/sputnik-notebook-worker
+{
+  "schema": "sputnik.build.result.v2",
+  "status": "ok",
+  "name": "notebook.remote.main",
+  "root": "notebook.remote.main",
+  "target": "native",
+  "out_dir": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native",
+  "cache_dir": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache",
+  "native_output": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main",
+  "native_backend": "cpp-bytecode-direct-v1",
+  "native_hash": "6dbba8c52b72edbc12da2b728264c5b7a8fd685854c2ab3381b2945e22d642cc",
+  "native_source": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp",
+  "native_cxx": "/home/slowpilot/sputnik-remote-core/cxx",
+  "native_bytecode_fallback": false,
+  "native_graph_module_count": 10,
+  "native_graph_code_count": 1013,
+  "native_graph_native_code_count": 1013,
+  "native_graph_vm_fallback_code_count": 0,
+  "native_graph_fallback_code_count": 0,
+  "native_binary_size_bytes": 19950816,
+  "native_graph_body_coverage_full": true,
+  "native_graph_full_coverage": true,
+  "native_graph_runtime_bridge": false,
+  "native_graph_runtime_bridge_kind": "",
+  "native_graph_vm_independent": true,
+  "native_extensions": [
+    {"name":"notebook_remote_host","sputnik_ext_abi_version":1,"target_triple":"x86_64-unknown-linux","native_source_sha256":"sha256:917d6b371ba9095528184d57ca39bf04b9553d04d82ff4a1e71a6bf9add90ac1","exported_symbol_sha256":"sha256:d911a6ddaa896b45a17317de3e527e62141a38af43659e52a4477b5d379de06d","types":[{"sputnik":"notebook.remote.host.Worker","tag":"notebook.remote.Worker","ownership":"owned","destructor":"nb_remote_worker_free"},{"sputnik":"sqlite3.Conn","tag":"sqlite3.Conn","ownership":"owned","destructor":"amsq_conn_free"},{"sputnik":"sqlite3.LeaseConn","tag":"sqlite3.LeaseConn","ownership":"collected","destructor":"amsq_lease_conn_free"},{"sputnik":"sqlite3.PoolCore","tag":"sqlite3.PoolCore","ownership":"collected","destructor":"amsq_pool_core_free"},{"sputnik":"sqlite3.Stmt","tag":"sqlite3.Stmt","ownership":"owned","destructor":"amsq_stmt_free"}],"errors":[{"name":"Sqlite3.BindError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.BusyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ConstraintError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.CorruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.Error","parent":"NativeError","default_message":"","default_exit_code":""},{"name":"Sqlite3.InterruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonbUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.LockedError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.MisuseError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.OpenError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolClosedError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolLeaseError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolTimeoutError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PrepareError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.RangeError","parent":"Sqlite3.BindError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ReadOnlyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.StepError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.TransactionError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""}]},
+    {"name":"sqlite3","sputnik_ext_abi_version":1,"target_triple":"x86_64-unknown-linux","native_source_sha256":"sha256:f9b766727450b3ecd1ca4c4751918e5afffbca53032666aacc76ad060b784119","exported_symbol_sha256":"sha256:3acd6904e20120582e597ea5f33bc5020ed6b308771d73be03cf96b4a3c2ad41","types":[],"errors":[]}
+  ],
+  "profiles": {
+    "required": ["core.v1", "ffi.v1", "macro.v1"],
+    "optional": [],
+    "forbidden": []
+  },
+  "artifacts": [
+    {"name":"notebook.remote.client","path":"client.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.client.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.client-1b829ea6d54eabc5f499dd6c99f78c2ed1079dba85716bb41bd5c1351795a91e.sputnikbc","cache_key":"1b829ea6d54eabc5f499dd6c99f78c2ed1079dba85716bb41bd5c1351795a91e","source_hash":"b14630c9506b85641fe44e7fc69720f6ff226f2177b74b28cac37731c1b65b05","artifact_hash":"acd8bfd877f5a71c080d2cbdd6ae83626b1dd506cbd20d525413078032c03ecd","abi_hash":"4c5df017925ac96ead640bdebeaf577cdcfd1f1826ddcf0c8b55413d7619cfc7","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":85094,"native_bytes":0},
+    {"name":"notebook.remote.common","path":"common.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.common.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.common-161bf3446ffead56bf267c586a37ca648f3b89deef44718a2c55ca9f1fd34572.sputnikbc","cache_key":"161bf3446ffead56bf267c586a37ca648f3b89deef44718a2c55ca9f1fd34572","source_hash":"141ee0bc5c76f4110017623bbd0bd6517392549248312fe771e6647d1c1e1f4c","artifact_hash":"08e4a097997f6e8dd897fe73c02d8905032f6a9c047330e67e572f26fd68c92f","abi_hash":"0f834d40b44109f8bcfa5c77217cc25ec494bf5e32a501fd439744065db42af1","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":37876,"native_bytes":0},
+    {"name":"notebook.remote.core","path":"core.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.core.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.core-eaf55e82736f1878d2e2b79169c54d20cacca530930c3014452c7441e3dd1bb3.sputnikbc","cache_key":"eaf55e82736f1878d2e2b79169c54d20cacca530930c3014452c7441e3dd1bb3","source_hash":"830dd3b1a0cfef57a220c5e05c146311c522eb5aaa8922bb49007b3567cdb35a","artifact_hash":"fa7847b27e07d223bce14f2f4d929187897899c42af98dc1fa73b83cb93effa1","abi_hash":"f08f862bbfb0f9b44d51cc84ae68891910da480e56d622a30fc60434382aa22a","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":431712,"native_bytes":0},
+    {"name":"notebook.remote.dependencies","path":"dependencies.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.dependencies.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.dependencies-76290127eff009b5f19dbe0a42eb8346a1a24335954c14a424507012601642eb.sputnikbc","cache_key":"76290127eff009b5f19dbe0a42eb8346a1a24335954c14a424507012601642eb","source_hash":"107770af014fc6b803c22ae73148ecba46a79af1678fe37992232b0a01eb3af3","artifact_hash":"0ff05f50fee4f890f046fd0d15f64354fa5a26724f0e0842176f9f5c79d0b98d","abi_hash":"b9ae0ea4a3d05ddca81890b3dd0f4500470cf2da3d3f70aca5cdd62fba22738b","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":100091,"native_bytes":0},
+    {"name":"notebook.remote.environments","path":"environments.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.environments.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.environments-a67c2c1753b0e1b6ff22070576b59c7fde40019e2f05ec4f088d7a9a344848f2.sputnikbc","cache_key":"a67c2c1753b0e1b6ff22070576b59c7fde40019e2f05ec4f088d7a9a344848f2","source_hash":"3aae8fd0bf428129f4f46aa6f5ae1889d9d1f833e9aa1cd73e2d13909c4fa72a","artifact_hash":"1f1b2f65251f4aa929bf4ccd8ab49668b7f2688ef9c9796627bd183220181a14","abi_hash":"e5feb8dbf94c59389f0b23c467d560a3d0ab11aa15e4bdc53d4b9c4c3641545f","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":114517,"native_bytes":0},
+    {"name":"notebook.remote.host","path":"host.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.host.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.host-5eeb367397c20f046e7e7a9cde01df9f78353b818d19ed7218edcdf3f17a44f4.sputnikbc","cache_key":"5eeb367397c20f046e7e7a9cde01df9f78353b818d19ed7218edcdf3f17a44f4","source_hash":"01fcd2356716f340b973e47e48024e7e1b6bfd9d105d2ca4f001efe29e884e46","artifact_hash":"ef0a83a85a62f9ab1be1263cbd692865164102ea3836f05b6ef57e3e3d14a0db","abi_hash":"cfda5fdf5552861b903359bc9f279290f43d68e291d2751ad715c63044e2abfe","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":15947,"native_bytes":0},
+    {"name":"notebook.remote.local_dependencies","path":"local_dependencies.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.local_dependencies.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.local_dependencies-cee87349c3aa76d6b85635130ff55972e67f57cb64ce7b73eb2e9f5c835da5c8.sputnikbc","cache_key":"cee87349c3aa76d6b85635130ff55972e67f57cb64ce7b73eb2e9f5c835da5c8","source_hash":"55f881cc7d8e4d0f481df85813f093d22938d927e9ef69f12dfb735158547eed","artifact_hash":"592d6fa4ee9cfa96455f8f244cf1655f8df3e1941a81b2cac96cbf5f29064f3d","abi_hash":"938a2bf71c97bc4c972ee14ec7ea8f9b7d016aae1e0eb9c925b231c03aa2280c","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":19594,"native_bytes":0},
+    {"name":"notebook.remote.main","path":"main.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.main-11b33ff30fa72cc3c15719bb1818251bc2cc9b3df8cf6fe89322276d0409320a.sputnikbc","cache_key":"11b33ff30fa72cc3c15719bb1818251bc2cc9b3df8cf6fe89322276d0409320a","source_hash":"759bced018237d995b79d4ed8975d73e94b4f51ca855ea3c6e06ddc455d606a4","artifact_hash":"99556e1b7678d28b82892363f710e35b4b7078435050bdc0d1ce59d10fdac7d0","abi_hash":"9e492cbf3dd821254a76c68ae752a20ad555e26eee98f522d1a62acf01dcb2dd","native_output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main","native_hash":"6dbba8c52b72edbc12da2b728264c5b7a8fd685854c2ab3381b2945e22d642cc","native_backend":"cpp-bytecode-direct-v1","native_eligible":true,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":15556,"native_bytes":19950816},
+    {"name":"notebook.remote.server","path":"server.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.server.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.server-1a19d8503fac4d27d9aa5248e6a79b4c5176ce1817cecf176c1a964e05ee2a8c.sputnikbc","cache_key":"1a19d8503fac4d27d9aa5248e6a79b4c5176ce1817cecf176c1a964e05ee2a8c","source_hash":"b9def406281c74cb744230d5877f301708f4def929bccd0e4d614b6ee5803d82","artifact_hash":"80c3c48f2c9f01f0ff0415c1bb42aa21261640deee112c822071fcd1b449accc","abi_hash":"49a2637a86adcc2dab3731f5942de5fcb3b2c71dfa0266c078ad1029828a36b0","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":82824,"native_bytes":0},
+    {"name":"sqlite3","path":"../../../sqlite3/src/sqlite3.s","output":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/sqlite3.sputnikbc","cache_path":"/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/.cache/sqlite3-d3ca75420f032a28448a4196db0ce08266ae29aaa0c5973d69fe8748e6ebab20.sputnikbc","cache_key":"d3ca75420f032a28448a4196db0ce08266ae29aaa0c5973d69fe8748e6ebab20","source_hash":"462dcf9db19b7ce01e8de392ea50318cdfd74e1a25014071a3a3dd380a7c3889","artifact_hash":"ef55ef52e868e3c01f222e01ec70c6cd32af175441867ed40f5e00011fc6bd50","abi_hash":"0d64f4f2e9e22ae8363d9b568efbe2352ad7f2b1e0807abfa5925c7da4e1cf48","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":637927,"native_bytes":0}
+  ],
+  "diagnostics": []
+}
+cp "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook/build/remote-native/notebook.remote.main" "build/sputnik-notebook-remote.tmp"
+mv -f "build/sputnik-notebook-remote.tmp" "build/sputnik-notebook-remote"
+make: Leaving directory '/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-notebook'
+native_bigint_test: VM/full native and arithmetic oracle passed
+native_byte_buffer_test: VM and full native passed
+package_native_registry_cli_test: PASS
+package_registry_query_cli_test ok
+language_updates_test: ok
+test_auth_and_snapshot_roundtrip (__main__.RemoteTests.test_auth_and_snapshot_roundtrip) ... ok
+test_cell_inputs_atomic_watch_manual_scope_and_receipts (__main__.RemoteTests.test_cell_inputs_atomic_watch_manual_scope_and_receipts) ... ok
+test_cell_inputs_busy_runtime_and_frozen_run_snapshot (__main__.RemoteTests.test_cell_inputs_busy_runtime_and_frozen_run_snapshot) ... ok
+test_cell_inputs_persist_and_revalidate_changed_definitions (__main__.RemoteTests.test_cell_inputs_persist_and_revalidate_changed_definitions) ... ok
+test_child_failure_is_not_reported_as_success (__main__.RemoteTests.test_child_failure_is_not_reported_as_success) ... ok
+test_cli_snapshots_dependency_inputs_and_rejects_symlink_parents (__main__.RemoteTests.test_cli_snapshots_dependency_inputs_and_rejects_symlink_parents) ... ok
+test_deleting_project_stops_owner_and_preserves_history (__main__.RemoteTests.test_deleting_project_stops_owner_and_preserves_history) ... ok
+test_dependency_operation_rejects_active_run_and_resolves_ruby_lock (__main__.RemoteTests.test_dependency_operation_rejects_active_run_and_resolves_ruby_lock) ... ok
+test_dependency_packages_install_remove_receipts_and_worker_imports (__main__.RemoteTests.test_dependency_packages_install_remove_receipts_and_worker_imports) ... ok
+test_disconnected_client_and_restarted_gateway (__main__.RemoteTests.test_disconnected_client_and_restarted_gateway) ... ok
+test_edit_during_run_and_reuse_live_runtime (__main__.RemoteTests.test_edit_during_run_and_reuse_live_runtime) ... ok
+test_first_run_prepares_python_environment (__main__.RemoteTests.test_first_run_prepares_python_environment) ... ok
+test_live_presentation_can_be_restored_by_another_client (__main__.RemoteTests.test_live_presentation_can_be_restored_by_another_client) ... ok
+test_lost_response_does_not_duplicate_run (__main__.RemoteTests.test_lost_response_does_not_duplicate_run) ... ok
+test_managed_environment_reuse_restart_failure_and_logs (__main__.RemoteTests.test_managed_environment_reuse_restart_failure_and_logs) ... ok
+test_native_cli_upload_run_and_receipt (__main__.RemoteTests.test_native_cli_upload_run_and_receipt) ... ok
+test_orphan_gc_schedule (__main__.RemoteTests.test_orphan_gc_schedule) ... ok
+test_orphan_gc_uses_registry_ownership_and_first_seen_age (__main__.RemoteTests.test_orphan_gc_uses_registry_ownership_and_first_seen_age) ... ok
+test_owner_removal_stops_run_and_prevents_id_reuse (__main__.RemoteTests.test_owner_removal_stops_run_and_prevents_id_reuse) ... ok
+test_package_catalog_uses_execution_host_without_retiring_workers (__main__.RemoteTests.test_package_catalog_uses_execution_host_without_retiring_workers) ... ok
+test_parallel_request_correlation (__main__.RemoteTests.test_parallel_request_correlation) ... ok
+test_prepared_gui_snapshot_is_immutable_and_can_be_checked_out (__main__.RemoteTests.test_prepared_gui_snapshot_is_immutable_and_can_be_checked_out) ... ok
+test_restart_is_durable_before_destroying_heap (__main__.RemoteTests.test_restart_is_durable_before_destroying_heap) ... ok
+test_restart_then_delete_waits_for_all_runtime_owners (__main__.RemoteTests.test_restart_then_delete_waits_for_all_runtime_owners) ... ok
+test_retry_after_cancelled_preparation_requires_runtime_restart (__main__.RemoteTests.test_retry_after_cancelled_preparation_requires_runtime_restart) ... ok
+test_runtime_has_a_private_working_directory (__main__.RemoteTests.test_runtime_has_a_private_working_directory) ... ok
+test_snapshot_nested_tree_survives_agent_restart (__main__.RemoteTests.test_snapshot_nested_tree_survives_agent_restart) ... ok
+test_snapshot_publication_failure_preserves_head_and_receipt (__main__.RemoteTests.test_snapshot_publication_failure_preserves_head_and_receipt) ... ok
+test_stop_during_preparation (__main__.RemoteTests.test_stop_during_preparation) ... ok
+test_stop_force_stop_and_stale_epoch (__main__.RemoteTests.test_stop_force_stop_and_stale_epoch) ... ok
+test_unsafe_upload_and_unsupported_inputs (__main__.RemoteTests.test_unsafe_upload_and_unsupported_inputs) ... ok
+test_worker_environment_override_requires_restart_when_changed (__main__.RemoteTests.test_worker_environment_override_requires_restart_when_changed) ... ok
+test_worker_grants_refuse_active_runtime (__main__.RemoteTests.test_worker_grants_refuse_active_runtime) ... ok
+test_worker_grants_scope_revoke_receipts_and_stale_settings (__main__.RemoteTests.test_worker_grants_scope_revoke_receipts_and_stale_settings) ... ok
+test_z_agent_failure_is_interrupted_without_replay (__main__.RemoteTests.test_z_agent_failure_is_interrupted_without_replay) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 46.465s
+
+OK
+BUILD_AND_TESTS_PASSED

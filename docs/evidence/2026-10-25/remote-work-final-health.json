@@ -1,0 +1,72 @@
+{
+  "verified_at_utc": "2026-10-25T17:41:47.186383+00:00",
+  "current_release": "/ssd1Tb/sputnik-remote-core-releases/20261025-remote-inputs-watch-actions",
+  "current_alias": "/home/slowpilot/sputnik-remote-core/current",
+  "health": {
+    "protocol": 1,
+    "agent_pid": 1541954,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "processes": {
+    "agent": {
+      "pid": 1541954,
+      "argv": [
+        "/home/slowpilot/sputnik-remote-core/releases/20261025-remote-inputs-watch-actions/sputnik-notebook-remote",
+        "--mode",
+        "agent",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--worker",
+        "/home/slowpilot/sputnik-remote-core/releases/20261025-remote-inputs-watch-actions/sputnik-notebook-worker",
+        "--sputnik",
+        "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang/build/sputnik"
+      ]
+    },
+    "gateway": {
+      "pid": 1542199,
+      "argv": [
+        "/home/slowpilot/sputnik-remote-core/releases/20261025-remote-inputs-watch-actions/sputnik-notebook-remote",
+        "--mode",
+        "gateway",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--port",
+        "18765"
+      ]
+    }
+  },
+  "sqlite_quick_check": "ok",
+  "active_runs": [],
+  "live_runtime_records": [],
+  "enabled_schedules": 0,
+  "gui_project_deleted": "78c8f07c-af5e-4f6e-8ab4-e5a4c4e78b77",
+  "language_unchanged": true,
+  "binary_sha256": {
+    "sputnik-notebook-remote": "3546e43c8036527c9b52c782f44d4d080949ce66c3b1a8510ba32830112e7a8a",
+    "sputnik-notebook-worker": "37f33ab27770b1731e5c78e44086f82dbe6c71b988bb5fe5a5966fd9f90d7188"
+  }
+}

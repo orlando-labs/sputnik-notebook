@@ -1,0 +1,11 @@
+{
+  "base_commit": "b19d72a5b4afa4e6d97056dfc9bd28f6225d2baf",
+  "commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+  "patch": "notebook-bigint-prelude.patch",
+  "patch_sha256": "9fa457b01a66cbabba73352943591b65a53a17e427c8557a5f28e5c6a5200aaa",
+  "files": {
+    "frontend/binder/binder.cpp": "fb3420c840f85d4c4aad51b2ff9ba2b7eee4d930706680c764ab976d3c1ce1fc",
+    "tests/isputnik_tests.cpp": "5ae5a5d782a5ab0e9663dc69b6a98e8204348affdd91777998f4103ffe9bca50",
+    "tests/notebook_compiler_tests.cpp": "499f6074569160dc1344cd30586a990e194db49d841c99f57451ac771ad61d0b"
+  }
+}

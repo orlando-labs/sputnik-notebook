@@ -9,6 +9,7 @@ export agent, gateway
 def agent(root, worker, python, ruby, gc_interval, gc_age, compiler):
   fail(400, "GC interval and age must be nonnegative") if gc_interval < 0 or gc_age < 0
   core = Core(root, worker, python: python, ruby: ruby, compiler: compiler)
+  core.schedule_work()
   core.schedule_gc(gc_interval, gc_age)
   path = root + "/agent.sock"
   fs.remove(path) if fs.exists?(path)
@@ -72,6 +73,8 @@ def dispatch(root, token, request):
       elif route[3] == "package-catalog" and verb == "POST": method = "dependency.catalog"
       elif route[3] == "environments": method = {GET: "environment.list", POST: "environment.prepare"}[?verb]
       elif route[3] == "runs": method = {GET: "run.list", POST: "run.start"}[?verb]
+      elif route[3] == "inputs": method = {GET: "project.inputs", PUT: "project.inputs.set"}[?verb]
+      elif route[3] == "services": method = {GET: "service.list", POST: "service.configure"}[?verb]
       elif route[3] == "cell-inputs": method = {GET: "cell.inputs", PUT: "cell.inputs.set"}[?verb]
       elif route[3] == "registry" and verb == "GET": method = "run.registry"
       elif route[3] == "restart" and verb == "POST": method = "runtime.restart"

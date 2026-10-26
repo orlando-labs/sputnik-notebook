@@ -1,0 +1,37 @@
+{
+  "notebook_base_commit": "c65743367f26107d7500662672466611978ac0b2",
+  "date": "2026-10-25",
+  "archive_sha256": "75b82a38b822304a2e43741f3289d12a4f2f25ad2bd727a05036fcef0d89b206",
+  "source_overlay": {
+    "Makefile": "c276daa3181215abf1d3ba7c05531e31a7bb93d7cd5cf74dd294085f8c6d376f",
+    "README.md": "84d505ddb2f92c7c42e7eb2104c7a554e501578d47e04728322271652dc4b1af",
+    "docs/engineering/notebook-remote-core-p01.md": "3316b54c566fff6cd68585cff7ea9e36a3160104a4daac0ee320d4d86fcd197d",
+    "docs/engineering/notebook-remote-ui.md": "a9d3bc935654380c079ed077b6394d54ac50a5a7b8de31979d32138e32013723",
+    "tests/notebook_macos_remote_cell_tests.swift": "f0459c1f0097d2d629fe24c466a9ed53e2e324ffe6b250f52857c8e58c85de1a",
+    "tests/notebook_remote_tests.py": "981fb18eb602a36ac1e2de6b87e99c033912c6ff4d4ba3415d6e3b3432e291ed",
+    "tests/notebook_remote_ui_tests.py": "02c5135aad97a6704343fd7452148d8759c02b62e8928dd2588956ce3a98626a",
+    "tools/notebook-macos/NotebookExecutionControlsView.swift": "5eaf7b27da59f706a1b41328aa7e8b27f909d22031bb824ee0e3d783e2a526c5",
+    "tools/notebook-macos/NotebookModel.swift": "af16b45112440c2334c4604b28c96d87d92ee4c6e08d7d386555c1f54b484328",
+    "tools/notebook-macos/NotebookP1Model.swift": "9075c4905aeccdfbff157c8d6340612da9d3acfc70d7305a753802c476128f87",
+    "tools/notebook-macos/NotebookPeriodicWorkView.swift": "3af02b7ffa118df7739e44280a83429f3401998d2584e33e9813567cfe5274e2",
+    "tools/notebook-macos/NotebookRemote.swift": "39327386f1b06518c4b62239b1886c15c5be78e3c1021a28a5782ddc557011b0",
+    "tools/notebook-remote/client.s": "6a6f21909a2ee6533a27aaf3d624e5fdd679843ddf6832c6bc3347227537179f",
+    "tools/notebook-remote/core.s": "98a5ccbd368c280f44cc0be77ec656f918d8a58e7e6cefaca6fbd96abdc3bcd8",
+    "tools/notebook-remote/host.cpp": "afe3824ab0b993e32d2bd3f96685d3de9e8c8c06d9f8b478fda2e94727fca35a",
+    "tools/notebook-remote/host.s": "c238d62ccb8e1313eebd39b4c26098841669e0afcf3f52c43a12f70f510c6afa",
+    "tools/notebook-remote/server.s": "49d77fda5b24d87923a7d0404d18edc06f6b2d494fc6d972b65a8a32743106b3",
+    "tools/notebook-remote/sputnik.build.json": "a1ff55d520641198cbe1afa129c5e45dd4b079b7757ac51a82e7f6f6c75f440b",
+    "tools/notebook-worker/main.cpp": "a7b8de1f1c8206b7f939951381371a226c673ec487725c7fd87dc11bfb2442f6",
+    "tools/notebook-remote/services.s": "9d2e139376506ae6bc24173c9745f78dfff5efc15e58c9cba46bc437b74de707",
+    "tests/notebook_macos_remote_work_tests.swift": "e5194f8c883b422cda1d6a77deeef96c3c7d5871935449c1a4b677a382ea029d",
+    "docs/engineering/notebook-remote-inputs-watch-actions.md": "3630a02f68db6d1ec406346f47e7e33656776049e074d1da9b916de43f28586a"
+  },
+  "language_policy": "Reuse the current server release compiler/runtime; do not include unrelated local language changes.",
+  "previous_release": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a",
+  "language_commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+  "reused_runtime": {
+    "sputnik": "1d81be862cfe5056fa425d8a8918d83ebf5e66cc93257ed779c9443efc3048b5",
+    "libsputnik.a": "eff8238081d8eb46cef44350c61635ad6da4050494367c46213da4f1e41384d4"
+  },
+  "sqlite3_source": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sqlite3"
+}

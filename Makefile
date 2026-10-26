@@ -449,3 +449,11 @@ test-notebook-audio-annotations: $(BUILD_DIR)/notebook_audio_annotation_tests $(
 ifeq ($(UNAME_S),Darwin)
 test-notebook-macos: test-notebook-audio-annotations
 endif
+
+ifeq ($(UNAME_S),Darwin)
+$(BUILD_DIR)/notebook_macos_remote_work_tests: tests/notebook_macos_remote_work_tests.swift $(BOARD_LAYOUT_TEST_SWIFT) tools/notebook-macos/NotebookBridge.h $(BUILD_DIR)/notebook-macos/libNotebookBackend.a
+	xcrun swiftc -swift-version 5 -Onone -target $(MAC_NOTEBOOK_TARGET) -module-cache-path $(BUILD_DIR)/notebook-macos/swift-cache -import-objc-header tools/notebook-macos/NotebookBridge.h tests/notebook_macos_remote_work_tests.swift $(BOARD_LAYOUT_TEST_SWIFT) $(BUILD_DIR)/notebook-macos/libNotebookBackend.a -framework AppKit -framework SwiftUI -lc++ $(LDFLAGS) -o $@
+.PHONY: test-notebook-remote-work
+test-notebook-remote-work: remote-core $(BUILD_DIR)/notebook_macos_remote_work_tests
+	python3 tests/notebook_remote_ui_tests.py --test "$(abspath $(BUILD_DIR)/notebook_macos_remote_work_tests)" --core "$(abspath $(BUILD_DIR)/sputnik-notebook-remote)" --worker "$(abspath $(BUILD_DIR)/sputnik-notebook-worker)"
+endif

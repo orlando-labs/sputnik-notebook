@@ -189,6 +189,9 @@ server-owned execution agent written in Sputnik, reconnectable HTTP/CLI access
 through SSH, saved project revisions and run history. The [macOS interface](docs/engineering/notebook-remote-ui.md)
 adds server selection, remote Run, live results and reattachment after closing the client.
 Build with `make notebook-macos`; verify with `make test-notebook-remote test-notebook-remote-ui`.
+Remote project inputs, idle Watch, board actions and agent-owned Periodic Work
+are described in the [remote execution guide](docs/engineering/notebook-remote-inputs-watch-actions.md).
+Verify their GUI lifecycle with `make test-notebook-remote-work`.
 
 Python/Ruby worker environments, persistent remote preparation and orphan
 collection are described in [Notebook foreign environments](docs/engineering/notebook-foreign-environments.md).

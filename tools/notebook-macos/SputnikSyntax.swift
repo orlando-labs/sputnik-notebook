@@ -133,7 +133,7 @@ private final class Scanner {
     private static let keywords: Set<String> = [
         "and", "attr", "break", "catch", "case", "case!", "class",
         "class_method", "class_prop", "def", "do", "elif", "else",
-        "elsif", "export", "ensure", "extend", "false", "from", "if",
+        "elsif", "export", "ensure", "extend", "false", "for", "from", "if",
         "import", "in", "include", "loop", "mixin", "not", "null", "or",
         "package", "prop", "raise", "rescue", "return", "throw", "try",
         "true", "unless", "until", "when", "while",
@@ -393,6 +393,9 @@ private final class Scanner {
             scalars[quoteIndex].value == 34 && scalars[quoteIndex + 1].value == 34 &&
             scalars[quoteIndex + 2].value == 34
         let quote = scalars[quoteIndex].value
+        let controls = triple && !raw && quoteIndex > 0 &&
+            isIdentifierPart(scalars[quoteIndex - 1].value)
+        var segment = start
         index = quoteIndex + (triple ? 3 : 1)
         while index < scalars.count {
             if triple && quote == 34 && hasTripleQuote {
@@ -402,6 +405,25 @@ private final class Scanner {
             if !triple && current == quote {
                 index += 1
                 break
+            }
+            if controls && current == 37 && templateLineStarts(at: index) &&
+                (matches("%for ", at: index) || matches("%for\t", at: index) || matches("%#", at: index)) {
+                emit(start: segment, end: index, category: .string)
+                let directive = index
+                while index < scalars.count && current != 10 && current != 13 { index += 1 }
+                if scalars[directive + 1].value == 35 {
+                    emit(start: directive, end: index, category: .comment)
+                } else {
+                    emit(start: directive, end: directive + 1, category: .punctuation)
+                    let offset = scalars[directive + 1].utf16Start
+                    for token in Scanner(substring(directive + 1, index)).scan() {
+                        result.append(SputnikSyntaxToken(
+                            range: NSRange(location: offset + token.range.location, length: token.range.length),
+                            category: token.category, text: token.text))
+                    }
+                }
+                segment = index
+                continue
             }
             if current == 92 {
                 index += 1
@@ -415,8 +437,14 @@ private final class Scanner {
             if !triple && (current == 10 || current == 13) { break }
             index += 1
         }
-        emit(start: start, end: index, category: .string)
+        emit(start: segment, end: index, category: .string)
         recordMacroToken()
+    }
+
+    private func templateLineStarts(at position: Int) -> Bool {
+        var cursor = position
+        while cursor > 0 && [32, 9].contains(scalars[cursor - 1].value) { cursor -= 1 }
+        return cursor == 0 || [10, 13].contains(scalars[cursor - 1].value)
     }
 
     private var hasTripleQuote: Bool {
@@ -474,7 +502,8 @@ private final class Scanner {
         while cursor < scalars.count && isIdentifierPart(scalars[cursor].value) { cursor += 1 }
         if cursor < scalars.count && (scalars[cursor].value == 63 || scalars[cursor].value == 33) { cursor += 1 }
         index = cursor
-        emit(start: start, end: index, category: .variable)
+        let isTemplate = substring(start, index) == "@template" && current == 40
+        emit(start: start, end: index, category: isTemplate ? .keyword : .variable)
         recordMacroToken()
         return true
     }

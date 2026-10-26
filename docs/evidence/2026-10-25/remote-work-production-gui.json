@@ -1,0 +1,54 @@
+{
+  "root": "/tmp/sputnik-production-gui-ymjdf7uv",
+  "server": "lab.orlando-labs.com:22176",
+  "health": {
+    "protocol": 1,
+    "agent_pid": 1541954,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "returncode": 0,
+  "stdout": "Remote work tests passed: project inputs, idle Watch, action receipt recovery, server periodic close/reconnect/pause and retained history\n",
+  "stderr": "",
+  "project": "78c8f07c-af5e-4f6e-8ab4-e5a4c4e78b77",
+  "binary_sha256": {
+    "build/Sputnik Notebook.app/Contents/MacOS/sputnik-notebook-remote": "70875f702b7476432b18d73f0ec355effd5d7b7094b3c7b8b277505b98619a55",
+    "build/Sputnik Notebook.app/Contents/MacOS/sputnik-notebook-worker": "aa16b9d82d86ce6b9bd083bafb48f022d4982dbe9e8e9ea0435c246f466ae396",
+    "build/notebook_macos_remote_work_tests": "9b60c0ce38e4baaa2637cecc9fc6e68d72bed35b99ceca809d0447f11072580f"
+  },
+  "cleanup": {
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "  File \"<stdin>\", line 2\n    from pathlib import Path\nIndentationError: unexpected indent\n"
+  },
+  "cleanup_error": "  File \"<stdin>\", line 2\n    from pathlib import Path\nIndentationError: unexpected indent\n",
+  "cleanup_retry": {
+    "project": "78c8f07c-af5e-4f6e-8ab4-e5a4c4e78b77",
+    "state": "deleted"
+  },
+  "wrapper_cleanup_error_resolved": true,
+  "temporary_credentials_removed": true
+}

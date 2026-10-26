@@ -1,0 +1,54 @@
+{
+  "health": {
+    "protocol": 1,
+    "agent_pid": 683267,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document"
+    ]
+  },
+  "sqlite_quick_check": "ok",
+  "smoke_project_state": "deleted",
+  "active_runs": 0,
+  "current_release": "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a",
+  "current_alias": "/home/slowpilot/sputnik-remote-core/releases/20261024-notebook-e02f2bd",
+  "language_commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+  "sha256": {
+    "sputnik-notebook-remote": "6dbba8c52b72edbc12da2b728264c5b7a8fd685854c2ab3381b2945e22d642cc",
+    "sputnik-notebook-worker": "198b0729a0c8f0f718fbe14e9014ca3b974b1e6ad8db6c0f25fef2543a41d9f4",
+    "src/sputnik-lang/build/sputnik": "1d81be862cfe5056fa425d8a8918d83ebf5e66cc93257ed779c9443efc3048b5"
+  },
+  "checks": {
+    "linux_build_and_tests": "passed",
+    "remote_integration_tests": 35,
+    "native_bigint_vm_native_oracle": "passed",
+    "native_byte_buffer_and_map_vm_native": "passed",
+    "registry_host_selection": "passed",
+    "language_updates": "passed",
+    "notebook_bigint_prelude_compilation_and_execution": "passed"
+  },
+  "native_build": {
+    "native_graph_full_coverage": true,
+    "native_graph_vm_independent": true,
+    "native_graph_module_count": 10,
+    "native_graph_code_count": 1013,
+    "native_graph_fallback_code_count": 0
+  }
+}

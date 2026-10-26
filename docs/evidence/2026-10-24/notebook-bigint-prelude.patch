@@ -1,0 +1,71 @@
+diff --git a/frontend/binder/binder.cpp b/frontend/binder/binder.cpp
+index a3407a7..4a45068 100644
+--- a/frontend/binder/binder.cpp
++++ b/frontend/binder/binder.cpp
+@@ -1436,6 +1436,7 @@ bool native_prelude_name_impl(const std::string &name) {
+       "Barrier",
+       "Base64",
+       "Base64Url",
++      "BigInt",
+       "Bool",
+       "Bytes",
+       "Channel",
+diff --git a/tests/isputnik_tests.cpp b/tests/isputnik_tests.cpp
+index c67b248..759bca3 100644
+--- a/tests/isputnik_tests.cpp
++++ b/tests/isputnik_tests.cpp
+@@ -359,6 +359,14 @@ void test_compound_assignment_eval() {
+   expect(view.result == "3", "compound assignment should return updated value");
+ }
+ 
++void test_bigint_constructor_uses_native_prelude() {
++  const EvalView bigint = evaluate_prefix(
++      {make_cell("large = BigInt(\"18446744073709551616\")\n"
++                 "(large * 2).str\n")}, 0);
++  expect(bigint.ok && bigint.result == "\"36893488147419103232\"",
++         "notebook cells must construct BigInt without missing-input errors");
++}
++
+ void test_range_literal_uses_native_prelude() {
+   std::vector<Cell> cells;
+   cells.push_back(make_cell("(0..5)\n"));
+@@ -836,6 +844,7 @@ int main() {
+   test_independent_cell_uses_isolated_eval();
+   test_compound_assignment_eval();
+   test_range_literal_uses_native_prelude();
++  test_bigint_constructor_uses_native_prelude();
+   test_cell_can_read_binding_initialized_earlier_in_cell();
+   test_versioned_write_reads_previous_provider();
+   test_evaluate_from_runs_only_dependent_watch_cells();
+diff --git a/tests/notebook_compiler_tests.cpp b/tests/notebook_compiler_tests.cpp
+index 187611f..c1e4e15 100644
+--- a/tests/notebook_compiler_tests.cpp
++++ b/tests/notebook_compiler_tests.cpp
+@@ -257,6 +257,19 @@ void test_ambient_export_read_uses_qualified_lookup() {
+   expect(false, "ambient export LookupConst instruction was not found");
+ }
+ 
++void test_bigint_prelude_is_not_a_notebook_input() {
++  const CellSource source = cell(602, "large = BigInt(\"18446744073709551616\")\n");
++  const DependencyGraph graph({source});
++  expect(graph.missing_names(source.id).empty(),
++         "BigInt must be recognized as a native prelude constant");
++  NotebookImage image;
++  const auto result = sputnik::notebook::compile_cell(source, graph, image);
++  expect(result.ok && result.inputs.empty(),
++         "BigInt construction must not require a notebook input");
++  expect(has_opcode(code_for(image, result.code_id), Opcode::LookupConst),
++         "BigInt must compile as a runtime constant lookup");
++}
++
+ void test_native_prelude_reads_and_shadowing() {
+   const CellSource source = cell(601, "answer = system\n");
+   const DependencyGraph graph({source});
+@@ -653,6 +666,7 @@ int main() {
+   test_repeated_external_reads_share_one_cell_input();
+   test_ambient_export_read_uses_qualified_lookup();
+   test_native_prelude_reads_and_shadowing();
++  test_bigint_prelude_is_not_a_notebook_input();
+   test_notebook_provider_shadows_ambient_export();
+   test_malformed_ambient_path_is_diagnostic();
+   test_duplicate_code_ids_and_diagnostics();

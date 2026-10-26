@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Native SwiftUI/model tests against an isolated real Sputnik remote core."""
 import argparse
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -16,7 +17,7 @@ def main():
     parser.add_argument("--worker", required=True)
     parser.add_argument("--keep", action="store_true")
     options = parser.parse_args()
-    fixture.OPTIONS = SimpleNamespace(core=options.core, worker=options.worker, keep=options.keep)
+    fixture.OPTIONS = SimpleNamespace(core=options.core, worker=options.worker, keep=options.keep, bridges=False, python=shutil.which("python3.14") or sys.executable, ruby=shutil.which("ruby") or "ruby")
     host = fixture.RemoteTests
     host.setUpClass()
     try:

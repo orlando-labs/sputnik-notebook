@@ -49,6 +49,10 @@
     {
       "name": "notebook.remote.local_dependencies",
       "path": "local_dependencies.s"
+    },
+    {
+      "name": "notebook.remote.services",
+      "path": "services.s"
     }
   ],
   "native_extensions": [

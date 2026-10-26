@@ -1,0 +1,31 @@
+{
+  "language_commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+  "notebook_commit": "c65743367f26107d7500662672466611978ac0b2",
+  "previous_release": "/ssd1Tb/sputnik-remote-core-releases/20261023-then-845ab2c",
+  "required_working_tree_overlay": null,
+  "archives": {
+    "language.tar.gz": "a23cf358a695a0aa7f523956216e2d37c65b03dd0ae87dd1334024786a73720d",
+    "notebook.tar.gz": "7ef11dd67c1c1b90f6eb9ec6473955108d0e21d3fadfc11b42e9a3dc0d43f94a"
+  },
+  "sqlite3_source": {
+    "release": "/ssd1Tb/sputnik-remote-core-releases/20261023-then-845ab2c",
+    "files": {
+      "native/sqlite3.c": "dc58f0b5b74e8416cc29b49163a00d6b8bf08a24dd4127652beaaae307bd1839",
+      "native/sqlite3.h": "05c48cbf0a0d7bda2b6d0145ac4f2d3a5e9e1cb98b5d4fa9d88ef620e1940046",
+      "native/sqlite3_ext.c": "de2e0a1e3905459280cfafac4b00da1773d6663e4a5adc34ec2039f936df71c9",
+      "src/sqlite3.s": "462dcf9db19b7ce01e8de392ea50318cdfd74e1a25014071a3a3dd380a7c3889"
+    }
+  },
+  "language_base_commit": "b19d72a5b4afa4e6d97056dfc9bd28f6225d2baf",
+  "committed_source_update": {
+    "base_commit": "b19d72a5b4afa4e6d97056dfc9bd28f6225d2baf",
+    "commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+    "patch": "notebook-bigint-prelude.patch",
+    "patch_sha256": "9fa457b01a66cbabba73352943591b65a53a17e427c8557a5f28e5c6a5200aaa",
+    "files": {
+      "frontend/binder/binder.cpp": "fb3420c840f85d4c4aad51b2ff9ba2b7eee4d930706680c764ab976d3c1ce1fc",
+      "tests/isputnik_tests.cpp": "5ae5a5d782a5ab0e9663dc69b6a98e8204348affdd91777998f4103ffe9bca50",
+      "tests/notebook_compiler_tests.cpp": "499f6074569160dc1344cd30586a990e194db49d841c99f57451ac771ad61d0b"
+    }
+  }
+}

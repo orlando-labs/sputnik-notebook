@@ -8,6 +8,7 @@ native class Worker from "notebook.remote.Worker" owned:
   def init(executable as Str, directory as Str, grants as List, environment_directory as Str) from "nb_remote_worker_new" blocking
   def send(kind as Int, fields as List) -> Int from "nb_remote_worker_send" blocking
   def poll() from "nb_remote_worker_poll" blocking
+  def activity?() -> Bool from "nb_remote_worker_activity" blocking
   def stop!(request as Int, force as Bool) -> Bool from "nb_remote_worker_stop"
   def close!() from "nb_remote_worker_close" blocking
   def pid() -> Int from "nb_remote_worker_pid"

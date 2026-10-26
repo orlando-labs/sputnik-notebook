@@ -1,0 +1,56 @@
+{
+  "health": {
+    "protocol": 1,
+    "agent_pid": 1540342,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "smoke": {
+    "project": "remote_work_smoke_b65e9a60fc7a43a9a5a83bf942d5d80e",
+    "revision": "a77796d6c5479a0e326f0a65e590dd63b6fa92a06b3b2763ef975b2650e38ee6",
+    "run_id": "224c596f173234a27d68f21809bcde30",
+    "input_run_id": "7b7ad4c4c531c860c089dff22ec0cf30",
+    "action_run_id": "fc9d8eb21e5492160fad94e00587b342",
+    "initial_result": "8",
+    "applied_result": "14",
+    "action_result": "[1, 7]",
+    "idle_watch_run_id": "cbe30f04da3810ea410c6a6911a11800",
+    "service_runs": 3,
+    "service_history": 2,
+    "checks": [
+      "project inputs before worker creation",
+      "atomic input Apply",
+      "exact Int64",
+      "input receipt replay",
+      "idle Watch",
+      "isolated board action",
+      "agent-owned fixed-rate Periodic Work",
+      "durable Pause receipt",
+      "Tail retention"
+    ]
+  },
+  "isolated": true
+}

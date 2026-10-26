@@ -1,0 +1,51 @@
+{
+  "health": {
+    "protocol": 1,
+    "agent_pid": 682920,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document"
+    ]
+  },
+  "smoke": {
+    "project": "release_for_smoke_34772e71a72e412aa5f2b9d76e6b8ec4",
+    "revision": "6b1ff6e0629a6eda7fc510a10b207fb15233ea552c8b631976a6f2e6d49806a7",
+    "run_id": "0f26480ca3b7e0d5c1e2741b62307cb8",
+    "state": "succeeded",
+    "result": "42",
+    "checks": [
+      "for with_index",
+      "range step",
+      "bare break",
+      "null iteration result",
+      "find_with_index.with_index",
+      "times break",
+      "then sequencing and $_",
+      "postfix sequence guard",
+      "forwarded scoped break with ensure",
+      "inline next",
+      "expired break LocalJumpError",
+      "BigInt exact arithmetic",
+      "ByteBuffer IO",
+      "Map transformed_values and transform!",
+      "rescuable NoMethodError"
+    ]
+  }
+}

@@ -175,6 +175,22 @@ class RemoteTests(unittest.TestCase):
             return value if value["state"] == state or (state is None and value["state"] in TERMINAL) else None
         return eventually(ready)
 
+    def test_template_loops_in_remote_worker(self):
+        source = ('from system import cmd\n'
+                  'values = ["a b", "$(opaque);", ""]\n'
+                  'command = cmd"""\n'
+                  '  echo\n'
+                  '  %for value with_index i in values:\n'
+                  '    #{i.str}:#{value}\n'
+                  '  """\n'
+                  'raise ValueError("template argv changed") unless command.argv == ["echo", "0:a b", "1:$(opaque);", "2:"]\n'
+                  '42\n')
+        revision, _ = self.upload(document(source))
+        run, _ = self.start(revision)
+        result = self.wait_run(run)
+        self.assertEqual(result["state"], "succeeded", result)
+        self.assertEqual(result["result"]["cells"][0]["result"], "42", result)
+
     def test_managed_environment_reuse_restart_failure_and_logs(self):
         # A real, offline-installable wheel proves packages land in this notebook's venv.
         archive = io.BytesIO()
@@ -994,7 +1010,7 @@ class RemoteTests(unittest.TestCase):
         run, _ = self.start(newer)
         self.assertEqual(self.wait_run(run)["result"]["cells"][0]["result"], "4")
 
-    def test_unsafe_upload_and_unsupported_inputs(self):
+    def test_unsafe_upload_and_project_inputs(self):
         body = {"command_id": uuid.uuid4().hex, "base_revision": None,
                 "document": json.dumps(document()), "files": {"../escape.s": "eA=="}}
         self.assertEqual(self.request("PUT", "/v1/projects/" + self.project, body)[0], 400)
@@ -1002,7 +1018,225 @@ class RemoteTests(unittest.TestCase):
         doc["inputs"] = [{"id": "gain", "title": "Gain", "type": "number", "default": 1}]
         revision, _ = self.upload(doc)
         self.assertEqual(self.request("POST", "/v1/projects/" + self.project + "/runs",
-                                     {"command_id": uuid.uuid4().hex, "revision": revision, "sheet_id": "main", "cell_id": "1"})[0], 422)
+                                     {"command_id": uuid.uuid4().hex, "revision": revision, "sheet_id": "main", "cell_id": "1"})[0], 200)
+
+    def project_edit(self, revision, values, version=None, command=None):
+        body = dict(command_id=command or uuid.uuid4().hex, revision=revision,
+                    base_version=version if version is not None else self.input_state()["version"], values=values)
+        status, reply = self.request("PUT", "/v1/projects/" + self.project + "/inputs", body)
+        return status, reply, body
+
+    def test_project_inputs_atomic_multi_sheet_and_frozen_snapshots(self):
+        doc = document('notebook.input("gain") * 2\n', board=True)
+        doc["inputs"] = [dict(id="gain", title="Gain", type="integer", default=2, minimum=0, maximum=100),
+                         dict(id="exact", title="Exact", type="integer", default=9223372036854775806)]
+        doc["sheets"][0]["cells"][0]["mode"] = "watch"
+        doc["sheets"][0]["cells"].append(dict(id="2", kind="code", mode="manual", source='notebook.input("gain") * 3\n'))
+        doc["sheets"].append(dict(id="second", title="Second", cells=[dict(id="3", kind="code", mode="watch", source='notebook.input("gain") + 1\n')]))
+        revision, _ = self.upload(doc)
+        status, accepted, _ = self.project_edit(revision, {"gain": "4"})
+        self.assertEqual(status, 200, accepted)
+        self.assertEqual(accepted["run_ids"], [])  # Editing inputs never initializes a world.
+        first, _ = self.start(revision, action="run_all")
+        self.assertEqual(self.wait_run(first)["result"]["cells"][0]["result"], "8")
+        status, second = self.request("POST", "/v1/projects/" + self.project + "/runs", dict(command_id=uuid.uuid4().hex, revision=revision, sheet_id="second", cell_id="3"))
+        self.assertEqual(status, 200, second)
+        self.wait_run(second)
+        before = self.input_state()
+        self.assertEqual(self.project_edit(revision, {"gain": "5", "exact": "9223372036854775808"})[0], 422)
+        self.assertEqual(self.input_state(), before)
+        status, applied, request = self.project_edit(revision, {"gain": "7", "exact": "9223372036854775807"})
+        self.assertEqual(status, 200, applied)
+        self.assertEqual(len(applied["run_ids"]), 2)
+        outputs = [self.wait_run(dict(run_id=identity)) for identity in applied["run_ids"]]
+        main = next(r for r in outputs if r["sheet_id"] == "main")
+        self.assertEqual(main["result"]["cells"][0]["result"], "14")
+        self.assertTrue(main["result"]["cells"][1]["dirty"])
+        self.assertEqual(json.loads(main["execution_document"])["inputs"][1]["default"], 9223372036854775807)
+        self.assertEqual(self.request("PUT", "/v1/projects/" + self.project + "/inputs", request), (200, applied))
+        self.assertEqual(self.project_edit(revision, {"gain": "7"})[1]["run_ids"], [])
+        self.assertEqual(self.project_edit(revision, {"gain": "8"}, version=before["version"])[0], 409)
+        self.assertEqual(self.project_edit("obsolete", {"gain": "8"})[0], 409)
+        self.assertEqual(json.loads(self.request("GET", "/v1/projects/" + self.project)[1]["document"])["inputs"][0]["default"], 2)
+
+    def test_project_inputs_busy_sheet_rejects_whole_batch_and_persists(self):
+        doc = document('import task\ntask.sleep(700)\nnotebook.input("gain")\n', board=True)
+        doc["inputs"] = [dict(id="gain", title="Gain", type="integer", default=2)]
+        revision, _ = self.upload(doc)
+        run, _ = self.start(revision)
+        self.wait_run(run, "running")
+        before = self.input_state()
+        self.assertEqual(self.project_edit(revision, {"gain": "9"})[0], 409)
+        self.assertEqual(self.input_state(), before)
+        self.wait_run(run)
+        status, applied, _ = self.project_edit(revision, {"gain": "9"})
+        self.assertEqual(status, 200, applied)
+        for run_id in applied["run_ids"]: self.wait_run(dict(run_id=run_id))
+        type(self).agent.terminate(); type(self).agent.wait(timeout=15)
+        type(self).agent = type(self).start_agent()
+        self.assertEqual(self.input_state()["values"]["project:gain"], "9")
+
+    def test_idle_watch_agent_pump_quiets_and_never_executes_new_drafts(self):
+        doc = document("x = 1\nKernel.watch(x)\nx\n")
+        doc["sheets"][0]["cells"][0]["mode"] = "watch"
+        revision, _ = self.upload(doc)
+        run, _ = self.start(revision)
+        self.wait_run(run)
+        route = "/v1/projects/" + self.project + "/registry"
+        watches = eventually(lambda: [r for r in self.request("GET", route)[1]["runs"] if r["action"] == "watch"])
+        self.wait_run(dict(run_id=watches[-1]["id"]))
+        time.sleep(0.5)
+        count = len(self.request("GET", route)[1]["runs"])
+        self.assertEqual(count, 2)
+        self.upload(document('raise "draft must not run"\n'), base=revision)
+        time.sleep(0.4)
+        self.assertEqual(len(self.request("GET", route)[1]["runs"]), count)
+        self.assertEqual(self.request("POST", "/v1/projects/" + self.project + "/runs", dict(command_id=uuid.uuid4().hex, revision=revision, sheet_id="main", cell_id="1", action="watch"))[0], 409)
+
+    def test_watch_completion_delete_race_reaps_owner(self):
+        # A completed explicit run can be followed immediately by an agent-owned
+        # Watch wave. Deletion must finalize either side of its publication race.
+        for _ in range(6):
+            self.project = "test_" + uuid.uuid4().hex
+            revision, _ = self.upload(self.cell_document())
+            run, _ = self.start(revision)
+            self.wait_run(run)
+            status, reply = self.request("DELETE", "/v1/projects/" + self.project, dict(command_id=uuid.uuid4().hex))
+            self.assertEqual(status, 200, reply)
+            eventually(lambda: self.request("GET", "/v1/projects/" + self.project)[1]["state"] == "deleted")
+            registry = self.request("GET", "/v1/projects/" + self.project + "/registry")[1]
+            self.assertTrue(all(r["state"] in ("terminated", "interrupted") and r["worker_pid"] is None for r in registry["runtimes"]), registry)
+
+    def action_project(self, slow=False):
+        doc = document('raise "controller must not execute"\n', board=True)
+        doc["inputs"] = [dict(id="gain", title="Gain", type="integer", default=4)]
+        doc["modules"] = [dict(id="jobs", path="modules/jobs.s")]
+        doc["boards"][0]["components"] = [dict(id="act", kind="action", title="Action", module_id="jobs", function="compute", p1=dict(arguments=[dict(id="gain_arg", input="gain")])),
+            dict(id="timer", kind="periodic_work", title="Timer", module_id="jobs", function="tick", period_seconds=0.05, retention="tail", tail_limit=2, timing="fixed_rate")]
+        source = 'package jobs\nimport task\nclass Counter:\n  def init(): @value = 0\n  def next():\n    @value += 1\n    @value\nState = Counter()\ndef compute(x): [State.next(), x]\ndef tick():\n'
+        source += ('  task.sleep(300)\n' if slow else '') + '  State.next()\nexport compute, tick\n'
+        return doc, {"modules/jobs.s": source.encode()}
+
+    def invoke(self, revision, component="act", command=None):
+        body = dict(command_id=command or uuid.uuid4().hex, revision=revision, action="action_run", board_id="dashboard", component_id=component)
+        status, reply = self.request("POST", "/v1/projects/" + self.project + "/runs", body)
+        self.assertEqual(status, 200, reply)
+        return reply, body
+
+    def service(self, revision, operation, command=None):
+        body = dict(command_id=command or uuid.uuid4().hex, revision=revision, board_id="dashboard", component_id="timer", operation=operation)
+        status, reply = self.request("POST", "/v1/projects/" + self.project + "/services", body)
+        self.assertEqual(status, 200, reply)
+        return reply, body
+
+    def service_state(self):
+        return self.request("GET", "/v1/projects/" + self.project + "/services")[1]["services"][0]
+
+    def test_board_actions_isolate_controller_keep_state_and_capture_arguments(self):
+        doc, files = self.action_project()
+        revision, _ = self.upload(doc, files)
+        first, request = self.invoke(revision)
+        result = self.wait_run(first)
+        self.assertEqual(result["state"], "succeeded", result)
+        self.assertEqual(result["result"]["cells"][0]["result"], "[1, 4]")
+        self.assertEqual(result["board"], "dashboard")
+        self.assertEqual(self.request("POST", "/v1/projects/" + self.project + "/runs", request), (200, first))
+        self.assertEqual(self.project_edit(revision, {"gain": "9"})[0], 200)
+        second, _ = self.invoke(revision)
+        self.assertEqual(self.wait_run(second)["result"]["cells"][0]["result"], "[2, 9]")
+        self.assertEqual(first["runtime_epoch"], second["runtime_epoch"])
+        self.assertEqual(json.loads(result["execution_document"])["inputs"][0]["default"], 4)
+        self.assertEqual(self.request("GET", "/v1/projects/" + self.project)[1]["document"], json.dumps(doc, ensure_ascii=False))
+        status, error = self.request("POST", "/v1/projects/" + self.project + "/runs", dict(request, command_id=uuid.uuid4().hex, component_id="missing"))
+        self.assertEqual(status, 422, error)
+
+    def test_server_periodic_gateway_restart_pause_receipt_and_agent_restart(self):
+        doc, files = self.action_project(slow=True)
+        revision, _ = self.upload(doc, files)
+        self.service(revision, "start")
+        eventually(lambda: self.service_state()["runs"] >= 2, timeout=25)
+        type(self).gateway.terminate(); type(self).gateway.wait(timeout=15)
+        type(self).gateway = type(self).start_gateway()
+        eventually(lambda: self.service_state()["runs"] >= 3, timeout=25)
+        reply, request = self.service(revision, "pause")
+        eventually(lambda: not self.service_state()["running"])
+        state = self.service_state()
+        self.assertFalse(state["enabled"])
+        self.assertEqual(len(state["history"]), 2)
+        self.assertGreater(state["skipped"], 0)
+        time.sleep(0.35)
+        self.assertEqual(self.service_state()["runs"], state["runs"])
+        self.assertEqual(self.request("POST", "/v1/projects/" + self.project + "/services", request), (200, reply))
+        self.service(revision, "start")
+        eventually(lambda: self.service_state()["running"])
+        type(self).agent.terminate(); type(self).agent.wait(timeout=15)
+        type(self).agent = type(self).start_agent()
+        state = self.service_state()
+        self.assertFalse(state["enabled"]); self.assertFalse(state["running"])
+        count = state["runs"]; time.sleep(0.4)
+        self.assertEqual(self.service_state()["runs"], count)
+        self.service(revision, "once")
+        eventually(lambda: self.service_state()["runs"] > count, timeout=25)
+        self.assertFalse(self.service_state()["enabled"])
+
+    def test_service_once_receipt_stop_and_removed_owner(self):
+        doc, files = self.action_project(slow=True)
+        revision, _ = self.upload(doc, files)
+        once, request = self.service(revision, "once")
+        self.assertEqual(self.request("POST", "/v1/projects/" + self.project + "/services", request), (200, once))
+        self.assertEqual(self.wait_run(once)["state"], "succeeded")
+        self.service(revision, "start")
+        state = eventually(lambda: (s if s["running"] else None) if (s := self.service_state()) else None)
+        run = self.request("GET", "/v1/runs/" + state["run_id"])[1]
+        route = "/v1/projects/" + self.project + "/worker-settings/main"
+        settings = self.request("GET", route)[1]
+        status, error = self.request("PUT", route, dict(command_id=uuid.uuid4().hex, base_version=settings["version"], runtime_epoch=settings["runtime_epoch"], grants=[]))
+        self.assertEqual(status, 409, error)
+        status, error = self.request("POST", "/v1/runs/" + run["id"] + "/stop", dict(command_id=uuid.uuid4().hex, runtime_epoch=run["epoch"]))
+        self.assertEqual(status, 200, error)
+        self.assertEqual(self.wait_run(dict(run_id=run["id"]))["state"], "cancelled")
+        self.assertFalse(self.service_state()["enabled"])
+        self.service(revision, "start")
+        state = eventually(lambda: (s if s["running"] else None) if (s := self.service_state()) else None)
+        doc["boards"][0]["components"] = [doc["boards"][0]["components"][0]]
+        self.upload(doc, files, base=revision)
+        self.assertEqual(self.wait_run(dict(run_id=state["run_id"]))["state"], "cancelled")
+        self.assertFalse(self.service_state()["enabled"])
+
+    def test_server_periodic_error_policy_and_module_edit_pause(self):
+        doc, files = self.action_project()
+        timer = doc["boards"][0]["components"][1]
+        timer.update(function="fail", stop_on_error=True, timing="fixed_delay")
+        files["modules/jobs.s"] += b'def fail(): raise "tick failed"\nexport fail\n'
+        revision, _ = self.upload(doc, files)
+        self.service(revision, "start")
+        eventually(lambda: self.service_state()["failures"] == 1)
+        state = self.service_state()
+        self.assertFalse(state["enabled"])
+        self.assertIn("tick failed", state["history"][0]["error"])
+        timer.update(function="tick", stop_on_error=False)
+        newer, _ = self.upload(doc, files, base=revision)
+        self.service(newer, "start")
+        eventually(lambda: self.service_state()["runs"] >= 2)
+        files["modules/jobs.s"] += b'\n# a new immutable environment\n'
+        self.upload(doc, files, base=newer)
+        eventually(lambda: not self.service_state()["running"])
+        self.assertFalse(self.service_state()["enabled"])
+
+    def test_worker_settings_retire_action_worlds(self):
+        doc, files = self.action_project()
+        revision, _ = self.upload(doc, files)
+        first, _ = self.invoke(revision)
+        self.assertEqual(self.wait_run(first)["result"]["cells"][0]["result"], "[1, 4]")
+        route = "/v1/projects/" + self.project + "/worker-settings/main"
+        settings = self.request("GET", route)[1]
+        request = dict(command_id=uuid.uuid4().hex, base_version=settings["version"], runtime_epoch=settings["runtime_epoch"], grants=[])
+        status, reply = self.request("PUT", route, request)
+        self.assertEqual(status, 200, reply)
+        again, _ = self.invoke(revision)
+        self.assertNotEqual(first["runtime_epoch"], again["runtime_epoch"])
+        self.assertEqual(self.wait_run(again)["result"]["cells"][0]["result"], "[1, 4]")
+        self.assertEqual(self.request("PUT", route, request), (200, reply))
 
     def test_owner_removal_stops_run_and_prevents_id_reuse(self):
         doc = document("import task\ntask.sleep(60000)\n42\n")

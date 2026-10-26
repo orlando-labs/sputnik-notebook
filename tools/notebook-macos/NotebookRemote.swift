@@ -21,6 +21,10 @@ struct NotebookRemoteFailure: LocalizedError {
 struct NotebookRemotePendingRun: Codable, Equatable {
     let command: String, revision: String, sheet: String, cell: String
     let all: Bool
+    var action: String? = nil
+    var board: String? = nil
+    var component: String? = nil
+    var operation: String? = nil
 }
 struct NotebookRemotePendingInputs: Codable, Equatable {
     let command: String, revision: String, version: String, cell: String
@@ -44,6 +48,8 @@ struct NotebookRemoteDocument: Codable {
 }
 struct NotebookRemoteRun: Identifiable {
     let id: String, revision: String, sheet: String, epoch: String, state: String
+    let board: String?, component: String?, controller: String?
+    let action: String
     let inputVersion: String?
     let presentation: Bool, live: Bool
     let executingCell: String?
@@ -53,6 +59,8 @@ struct NotebookRemoteRun: Identifiable {
             guard let text = value[key] as? String else { throw NotebookRemoteFailure(status: 0, message: "Invalid remote run: \(key)") }
             return text
         }
+        action = value["action"] as? String ?? "run"
+        board = value["board"] as? String; component = value["component"] as? String; controller = value["controller"] as? String
         inputVersion = value["input_version"] as? String
         id = try field("id"); revision = try field("revision"); sheet = try field("sheet_id")
         epoch = try field("epoch"); state = try field("state")
@@ -139,6 +147,12 @@ final class NotebookRemoteController: ObservableObject {
     @Published private(set) var projects: [[String: Any]] = []
     @Published private(set) var supportsWorkerGrants = false
     @Published private(set) var supportsCellInputs = false
+    @Published private(set) var supportsProjectInputs = false
+    @Published private(set) var supportsBoardActions = false
+    @Published private(set) var supportsServerPeriodic = false
+    @Published private(set) var services: [[String: Any]] = []
+    @Published private(set) var invocationStale: [String: Bool] = [:]
+    @Published private(set) var invocationResults: [String: NotebookPeriodicResult] = [:]
     @Published private(set) var supportsRunDocument = false
     @Published private(set) var supportsDependencyManagement = false
     @Published private(set) var supportsPackageCatalog = false
@@ -220,7 +234,7 @@ final class NotebookRemoteController: ObservableObject {
         return directory.appendingPathComponent(suffix)
     }
     private func cleanCommand(_ command: String) {
-        for suffix in [".snapshot.json", ".request.json", ".run.json", ".inputs.json", ".input-request.json"] {
+        for suffix in [".snapshot.json", ".request.json", ".run.json", ".inputs.json", ".input-request.json", ".invocation.json"] {
             if let path = try? cache(command + suffix) { try? FileManager.default.removeItem(at: path) }
         }
     }
@@ -300,7 +314,7 @@ final class NotebookRemoteController: ObservableObject {
         if tunnel?.isRunning == true { tunnel?.terminate() }; tunnel = nil
         client = nil; connected = false; busy = false; polling = false; pendingEdits = false
         supportsWorkerGrants = false; supportsCellInputs = false; supportsRunDocument = false; supportsDependencyManagement = false; supportsPackageCatalog = false; frozenRunDocuments = []; cellInputVersion = "0"
-        runs = []; runtimes = []; resetEpochs = []; projects = []; completed = []; revisionDocuments = [:]; remoteHead = nil; conflict = false
+        runs = []; runtimes = []; resetEpochs = []; services = []; invocationResults = [:]; invocationStale = [:]; projects = []; completed = []; revisionDocuments = [:]; remoteHead = nil; conflict = false
         status = isSelected ? "Disconnected · server work continues" : "Local"
         onChange?()
     }
@@ -364,6 +378,9 @@ final class NotebookRemoteController: ObservableObject {
                         }
                         registryCommand = (health["capabilities"] as? [String])?.contains("compact_registry") == true ? "registry" : "runs"
                         supportsWorkerGrants = (health["capabilities"] as? [String])?.contains("worker_grants") == true
+                        supportsProjectInputs = (health["capabilities"] as? [String])?.contains("project_inputs") == true
+                        supportsBoardActions = (health["capabilities"] as? [String])?.contains("board_actions") == true
+                        supportsServerPeriodic = (health["capabilities"] as? [String])?.contains("server_periodic") == true
                         supportsCellInputs = (health["capabilities"] as? [String])?.contains("cell_inputs") == true
                         supportsRunDocument = (health["capabilities"] as? [String])?.contains("run_document") == true
                         supportsDependencyManagement = (health["capabilities"] as? [String])?.contains("dependency_management") == true
@@ -459,6 +476,13 @@ final class NotebookRemoteController: ObservableObject {
     }
     @MainActor private func submit(_ pending: NotebookRemotePendingRun, project: String) async throws -> [String: Any] {
         guard let client else { throw NotebookRemoteFailure(status: 0, message: "Not connected.") }
+        if let action = pending.action, let board = pending.board, let component = pending.component {
+            let body: [String: Any] = ["command_id": pending.command, "revision": pending.revision, "board_id": board,
+                "component_id": component, "action": action, "operation": pending.operation ?? "once"]
+            let request = try cache(pending.command + ".invocation.json")
+            try Self.write(try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys]), to: request)
+            return try await client.call(["--command", pending.operation == nil ? "invoke" : "configure_service", "--project", project, "--request-file", request.path])
+        }
         return try await client.call(["--command", "run", "--project", project, "--command-id", pending.command,
                                       "--revision", pending.revision, "--sheet", pending.sheet, "--cell", pending.cell] + (pending.all ? ["--all"] : []))
     }
@@ -468,10 +492,10 @@ final class NotebookRemoteController: ObservableObject {
             "base_version": pending.version, "cell_id": pending.cell, "values": pending.values]
         let request = try cache(pending.command + ".input-request.json")
         try Self.write(try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys]), to: request)
-        return try await client.call(["--command", "set_cell_inputs", "--project", project, "--request-file", request.path])
+        return try await client.call(["--command", pending.cell == "project" ? "set_inputs" : "set_cell_inputs", "--project", project, "--request-file", request.path])
     }
     func setCellInputs(sheet: String, cell: String, values: [String: String], completion: @escaping (Bool) -> Void) {
-        guard connected, !busy, !conflict, supportsCellInputs else {
+        guard connected, !busy, !conflict, (cell == "project" ? supportsProjectInputs : supportsCellInputs) else {
             onError?(!supportsCellInputs && connected ? "Update the remote core and worker to apply cell parameters." : "Reconnect and finish synchronization before applying cell parameters.")
             completion(false); return
         }
@@ -567,14 +591,14 @@ final class NotebookRemoteController: ObservableObject {
             catch { fail(error, stamp) }
         }
     }
-    func run(sheet: String, cell: String, all: Bool, completion: @escaping (Bool) -> Void) {
+    func run(sheet: String, cell: String, all: Bool, action: String? = nil, board: String? = nil, component: String? = nil, operation: String? = nil, completion: @escaping (Bool) -> Void) {
         guard connected, !busy else { onError?(connected ? "Wait for synchronization to finish before running." : "Reconnect to the selected server before running."); completion(false); return }
         let stamp = generation; busy = true; onChange?()
         Task { @MainActor in
             do {
                 try await synchronize(stamp, force: true)
                 guard let selected, var binding = document.bindings[selected], let revision = binding.revision else { throw CancellationError() }
-                let pending = NotebookRemotePendingRun(command: UUID().uuidString.lowercased(), revision: revision, sheet: sheet, cell: cell, all: all)
+                let pending = NotebookRemotePendingRun(command: UUID().uuidString.lowercased(), revision: revision, sheet: sheet, cell: cell, all: all, action: action, board: board, component: component, operation: operation)
                 try Self.write(try JSONEncoder().encode(pending), to: try cache(pending.command + ".run.json"))
                 binding.pendingRun = pending; document.bindings[selected] = binding; try save()
                 _ = try await submit(pending, project: binding.project); try check(stamp)
@@ -591,8 +615,15 @@ final class NotebookRemoteController: ObservableObject {
             }
         }
     }
+    func invoke(board: String, component: String, operation: String? = nil, completion: @escaping (Bool) -> Void) {
+        guard operation == nil ? supportsBoardActions : supportsServerPeriodic else {
+            onError?("Update the remote core and worker to run board actions and services."); completion(false); return
+        }
+        run(sheet: "", cell: "", all: false, action: operation == nil ? "action_run" : "periodic_run",
+            board: board, component: component, operation: operation, completion: completion)
+    }
     func stop(sheet: String, force: Bool) {
-        guard connected, let client, let run = runs.last(where: { $0.sheet == sheet && $0.active }) else { return }
+        guard connected, let client, let run = runs.last(where: { ($0.sheet == sheet || $0.controller == sheet) && $0.active }) else { return }
         let stamp = generation
         Task { @MainActor in
             do {
@@ -703,6 +734,7 @@ final class NotebookRemoteController: ObservableObject {
                 cellInputVersion = version
                 if !conflict && !pendingEdits { try await importCellInputs?(values); try check(stamp) }
             }
+            services = registry["services"] as? [[String: Any]] ?? []
             let values = registry["runs"] as? [[String: Any]] ?? []
             runs = try values.map(NotebookRemoteRun.init); runtimes = registry["runtimes"] as? [[String: Any]] ?? []
             resetEpochs = Set(registry["reset_epochs"] as? [String] ?? [])
@@ -712,6 +744,18 @@ final class NotebookRemoteController: ObservableObject {
             let restore = artifacts.values.sorted(by: { $0.sheet < $1.sheet }) + runs.filter { $0.active }
             for run in restore {
                 try check(stamp)
+                if let board = run.board, let component = run.component {
+                    invocationStale[board + ":" + component] = run.revision != binding.revision || (run.inputVersion ?? "0") != cellInputVersion
+                    if !run.active && !completed.contains(run.id) {
+                        let record = try await client.call(["--command", "status", "--run-id", run.id]); try check(stamp)
+                        let summary = record["result"] as? [String: Any]
+                        let cell = (summary?["cells"] as? [[String: Any]])?.first
+                        let key = board + ":" + component
+                        invocationResults[key] = NotebookPeriodicResult(id: key, ok: run.state == "succeeded", result: cell?["result"] as? String ?? "", error: [cell?["error"] as? String, summary?["environment_error"] as? String, record["error"] as? String, summary?["status"] as? String].compactMap { $0 }.first { !$0.isEmpty } ?? run.state)
+                        completed.insert(run.id)
+                    }
+                    continue
+                }
                 if run.active && run.live && (focusedSheet == nil || focusedSheet?() == run.sheet) {
                     let output = try cache(run.id + "." + UUID().uuidString.lowercased() + ".live.bin")
                     defer { try? FileManager.default.removeItem(at: output) }

@@ -119,8 +119,9 @@ Force Stop и смена module environment требуют явного Restart 
 
 GUI host в remote mode не исполняет ячейки, inputs или Watch локально. Текущий
 remote core поддерживает code/text sheets, bundled modules, revisions,
-reattach и Stop/Force Stop. Dependency/native bundles, typed inputs, Apply,
-idle Watch pump и Periodic Work пока не включены. Локальные параметры ячеек
+reattach и Stop/Force Stop. Directory dependency bundles и Apply нового окружения без Restart Worker пока не включены.
+Проектные inputs, idle Watch, действия досок и серверный Periodic Work описаны
+в [актуальном контракте](notebook-remote-inputs-watch-actions.md). Локальные параметры ячеек
 `notebook.cell_input(...)` и редактирование pre/post-компонентов поддерживаются:
 **Components…** сохраняет конфигурацию в ревизии, Apply атомарно передаёт
 параметры серверу. Watch обновляется в уже запущенном worker, Manual остаётся

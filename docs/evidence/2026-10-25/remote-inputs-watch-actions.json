@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-25",
+  "baseline_commit": "c65743367f26107d7500662672466611978ac0b2",
+  "checks": {
+    "api_integration_tests": 44,
+    "packaged_remote_work_gui": "passed",
+    "cell_components_gui": "passed",
+    "general_remote_gui": "passed",
+    "worker_protocol_host_cancellation_and_run_tasks": "passed",
+    "command_vm_and_full_native": "passed",
+    "full_native_core_build": "passed",
+    "app_deep_strict_codesign": "passed",
+    "git_diff_check": "passed"
+  },
+  "environment_note": "The run-tasks test required loopback listening outside the filesystem sandbox; it passed separately after the sandbox-only listen denial.",
+  "server_deployed": true,
+  "sha256": {
+    "build/sputnik-notebook-remote": "1e68c22c9684f39f42891637ceffd954836d63081613eff6d0b7b8aedebe939b",
+    "build/sputnik-notebook-worker": "b1edcab584237cedda57c4223f288dbc48420869f0f12ba2c0c7008c64d0bf79",
+    "build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook": "a1ebc02044fc5926ff0873f796aa4e88ced6eba7d66efcac48fdf21b8955d44d",
+    "build/Sputnik Notebook.app/Contents/MacOS/sputnik-notebook-remote": "70875f702b7476432b18d73f0ec355effd5d7b7094b3c7b8b277505b98619a55",
+    "build/Sputnik Notebook.app/Contents/MacOS/sputnik-notebook-worker": "aa16b9d82d86ce6b9bd083bafb48f022d4982dbe9e8e9ea0435c246f466ae396"
+  },
+  "server_deployment": {
+    "release": "/ssd1Tb/sputnik-remote-core-releases/20261025-remote-inputs-watch-actions",
+    "verified_at_utc": "2026-10-25T17:41:47.186383+00:00",
+    "evidence": "remote-work-deploy-result.json",
+    "linux_api_tests": 44,
+    "production_gui_scenario": "passed",
+    "test_project_cleanup": "complete"
+  }
+}

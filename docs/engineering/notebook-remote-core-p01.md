@@ -2,7 +2,7 @@
 
 Первый этап реализации, обновление 2026-10-15. Продолжает [архитектуру remote worker](notebook-remote-worker-architecture.md).
 
-Это single-user preview серверного ядра и CLI с [подключённым macOS GUI](notebook-remote-ui.md): выбор сервера, remote Run, live presentation и reattach к существующему Run/epoch. GPU/native packages, inputs, module Run, Apply, idle Watch и серверные периодические расписания остаются следующими этапами; неподдерживаемые пути не переключаются на локальное исполнение.
+Это single-user preview серверного ядра и CLI с [подключённым macOS GUI](notebook-remote-ui.md): выбор сервера, remote Run, live presentation и reattach к существующему Run/epoch. Проектные inputs, idle Watch, действия досок и серверные расписания реализованы в [обновлении 2026-10-25](notebook-remote-inputs-watch-actions.md). Directory dependency bundles, module Run и Apply окружения без Restart Worker остаются следующими этапами; неподдерживаемые пути не переключаются на локальное исполнение.
 
 ## Процессы
 
@@ -85,6 +85,55 @@ runtime сброшены без replay. База и прежние бинарн�
 Существующие проекты, их head revisions и история Run сохранены; целостность
 SQLite подтверждена. Отчёт — `releases/worker-grants-20261016/deploy-result.json`.
 
+2026-10-23 рабочий core на `lab.orlando-labs.com:22176` (HTTP loopback `18765`)
+обновлён с `20261022-for-8f1a849` до `releases/20261023-then-845ab2c`.
+Compiler, worker и native core собраны с языком `845ab2c` и ноутбуком `c657433`.
+Для notebook package catalog включён необходимый working-tree overlay
+`pkg variants --check-host`; точные файлы и SHA-256 сохранены в
+[release manifest](../evidence/2026-10-23/release.json).
+Прошли registry host-selection, языковые VM/strict-native, iteration-регрессии
+и все 35 remote-интеграционных тестов. Изолированный и рабочий API подтвердили
+`then`/`$_`, общий postfix guard, forwarding блочного `break`, `ensure`, inline
+`next` и `LocalJumpError` для истёкшей цели `break`.
+Переключение выполнено без активных Run и idle runtime; metadata и token сохранены,
+SQLite `quick_check` — `ok`. Backup находится в
+`backups/before-then-845ab2c-20261023T094303Z`, restart — `start-current.sh`.
+См. [отчёт обновления](../evidence/2026-10-23/deploy-result.json) и
+[финальную проверку](../evidence/2026-10-23/final-health.json).
+
+2026-10-24 рабочий core обновлён до `releases/20261024-notebook-e02f2bd`.
+Compiler, worker и native core используют язык `e02f2bd` и ноутбук `c657433`.
+В язык закоммичены native BigInt/ByteBuffer, новые Map transforms и host-aware
+package selection (`b19d72a`); дополнительно исправлено распознавание `BigInt`
+как встроенного имени в ячейках (`e02f2bd`). Точные архивы базового коммита и
+закоммиченный source update с SHA-256 записаны в
+[release manifest](../evidence/2026-10-24/release.json).
+Прошли 35 remote-интеграционных тестов на macOS и Linux, VM/full-native
+проверки новых API, notebook compiler/session regressions и UI smoke с BigInt
+через isolated worker в финальном `.app`; подпись bundle проверена.
+Изолированный и рабочий HTTP API вернули `42` в расширенной проверке языка.
+Переключение выполнено без активных Run и живых idle runtime; metadata и token
+сохранены, SQLite `quick_check` — `ok`. Backup —
+`backups/before-native-b19d72a-20261024T142217Z`, restart — `start-current.sh`.
+См. [отчёт обновления](../evidence/2026-10-24/deploy-result.json),
+[финальную проверку](../evidence/2026-10-24/final-health.json) и
+[локальную сборку](../evidence/2026-10-24/local-build.json).
+
+2026-10-25 рабочий core и worker обновлены до
+`releases/20261025-remote-inputs-watch-actions`. Включены проектные inputs,
+idle Watch, действия досок и серверный Periodic Work. Используется прежний
+серверный compiler/runtime `e02f2bd`; исходники notebook закреплены архивом и
+SHA-256 overlay в [release manifest](../evidence/2026-10-25/remote-work-release.json).
+Прошли все 44 Linux API-интеграции, изолированный smoke и проверка готового
+macOS-клиента через SSH на рабочем сервере: Apply/reconnect, восстановление
+команд без дублей, действия и расписание после закрытия клиента.
+Переключение выполнено без активных Run и idle runtime; прежние metadata и token
+сохранены. Backup — `backups/before-remote-work-20261025T173906Z`.
+SQLite `quick_check` — `ok`; тестовые проекты удалены, их runtime завершены.
+См. [отчёт развёртывания](../evidence/2026-10-25/remote-work-deploy-result.json),
+[финальную проверку](../evidence/2026-10-25/remote-work-final-health.json) и
+[проверку клиента](../evidence/2026-10-25/remote-work-production-gui.json).
+
 Из серверного checkout:
 
 ```sh
@@ -162,4 +211,4 @@ HTTP 409 означает конфликт ревизии, busy, stale epoch и�
 
 Snapshot публикуется в порядке: запись файлов → `fs.sync` файлов и каталогов снизу вверх → rename в immutable revision → долговечная запись manifest → `fs.sync` каталога revisions → commit head/receipt/events в SQLite. Ошибка IO до commit оставляет прежний head и позволяет повторить ту же команду; неиспользованное дерево может остаться до будущего GC. При создании state root синхронизируются также его каталоги и записи новых предков. Это использует гарантии `fsync` файловой системы и накопителя; физическое отключение питания в тестах не моделируется.
 
-Нужны раздельные saved/draft baselines и Apply immutable environments, загрузка dependency/native bundles, typed inputs и idle Watch pump, серверные расписания, writer lease, streaming, storage retention/GC, quotas и полное helper-process tracking. Перенос heap/GPU context после смерти узла не реализован; продолжение вычислений требует явных checkpoints.
+Нужны раздельные saved/draft baselines и Apply immutable environments, загрузка directory dependency bundles, writer lease, streaming, storage retention/GC, quotas и полное helper-process tracking. Перенос heap/GPU context после смерти узла не реализован; продолжение вычислений требует явных checkpoints.

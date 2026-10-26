@@ -1,0 +1,35 @@
+{
+  "health": {
+    "protocol": 1,
+    "agent_pid": 3954383,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document"
+    ]
+  },
+  "sqlite_quick_check": "ok",
+  "smoke_project_state": "deleted",
+  "current_release": "/ssd1Tb/sputnik-remote-core-releases/20261023-then-845ab2c",
+  "sha256": {
+    "sputnik-notebook-remote": "0a7e6368ab5c1cd6f72727eb132ac63c5257ab4205d09f0591922383f391c70a",
+    "sputnik-notebook-worker": "20c24c45d05f26b56ec22ec28b10cd46c988a0cbcd009f08631c262632ea148a",
+    "src/sputnik-lang/build/sputnik": "da1b9ae4212b263c5c76ab80a567474cee3c54f155e303d3a21e11832d1ee120"
+  }
+}

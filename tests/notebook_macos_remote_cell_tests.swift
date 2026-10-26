@@ -73,17 +73,17 @@ private func check(_ value: @autoclosure () throws -> Bool, _ message: String) t
             let tab = model.activeTab!
             try check(model.cellChart("shared", cell: cell(model), tab: tab)?.points.last?.y == 16 && model.cellChart("shared", cell: cell(model, "2"), tab: tab)?.points.last?.y == 50, "remote channels crossed cell boundaries")
             try check(model.cellImages("preview", cell: cell(model), tab: tab)?.images.count == 1 && cell(model).result_format?.table_json?.contains("34") == true, "remote Image / Data Table missing")
-            let count = model.remote.runs.count
+            let count = model.remote.runs.filter { $0.action != "watch" }.count
             try Data().write(to: armed)
             let lost = await apply(model, ["gain": "4", "offset": "5", "exact": "9223372036854775807"])
             try check(!lost && model.remote.hasPending, "fault did not preserve pending input command")
             model.clearError(); model.remote.reconnect()
             try await wait("input receipt recovery") { model.remote.connected && !model.remote.busy && !model.remote.hasPending }
             try await wait("Watch from recovered Apply") { !model.remote.active && score(model) == "45" }
-            try check(model.remote.runs.count == count + 1, "lost input response duplicated evaluation")
+            try check(model.remote.runs.filter { $0.action != "watch" }.count == count + 1, "lost input response duplicated evaluation")
             try check(cell(model).cell_inputs?.first(where: { $0.id == "exact" })?.value_json == "9223372036854775807", "remote Int64 rounded")
             let quiet = await apply(model, ["gain": "4"])
-            try check(quiet && model.remote.runs.count == count + 1, "equal Apply reran Watch")
+            try check(quiet && model.remote.runs.filter { $0.action != "watch" }.count == count + 1, "equal Apply reran Watch")
             let invalid = await apply(model, ["gain": "9", "exact": "9223372036854775808"])
             try check(!invalid && cell(model).cell_inputs?.first?.editingText == "4.0", "invalid form partially committed")
             model.clearError()

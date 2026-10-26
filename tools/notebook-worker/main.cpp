@@ -14,6 +14,7 @@
 #include <condition_variable>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <fstream>
 #include <sstream>
 #include <mutex>
@@ -509,10 +510,27 @@ static std::string resolve_cell_inputs(int argc, char **argv) {
   };
   auto document = parse_project_document(read(argv[2]));
   const auto previous = parse_project_input_edits(read(argv[3]));
-  const auto owner = argc == 6 ? parse_id(argv[4]) : 0;
+  const bool project_edits = argc == 6 && std::string(argv[4]) == "project";
+  const auto owner = argc == 6 && !project_edits ? parse_id(argv[4]) : 0;
   const auto edits = argc == 6 ? parse_project_input_edits(read(argv[5])) : std::map<std::string, std::string>{};
   std::map<std::string, std::string> normalized;
   bool found_owner = owner == 0;
+  if (project_edits) for (const auto &edit : edits)
+    if (std::none_of(document.inputs.begin(), document.inputs.end(), [&](const auto &input) { return input.id == edit.first; }))
+      throw ProtocolError("unknown project input: " + edit.first);
+  for (auto &input : document.inputs) {
+    const auto key = "project:" + input.id;
+    auto value = input.initial;
+    if (const auto old = previous.find(key); old != previous.end()) {
+      try { auto accepted = parse_project_input_value(old->second); validate_project_input_value(input, accepted); value = std::move(accepted); }
+      catch (const std::exception &) { /* Incompatible definitions restore defaults. */ }
+    }
+    if (project_edits) if (const auto edit = edits.find(input.id); edit != edits.end()) {
+      auto accepted = parse_project_input_value(edit->second); validate_project_input_value(input, accepted); value = std::move(accepted);
+    }
+    if (input.type == "number" && std::holds_alternative<std::int64_t>(value)) value = static_cast<double>(std::get<std::int64_t>(value));
+    normalized.emplace(key, serialize_project_input_value(value)); input.initial = std::move(value);
+  }
   for (auto &sheet : document.sheets) for (auto &cell : sheet.cells) {
     const auto saved = cell.extra.find("cell_ui");
     if (cell.kind != "code" || saved == cell.extra.end()) continue;
@@ -543,6 +561,7 @@ static std::string resolve_cell_inputs(int argc, char **argv) {
     saved->second = serialize_project_cell_ui(ui);
   }
   if (!found_owner) throw ProtocolError("cell input owner unavailable");
+  validate_project_control_values(document, *project_input_defaults(document));
   std::string out = "{\"document\":" + serialize_project_input_value(serialize_project_document(document)) + ",\"values\":{";
   bool first = true;
   for (const auto &[key, value] : normalized) {
@@ -553,8 +572,58 @@ static std::string resolve_cell_inputs(int argc, char **argv) {
   return out + "}}";
 }
 
+static std::string action_document(char **argv) {
+  std::ifstream input(argv[2], std::ios::binary);
+  if (!input) throw ProtocolError("cannot read invocation document");
+  const std::string text((std::istreambuf_iterator<char>(input)), {});
+  if (text.size() > 8U * 1024U * 1024U) throw ProtocolError("invocation document too large");
+  auto document = parse_project_document(text);
+  const auto board = std::find_if(document.boards.begin(), document.boards.end(), [&](const auto &b) { return b.id == argv[3]; });
+  if (board == document.boards.end()) throw ProtocolError("invocation board unavailable");
+  const ProjectComponent *component = nullptr;
+  std::function<void(const std::vector<ProjectComponent> &)> find = [&](const auto &items) {
+    for (const auto &c : items) {
+      if (c.id == argv[4]) component = &c;
+      if (c.panels) for (const auto &panel : *c.panels) find(panel.components);
+    }
+  };
+  find(board->components);
+  if (!component || (component->kind != "action" && component->kind != "periodic_work")) throw ProtocolError("invocation component unavailable");
+  auto values = project_input_defaults(document);
+  std::string source, module;
+  if (component->kind == "action") {
+    auto invocation = project_action_invocation(*component, *values);
+    source = invocation.source; values = invocation.inputs;
+    module = std::get<std::string>(parse_project_input_value(component->extra.at("module_id")));
+  } else {
+    const auto settings = project_periodic_work_settings(*component);
+    module = settings.module_id;
+    source = "import " + module + "\n" + module + "." + settings.function + "()\n";
+  }
+  if (std::none_of(document.modules.begin(), document.modules.end(), [&](const auto &m) { return m.id == module; }))
+    throw ProtocolError("invocation module unavailable: " + module);
+  for (const auto &entry : *values) {
+    const auto &id = entry.first; const auto &value = entry.second;
+    if (!id.empty() && id[0] != '\0' &&
+      std::none_of(document.inputs.begin(), document.inputs.end(), [&](const auto &i) { return i.id == id; })) {
+      const auto type = std::holds_alternative<std::string>(value) ? "string" : std::holds_alternative<bool>(value) ? "boolean" : std::holds_alternative<std::int64_t>(value) ? "integer" : "number";
+      document.inputs.push_back({id, id, type, value, {}, {}, {}});
+    }
+  }
+  auto sheet = std::find_if(document.sheets.begin(), document.sheets.end(), [&](const auto &s) { return s.id == board->sheet; });
+  if (sheet == document.sheets.end()) throw ProtocolError("invocation controller unavailable");
+  CellId id = 1;
+  for (const auto &s : document.sheets) for (const auto &c : s.cells) id = std::max(id, c.id + 1);
+  if (id == std::numeric_limits<CellId>::max()) throw ProtocolError("no invocation cell identity available");
+  ProjectCell cell; cell.id = id; cell.kind = "code"; cell.mode = CellMode::Manual; cell.source = source;
+  sheet->cells = {cell};
+  return "{\"document\":" + serialize_project_input_value(serialize_project_document(document)) +
+      ",\"kind\":" + serialize_project_input_value(component->kind) + ",\"sheet_id\":" + serialize_project_input_value(sheet->id) + ",\"cell_id\":" + serialize_project_input_value(std::to_string(id)) + "}";
+}
+
 int main(int argc, char **argv) {
   try {
+    if (argc == 5 && std::string(argv[1]) == "--action-document") { std::cout << action_document(argv); return 0; }
     if ((argc == 4 || argc == 6) && std::string(argv[1]) == "--cell-inputs") {
       std::cout << resolve_cell_inputs(argc, argv); return 0;
     }

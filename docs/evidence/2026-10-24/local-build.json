@@ -1,0 +1,35 @@
+{
+  "created_at": "2026-10-24T14:18:37.320902+00:00",
+  "language_commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+  "notebook_commit": "c65743367f26107d7500662672466611978ac0b2",
+  "app_bundle": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/Sputnik Notebook.app",
+  "bundle_sha256": {
+    "SputnikNotebook": "184eda84c9af66c526d1f5eaeec293154e3dbe7f0b0aa205b43b2cc1c8588ebe",
+    "sputnik": "df2c8aac028e0d1673b4d069aac8a5da9db07b2c94a9be10b658fa5b6ec30ddf",
+    "sputnik-notebook-worker": "f54c0a96364e0a6dec22040ab04fcb1bfaf22a2c2493aadeb4dad24ae8d4d98d",
+    "sputnik-notebook-remote": "6f524f311edb9da01af1fb82754a845b6a58fadbf97b78bf6de441966477a9e9"
+  },
+  "checks": {
+    "notebook_compiler_bigint_prelude": "passed",
+    "notebook_session_bigint_arithmetic_beyond_int64": "passed",
+    "remote_integration": {
+      "tests": 35,
+      "result": "passed"
+    },
+    "macos_ui_isolated_worker_bigint_cell_themes_and_dock_icon": "passed",
+    "codesign_verify_deep_strict": "passed"
+  },
+  "base_validation": {
+    "language_commit": "b19d72a5b4afa4e6d97056dfc9bd28f6225d2baf",
+    "report": "local-build-b19d72a.json"
+  },
+  "remote_core_native_build": {
+    "native_backend": "cpp-bytecode-direct-v1",
+    "native_graph_module_count": 10,
+    "native_graph_code_count": 1027,
+    "native_graph_fallback_code_count": 0,
+    "native_graph_full_coverage": true,
+    "native_graph_runtime_bridge": false,
+    "native_graph_vm_independent": true
+  }
+}

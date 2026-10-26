@@ -6,6 +6,7 @@ from notebook.remote.host import Worker, pid, environment as inspect_environment
 
 from notebook.remote.environments import Environments
 from notebook.remote.dependencies import Dependencies, installed_packages
+from notebook.remote.services import Services
 
 export Core
 
@@ -26,8 +27,14 @@ class Runtime:
   attr foreign_environment
   attr environment_directory
   attr managed_environment
+  attr invocation
+  attr controller
+  attr revision
 
-  def init(@core, @project, @sheet, @environment, @grants, @environment_directory, @foreign_environment, @managed_environment):
+  def init(@core, @project, @sheet, @environment, @grants, @environment_directory, @foreign_environment, @managed_environment, controller: null):
+    @invocation = null
+    @controller = controller or @sheet
+    @revision = null
     @id = SecureRandom.hex(16)
     @epoch = SecureRandom.hex(16)
     @directory = @core.root + "/runtimes/" + @id
@@ -43,6 +50,7 @@ class Runtime:
 
   def retire!(): @retiring = true
   def release!(): @active = null
+  def set_invocation(source): @invocation = source
 
   def prepare(run):
     @active = run
@@ -86,6 +94,7 @@ class Runtime:
 
   def execute(run, revision):
     try:
+      @revision = run[:revision]
       if @forced:
         terminate()
         @core.finished(self, "force-stopped", error: "cancelled before worker start")
@@ -98,7 +107,7 @@ class Runtime:
       unless @worker:
         @worker = Worker(@core.worker_path, @directory + "/work", @grants, @environment_directory)
         trusted = (@grants.include?("ffi.call") or @grants.include?("ffi.call=*")) and (@grants.include?("ffi.load") or @grants.include?("ffi.load=*"))
-        @request = @worker.send(2, [revision[:directory], @sheet, (if trusted then "1" else "0"), @core.package_directory(@project)])
+        @request = @worker.send(2, [revision[:directory], @controller, (if trusted then "1" else "0"), @core.package_directory(@project)])
         @worker.stop!(@request, true) if @forced
         receive_result()
       @request = @worker.send(14, [run[:execution_document], "0"])
@@ -108,15 +117,21 @@ class Runtime:
         terminate() if @forced
         @core.finished(self, if @forced then "force-stopped" else "cancelled", error: "cancelled before dispatch")
         return
-      @request = if run[:action] == "inputs" then @worker.send(18, []) else @worker.send(4, [run[:cell_id], (if run[:action] == "run_all" then "1" else "0")])
+      @request = case run[:action]:
+        when "inputs": @worker.send(18, [])
+        when "watch": @worker.send(21, [])
+        else: @worker.send(4, [run[:cell_id], (if run[:action] == "run_all" then "1" else "0")])
       @worker.stop!(@request, @forced) if @stopped
       result = receive_result(execution: true)
       if @forced:
         terminate()
         @core.finished(self, "force-stopped", error: "worker termination confirmed")
       else:
-        @core.complete(self, decode(result[2]), result[3])
+        unless @core.complete(self, decode(result[2]), result[3]):
+          terminate()
+          @core.finished(self, "force-stopped", error: "worker termination confirmed before publication")
     rescue Exception |error|:
+      print("remote runtime interrupted: " + error.message)
       terminate()
       @core.finished(self, if @forced then "force-stopped" else "interrupted", error: error.message)
 
@@ -154,6 +169,7 @@ class Core:
       CREATE TABLE IF NOT EXISTS tombstones(project TEXT,kind TEXT,id TEXT,PRIMARY KEY(project,kind,id));
       CREATE TABLE IF NOT EXISTS runtime_records(id TEXT PRIMARY KEY,project TEXT,sheet_id TEXT,epoch TEXT,environment TEXT,state TEXT);
       CREATE TABLE IF NOT EXISTS cell_inputs(project TEXT PRIMARY KEY,version TEXT NOT NULL,values_json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS run_targets(run TEXT PRIMARY KEY,board TEXT,component TEXT,controller TEXT);
       CREATE TABLE IF NOT EXISTS run_inputs(run TEXT PRIMARY KEY,version TEXT NOT NULL,document TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS worker_environments(project TEXT,sheet TEXT,directory TEXT NOT NULL,PRIMARY KEY(project,sheet));
       CREATE TABLE IF NOT EXISTS worker_settings(project TEXT,sheet TEXT,grants TEXT NOT NULL,PRIMARY KEY(project,sheet));
@@ -170,6 +186,7 @@ class Core:
         event(row[:project], {type: "run", run_id: row[:id], state: "interrupted"})
     @environments = Environments(self, python, ruby)
     @dependencies = Dependencies(self, compiler)
+    @services = Services(self)
     ["revisions", "runtimes", "runs"].each: fs.sync(@root + "/" + $it)
     fs.sync(@root)
     created.each: fs.sync($it.parent)
@@ -183,6 +200,7 @@ class Core:
   def retire_dependency_workers(project):
     owned = @owned.values.filter: $it.project == project and not $it.dead
     fail(409, "stop active runs before changing dependencies") if owned.any?: $it.active != null
+    @services.pause_project(project)
     owned.each |runtime|:
       sql("INSERT OR IGNORE INTO dependency_resets VALUES(?,?)", [project, runtime.epoch])
       sql("UPDATE runtime_records SET state='terminating' WHERE id=?", [runtime.id])
@@ -233,6 +251,8 @@ class Core:
       if k == "result_json" or k == "live_json":
         result[if k == "result_json" then "result" else "live"] = if v then decode(v) else null
       else: result[k] = v
+    target = row("SELECT board,component,controller FROM run_targets WHERE run=?", [id])
+    result = result.merge(target) if target
     inputs = row("SELECT version,document FROM run_inputs WHERE run=?", [id])
     result[:input_version] = if inputs then inputs[:version] else null
     result[:execution_document] = if inputs then inputs[:document] else null
@@ -246,7 +266,7 @@ class Core:
   def resolve_inputs(revision, previous, cell = null, values = null):
     parsed = decode(revision[:document])
     local = (parsed[?:sheets] or []).any? |sheet|: (sheet[?:cells] or []).any? |c|: c[?:cell_ui] != null
-    return {document: revision[:document], values: {}} unless local or cell or not previous.empty?
+    return {document: revision[:document], values: {}} unless local or cell or not previous.empty? or not (parsed[?:inputs] or []).empty?
     prefix = @root + "/cell-inputs-" + SecureRandom.hex(16)
     state = prefix + ".state.json"
     edits = prefix + ".edits.json"
@@ -295,6 +315,73 @@ class Core:
       store_inputs(id, next)
       remember(id, command, response)
     response
+
+  def set_project_inputs(params):
+    id = identifier(params[?:project_id])
+    command = receipt(id, params, "project.inputs")
+    return command[2] if command[2]
+    current = project(id)
+    fail(409, "project revision conflict") unless current[:state] == "active" and params[?:revision] == current[:head]
+    previous = cell_inputs(id)
+    fail(409, "input version changed; reload inputs") unless params[?:base_version] == previous[:version]
+    values = params[?:values]
+    fail(400, "inputs require at most 128 scalar JSON strings") unless Map === values and values.count <= 128 and values.values.all? |v|: Str === v
+    revision = revision(current[:head])
+    resolved = resolve_inputs(revision, previous[:values], "project", values)
+    changed = digest(resolved[:values]) != digest(previous[:values])
+    next = {version: (if changed then SecureRandom.hex(16) else previous[:version]), values: resolved[:values]}
+    plans = []
+    if changed:
+      @runtimes.values.filter |r|: r.project == id and r.controller == r.sheet .each |runtime|:
+        sheet = decode(revision[:document])[:sheets].find: $it[:id] == runtime.sheet
+        cell = if sheet then sheet[:cells].find: $it[:kind] == "code" else null
+        next unless cell
+        plans.push!(prepare_run({project_id: id, revision: current[:head], sheet_id: runtime.sheet, cell_id: cell[:id], action: "inputs"}, input_state: next, input_document: resolved[:document], internal: true))
+    response = next.merge({run_ids: plans.map: $it[:id]})
+    @db.transaction(mode: :immediate):
+      store_inputs(id, next)
+      plans.each: persist_run($it)
+      remember(id, command, response)
+    plans.each: launch_run($it)
+    response
+
+  def schedule_work():
+    task.async:
+      loop:
+        task.sleep(100)
+        try:
+          @mutex.synchronize: pump_work()
+        rescue Exception |error|:
+          print("server work deferred: " + error.message)
+
+  def pump_work():
+    @services.tick()
+    @runtimes.values.filter |r|: not r.active and not r.dead and not r.retiring and r.worker and r.controller == r.sheet .each |runtime|:
+      current = project(runtime.project)
+      next unless current[:state] == "active" and current[:head] == runtime.revision
+      document = decode(revision(current[:head])[:document])
+      sheet = document[:sheets].find: $it[:id] == runtime.sheet
+      next unless sheet and sheet[:cells].any? |c|: c[:kind] == "code" and c[:mode] == "watch"
+      ready = false
+      try: ready = runtime.worker.activity?()
+      rescue Exception |error|:
+        runtime.close!()
+        print("idle Watch interrupted: " + error.message)
+      next unless ready
+      cell = sheet[:cells].find: $it[:kind] == "code"
+      # Poll only observes readiness. A storage conflict leaves the live heap
+      # and pending notifications intact for the next pass.
+      start_run({project_id: runtime.project, command_id: SecureRandom.hex(16), revision: current[:head], sheet_id: runtime.sheet, cell_id: cell[:id], action: "watch"}, internal: true)
+
+  def invocation_document(revision, document, board, component):
+    path = @root + "/invocation-" + SecureRandom.hex(16) + ".json"
+    try:
+      fs.atomic_write_text(path, document, durable: false)
+      checked = system.command(@worker_path, "--action-document", path, board, component).capture(timeout: 15.0, check: false)
+      fail(422, checked.stderr.to_str) unless checked.success?
+      decode(checked.stdout.to_str)
+    ensure:
+      fs.remove(path) if fs.exists?(path)
 
   def ids(document):
     result = []
@@ -364,16 +451,22 @@ class Core:
         ids(previous).each |deleted|:
           sql("INSERT OR IGNORE INTO tombstones VALUES(?,?,?)", [id, deleted[0], deleted[1]]) unless current.include?(deleted)
         @runtimes.values.filter |runtime|: runtime.project == id .each |runtime|:
-          sheet = (parsed[?:sheets] or []).find: $it[:id] == runtime.sheet
+          sheet = (parsed[?:sheets] or []).find: $it[:id] == runtime.controller
           origin = if runtime.active then run(runtime.active) else null
-          removed = origin and origin[:action] == "run" and not ((if sheet then sheet[:cells] else []) or []).any? |c|:
+          removed = runtime.controller == runtime.sheet and origin and origin[:action] == "run" and not ((if sheet then sheet[:cells] else []) or []).any? |c|:
             c[:id] == origin[:cell_id] and c[:kind] == "code"
+          if runtime.controller != runtime.sheet:
+            target = row("SELECT t.board,t.component FROM run_targets t JOIN runs r ON r.id=t.run WHERE r.runtime_id=? ORDER BY r.rowid DESC LIMIT 1", [runtime.id])
+            board = if target then (parsed[?:boards] or []).find: $it[:id] == target[:board] else null
+            component = if board then @services.find_component(board[:components], target[:component]) else null
+            removed = not component or not ["action", "periodic_work"].include?(component[:kind]) or board[:sheet] != runtime.controller
           if not sheet or removed:
             if origin and origin[:state] != "terminating":
               sql("UPDATE runs SET state='stopping' WHERE id=?", [origin[:id]])
               event(id, {type: "run", run_id: origin[:id], state: "stopping", reason: "owner removed"})
             sql("UPDATE runtime_records SET state=? WHERE id=?", [(if origin then "stopping" else "terminating"), runtime.id])
-            stop_owners.push!([runtime, not sheet])
+            stop_owners.push!([runtime, not sheet or runtime.controller != runtime.sheet])
+      @services.reconcile(id, revision_id)
       stop_owners.each |entry|:
         runtime = entry[0]
         runtime.retire!() if entry[1]
@@ -393,29 +486,44 @@ class Core:
     if fs.dir?(path): fs.entries(path).each: remove_tree($it.to_str)
     fs.remove(path)
 
-  def start_run(params, input_state: null, input_document: null, input_command: null):
+  def prepare_run(params, input_state: null, input_document: null, internal: false):
     id = identifier(params[?:project_id])
-    command = input_command or receipt(id, params, "run.start")
-    return command[2] if command[2]
     current = project(id)
     fail(409, "run requires current active project revision") unless current[:state] == "active" and params[:revision] == current[:head]
     revision = revision(current[:head])
     document = decode(revision[:document])
-    fail(422, "dependency bundles and inputs are not enabled") unless (document[?:dependencies] or []).empty? and (document[?:inputs] or []).empty?
+    fail(422, "directory dependency bundles are not enabled") unless (document[?:dependencies] or []).empty?
+    action = params[?:action] or "run"
+    target = null
+    input_state = input_state or cell_inputs(id)
+    input_document = input_document or resolve_inputs(revision, input_state[:values])[:document]
+    if ["action_run", "periodic_run"].include?(action):
+      board = identifier(params[?:board_id])
+      component = identifier(params[?:component_id])
+      target = invocation_document(revision, input_document, board, component)
+      fail(422, "invocation kind mismatch") unless target[:kind] == (if action == "action_run" then "action" else "periodic_work")
+      input_document = target[:document]
+      target = target.merge({board: board, component: component})
+      params = params.merge({sheet_id: target[:sheet_id], cell_id: target[:cell_id]})
+      document = decode(input_document)
     sheet = document[:sheets].find: $it[:id] == params[?:sheet_id]
     fail(404, "sheet not found") unless sheet
     fail(422, "unsupported cell semantics") if sheet[:cells].any? |c|: not ["code", "text"].include?(c[:kind])
     cell = sheet[:cells].find: $it[:id] == params[?:cell_id] and $it[:kind] == "code"
     fail(404, "code cell not found") unless cell
-    action = params[?:action] or "run"
-    fail(422, "unsupported execution action") unless ["run", "run_all"].include?(action) or (input_command and action == "inputs")
+    fail(422, "unsupported execution action") unless ["run", "run_all", "action_run"].include?(action) or (internal and ["inputs", "watch", "periodic_run"].include?(action))
     input_state = input_state or cell_inputs(id)
     input_document = input_document or resolve_inputs(revision, input_state[:values])[:document]
-    key = key(id, sheet[:id])
+    owner = if target then "service_" + digest([target[:board], target[:component]]) else sheet[:id]
+    key = key(id, owner)
     runtime = @runtimes[?key]
     settings = worker_settings(id, sheet[:id])
     fail(409, "dependencies are being changed; wait for installation to finish") if @dependencies.busy?(id)
     foreign = worker_environment(id, sheet[:id], revision, prepare: true)
+    replaced = null
+    if runtime and target and not runtime.active and (runtime.dead or runtime.forced or runtime.environment != revision[:environment] or runtime.controller != sheet[:id] or runtime.invocation != cell[:source]):
+      replaced = runtime
+      runtime = null
     if runtime:
       fail(409, "worker environment changed; explicit runtime restart required") unless runtime.foreign_environment == foreign[:fingerprint] and (not runtime.managed_environment or runtime.environment_directory == foreign[:directory])
       fail(409, "runtime interrupted; explicit restart required") if runtime.dead or runtime.forced
@@ -423,23 +531,44 @@ class Core:
       fail(409, "environment changed; explicit runtime restart required") unless runtime.environment == revision[:environment]
     else:
       fail(429, "runtime limit reached") if (@owned.values.filter |r|: not r.dead).count >= 8
-      runtime = Runtime(self, id, sheet[:id], revision[:environment], settings[:grants], foreign[:directory], foreign[:fingerprint], foreign[?:id])
-    run_id = SecureRandom.hex(16)
-    response = {run_id: run_id, runtime_id: runtime.id, runtime_epoch: runtime.epoch}
+      runtime = Runtime(self, id, owner, revision[:environment], settings[:grants], foreign[:directory], foreign[:fingerprint], foreign[?:id], controller: sheet[:id])
+    {id: SecureRandom.hex(16), project: id, revision: revision, runtime: runtime, cell: cell[:id], action: action, inputs: input_state, document: input_document, target: target, source: cell[:source], replaced: replaced}
+
+  def persist_run(plan):
+    if plan[:replaced] and not plan[:replaced].dead:
+      sql("UPDATE runtime_records SET state='terminating' WHERE id=?", [plan[:replaced].id])
+    runtime = plan[:runtime]
+    sql("INSERT INTO run_inputs VALUES(?,?,?)", [plan[:id], plan[:inputs][:version], plan[:document]])
+    sql("INSERT OR REPLACE INTO runtime_records VALUES(?,?,?,?,?,?)", [runtime.id, plan[:project], runtime.sheet, runtime.epoch, runtime.environment, "preparing"])
+    sql("INSERT INTO runs(id,project,revision,sheet_id,cell_id,action,runtime_id,epoch,state,error) VALUES(?,?,?,?,?,?,?,?,?,?)", [plan[:id], plan[:project], plan[:revision][:id], runtime.sheet, plan[:cell], plan[:action], runtime.id, runtime.epoch, "preparing", ""])
+    if plan[:target]:
+      target = plan[:target]
+      sql("INSERT INTO run_targets VALUES(?,?,?,?)", [plan[:id], target[:board], target[:component], target[:sheet_id]])
+    event(plan[:project], {type: "run", run_id: plan[:id], state: "preparing"})
+
+  def launch_run(plan):
+    plan[:replaced].close!() if plan[:replaced] and not plan[:replaced].dead
+    runtime = plan[:runtime]
+    runtime.set_invocation(plan[:source]) if plan[:target]
+    @runtimes[key(plan[:project], runtime.sheet)] = runtime
+    @owned[runtime.id] = runtime
+    runtime.prepare(plan[:id])
+    record = run(plan[:id])
+    task.async: runtime.execute(record, plan[:revision])
+
+  def start_run(params, input_state: null, input_document: null, input_command: null, internal: false):
+    id = identifier(params[?:project_id])
+    command = input_command or receipt(id, params, "run.start")
+    return command[2] if command[2]
+    plan = prepare_run(params, input_state: input_state, input_document: input_document, internal: internal or input_command != null)
+    runtime = plan[:runtime]
+    response = {run_id: plan[:id], runtime_id: runtime.id, runtime_epoch: runtime.epoch}
     response = response.merge(input_state) if input_command
     @db.transaction(mode: :immediate):
       store_inputs(id, input_state) if input_command
-      sql("INSERT INTO run_inputs VALUES(?,?,?)", [run_id, input_state[:version], input_document])
-      sql("INSERT OR REPLACE INTO runtime_records VALUES(?,?,?,?,?,?)", [runtime.id, id, sheet[:id], runtime.epoch, runtime.environment, "preparing"])
-      sql("INSERT INTO runs(id,project,revision,sheet_id,cell_id,action,runtime_id,epoch,state,error) VALUES(?,?,?,?,?,?,?,?,?,?)", [run_id, id, revision[:id], sheet[:id], cell[:id], action, runtime.id, runtime.epoch, "preparing", ""])
+      persist_run(plan)
       remember(id, command, response)
-      event(id, {type: "run", run_id: run_id, state: "preparing"})
-    @runtimes[key] = runtime
-    @owned[runtime.id] = runtime
-    runtime.prepare(run_id)
-    record = run(run_id)
-    record[:execution_document] = input_document
-    task.async: runtime.execute(record, revision)
+    launch_run(plan)
     response
 
   def phase(runtime, state):
@@ -460,26 +589,31 @@ class Core:
 
   def complete(runtime, summary, binary):
     @mutex.synchronize:
-      return null unless runtime.active and not runtime.forced
+      # Force Stop may acquire the owner lock after execute's last flag check.
+      # The caller must still confirm exit and publish the terminal lifecycle.
+      return false if runtime.forced
+      return true unless runtime.active
       record = run(runtime.active)
       document = decode(revision(record[:revision])[:document])
-      sheet = document[:sheets].find: $it[:id] == record[:sheet_id]
+      sheet = document[:sheets].find: $it[:id] == runtime.controller
       targets = [record[:cell_id]]
       if record[:action] == "run_all":
         targets = (sheet[:cells].filter |c|: c[:kind] == "code").map: $it[:id]
       bad = summary[:environment_error] != "" or not summary[:unobserved_task_failures].empty?
       if record[:action] == "inputs": bad = bad or summary[:status] == "project input evaluation failed"
+      elif record[:action] == "watch": bad = bad or summary[:cells].any? |c|: not c[:ok] and not c[:dirty]
       else: bad = bad or summary[:cells].any? |c|: targets.include?(c[:id]) and not c[:ok]
       state = if summary[:cancelled] then "cancelled" else if bad then "failed" else "succeeded"
       artifact = @root + "/runs/" + record[:id] + ".bin"
       fs.atomic_write_bytes(artifact, binary)
       finish(runtime, state, summary: summary, presentation: artifact)
+      true
 
   def finished(runtime, state, error: ""):
     @mutex.synchronize: finish(runtime, state, error: error)
 
   def finish(runtime, state, error: "", summary: null, presentation: null):
-    @db.transaction:
+    @db.transaction(mode: :immediate):
       lifecycle = if runtime.dead then (if runtime.forced then "terminated" else "interrupted") else (if runtime.retiring or runtime.forced then "terminating" else "idle")
       sql("UPDATE runtime_records SET state=? WHERE id=?", [lifecycle, runtime.id])
       if runtime.active:
@@ -490,6 +624,7 @@ class Core:
       if deleting and not owners_pending?(runtime.project):
         sql("UPDATE projects SET state='deleted' WHERE id=?", [runtime.project])
         event(runtime.project, {type: "project_deleted"})
+    @services.completed(runtime, state, summary) if runtime.active
     runtime.release!()
     @owned.delete!(runtime.id) if runtime.dead
     runtime.close!() if runtime.retiring and not runtime.dead
@@ -502,7 +637,7 @@ class Core:
     fail(409, "stale runtime epoch") unless params[:runtime_epoch] == record[:epoch]
     force = if params.has_key?(:force) then params[?:force] else false
     fail(400, "force must be a boolean") unless Bool === force
-    runtime = @runtimes[?key(record[:project], record[:sheet_id])]
+    runtime = @owned[?record[:runtime_id]]
     state = record[:state]
     unless terminal?(state):
       fail(409, "run no longer has this runtime") unless runtime and runtime.active == record[:id] and runtime.epoch == record[:epoch]
@@ -513,6 +648,7 @@ class Core:
       sql("UPDATE runtime_records SET state=? WHERE id=?", [state, runtime.id]) unless terminal?(state)
       remember(record[:project], command, response)
       event(record[:project], {type: "run", run_id: record[:id], state: state})
+    @services.pause_owner(record[:project], record[:sheet_id]) unless terminal?(state)
     runtime.stop(force: state == "terminating") unless terminal?(state)
     response
 
@@ -565,7 +701,8 @@ class Core:
     fail(409, "worker settings changed; reload settings") unless params[?:base_version] == settings[:version]
     fail(409, "stale runtime epoch; reload settings") unless params[?:runtime_epoch] == settings[:runtime_epoch]
     runtime = @runtimes[?key(id, sheet)]
-    fail(409, "stop active run before changing worker settings") if runtime and runtime.active
+    worlds = @runtimes.values.filter: $it.project == id and $it.controller == sheet
+    fail(409, "stop active run before changing worker settings") if worlds.any?: $it.active != null
     directory = if params.has_key?(:environment_directory) then params[:environment_directory] else settings[:environment_directory]
     fail(400, "environment_directory must be an absolute server directory or empty") unless Str === directory and directory.bytes.count <= 4096 and not directory.contains?("\u{0}") and (directory == "" or directory.starts_with?("/"))
     if directory != "":
@@ -586,12 +723,15 @@ class Core:
     @db.transaction(mode: :immediate):
       sql("INSERT OR REPLACE INTO worker_settings VALUES(?,?,?)", [id, sheet, Json.generate(grants)])
       sql("INSERT OR REPLACE INTO worker_environments VALUES(?,?,?)", [id, sheet, directory])
-      sql("UPDATE runtime_records SET state='terminating' WHERE id=?", [runtime.id]) if runtime and not runtime.dead
+      worlds.each |world|:
+        sql("UPDATE runtime_records SET state='terminating' WHERE id=?", [world.id]) unless world.dead
+        sql("INSERT OR IGNORE INTO dependency_resets VALUES(?,?)", [id, world.epoch])
+      @services.pause_controller(id, sheet)
       remember(id, command, response)
       event(id, {type: "worker_settings", sheet_id: sheet, grants: grants})
-    if runtime:
-      runtime.close!()
-      @runtimes.delete!(key(id, sheet))
+    worlds.each |world|:
+      world.close!()
+      @runtimes.delete!(key(id, world.sheet))
     response
 
   def delete_project(params):
@@ -606,6 +746,7 @@ class Core:
     owned = @owned.values.filter: $it.project == id
     response = {project_id: id, state: "deleting"}
     @db.transaction(mode: :immediate):
+      @services.pause_project(id)
       sql("UPDATE projects SET state='deleting' WHERE id=?", [id])
       remember(id, command, response)
       event(id, {type: "project_deleting"})
@@ -657,11 +798,13 @@ class Core:
       when "project.put": return put_project(params)
       when "run.start": return start_run(params)
       when "cell.inputs.set": return set_cell_inputs(params)
+      when "project.inputs.set": return set_project_inputs(params)
+      when "service.configure": return @services.configure(params)
       when "run.stop": return stop_run(params)
       when "runtime.restart": return restart(params)
       when "worker.configure": return configure_worker(params)
       when "project.delete": return delete_project(params)
-      when "health": return {protocol: 1, agent_pid: pid(), implementation: "sputnik", capabilities: ["sheet_run", "bundled_modules", "project_revisions", "reattach", "stop", "force_stop", "gui_reconnect", "live_presentation", "revision_document", "compact_registry", "worker_grants", "worker_environment", "managed_environments", "orphan_gc", "dependency_management", "package_catalog", "cell_inputs", "run_document"]}
+      when "health": return {protocol: 1, agent_pid: pid(), implementation: "sputnik", capabilities: ["sheet_run", "bundled_modules", "project_revisions", "reattach", "stop", "force_stop", "gui_reconnect", "live_presentation", "revision_document", "compact_registry", "worker_grants", "worker_environment", "managed_environments", "orphan_gc", "dependency_management", "package_catalog", "cell_inputs", "run_document", "project_inputs", "idle_watch", "board_actions", "server_periodic"]}
       when "project.list":
         projects = @db.query("SELECT p.*,r.document FROM projects p JOIN revisions r ON r.id=p.head ORDER BY p.id")
         projects.each |project|:
@@ -682,7 +825,8 @@ class Core:
         fail(404, "environment not found") unless found
         return @environments.details(found)
       when "environment.list": return {environments: @environments.list(id)}
-      when "cell.inputs": return cell_inputs(id)
+      when ("cell.inputs" | "project.inputs"): return cell_inputs(id)
+      when "service.list": return {services: @services.list(id)}
       when "worker.settings": return worker_settings(id, identifier(params[?:sheet_id]))
       when "project.get":
         current[:document] = revision(current[:head])[:document]
@@ -706,6 +850,9 @@ class Core:
             record[:has_presentation] = record[:has_presentation] == 1
             record[:has_live] = not terminal?(record[:state]) and fs.exists?(@root + "/runs/" + record[:id] + ".live.bin")
         else: runs = rows("SELECT id FROM runs WHERE project=? ORDER BY rowid", [id]).map: run($it[:id])
+        runs.each |record|:
+          target = row("SELECT board,component,controller FROM run_targets WHERE run=?", [record[:id]])
+          record.merge!(target) if target
         records = rows("SELECT * FROM runtime_records WHERE project=? ORDER BY rowid", [id])
         environment = row("SELECT environment FROM revisions WHERE id=?", [current[:head]])[:environment]
         records.each |record|:
@@ -714,11 +861,11 @@ class Core:
           owner = @runtimes[?key(id, record[:sheet_id])]
           record[:needs_restart] = false
           if owner and owner.id == record[:id]:
-            foreign = worker_environment(id, record[:sheet_id], revision(current[:head]))
+            foreign = worker_environment(id, owner.controller, revision(current[:head]))
             record[:needs_restart] = owner.dead or owner.environment != environment or owner.foreign_environment != foreign[:fingerprint] or (owner.managed_environment != null and owner.environment_directory != foreign[:directory])
         reset_epochs = rows("SELECT DISTINCT json_extract(response, '$.reset_epoch') AS epoch FROM receipts WHERE project=? AND json_extract(response, '$.reset_epoch') IS NOT NULL", [id]).map: $it[:epoch]
         reset_epochs = reset_epochs + (rows("SELECT epoch FROM dependency_resets WHERE project=?", [id]).map: $it[:epoch])
-        {runs: runs, runtimes: records, reset_epochs: reset_epochs, cell_inputs: cell_inputs(id), event_seq: @db.scalar("SELECT COALESCE(MAX(seq),0) FROM events"), project: current}
+        {services: @services.list(id), runs: runs, runtimes: records, reset_epochs: reset_epochs, cell_inputs: cell_inputs(id), event_seq: @db.scalar("SELECT COALESCE(MAX(seq),0) FROM events"), project: current}
       when "events":
         after = params[?:after] or 0
         fail(400, "invalid event cursor") unless Int === after and after >= 0

@@ -11,6 +11,7 @@ extension NotebookModel {
         perform("action_run", tab: controller(for: board), text: board.id, commandCellID: component.id)
     }
     func actionIsStale(board: NotebookBoard, component: NotebookBoardComponent) -> Bool {
+        if remote.isSelected { return remote.invocationStale[board.id + ":" + component.id] == true || hasUnsavedChanges }
         let module = snapshot?.tabs.first { $0.id == "module:" + (component.module_id ?? "") }
         let source = module.map { tab in tab.cells.map { self.source(for: $0, in: tab) }.joined(separator: "\n") } ?? ""
         return actionSignatures[board.id + ":" + component.id] != component.actionSignature(inputs: snapshot?.inputs ?? [], moduleSource: source)
@@ -46,7 +47,7 @@ extension NotebookModel {
         }
         if kind == "action" {
             guard board.allComponents.contains(where: { $0.kind == "action" && $0.id == component.settings.target_component }) else { return .init(title: "Unavailable", detail: "Choose an action in the designer.", symbol: "questionmark.circle") }
-            guard let result = snapshot?.periodic_results?.first(where: { $0.id == key }) else { return .init(title: "Ready", detail: "Run the action explicitly.", symbol: "play.circle") }
+            guard let result = invocationResult(key) else { return .init(title: "Ready", detail: "Run the action explicitly.", symbol: "play.circle") }
             let source = board.allComponents.first { $0.id == component.settings.target_component }!
             let stale = actionIsStale(board: board, component: source)
             return .init(title: stale ? "Stale" : result.ok ? "Success" : "Error", detail: (stale ? "Arguments or module changed. Previous run: " : "") + (result.ok ? result.result : result.error), symbol: stale ? "clock" : result.ok ? "checkmark.circle" : "exclamationmark.circle", failed: !result.ok, stale: stale)

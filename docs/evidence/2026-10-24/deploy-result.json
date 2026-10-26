@@ -1,0 +1,111 @@
+{
+  "language_commit": "e02f2bd75d1d1630ea5f5de10656dc632026e512",
+  "release": "/home/slowpilot/sputnik-remote-core/releases/20261024-notebook-e02f2bd",
+  "backup": "/home/slowpilot/sputnik-remote-core/backups/before-native-b19d72a-20261024T142217Z",
+  "previous_health": {
+    "protocol": 1,
+    "agent_pid": 3954383,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document"
+    ]
+  },
+  "health": {
+    "protocol": 1,
+    "agent_pid": 683267,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document"
+    ]
+  },
+  "smoke": {
+    "project": "release_for_smoke_c0d9fe6803f64e05b26ccd659a9927a8",
+    "revision": "b2b19d21b86dcc3ee4896af06b95f45a9cfe14c1092a2461b500ceb667e2af10",
+    "run_id": "fb74a2bc95b1a9f49843196cdf8cbc93",
+    "state": "succeeded",
+    "result": "42",
+    "checks": [
+      "for with_index",
+      "range step",
+      "bare break",
+      "null iteration result",
+      "find_with_index.with_index",
+      "times break",
+      "then sequencing and $_",
+      "postfix sequence guard",
+      "forwarded scoped break with ensure",
+      "inline next",
+      "expired break LocalJumpError",
+      "BigInt exact arithmetic",
+      "ByteBuffer IO",
+      "Map transformed_values and transform!",
+      "rescuable NoMethodError"
+    ]
+  },
+  "metadata_preserved": true,
+  "token_preserved": true,
+  "idle_runtimes_reset": 0,
+  "old_workers_stopped": [],
+  "processes": {
+    "agent": {
+      "pid": 683267,
+      "argv": [
+        "/home/slowpilot/sputnik-remote-core/releases/20261024-notebook-e02f2bd/sputnik-notebook-remote",
+        "--mode",
+        "agent",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--worker",
+        "/home/slowpilot/sputnik-remote-core/releases/20261024-notebook-e02f2bd/sputnik-notebook-worker",
+        "--sputnik",
+        "/ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a/src/sputnik-lang/build/sputnik"
+      ]
+    },
+    "gateway": {
+      "pid": 683329,
+      "argv": [
+        "/home/slowpilot/sputnik-remote-core/releases/20261024-notebook-e02f2bd/sputnik-notebook-remote",
+        "--mode",
+        "gateway",
+        "--root",
+        "/home/slowpilot/sputnik-remote-core/state",
+        "--port",
+        "18765"
+      ]
+    }
+  }
+}

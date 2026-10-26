@@ -105,7 +105,7 @@ extern "C" SputnikStatus nb_remote_worker_send(SputnikCtx *cx, SputnikValue self
     auto w = worker(cx, self); if (!w) return SPUTNIK_ERR;
     int64_t kind = 0;
     if (argc != 2 || !sputnik_as_int(cx, args[0], &kind) || !sputnik_is_list(cx, args[1])) throw ProtocolError("invalid worker command");
-    if (kind != 2 && kind != 4 && kind != 14 && kind != static_cast<int64_t>(Kind::Inputs)) throw ProtocolError("unsupported remote worker command");
+    if (kind != 2 && kind != 4 && kind != 14 && kind != static_cast<int64_t>(Kind::Inputs) && kind != static_cast<int64_t>(Kind::Watch)) throw ProtocolError("unsupported remote worker command");
     std::vector<std::string> fields;
     for (size_t i = 0; i < sputnik_list_len(cx, args[1]); ++i) fields.push_back(str(cx, sputnik_list_at(cx, args[1], i)));
     w->request = w->process.send(static_cast<Kind>(kind), std::move(fields)).request;
@@ -142,6 +142,16 @@ extern "C" SputnikStatus nb_remote_worker_poll(SputnikCtx *cx, SputnikValue self
       return event(cx, "result", w->request, summary(*p), &binary, out);
     }
     return SPUTNIK_OK;
+  } catch (const std::exception &e) { return sputnik_fault(cx, "IOError", e.what()); }
+}
+extern "C" SputnikStatus nb_remote_worker_activity(SputnikCtx *cx, SputnikValue self, const SputnikValue *, size_t, SputnikValue *out) {
+  try {
+    auto w = worker(cx, self); if (!w) return SPUTNIK_ERR;
+    const auto request = w->process.send(Kind::Poll);
+    const auto reply = w->process.receive(2s);
+    if (!reply || reply->kind != Kind::Result || reply->request != request.request || reply->fields.size() != 1 ||
+        (reply->fields[0] != "0" && reply->fields[0] != "1")) throw ProtocolError("invalid worker activity reply");
+    *out = sputnik_make_bool(cx, reply->fields[0] == "1"); return SPUTNIK_OK;
   } catch (const std::exception &e) { return sputnik_fault(cx, "IOError", e.what()); }
 }
 extern "C" SputnikStatus nb_remote_worker_stop(SputnikCtx *cx, SputnikValue self, const SputnikValue *args, size_t argc, SputnikValue *out) {

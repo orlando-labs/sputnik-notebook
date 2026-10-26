@@ -1,0 +1,12 @@
+PASS server selection, snapshot upload and native presentation
+PASS close/reopen during Run, draft recovery, live progress, same runtime epoch
+PASS draft preservation across terminal publication
+PASS server-copy reconstruction and historical presentation
+PASS Force Stop and explicit runtime restart
+PASS concurrent sheets, focused progress and independent Stop
+PASS retained result after same-source Force Stop and reconnect
+PASS lost Run acknowledgement and durable receipt recovery
+PASS inert notebook metadata and private command authorization
+PASS Discard, competing writer and explicit conflict resolution
+PASS worker grant settings, scoped command, reconnect and revocation through the notebook model
+notebook remote UI integration tests passed

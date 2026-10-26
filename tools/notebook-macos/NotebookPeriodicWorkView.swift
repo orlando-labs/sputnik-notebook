@@ -20,6 +20,7 @@ struct NotebookPeriodicWorkView: View {
                 }
                 Button("Run Once") { model.runPeriodicOnce(board: board, component: component) }.disabled(model.busy)
             }
+            if model.remote.isSelected { Text("Server schedule continues when this board or app is closed.").font(.caption).foregroundStyle(NotebookPalette.muted) }
             HStack(spacing: 16) {
                 Text("\(component.module_id ?? "?").\(component.function ?? "?")()")
                     .font(.system(.caption, design: .monospaced)).textSelection(.enabled)

@@ -1,0 +1,25 @@
+{
+  "language_commit": "845ab2c38b826c23575712c7d73ce44d2511247a",
+  "notebook_commit": "c65743367f26107d7500662672466611978ac0b2",
+  "archives": {
+    "sputnik-language-845ab2c.tar.gz": "2890c3fd69405e8d2d3de23f576c32892dfa46cd829d236a4b1447e5bb5313b1",
+    "sputnik-notebook-c657433.tar.gz": "20104d40f06b7ce025b9e10ad95d89ca1f9a30c4b1bb39bfd2047f9dbb31ced1"
+  },
+  "previous_release": "/ssd1Tb/sputnik-remote-core-releases/20261022-for-8f1a849",
+  "created_at": "2026-10-23T09:21:34.671742+00:00",
+  "required_working_tree_overlay": {
+    "reason": "Committed notebook package catalog requires pkg variants --check-host",
+    "archive_sha256": "bd7ca3e6d2b7d1a9bd73238d7617a47117acc08e9d35875f03f2014c011dfeac",
+    "files": {
+      "package/._registry.cpp": "96dda0eaa0fc3412c52e44cb41d6ea5a7fb4286c7aebaed9c0d6b1d85d994389",
+      "package/registry.cpp": "e6c2ab11a44933337d8940b709d03c492a4fd6a64c9b89e9108ed980c3877805",
+      "tools/sputnik/._main.cpp": "96dda0eaa0fc3412c52e44cb41d6ea5a7fb4286c7aebaed9c0d6b1d85d994389",
+      "tools/sputnik/main.cpp": "d6d1235bb98de91935d42de98c5b27ac009c284e4592930b304aba9213df654c",
+      "tests/._package_registry_query_cli_test.py": "96dda0eaa0fc3412c52e44cb41d6ea5a7fb4286c7aebaed9c0d6b1d85d994389",
+      "tests/package_registry_query_cli_test.py": "6aa9b88ef9847371fa494fd2648aadab3e6b786a5c0e65143d95efc5a1cef3f8",
+      "tests/._package_native_registry_cli_test.py": "96dda0eaa0fc3412c52e44cb41d6ea5a7fb4286c7aebaed9c0d6b1d85d994389",
+      "tests/package_native_registry_cli_test.py": "b35057a5ab1d7409b0b718f5a31194baac4b364d7f626509f7a37da9d8faa4f6"
+    },
+    "patch": "incoming/sputnik-remote-host-selection.patch"
+  }
+}

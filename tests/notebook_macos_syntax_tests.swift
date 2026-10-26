@@ -13,12 +13,27 @@ private enum NotebookMacOSSyntaxTests {
         try sequencingAndScopedExitKeywords()
         try commentsDoNotEatCode()
         try stringsWinOverKeywordsAndComments()
+        try templateLoopControls()
         try macroSplicesUseSputnikHashRules()
         try applyingColorPreservesText()
         try editorCoordinatorPreservesSelectionUndoAndIME()
         try greekLetterTokenReplacement()
         try editorGreekLetterReplacement()
         print("notebook macOS syntax tests passed")
+    }
+
+    private static func templateLoopControls() throws {
+        let source = "html\"\"\"\n  %for item with_index i in items:\n    #{item}\n  %# omitted\n  %%for literal\n  \"\"\""
+        let tokens = SputnikSyntax.tokens(in: source)
+        _ = try token("for", in: tokens, category: .keyword)
+        _ = try token("in", in: tokens, category: .keyword)
+        _ = try token("%# omitted", in: tokens, category: .comment)
+        _ = try token("@template", in: SputnikSyntax.tokens(in: "@template(\"./page.html.sv\")"), category: .keyword)
+        for plain in ["\"\"\"\n  %for item in items:\n  \"\"\"",
+                      "r\"\"\"\n  %for item in items:\n  \"\"\""] {
+            require(!SputnikSyntax.tokens(in: plain).contains { $0.category == .keyword },
+                    "ordinary and regexp blocks keep percent lines literal")
+        }
     }
 
     private static func unicodeRangesAndNumbers() throws {

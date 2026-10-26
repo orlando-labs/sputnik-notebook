@@ -53,7 +53,7 @@ struct NotebookActionButtonView: View {
             Button(component.title, systemImage: "bolt.fill") { model.runAction(board: board, component: component) }
                 .buttonStyle(.borderedProminent).tint(NotebookPalette.sputnik).disabled(model.busy)
             if model.executingTargetID == board.id + ":" + component.id { Label(model.executionLabel, systemImage: "hourglass").font(.caption) }
-            else if let result = model.snapshot?.periodic_results?.first(where: { $0.id == board.id + ":" + component.id }) {
+            else if let result = model.invocationResult(board.id + ":" + component.id) {
                 Label(result.ok ? "Success" : "Error", systemImage: result.ok ? "checkmark.circle" : "exclamationmark.circle").font(.caption)
                 if model.actionIsStale(board: board, component: component) { Label("Arguments or module changed · previous run", systemImage: "clock").font(.caption).foregroundStyle(NotebookPalette.sputnik) }
                 Text(result.ok ? result.result : result.error).font(.system(.caption, design: .monospaced)).foregroundStyle(result.ok ? NotebookPalette.ink : NotebookPalette.error).lineLimit(8).textSelection(.enabled)
