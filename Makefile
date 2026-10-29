@@ -59,12 +59,13 @@ $(BUILD_DIR)/notebook_worker_tests: tests/notebook_worker_tests.cpp $(NOTEBOOK_W
 SPUTNIK_REMOTE_COMPILER := $(abspath $(SPUTNIK_BUILD_DIR)/sputnik)
 REMOTE_NATIVE_DIR := $(abspath $(BUILD_DIR)/remote-native)
 REMOTE_NATIVE_CXX ?= $(CXX)
+REMOTE_PACKAGE_SOURCES := $(shell find ../sqlite3/src ../sqlite3/native ../orm/src ../orbit/src -type f 2>/dev/null) $(wildcard ../sqlite3/sputnik.build.yaml ../orm/sputnik.build.yaml ../orbit/sputnik.build.yaml)
 REMOTE_NATIVE_HEADERS := $(SPUTNIK_DIR)/runtime/remote_io_native.inc $(SPUTNIK_DIR)/runtime/net_http_client_native.inc
 REMOTE_GRANTS := --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant net.listen --grant net.connect --grant random.secure --grant process.spawn
 $(SPUTNIK_REMOTE_COMPILER): runtime
 	$(MAKE) -C $(SPUTNIK_DIR) BUILD_DIR="$(SPUTNIK_RUNTIME_BUILD_DIR)" "$(SPUTNIK_RUNTIME_BUILD_DIR)/sputnik"
 
-$(BUILD_DIR)/sputnik-notebook-remote: Makefile $(wildcard tools/notebook-remote/*.s) tools/notebook-remote/host.cpp tools/notebook-remote/sputnik.build.json $(REMOTE_NATIVE_HEADERS) $(NOTEBOOK_WORKER_TRANSPORT) $(NOTEBOOK_WORKER_HEADERS) $(SPUTNIK_REMOTE_COMPILER)
+$(BUILD_DIR)/sputnik-notebook-remote: $(REMOTE_PACKAGE_SOURCES) Makefile $(wildcard tools/notebook-remote/*.s) tools/notebook-remote/host.cpp tools/notebook-remote/sputnik.build.json $(REMOTE_NATIVE_HEADERS) $(NOTEBOOK_WORKER_TRANSPORT) $(NOTEBOOK_WORKER_HEADERS) $(SPUTNIK_REMOTE_COMPILER)
 	@mkdir -p "$(@D)"
 	SPUTNIK_NATIVE_CXX="$(REMOTE_NATIVE_CXX)" "$(SPUTNIK_REMOTE_COMPILER)" build tools/notebook-remote/sputnik.build.json --target native --require-full-native --out-dir "$(REMOTE_NATIVE_DIR)" $(REMOTE_GRANTS)
 	cp "$(REMOTE_NATIVE_DIR)/notebook.remote.main" "$@.tmp"
