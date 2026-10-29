@@ -175,6 +175,22 @@ class RemoteTests(unittest.TestCase):
             return value if value["state"] == state or (state is None and value["state"] in TERMINAL) else None
         return eventually(ready)
 
+    def test_bare_function_variables_preserve_explicit_references(self):
+        source = '''
+callback = &print
+copied = &callback
+value = copied
+raise ValueError("function was not invoked") unless value == null
+raise ValueError("reference changed") unless (&callback) == (&print)
+42
+'''
+        revision, _ = self.upload(document(source))
+        run, body = self.start(revision)
+        result = self.wait_run(run)
+        self.assertEqual(result["state"], "succeeded", result)
+        self.assertEqual(result["result"]["cells"][0]["result"], "42", result)
+        self.assertEqual(self.start(revision, command=body["command_id"])[0], run)
+
     def test_template_loops_in_remote_worker(self):
         source = ('from system import cmd\n'
                   'values = ["a b", "$(opaque);", ""]\n'
