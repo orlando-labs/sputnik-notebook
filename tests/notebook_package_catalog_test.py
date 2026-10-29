@@ -23,9 +23,7 @@ class PackageCatalogFixture:
         stage.mkdir()
         (stage / 'main.s').write_text('package test.editor_probe\nexport answer\ndef answer(): 42\n')
         for version in ['0.9.0', '1.0.0', '1.1.0', '2.0.0-rc.1', '3.0.0']:
-            (stage / 'sputnik.toml').write_text(
-                '[package]\nname="test/editor-probe"\nversion=' + json.dumps(version) +
-                '\nroot="test.editor_probe"\n[[modules]]\nname="test.editor_probe"\nsource="main.s"\n')
+            (stage / 'sputnik.build.yaml').write_text(json.dumps(dict(name='test/editor-probe',version=version,files=['main.s'],module_names={'main.s':'test.editor_probe'})))
             archive = self.root / (version + '.sputnikpkg')
             subprocess.run([str(sdk), 'pkg', 'build', str(stage), '--out', str(archive)],
                            check=True, capture_output=True, text=True, timeout=30)
