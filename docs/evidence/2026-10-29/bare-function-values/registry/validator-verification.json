@@ -1,0 +1,17 @@
+{
+  "schema": "sputnik.registry-validator-verification.v1",
+  "image_id": "sha256:2c7b382ba85cf6594b2463c39643e1916b10305ad680540c24808668c0f5ca28",
+  "source_commits": {
+    "orbit": "ecb0d1132f8e309c5849ef11e5914b8675a185b5",
+    "sputnik-lang": "1b5bbfa41aed391ec8b91fe49bbccf1852ecdf24",
+    "sputnik-registry": "23b9a778b45802eb5986237bd363a9ed155b2d88",
+    "sqlite3": "5ef7fdd2d82a256715860979c5857be073155e77"
+  },
+  "integration_checks": 772,
+  "backend": "full-native",
+  "runtime_sha256": "09ae48cfa22b985aa9c02bc1f48353ccf4be5af579f5acccec6307f7592365e1",
+  "native_graph_code_count": 1985,
+  "native_graph_native_code_count": 1985,
+  "native_graph_vm_fallback_code_count": 0,
+  "native_graph_vm_independent": true
+}

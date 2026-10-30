@@ -1,0 +1,27 @@
+{
+  "image": "sha256:2c7b382ba85cf6594b2463c39643e1916b10305ad680540c24808668c0f5ca28",
+  "before": {
+    "accounts": 1,
+    "namespaces": 1,
+    "packages": 12,
+    "releases": 12,
+    "artifacts": 51,
+    "tokens": 9
+  },
+  "backup": "/md0/sputnik-registry/backups/before-rocm-validator-20261030T063250Z",
+  "native_backup": {
+    "backup": "/backup/before-rocm-validator-20261030T063250Z",
+    "artifacts": 51
+  },
+  "health": {
+    "status": "ready"
+  },
+  "after": {
+    "accounts": 1,
+    "namespaces": 1,
+    "packages": 12,
+    "releases": 12,
+    "artifacts": 51,
+    "tokens": 9
+  }
+}

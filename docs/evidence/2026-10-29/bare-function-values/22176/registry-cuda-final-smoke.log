@@ -1,0 +1,60 @@
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+{"schema":"torch.registry-cuda-verification.v1","registry":"https://registry.sputnik-lang.online","clean_registry_install":true,"project":"cuda_upgrade_69e3beea2a2b","verified":true,"lock_required":false,"run_id":"1db40d6f78a42469c4bcfd9ac0fbeb54","receipt_replay_same_run":true,"package":{"name":"slowpilot/torch","version":"0.1.3","digest":"sha256:e57ee53c2a26a09584c547e668e159a2de4c0c19f41d5a459c1ebb2235b8d335","variant":"linux-x86_64-gnu-cu130-prebuilt-source-runtime"},"result":"\"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0\"","project_deleted":true}
+0
+{
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7",
+  "health": {
+    "protocol": 1,
+    "agent_pid": 1012212,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "processes": {
+    "agent": {
+      "pid": 1012212,
+      "executable": "/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/sputnik-notebook-remote",
+      "pcre2_libraries": [
+        "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib/libpcre2-8.so.0.15.0"
+      ]
+    },
+    "gateway": {
+      "pid": 1012213,
+      "executable": "/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/sputnik-notebook-remote",
+      "pcre2_libraries": [
+        "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib/libpcre2-8.so.0.15.0"
+      ]
+    }
+  },
+  "sqlite_quick_check": "ok",
+  "active_runs": 0,
+  "token_mode": "0o600",
+  "language_commit": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+  "binary_hashes_verified": true
+}
+CUDA_REGISTRY_AUTOMATIC_VERIFIED

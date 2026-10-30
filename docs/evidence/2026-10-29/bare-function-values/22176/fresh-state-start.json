@@ -1,0 +1,36 @@
+{
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261030-head-c4b56bc",
+  "fresh_state": true,
+  "projects": 0,
+  "token_rotated": true,
+  "token_path": "/home/slowpilot/sputnik-remote-core/state/token",
+  "health": {
+    "protocol": 1,
+    "agent_pid": 933896,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  }
+}

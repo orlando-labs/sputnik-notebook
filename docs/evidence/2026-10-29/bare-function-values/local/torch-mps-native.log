@@ -1,0 +1,3 @@
+PASS torch mps
+PASS map_location CUDA to MPS
+0

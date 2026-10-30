@@ -1,0 +1,42 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/src/torch/build/package-cuda
+[0/2] Re-checking globbed directories...
+ninja: no work to do.
+sputnik 0.1.0-dev
+PASS execution mode equivalence, nesting, faults and carrier threads
+PASS cpu forward=14 gradient=[2,4,6] trained_weight=3
+PASS cuda:0 forward=14 gradient=[2,4,6] trained_weight=3
+PASS cuda:0 forward=14 gradient=[2,4,6] trained_weight=3
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+PASS CUDA checkpoint round trip
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+PASS CUDA checkpoint round trip
+Installed slowpilot/torch@0.1.3 in /ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-home/slowpilot/torch/0.1.3/linux-x86_64-gnu-cu130-prebuilt-source-runtime
+Locked 1 packages in /ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/sputnik.lock
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check.native.cpp: In constructor ‘{anonymous}::NativeArgsView::NativeArgsView(std::initializer_list<{anonymous}::NativeValue>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check.native.cpp:23726:27: warning: initializing ‘{anonymous}::NativeArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeValue>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+23726 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check.native.cpp: In constructor ‘{anonymous}::NativeKeywordArgsView::NativeKeywordArgsView(std::initializer_list<{anonymous}::NativeCallKeyword>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check.native.cpp:23755:27: warning: initializing ‘{anonymous}::NativeKeywordArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeCallKeyword>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+23755 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check.native.cpp: In function ‘int64_t {anonymous}::native_numeric_wrap_to_width(int64_t)’:
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check.native.cpp:26699:48: warning: left shift count >= width of type [-Wshift-count-overflow]
+26699 |   const std::uint64_t mask = (std::uint64_t{1} << kNativeNumericPolicy.bits) - 1U;
+      |                                    ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check: /lib64/libpcre2-8.so.0: no version information available (required by /ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check)
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+/ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check: /lib64/libpcre2-8.so.0: no version information available (required by /ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/installed-check/native-check)
+PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0
+"PASS CUDA LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK device=cuda:0"
+-- CUDA package: /ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e/registry-cuda-package/torch-0.1.3-linux-x86_64-gnu-cu130-prebuilt-source-runtime.sputnikpkg
+REGISTRY_CUDA_PACKAGE_VERIFIED

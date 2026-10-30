@@ -1,0 +1,2 @@
+PASS VM bare namespace calls
+PASS full-native bare namespace calls, no fallback

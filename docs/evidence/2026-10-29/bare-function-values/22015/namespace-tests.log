@@ -1,0 +1,25 @@
+binder_tests: ok
+PASS last result conditions
+vm_tests: ok
+notebook_compiler_tests ok
+notebook_vm_integration_tests ok
+package_selection_tests: PASS
+package_store_tests ok
+sputniktest: 234 passed, 0 failed
+CORPUS_ALL_PASS
+rocm=1
+PASS bare namespace calls, references, defaults, blocks, classes and shadowing
+/home/slowpilot/sputnik-releases/20261030-auto-5d291d7/bare-native.native.cpp: In constructor ‘{anonymous}::NativeArgsView::NativeArgsView(std::initializer_list<{anonymous}::NativeValue>)’:
+/home/slowpilot/sputnik-releases/20261030-auto-5d291d7/bare-native.native.cpp:2570:27: warning: initializing ‘{anonymous}::NativeArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeValue>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+ 2570 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/home/slowpilot/sputnik-releases/20261030-auto-5d291d7/bare-native.native.cpp: In constructor ‘{anonymous}::NativeKeywordArgsView::NativeKeywordArgsView(std::initializer_list<{anonymous}::NativeCallKeyword>)’:
+/home/slowpilot/sputnik-releases/20261030-auto-5d291d7/bare-native.native.cpp:2599:27: warning: initializing ‘{anonymous}::NativeKeywordArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeCallKeyword>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+ 2599 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/home/slowpilot/sputnik-releases/20261030-auto-5d291d7/bare-native.native.cpp: In function ‘int64_t {anonymous}::native_numeric_wrap_to_width(int64_t)’:
+/home/slowpilot/sputnik-releases/20261030-auto-5d291d7/bare-native.native.cpp:5116:48: warning: left shift count >= width of type [-Wshift-count-overflow]
+ 5116 |   const std::uint64_t mask = (std::uint64_t{1} << kNativeNumericPolicy.bits) - 1U;
+      |                                    ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PASS bare namespace calls, references, defaults, blocks, classes and shadowing
+TESTS_COMPLETE

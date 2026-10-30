@@ -1,0 +1,39 @@
+binder_tests: ok
+PASS last result conditions
+vm_tests: ok
+notebook_compiler_tests ok
+notebook_vm_integration_tests ok
+package_selection_tests: PASS
+package_store_tests ok
+corpus/run/system_control: run result mismatch
+--- expected
+{
+  "schema": "sputnik.run.v1",
+  "entry": "probe",
+  "status": "ok",
+  "value": "42"
+}
+--- actual
+{
+  "schema": "sputnik.run.v1",
+  "entry": "probe",
+  "status": "fault",
+  "error_name": "ProcessSpawnError",
+  "message": "spawn cwd is unavailable on this glibc version"
+}
+sputniktest: 233 passed, 1 failed
+PASS bare namespace calls, references, defaults, blocks, classes and shadowing
+/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/bare-native.native.cpp: In constructor ‘{anonymous}::NativeArgsView::NativeArgsView(std::initializer_list<{anonymous}::NativeValue>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/bare-native.native.cpp:2577:27: warning: initializing ‘{anonymous}::NativeArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeValue>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+ 2577 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/bare-native.native.cpp: In constructor ‘{anonymous}::NativeKeywordArgsView::NativeKeywordArgsView(std::initializer_list<{anonymous}::NativeCallKeyword>)’:
+/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/bare-native.native.cpp:2606:27: warning: initializing ‘{anonymous}::NativeKeywordArgsView::data_’ from ‘std::initializer_list<{anonymous}::NativeCallKeyword>::begin’ does not extend the lifetime of the underlying array [-Winit-list-lifetime]
+ 2606 |       : data_(values.begin()), size_(values.size()) {}
+      |               ~~~~~~~~~~~~^~
+/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/bare-native.native.cpp: In function ‘int64_t {anonymous}::native_numeric_wrap_to_width(int64_t)’:
+/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7/bare-native.native.cpp:5123:48: warning: left shift count >= width of type [-Wshift-count-overflow]
+ 5123 |   const std::uint64_t mask = (std::uint64_t{1} << kNativeNumericPolicy.bits) - 1U;
+      |                                    ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PASS bare namespace calls, references, defaults, blocks, classes and shadowing
+TESTS_COMPLETE

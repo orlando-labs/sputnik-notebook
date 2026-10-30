@@ -1,0 +1,2 @@
+package_native_registry_notebook: PASS
+package_native_registry_cli_test: PASS

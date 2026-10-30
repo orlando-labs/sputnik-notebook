@@ -1,0 +1,18 @@
+{
+  "language_commit": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+  "language_tree": "9f56ffdc8a20685874de70e99e07e9ca432ef077",
+  "language_archive_sha256": "d0051bb94cedbf07ecda88675022e8cfe224061ec10b85f3e625694fed95a147",
+  "torch_commit": "13a6b94befa53457db254594068ebd543e1305a9",
+  "torch_tree": "0c9a695b00f0b731dd52886c1fc35cf6712b1221",
+  "torch_archive_sha256": "22806bdf0afc28ec9068200ed8bfd7292e021e09fdaf76fb2c2ef727717b671e",
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7",
+  "notebook_commit": "a877de60beec13db3e97b0862f41d82c4d5a070d",
+  "pcre2_version": "10.47",
+  "callback_dependency_migration": true,
+  "sha256": {
+    "sputnik-notebook-worker": "c96dc14f9acf5c173f8b7542790732b01d036c3d1b24ea1306ebbf8d3ea102d0",
+    "sputnik-notebook-remote": "809541cfe4c067a6bab56eb96f4d463cd5d6cdb4f8a065c586b9b4a068e560e3",
+    "src/sputnik-lang/build/sputnik": "6a7c1267fe7c6eb0930df13fd29c9e8740fd636c2decb4b3565578d0749d5a2e",
+    "src/sputnik-lang/build/isputnik": "066b2ca75277aee6689cd18ece7f76c9340588e00de9a8df1f11d9d808eb41fc"
+  }
+}

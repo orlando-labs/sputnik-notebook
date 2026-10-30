@@ -1,0 +1,1246 @@
+{"schema":"torch.packages.v1","libtorch_version":"2.14.0","packages":[
+  {
+    "bundle" : "none",
+    "bytecode_modules" : 0,
+    "compressed_size" : 115000,
+    "expanded_size" : 659456,
+    "format" : "sputnik.pkg.v1",
+    "kind" : "library",
+    "members" : 
+    [
+      {
+        "path" : "sputnik.build.json",
+        "sha256" : "sha256:6616c315fd0d12913130f52eab82d900f9812764738e8b874434a9067d1787be",
+        "size" : 11350
+      },
+      {
+        "path" : "checksums.sha256",
+        "sha256" : "sha256:4cf550da10fdd30e28aa9ce90a9b8a9c6350d664ef532ea082c37c3d9d10f4d1",
+        "size" : 24111
+      },
+      {
+        "path" : "README.md",
+        "sha256" : "sha256:08db73285b4a3da1b1636675fa40fd654b71e404f2aa1c6b1551c088c8ad0c13",
+        "size" : 9486
+      },
+      {
+        "path" : "meta/build.json",
+        "sha256" : "sha256:0e131887e037bafe70061f33a14d7a56e754256bbcdf9b32107308e7e97b28e3",
+        "size" : 3255
+      },
+      {
+        "path" : "meta/requirements.json",
+        "sha256" : "sha256:a711511fde26ef0f9f38f42ff57866b3469932dad74211b14dcbd256db90cdb5",
+        "size" : 190
+      },
+      {
+        "path" : "native/autograd/grad.cpp",
+        "sha256" : "sha256:f7413d1127cb8513c33cefaf5c5f89ae6f0a68064de9cfaa9e44f6a1f24a14bf",
+        "size" : 1560
+      },
+      {
+        "path" : "native/boundary_profile.h",
+        "sha256" : "sha256:5202fc4c26c10e1d63c1266798ba4141097a413373e579abe17cb3c93559ae95",
+        "size" : 2968
+      },
+      {
+        "path" : "native/bridge.h",
+        "sha256" : "sha256:a2ba0625945dc713ccafe269efe96d5c176bde5759a4e331c9fd37fe561d3957",
+        "size" : 6504
+      },
+      {
+        "path" : "native/distributed/ddp.cpp",
+        "sha256" : "sha256:e93137d834bd8ac86ec0f8ca107618a83e56f8d9da2306cf367e7559e64da865",
+        "size" : 4364
+      },
+      {
+        "path" : "native/distributed/group.h",
+        "sha256" : "sha256:ac442fb9e50dd85795f6e5c56888fb236095d945e77b9726b2b3db85c34800b1",
+        "size" : 487
+      },
+      {
+        "path" : "native/distributed/process_group.cpp",
+        "sha256" : "sha256:7566c87c99ae7f07b8fd57fdd1615b8710ff322877954c45187b2e6f41cb0a83",
+        "size" : 5185
+      },
+      {
+        "path" : "native/execution_mode.h",
+        "sha256" : "sha256:3bdba6f51c470a1eb60b06ed606babf602fe589132809b1d65ab0bac2051688f",
+        "size" : 4132
+      },
+      {
+        "path" : "native/fft/fft.cpp",
+        "sha256" : "sha256:51f15864f3e0b50303fd0d39f426c896270f9339d97798f2e10c420e32eb1b3a",
+        "size" : 2113
+      },
+      {
+        "path" : "native/linalg/linalg.cpp",
+        "sha256" : "sha256:f53d17a780d276082859f00aadee3726b6fcc5b5dc5c6fc9a1d8fa2932c5f262",
+        "size" : 6571
+      },
+      {
+        "path" : "native/nn/attention.cpp",
+        "sha256" : "sha256:46d43fd349666fbdcdf73801a6e032440907d09d21ec1f8323d096577944abf8",
+        "size" : 1752
+      },
+      {
+        "path" : "native/nn/ctc.cpp",
+        "sha256" : "sha256:b1b3723e89a04fb1ae554163236fdfbcc22cef66d560675205f1be14ad84b5fc",
+        "size" : 3611
+      },
+      {
+        "path" : "native/nn/embedding.cpp",
+        "sha256" : "sha256:c888f74391426b377f5d77e6677eb1b337da2702d61dae943b9ff7e74e7ff8f6",
+        "size" : 4694
+      },
+      {
+        "path" : "native/nn/functional.cpp",
+        "sha256" : "sha256:a22b0bc8dccea5a8a8b7e54a7b34489241b5b38aa2bd6154322b96c051e4533e",
+        "size" : 11544
+      },
+      {
+        "path" : "native/nn/sequence.cpp",
+        "sha256" : "sha256:8beac7b689c4d6274e3d1f29a9c51b5339fca169ba18f5259868cacbc30fb6ef",
+        "size" : 1084
+      },
+      {
+        "path" : "native/nn/spatial.cpp",
+        "sha256" : "sha256:7109f61f88b558b14b59eac3d083fedc34bee4bc601daf08320de9aa0e6bd952",
+        "size" : 7727
+      },
+      {
+        "path" : "native/onnx/lowering.cpp",
+        "sha256" : "sha256:1c8fe174c4d5be890bfec307a905213219567c3a23418fd32e1307bac00051ce",
+        "size" : 5704
+      },
+      {
+        "path" : "native/onnx/lowering.h",
+        "sha256" : "sha256:f2b1066934d68e6a8323af4b2f095bdad41c95570b971879e690c91739110a23",
+        "size" : 1539
+      },
+      {
+        "path" : "native/onnx/nn_ops.cpp",
+        "sha256" : "sha256:1c2cac7e6b48e2f798565ae7c0a8a2544ac50a9d1270419c8878f977bd4a8cde",
+        "size" : 10976
+      },
+      {
+        "path" : "native/onnx/save.cpp",
+        "sha256" : "sha256:939589707ee588daa55718806b3b0c4421139d7115dac9b7b241e22dc6346022",
+        "size" : 1971
+      },
+      {
+        "path" : "native/onnx/tensor_ops.cpp",
+        "sha256" : "sha256:b99a3a94d53f04cc0ccf4f35e3e639bcdea76300db8ba28a131bc31143afb7fc",
+        "size" : 13710
+      },
+      {
+        "path" : "native/onnx/trace.cpp",
+        "sha256" : "sha256:53a0927f1626113a001f21bd6dc3aa1bc01b9313a8d465faaba92159dadb722a",
+        "size" : 9858
+      },
+      {
+        "path" : "native/onnx/tracing.h",
+        "sha256" : "sha256:637454a7a5df62f0e08c7f7ee196621573a742d442fc98e85bb55b573ea225c5",
+        "size" : 382
+      },
+      {
+        "path" : "native/optim/validation.cpp",
+        "sha256" : "sha256:b9659dd98a81171d05a09b6235f3c1fbfe9499f35ee831b66c2b10b7c0439f2a",
+        "size" : 2606
+      },
+      {
+        "path" : "native/random/generator.cpp",
+        "sha256" : "sha256:ebb08c733f234288c9f1899dc0e90da7a14b220454dbc517c9590c69b865fb89",
+        "size" : 2737
+      },
+      {
+        "path" : "native/serialization/checkpoint.cpp",
+        "sha256" : "sha256:59d1d36a686cc611db0ed2691061166c7469440e401db37fff70f18facac4335",
+        "size" : 19856
+      },
+      {
+        "path" : "native/special/special.cpp",
+        "sha256" : "sha256:97ecf2f46d6da3daee6aa6bc5da38c58854a9034236fccf0738912a56ad26e9e",
+        "size" : 9706
+      },
+      {
+        "path" : "native/tensor/bytes.cpp",
+        "sha256" : "sha256:e76336e1cbf4683ed58e1ef67e4e523f73c19add904159135dd92bbd2b64554d",
+        "size" : 1848
+      },
+      {
+        "path" : "native/tensor/foreach.cpp",
+        "sha256" : "sha256:2157df337ea935071fa251da172d47eb79109a41009396b5007d138f034ee396",
+        "size" : 8634
+      },
+      {
+        "path" : "native/tensor/indexing.cpp",
+        "sha256" : "sha256:8dcf857f98c642446bc713579105159c457c97228ea19f6508fb5933a9006a60",
+        "size" : 11995
+      },
+      {
+        "path" : "native/tensor/kernel_args.h",
+        "sha256" : "sha256:f0d5d21cb50e814e9a856f3a902c09745f09a8d0144671d54e589bd015697201",
+        "size" : 3909
+      },
+      {
+        "path" : "native/tensor/tensor.cpp",
+        "sha256" : "sha256:3154764e2eab78a42892506a80fcf77c04e260a88e3dbf0895181e3c848a03af",
+        "size" : 30885
+      },
+      {
+        "path" : "src/slowpilot/torch.s",
+        "sha256" : "sha256:30ada6b1505c3455849b57b9db3407a751a3b10328351c8d264eb377029de5fe",
+        "size" : 2947
+      },
+      {
+        "path" : "src/slowpilot/torch/autograd.s",
+        "sha256" : "sha256:191848ffabb908425026d17918e76d05ae3076971d108d083ab137593c08f1db",
+        "size" : 362
+      },
+      {
+        "path" : "src/slowpilot/torch/autograd/context.s",
+        "sha256" : "sha256:da627372b5a69c3b4650e150e7be3aacc71c17893faacfca59d00b15ab3509ff",
+        "size" : 880
+      },
+      {
+        "path" : "src/slowpilot/torch/autograd/functional.s",
+        "sha256" : "sha256:880c4f6f3c99a455e66f8fc182db3051886a74a94f19562cdedf48f2bf3c9873",
+        "size" : 961
+      },
+      {
+        "path" : "src/slowpilot/torch/backends.s",
+        "sha256" : "sha256:b35b517907f1a3317c7ec82f4858c8ffd3888f76000d192101e2b98564100c30",
+        "size" : 1223
+      },
+      {
+        "path" : "src/slowpilot/torch/data.s",
+        "sha256" : "sha256:8d2732c16e04aaecc699966e17c101eb7fa3e754848d3b7c04d7471bb33ea0dc",
+        "size" : 793
+      },
+      {
+        "path" : "src/slowpilot/torch/data/collate.s",
+        "sha256" : "sha256:70cea1faf9ba6bae21c9fbae7b2780100572a03ad81b863631236a5c6d1c5ffc",
+        "size" : 752
+      },
+      {
+        "path" : "src/slowpilot/torch/data/concat_dataset.s",
+        "sha256" : "sha256:9aad4e25a8b78a804c03f406f9188ee39a87feafcb16d72de130ac827c9ca5d4",
+        "size" : 547
+      },
+      {
+        "path" : "src/slowpilot/torch/data/data_loader.s",
+        "sha256" : "sha256:1369744da47f812163171257a4e1ca069da96f309b86821a6f0af89737cedcf4",
+        "size" : 3979
+      },
+      {
+        "path" : "src/slowpilot/torch/data/dataset.s",
+        "sha256" : "sha256:4403d742b6e62d1e3fa7eea95c9a67a04a6d382a94ff84e013c0b05b474eb42e",
+        "size" : 209
+      },
+      {
+        "path" : "src/slowpilot/torch/data/distributed_sampler.s",
+        "sha256" : "sha256:6ec31ef6c7b5395f2f6be53e4c8d477a825c7ed4af62fc28542ae2a3c63ed4c4",
+        "size" : 884
+      },
+      {
+        "path" : "src/slowpilot/torch/data/iterable_dataset.s",
+        "sha256" : "sha256:4a210c49773f4c44aff5f4ea9f7b5ca238a92363475bdabcaf70579923dd4c3b",
+        "size" : 173
+      },
+      {
+        "path" : "src/slowpilot/torch/data/loader_worker.s",
+        "sha256" : "sha256:63c1219540190aace16c03c46566166d295826c0f7708837389c965efb711fc0",
+        "size" : 1608
+      },
+      {
+        "path" : "src/slowpilot/torch/data/random_sampler.s",
+        "sha256" : "sha256:a076308133fdbc4257e7bf1c0de4e1dc3fe5d589ced6bf85dd3b8cec664c774a",
+        "size" : 452
+      },
+      {
+        "path" : "src/slowpilot/torch/data/sequential_sampler.s",
+        "sha256" : "sha256:b53dbe2bc314d828002ec2cf5f6eda9ec63fbef63d876938a399b8ed0ff3476c",
+        "size" : 155
+      },
+      {
+        "path" : "src/slowpilot/torch/data/subset.s",
+        "sha256" : "sha256:8d43cdffc9235eb3fc7fec45107a55cbfa44c0d17b6a3994b300f0f8223b24fd",
+        "size" : 255
+      },
+      {
+        "path" : "src/slowpilot/torch/data/tensor_dataset.s",
+        "sha256" : "sha256:f914e4b7d31e2471460ddb88c9150b60eb04ab64c37beac538ef808275694e66",
+        "size" : 1103
+      },
+      {
+        "path" : "src/slowpilot/torch/device.s",
+        "sha256" : "sha256:7c385a42031e7e13bf9d9a8cbfe42bf340687ad030f3c19f50489d3c2cfce332",
+        "size" : 301
+      },
+      {
+        "path" : "src/slowpilot/torch/distributed.s",
+        "sha256" : "sha256:1067021b5241089d924651b1bc6a519662924e70419173e641fb4a22cc9a7ed8",
+        "size" : 268
+      },
+      {
+        "path" : "src/slowpilot/torch/distributed/core.s",
+        "sha256" : "sha256:2f5c54a894fbff3511423f06609f66b72c1b31a81bd13628ada96c74f4a1ac88",
+        "size" : 540
+      },
+      {
+        "path" : "src/slowpilot/torch/distributed/ddp.s",
+        "sha256" : "sha256:25df6ca1e3728efbc7b15b55aa4aa55ce6662dc2558f4e1f1233600642467b58",
+        "size" : 922
+      },
+      {
+        "path" : "src/slowpilot/torch/distributed/process_group.s",
+        "sha256" : "sha256:3146674aa9f1eedfb0f606268bd24a28f1e11eba635f666648ddf4c1e2b224c6",
+        "size" : 1022
+      },
+      {
+        "path" : "src/slowpilot/torch/dtype.s",
+        "sha256" : "sha256:bbd52bad5b2b92770f5842dc31291db48cd693508d1443a7314b85985a77ff10",
+        "size" : 722
+      },
+      {
+        "path" : "src/slowpilot/torch/errors.s",
+        "sha256" : "sha256:c8e6283a063d07a8ca4661aa0af8f8ab88c99c7fe913a836863e6db3cb0d9c8e",
+        "size" : 421
+      },
+      {
+        "path" : "src/slowpilot/torch/fft.s",
+        "sha256" : "sha256:33e2382e83d64e991799bcc5e7c172109356aa52fc0f8f5447648021288d8149",
+        "size" : 2759
+      },
+      {
+        "path" : "src/slowpilot/torch/linalg.s",
+        "sha256" : "sha256:102c91de3bc4a6ae97901e275e5de288a35923124aaeb14b5914f2e79de298a8",
+        "size" : 4545
+      },
+      {
+        "path" : "src/slowpilot/torch/nn.s",
+        "sha256" : "sha256:0d1def9493ebe14b7bb25fbf4f03fb439cb1700ce3bcf913d211263303f97163",
+        "size" : 9125
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/adaptive_avg_pool1d.s",
+        "sha256" : "sha256:a727b5fe4fc70691758ddde1a79d10d520fbea517031ee420dd75312dcc0b00e",
+        "size" : 369
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/adaptive_avg_pool2d.s",
+        "sha256" : "sha256:de70f39b646958ea751f5a8866afc392645052c64a1ca820d8b4a0546dda223f",
+        "size" : 369
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/adaptive_avg_pool3d.s",
+        "sha256" : "sha256:d2d64cab7c5128566b0370013446ff9c1b7079857a4ae342e0fe5f6fe228e607",
+        "size" : 369
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/adaptive_max_pool1d.s",
+        "sha256" : "sha256:bb31e061e390822ef545386f9849badf3dfd1b8df9fafad9e0aa1c9a11081703",
+        "size" : 390
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/adaptive_max_pool2d.s",
+        "sha256" : "sha256:210a2ec559bee109b9641a747baa689bf92fa67378a230bbe30b337deb026489",
+        "size" : 390
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/adaptive_max_pool3d.s",
+        "sha256" : "sha256:a0b5962c8e1b648b1f78aa9b97ce8b0181d4907d6a3fbc5c9c4ba1a2d533734c",
+        "size" : 390
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/alpha_dropout.s",
+        "sha256" : "sha256:6a44d606b83aff823ad7c5591cc88827ba49252307bafd67d8d9a71942f5fc24",
+        "size" : 208
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/attention_functional.s",
+        "sha256" : "sha256:3e41b06e34608b07e34b7ed6d8b09a39decaa40cf86f8657bf0ca8f22e66ee30",
+        "size" : 6149
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/avg_pool1d.s",
+        "sha256" : "sha256:795da506c0a2e522db5e3427672c3c941e90802b2a5d6385e185f76bd7aaf910",
+        "size" : 537
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/avg_pool2d.s",
+        "sha256" : "sha256:f90098aa070e7519f1794466f0c260168417dcc1a2fe3ef9b157b881ad0c11f5",
+        "size" : 537
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/avg_pool3d.s",
+        "sha256" : "sha256:126b425cbf6b7039d51a011eba32601af028cc75b3ef05880adcea8e0039deda",
+        "size" : 537
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/batch_norm.s",
+        "sha256" : "sha256:0bb10a7decda2a502e015a91f81c1b9f5649f21fdcaa28c8df1af5ac34c5ddb3",
+        "size" : 3007
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/batch_norm1d.s",
+        "sha256" : "sha256:473d707728295672723819e65c3a34cf8b5eb7162227a59b674209cafec4f678",
+        "size" : 404
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/batch_norm2d.s",
+        "sha256" : "sha256:b941bd34ff04d80f4d0aaa6ce0ee3dd06f8d936202a5275b70aad43776428d55",
+        "size" : 404
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/batch_norm3d.s",
+        "sha256" : "sha256:83f16e4a681a58adaa69065331fe4be3b026cd447b961d4a9676c7ae1f8ebc1f",
+        "size" : 404
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/bce_loss.s",
+        "sha256" : "sha256:7447bfabc3501e2941f91d96063b0c61e7a384a092b697bbec3543859ca57c8f",
+        "size" : 365
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/bce_with_logits_loss.s",
+        "sha256" : "sha256:4207f66a48e4640e93be5e951c6dbb9baa2865a9aa54060ee37512422c2fa141",
+        "size" : 471
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/bilinear.s",
+        "sha256" : "sha256:f8b9fdd92dd0ce2397bda9fb152637d9cf564b034e8d9a4d64076b2d5d0ebcd8",
+        "size" : 945
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/constant_pad1d.s",
+        "sha256" : "sha256:a5f20d9803862925f8eaea585ddb5e4d8dde89226ae00379aff1e8b988854f4a",
+        "size" : 487
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/constant_pad2d.s",
+        "sha256" : "sha256:6e195f3269db32c271a61f9a942d6b6ec946ef7ead7c7d4d3a64157d4d36a974",
+        "size" : 487
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/constant_pad3d.s",
+        "sha256" : "sha256:262b4cae84c47ffc7ee38217e5a9bdbf5e98c1853dfb16111c9794db43733e5d",
+        "size" : 487
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/conv1d.s",
+        "sha256" : "sha256:a7876e9a1eb64b843ef1a61434b8b7eea52ce33626d4a05981403b60428a40a7",
+        "size" : 422
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/conv2d.s",
+        "sha256" : "sha256:2b0e4af78a61250957d17ecb202ae65d4d2d71d7b68205ea77bfcadc90918c24",
+        "size" : 422
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/conv3d.s",
+        "sha256" : "sha256:ff3245aecf0d502e28921004108956b93c673ca1587487ecc7b7573a9c9fdc52",
+        "size" : 422
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/conv_transpose1d.s",
+        "sha256" : "sha256:19232ce4200333c925f5d336a77ecd0df3dd05406b94cc29075355c74b7a3d39",
+        "size" : 504
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/conv_transpose2d.s",
+        "sha256" : "sha256:3e4da1e0c85c9fb9b3e3301280d1ec77732747aa090e5da8c324272b5cee370b",
+        "size" : 504
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/conv_transpose3d.s",
+        "sha256" : "sha256:1ab41dca864931e8b4ece47f8981556aab1f5499ac873638ac776236bbb327d5",
+        "size" : 504
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/convolution.s",
+        "sha256" : "sha256:8ef1fd0255fc54f84f32e8a880d007e20e4b35b7b2a162f69bf68183c9f87d9c",
+        "size" : 1952
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/cosine_embedding_loss.s",
+        "sha256" : "sha256:43ff62cd57e2b413148b55638f8f5e3f62f335e287ea552a95ce22ff4212d9a0",
+        "size" : 421
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/cosine_similarity.s",
+        "sha256" : "sha256:770a1b7a6dfc40f43f9c59ca8bd84d6087e7c76eab68110b3d5fbdc10e83c8dc",
+        "size" : 352
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/cross_entropy_loss.s",
+        "sha256" : "sha256:64c84bc84d58487e65b0e1412d2fdc22ff14d10e5f28884d02c55ae6a29e5d37",
+        "size" : 497
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/ctc_loss.s",
+        "sha256" : "sha256:176026584a4b53c1c6658c9e103c754d0f7c94af0466d6ab61992005e95ec890",
+        "size" : 467
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/dropout.s",
+        "sha256" : "sha256:156ddd2d0960f6a7bb934b6a7e3ba96db3f567e3044853dd831d06f4ad11f124",
+        "size" : 874
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/dropout1d.s",
+        "sha256" : "sha256:83774012dc37d28986bc49a183ee50a15d9745e1bc5eacce2aa4539058306162",
+        "size" : 202
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/dropout2d.s",
+        "sha256" : "sha256:b0898a75b76cb8e8f4754fbddc36367e1b472033d2535fc9603e45e21340dce4",
+        "size" : 202
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/dropout3d.s",
+        "sha256" : "sha256:1bba655ae8edda8a62245b553263d96e8a529a7f2c2799b74f8abe811f0fbe89",
+        "size" : 202
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/dropout_functional.s",
+        "sha256" : "sha256:714a4d699271c95625526e006bff0a073d2dee05c136e40c569b01951d1e0053",
+        "size" : 3969
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/elu.s",
+        "sha256" : "sha256:f3a55de62ea32d893b04d6b7550d4ac934f6952af31110e993de8c0b6bcb6d92",
+        "size" : 244
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/embedding.s",
+        "sha256" : "sha256:15dfe038cad4d1c02ed6dea8c5fc89ec7cb1221a7ea7336f3033952d30f84f90",
+        "size" : 2428
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/embedding_bag.s",
+        "sha256" : "sha256:590c8d25346896c86d2ab199a94a1b40a29d174df8373096309e526bde5d22a1",
+        "size" : 1905
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/embedding_functional.s",
+        "sha256" : "sha256:9ba33469d10477c6862607839fd6298dea31c176bb64e476735f840dd42c3bbd",
+        "size" : 7046
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/feature_alpha_dropout.s",
+        "sha256" : "sha256:3867caea356735b27f1127cc32eb9bff52459d49c39640c68029e54b91e82847",
+        "size" : 238
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/flatten.s",
+        "sha256" : "sha256:089d8b922a5f5689033993a1cf2fcb247f611a42e7f41d1b2805e4c038289d9f",
+        "size" : 255
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/fold.s",
+        "sha256" : "sha256:f9104f90d88a1fa51ec638a8b354792a8c2e650143aae8bd8b14e759ce211abe",
+        "size" : 455
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/functional.s",
+        "sha256" : "sha256:09b7bb585884daf378344f5366b896a75668fbb2d8212acc87bf3dfca9bd6d3b",
+        "size" : 13819
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/gaussian_nll_loss.s",
+        "sha256" : "sha256:a6b3b12941e8df8953014f24321c95cbeef75e91fb1be81c4eebfc67d40064d6",
+        "size" : 412
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/gelu.s",
+        "sha256" : "sha256:26d22fd3816216197d447c9252863d3e8b01277acac50ac63332482771d36312",
+        "size" : 269
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/glu.s",
+        "sha256" : "sha256:d6c3dc21361bf0dfdeae94d1ee426b041d10ef3c192f593fe10af3f9797ebd98",
+        "size" : 326
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/group_norm.s",
+        "sha256" : "sha256:08c2c8ea2577f2e984d771791b715ab0a4548956169a9550311f467fd8f80256",
+        "size" : 837
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/gru.s",
+        "sha256" : "sha256:ab616b30ac69cb377a7cccd804622579041c5f74ec8e14aeafcbef535770dff8",
+        "size" : 437
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/gru_cell.s",
+        "sha256" : "sha256:c5ec889234779959c6e18b5cc8b6db2e02042d3105b24c758fdf3f44fb90f225",
+        "size" : 1510
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/hardshrink.s",
+        "sha256" : "sha256:1964f9d69f99b01061266dc061293f7db1bbf52312aaeacd4e1541f007dc6303",
+        "size" : 291
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/hardsigmoid.s",
+        "sha256" : "sha256:66b14936099c80bdf1eb7023e95856e4902ee9a74f06d26d4aa18ef6eba87579",
+        "size" : 258
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/hardswish.s",
+        "sha256" : "sha256:696664d8428e30fac9e7c68bfee8bd18f8682239482ba1c953617ead3e591f6b",
+        "size" : 248
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/hardtanh.s",
+        "sha256" : "sha256:854fce155dc12dee4362510ce380014910840645ba19c0e0b850a0595b422b56",
+        "size" : 322
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/hinge_embedding_loss.s",
+        "sha256" : "sha256:11670a11fb9c7dbf53589a61859c4bafe447e7b930a02e6d1595306859215417",
+        "size" : 393
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/huber_loss.s",
+        "sha256" : "sha256:6eede8db0719e3d353799795523a88dc0d6c6bb314e587cde2fe4995798b8eb0",
+        "size" : 343
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/identity.s",
+        "sha256" : "sha256:9b759699e1210e03346a39e223b0aca8c1c964e58aade0ee056ae5f0490a3874",
+        "size" : 181
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/init.s",
+        "sha256" : "sha256:a499fa9b7adfad8d6a1ed9a80a1dcd0360c5df48300248cf57e859859d6d9616",
+        "size" : 2084
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/instance_norm.s",
+        "sha256" : "sha256:71083029a6ff2917fc2c0c3d4b8a3be58d990a9081f204c274c1c30c7559fdc6",
+        "size" : 1379
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/instance_norm1d.s",
+        "sha256" : "sha256:81a756e6303e6d5344a19f9baeacf6136f2115ef7407024fd64c1dac250bf478",
+        "size" : 424
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/instance_norm2d.s",
+        "sha256" : "sha256:8faa294f8adbb57379f0c910cd5f8eca19342fc9e839a1124b23df6dc6ae34c3",
+        "size" : 424
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/instance_norm3d.s",
+        "sha256" : "sha256:e7a993aba648de59cec3a8ef52ee6cd26a780bd810fb5322fb2e477d62715fc8",
+        "size" : 424
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/interpolation.s",
+        "sha256" : "sha256:f8c2751652a3d02fa5d6981c6d3b7e07397d8dce6c51d0f35cf57151cc8e041d",
+        "size" : 2456
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/kl_div_loss.s",
+        "sha256" : "sha256:661a6f8844055a0ac14cb5d1736fad4dd5d5001b08d0bb12ac6c41929aaef4fc",
+        "size" : 353
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/l1_loss.s",
+        "sha256" : "sha256:0b70b803f5962c05f7591f9ca8dcb440e39a02dda429e411839820d9d7d8b7f3",
+        "size" : 300
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/layer_norm.s",
+        "sha256" : "sha256:e6160344b06e3f061d867c6ea86ac968e11242b81df8e082f7b397b6a23d5e3c",
+        "size" : 865
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/leaky_relu.s",
+        "sha256" : "sha256:fbc320567f981f902b28bc9b497f520cc2aa8f1c24667d3e2083386b215c18d0",
+        "size" : 305
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/linear.s",
+        "sha256" : "sha256:2dcc3f493698c2a1b198af405b25d3a3fc41ad0114948a76634264bea7559e3a",
+        "size" : 833
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/local_response_norm.s",
+        "sha256" : "sha256:478cf182902a1704cf9889b502ab8e1085645586a2539dde9dfa7b14b8d75087",
+        "size" : 468
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/log_sigmoid.s",
+        "sha256" : "sha256:ed543db26583b10685f8ea8b03f12c398e75b456f182fcac0fa006a86977a6db",
+        "size" : 256
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/log_softmax.s",
+        "sha256" : "sha256:86564eefc043825707afc71966da6d189a85ef02517e506c08b8984c0dea2ba1",
+        "size" : 275
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/lp_pool1d.s",
+        "sha256" : "sha256:a419589eb6f391e8fb5bbbd5b8aa5f9b1d60e55b8a42a1ec979c7843058578f1",
+        "size" : 378
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/lp_pool2d.s",
+        "sha256" : "sha256:71c0c4ae6264a530c9ca8c556ff178dd51f5fb48a39b1face5822d6966a4081b",
+        "size" : 378
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/lp_pool3d.s",
+        "sha256" : "sha256:84cee399f71c5a355af16d9986aac560f6ea4eca94a754990867e7825bd70c4c",
+        "size" : 378
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/lstm.s",
+        "sha256" : "sha256:826eed92a849d2ccf00ee6b8ca51db7d6eb28f01d1cf6fdef41e233f1bbec3d4",
+        "size" : 463
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/lstm_cell.s",
+        "sha256" : "sha256:af79613749b715ad3dbe1ad2ffcdeb8b59d8e25ab358e92af9dfdc48119e603c",
+        "size" : 2341
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/margin_ranking_loss.s",
+        "sha256" : "sha256:5ba3a6ef3a90d051c46c9df4b86d03143d1a7e1fd336227a880f5e911b77f365",
+        "size" : 411
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/max_pool1d.s",
+        "sha256" : "sha256:ef5e2768c3edaa1a2e1905b2800ffb5e241bfef1a81243ea1b7ecc9e25b841b6",
+        "size" : 722
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/max_pool2d.s",
+        "sha256" : "sha256:74f501608f0f953b981bd443727e112fbdb2def07c81216ff466f34b388deac6",
+        "size" : 722
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/max_pool3d.s",
+        "sha256" : "sha256:1a2934e5705b9f0063efbd755134d0a4ee28443211093d444d582bfc607b4565",
+        "size" : 722
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/max_unpool1d.s",
+        "sha256" : "sha256:957f8763c5a8400dd696295d25625bdf638642cb2502175af8b117b00e1ee5c2",
+        "size" : 414
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/max_unpool2d.s",
+        "sha256" : "sha256:de451a8019a98eb7837cb06fe74967c6d9dde724c7f986e7319c8595360c27af",
+        "size" : 414
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/max_unpool3d.s",
+        "sha256" : "sha256:18b8878f46c3563e23bd383a6fe396620f6cb076adf78df467352834f1d22466",
+        "size" : 414
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/mish.s",
+        "sha256" : "sha256:f7b59ae31b51c4508d1ab481f37f5e8cadfc4f826921ed03cc3a9e540d6454dd",
+        "size" : 223
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/module.s",
+        "sha256" : "sha256:6deecf8ffb20fb0203f90816566a64092d4a9867eeb7c2e4486365dc06b93670",
+        "size" : 3863
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/module_dict.s",
+        "sha256" : "sha256:235801695aac0f2c881041fae1eea0e7ec84f9f36e31d29afc6603872234a812",
+        "size" : 370
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/module_list.s",
+        "sha256" : "sha256:bbc03fe16514b3f36cbb21f3ee04bda33b0add30d38b1b541d163e761bbe337b",
+        "size" : 461
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/mse_loss.s",
+        "sha256" : "sha256:7dd94b084e6ae4f7ceb8112e3fb130a5d410c88198d56fa9757efe5931f971d1",
+        "size" : 305
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/multi_margin_loss.s",
+        "sha256" : "sha256:3d43cb08ead986e76081f4fdf50b7eb9a440615271faf9940712be4893ccaeaf",
+        "size" : 581
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/multihead_attention.s",
+        "sha256" : "sha256:081a05c61d5bf6938d5fc5441e9f7db1a0c5ec15b9477a96e0f3724808c2270b",
+        "size" : 7969
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/multilabel_margin_loss.s",
+        "sha256" : "sha256:aaf7c576a952d3afd2977dcde1d7aae5346ad0ab74524dabcf70b70a554a5dcd",
+        "size" : 372
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/multilabel_soft_margin_loss.s",
+        "sha256" : "sha256:c10cd99779ec45f3a38bb78afb45aea8e6f962bf09ddac7de0a931735dd56f48",
+        "size" : 510
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/nll_loss.s",
+        "sha256" : "sha256:19385c7a086241fbabfd5580beae61b7575cb22dfef5e24ad3100c004a976f6a",
+        "size" : 397
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/pairwise_distance.s",
+        "sha256" : "sha256:20a2178ab3ae374ab252d9051d27c873d5b637fee955dc977bedf16287f42129",
+        "size" : 385
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/parameter_dict.s",
+        "sha256" : "sha256:75fd5ffc140029cec4c0db55458e01a9ecb9b65283910b4ba91ec016175d37d8",
+        "size" : 407
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/parameter_list.s",
+        "sha256" : "sha256:fe8105fd74579ef187b9ddfa09b87a1bb067c7a988622c4699f18c149f8b4c4e",
+        "size" : 495
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/pixel_shuffle.s",
+        "sha256" : "sha256:225721da6fd081efea77ab7ef8f2e8f1dd204c56ed9ca7956d1239b233c27ae3",
+        "size" : 298
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/pixel_unshuffle.s",
+        "sha256" : "sha256:cfe80a993ea9f2d82f57aa383a69bba46fc6fd2d3418292b9c1c89aa81f56a23",
+        "size" : 306
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/poisson_nll_loss.s",
+        "sha256" : "sha256:5f7aaa9bb90eaadd6130a935ac284e058d9ef0ffdcb3e4cfab379b74d2ac4e87",
+        "size" : 438
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/pooling_functional.s",
+        "sha256" : "sha256:fea25c9cfa538b3ecd320a217786d2d59ecc2beec287ece0920d160d6bf38c5c",
+        "size" : 4778
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/prelu.s",
+        "sha256" : "sha256:edad4ad0cb05eeb33479ff828b01b8492749055cbfce9bc75a266b29a335a39d",
+        "size" : 488
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/recurrent.s",
+        "sha256" : "sha256:d2ea52c28fcfdaf8f7b43e1b7aab2ccf73ee1a42257bb0216ff4e4a74fd7e6d2",
+        "size" : 9099
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/recurrent_core.s",
+        "sha256" : "sha256:28c6df4909ef9b98e8217e690bde3f862936e7d9212e6ad9280f7a26cc748504",
+        "size" : 1126
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/reflection_pad1d.s",
+        "sha256" : "sha256:9eb2f1f6141a60a3e4831fc95bc84b566c58e9e5e40f189f6b0e210b81bcbf5e",
+        "size" : 475
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/reflection_pad2d.s",
+        "sha256" : "sha256:618ff7dffe472a3d036b72ff8f4fb4d5d5209ec5c252f29b1a0fd86f9e14b991",
+        "size" : 475
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/reflection_pad3d.s",
+        "sha256" : "sha256:1582b4c52289a35373a4138c9f8c1f42ffbc13e9ffc7291cf743f941dd5652de",
+        "size" : 475
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/relu.s",
+        "sha256" : "sha256:abc84a179f64cb238fe6c16aee1bf64e819e0a35da83110da8fcb540a804ea49",
+        "size" : 174
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/relu6.s",
+        "sha256" : "sha256:834c635433b82cd1d5876ea5ece63c233484eb98da6443cf87d8fbc319b7ac18",
+        "size" : 265
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/replication_pad1d.s",
+        "sha256" : "sha256:3790e45421cc4924183da94afff1e62e974bdea4907a0597d7bb7350273be1cb",
+        "size" : 480
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/replication_pad2d.s",
+        "sha256" : "sha256:7b2675357a377799314492fa1ff611ecdc3dfad3df1c691b54e2eee927ca2ee0",
+        "size" : 480
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/replication_pad3d.s",
+        "sha256" : "sha256:512264ef2867e8fa6607f35517d5b2128ea92b954705005ec313cd1cbaa41806",
+        "size" : 480
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/rms_norm.s",
+        "sha256" : "sha256:1d181742bf280ea59fd0d59726e40253c83368090273d4c32590eb38c7de3e1b",
+        "size" : 631
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/rnn.s",
+        "sha256" : "sha256:56c8428e72bb1e55cba0aeebbb4086214cdca53ad83b37be184fa58d938f54a3",
+        "size" : 465
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/rnn_cell.s",
+        "sha256" : "sha256:ddd8ca7fe0e23759da0d158718f58bc5a5bfd59f64f46aef0697f5dd4fd202c1",
+        "size" : 1408
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/selu.s",
+        "sha256" : "sha256:df1c7e7ced9f6a956731b25237efb70fcf0c35b21fa7b1095d19e0010a1d9d16",
+        "size" : 223
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/sequential.s",
+        "sha256" : "sha256:574b7a4e4c5d0d4d1571aef76764411a527defd51de363fff85c16cdf5a72a2d",
+        "size" : 487
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/sigmoid.s",
+        "sha256" : "sha256:269f1ea98f424e06e9bc7be8f914f39b9ef7a746c645da0a9037d96a939c4a7a",
+        "size" : 238
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/silu.s",
+        "sha256" : "sha256:424cbe9cf76efa433885c4b1c77550bac05def658e2dfd1c4a9184b823ba58eb",
+        "size" : 223
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/smooth_l1_loss.s",
+        "sha256" : "sha256:7e0e8e1ae8a06ca4f5ede31b0e4b531b6b7542f09ce9106f769a2fe186469a51",
+        "size" : 358
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/soft_margin_loss.s",
+        "sha256" : "sha256:0bde3510980220e6cd9f954bcd4c6b76df090ee7dc1c74e13a7b8eea6602db63",
+        "size" : 342
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/softmax.s",
+        "sha256" : "sha256:9fca408966aef07d371b2eca2e62af9ccd3251df9ebc0dda860775f343eec27e",
+        "size" : 257
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/softmax2d.s",
+        "sha256" : "sha256:39289040b953623cc7a30ce79cb971a3088825ea8771aaae9c3b9864f569d2cb",
+        "size" : 260
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/softmin.s",
+        "sha256" : "sha256:6618b48b263a42fef7593a2ecf983e8e945a3e6de52bc79438944f99162d3ede",
+        "size" : 268
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/softplus.s",
+        "sha256" : "sha256:a62924248e08c99a408b73fd1f5ed7b56ff499c1e7ca88f14a3f6d1162431212",
+        "size" : 307
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/softshrink.s",
+        "sha256" : "sha256:6565b412b655dc5f04c08a3c3659b36eb9daad20644d4e3091f84ad5c33a6ba4",
+        "size" : 291
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/softsign.s",
+        "sha256" : "sha256:6167a8f8e2102bf7f5f8f566ed1711b43173205c69d8a3f3f5ee14c2c02c0f2c",
+        "size" : 243
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/spatial_core.s",
+        "sha256" : "sha256:9c43478a160b10192d4d3a242577af92fa6312916d9fa9e54b38a6e4799e9f01",
+        "size" : 686
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/tanh.s",
+        "sha256" : "sha256:0175c75ee125bb21df307bbc3b831bcc6d2b96437a305ae6c9fb7b29d6452d69",
+        "size" : 223
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/tanhshrink.s",
+        "sha256" : "sha256:54f4135e918baeafc5d82721e7613b154812dc12287e35d87584c020dc241a77",
+        "size" : 253
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/threshold.s",
+        "sha256" : "sha256:bd55e5bcdd73e80ba75ecb19d91d6374dbff15cbf28fc7c487102560d58c205a",
+        "size" : 306
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/transformer.s",
+        "sha256" : "sha256:1f6bbdc3b01905c39e49c865ca376d59e382d1c33e8825abd930fd024e3e882c",
+        "size" : 2484
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/transformer_decoder.s",
+        "sha256" : "sha256:3d62db53813e3ac32a77d98ec857a41fb07e9e13bd80e46950ccc9a83e0f5d3c",
+        "size" : 1662
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/transformer_decoder_layer.s",
+        "sha256" : "sha256:0d0b99d54961fa542bab820b2495cd39572ff1f18961c1ce60f19ea5220ccf52",
+        "size" : 3614
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/transformer_encoder.s",
+        "sha256" : "sha256:f9a0bb4c97153ed76024f3e467760e32be1d7f79bb5370ab9a73d40619bd1f8a",
+        "size" : 1335
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/transformer_encoder_layer.s",
+        "sha256" : "sha256:040579d8725498606987525e9a8a73cda3f72572b1eeca15e978ff2848b79055",
+        "size" : 2555
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/triplet_margin_loss.s",
+        "sha256" : "sha256:4a23354901b52dfbdf2ac539dec03371e772e5d2031ef5221b2196b852c65640",
+        "size" : 570
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/triplet_margin_with_distance_loss.s",
+        "sha256" : "sha256:c6cdeda7f8ffc94f7912f938ff6c59e4ac10cec74d12a798b480ff89751f0b18",
+        "size" : 662
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/unfold.s",
+        "sha256" : "sha256:df532e947995905beb7ec5dd19242585cccbe2b916ddae3e1e67dd3b1ee03f8d",
+        "size" : 425
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/upsample.s",
+        "sha256" : "sha256:4b3211fa92cb0372d08a5b61c168dead2b79b0e761aa52cdeeec734334b32de9",
+        "size" : 941
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/upsampling_bilinear2d.s",
+        "sha256" : "sha256:2eadfbf1b73a29a064107c4ed18279271a3ceabf8416ae9fefef6d88c7fba46c",
+        "size" : 288
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/upsampling_nearest2d.s",
+        "sha256" : "sha256:a468282c9d14de5d5efd43491a3a6c5e33dadaee6e8a0fc5e84a2a2247620617",
+        "size" : 284
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/utils/packed_sequence.s",
+        "sha256" : "sha256:78be25ff6f6b2da310e4749b9c645a94e338030031b7e45487ff2c44c41e34f5",
+        "size" : 3177
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/utils/rnn.s",
+        "sha256" : "sha256:55b51f928690ba0e97fac516581fb34241a0b09901f2125b135da7116544fdf1",
+        "size" : 681
+      },
+      {
+        "path" : "src/slowpilot/torch/nn/utils/sequence.s",
+        "sha256" : "sha256:6217bcf1ffdc397891af2736c36982f9688fddbbd88837a0a439ad05f039e62c",
+        "size" : 6288
+      },
+      {
+        "path" : "src/slowpilot/torch/onnx.s",
+        "sha256" : "sha256:350923fd09a91c19605dd1185e4e71006da8cf1a128b1c539db8e8f2ee8310b0",
+        "size" : 220
+      },
+      {
+        "path" : "src/slowpilot/torch/onnx/core.s",
+        "sha256" : "sha256:36c3326fc8ac83278a78cba5a9cbd8e59c9e6097b812bacbe10b1f5c4bb924da",
+        "size" : 523
+      },
+      {
+        "path" : "src/slowpilot/torch/onnx/exporter.s",
+        "sha256" : "sha256:4dfd460792143c0d41fda0f193dee63dc394201065889a84b08f86b6f52cfed1",
+        "size" : 2321
+      },
+      {
+        "path" : "src/slowpilot/torch/onnx/program.s",
+        "sha256" : "sha256:97ef79d5115f50a3a7a33c1e47b02f89ec4629cf462319dcecab62a5722b4a6b",
+        "size" : 427
+      },
+      {
+        "path" : "src/slowpilot/torch/onnx/trace.s",
+        "sha256" : "sha256:6b882bb4a6f70c9b8b9675290789cbc59035626d9a38db89cfae71381e3ca07a",
+        "size" : 487
+      },
+      {
+        "path" : "src/slowpilot/torch/optim.s",
+        "sha256" : "sha256:40d03bf1ec510915e93545992fbd3a5e91e72f6299ff73a7a2b33854302bf000",
+        "size" : 367
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/adam.s",
+        "sha256" : "sha256:f9251b3f4e8d8c769e820919eaafee7b1909396259a0d9defe357f32c8277792",
+        "size" : 7791
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/adamw.s",
+        "sha256" : "sha256:a5997e1a76f7c0e025fc7f0053355195f758a7a292af92733d6ff678748948bf",
+        "size" : 351
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/grad.s",
+        "sha256" : "sha256:951f0f93fb01a29733d53864001a0d6e16681c43ac42c6ca2520b53e8fb68937",
+        "size" : 951
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/lr_scheduler.s",
+        "sha256" : "sha256:ab528e11962c5646148f8ea8d379838ae57900e585d6361557089f954b6e9a41",
+        "size" : 330
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/lr_scheduler/cosine_annealing_lr.s",
+        "sha256" : "sha256:fc1923f2531f9d3080e9db5fc7cf5d59663e1082bcf0c89f6e3239754704935a",
+        "size" : 635
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/lr_scheduler/reduce_lr_on_plateau.s",
+        "sha256" : "sha256:016be9230899be9c45d83e4190b97a0b62de24d7db239f9d23c3942866d352d6",
+        "size" : 1014
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/lr_scheduler/step_lr.s",
+        "sha256" : "sha256:4d4029cff2c67feec789fdb22c60639c714c60ac4ce8082e7eb102da84550bfd",
+        "size" : 595
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/optimizer.s",
+        "sha256" : "sha256:8479b408498f5b2fe709592b8cd05d8e753004bb587331522c7691394e494a47",
+        "size" : 1571
+      },
+      {
+        "path" : "src/slowpilot/torch/optim/sgd.s",
+        "sha256" : "sha256:51ac184add7f562a423359152a75b089dd3a72372b7d623225f7cfad9ed4a621",
+        "size" : 2457
+      },
+      {
+        "path" : "src/slowpilot/torch/random.s",
+        "sha256" : "sha256:a6cbef9ecbb5a0ac4141a2a331c03602b796cdd3b6501219a0ccffa8de45ce9b",
+        "size" : 105
+      },
+      {
+        "path" : "src/slowpilot/torch/random/core.s",
+        "sha256" : "sha256:57cb413d7f9823d67cc3405b130cdfc3eea3db10c271bcea099b2815f5a6363e",
+        "size" : 381
+      },
+      {
+        "path" : "src/slowpilot/torch/random/generator.s",
+        "sha256" : "sha256:8321b6bf426bcaa8dab41bda2a044bbd1c3415399ff7589081ec809c0135538d",
+        "size" : 939
+      },
+      {
+        "path" : "src/slowpilot/torch/serialization.s",
+        "sha256" : "sha256:8ae78f94eb6eba5fc91820bd4263c7d2b20b56d52b2774412abe4007550ebcea",
+        "size" : 122
+      },
+      {
+        "path" : "src/slowpilot/torch/serialization/state_dict.s",
+        "sha256" : "sha256:2b1f8fa0cb3cd6e31bdc588efe2caf9f615aa657d8bb096c03dbebb562514ad5",
+        "size" : 735
+      },
+      {
+        "path" : "src/slowpilot/torch/special.s",
+        "sha256" : "sha256:ee3cdf9664a8ac0c7cd90e18fa5c19d48a944263834bf82c3ece7f6ddbc12168",
+        "size" : 4385
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/bytes.s",
+        "sha256" : "sha256:8b8b0052c300e60e87736493670e3a706e569da5f9e780cc1f9e0455dca2b921",
+        "size" : 603
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/complex.s",
+        "sha256" : "sha256:bb39ae154bfa7beb8cb6bf1317736d8deb09ce940ea42ae2c12ab4ecf518c417",
+        "size" : 521
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/core.s",
+        "sha256" : "sha256:1a2f5b523588fd1e15f7779f7340c85775aa6514e5b1a781ac72cebac7c6f907",
+        "size" : 2554
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/factories.s",
+        "sha256" : "sha256:7b60ecda2b090643fcff7748cb3e9643ae59d0d316059805627003a168d93b2d",
+        "size" : 2488
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/foreach.s",
+        "sha256" : "sha256:063b57067444196a7e112e0be4819c64df57b45a87084d78dcf258057db827d8",
+        "size" : 1680
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/indexing.s",
+        "sha256" : "sha256:12df5ba91b205a4ef3e5aa793b93138ecac2c317f05c2fdd5d399720ebd38547",
+        "size" : 2213
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/indexing_core.s",
+        "sha256" : "sha256:560a3c7acb36365cf9e74bfe16c0b990ee08304b9076a180920a6b30fb2f6f62",
+        "size" : 362
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/slice.s",
+        "sha256" : "sha256:f881025d2d965ee4a9085e6623d394fb6d9125f8f0a06f52f63cb847382e2955",
+        "size" : 322
+      },
+      {
+        "path" : "src/slowpilot/torch/tensor/value.s",
+        "sha256" : "sha256:a5151f8fbf8e114dd7511d2a342be7b8de937d6946bf657d0c6d1ce46b013edd",
+        "size" : 13144
+      }
+    ],
+    "module_mode" : "source",
+    "name" : "slowpilot/torch",
+    "native_adapter" : "source",
+    "native_providers" : [],
+    "native_requirements" : 
+    [
+      {
+        "abi" : "libtorch-2.14.0-macos-aarch64",
+        "build_id" : "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+        "id" : "libtorch",
+        "kind" : "runtime",
+        "package" : "",
+        "provider" : "external",
+        "runtime" : "",
+        "version" : "2.14.0"
+      },
+      {
+        "abi" : "libtorch-2.14.0-macos-aarch64",
+        "build_id" : "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+        "id" : "libtorch-sdk",
+        "kind" : "sdk",
+        "package" : "",
+        "provider" : "external",
+        "runtime" : "libtorch",
+        "version" : "2.14.0"
+      }
+    ],
+    "schema" : "sputnik.package-inspection.v1",
+    "sha256" : "sha256:65b5fcbe3598ef4ae12b7164bbfb6ef42c269174a6b66c11a5f0b54bfabe774d",
+    "source_modules" : 202,
+    "target" : 
+    {
+      "arch" : "aarch64",
+      "compute_backend" : "none",
+      "cuda_version" : "",
+      "libc" : "",
+      "min_cuda_driver" : "",
+      "min_libc" : "",
+      "min_os" : "26.0",
+      "os" : "macos"
+    },
+    "variant" : "macos-aarch64-source-source-none",
+    "version" : "0.1.3"
+  }
+],"providers":[]}

@@ -1,0 +1,56 @@
+{
+  "language_commit": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+  "servers": {
+    "22015": {
+      "deployed": true,
+      "language_commit": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+      "registry_gpu_execution": true,
+      "lock_required": false,
+      "automatic_variant_selection": true,
+      "remote_api_tests": 48
+    },
+    "22176": {
+      "deployed": true,
+      "language_commit": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+      "fresh_state_requested": true,
+      "state_reinitialized": true,
+      "token_rotated": true,
+      "user_authorized_discard_old_projects": true,
+      "remote_api_tests": 48,
+      "registry_gpu_execution": true,
+      "lock_required": false,
+      "automatic_variant_selection": true,
+      "global_package_home": "/ssd1Tb/sputnik-package-home"
+    }
+  },
+  "registry_release": {
+    "package": "slowpilot/torch",
+    "version": "0.1.3",
+    "variants": [
+      "macos-aarch64-prebuilt-source-runtime",
+      "macos-aarch64-source-source-none",
+      "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+      "linux-x86_64-gnu-rocm643-prebuilt-source-runtime"
+    ],
+    "state": "all_four_variants_published",
+    "all_public_hashes_verified": true
+  },
+  "credential_transfer": false,
+  "torch_commit": "13a6b94befa53457db254594068ebd543e1305a9",
+  "git_pushed": {
+    "sputnik-lang": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+    "torch": "13a6b94befa53457db254594068ebd543e1305a9"
+  },
+  "automatic_selection": "complete_verified_both_servers_without_lock_or_install_selectors",
+  "local_checks": {
+    "package_selection": true,
+    "package_store": true,
+    "registry_cli": true,
+    "native_registry_cli": true,
+    "notebook_core_vm_native": true,
+    "remote_api_tests": 50,
+    "macos_public_variants": 2,
+    "macos_unlocked_runtime": true
+  },
+  "state": "complete"
+}

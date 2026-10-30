@@ -1,0 +1,42 @@
+{
+  "project": "bare_upgrade_7932b18cef77",
+  "origin": "http://127.0.0.1:18765",
+  "language_commit": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+  "health": {
+    "protocol": 1,
+    "agent_pid": 1012212,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "revision": "25111f08d363b0ff488f267c2e85526f1c63e2230a1d6beb3195c3cc44f87ba8",
+  "run_id": "985ad6d2e539a9cac3603327e65dc9b7",
+  "state": "succeeded",
+  "result": "42",
+  "receipt_replay_same_run": true,
+  "runtime_id": "73c69ef8f636b85110115d4f7badfedb",
+  "epoch": "aa8fb0f63958d10e85bb9a9e1017b171",
+  "smoke_project_deleted": true
+}

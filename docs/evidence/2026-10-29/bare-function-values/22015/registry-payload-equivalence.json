@@ -1,0 +1,21 @@
+{
+  "schema": "torch.rocm-registry-payload-equivalence.v1",
+  "gpu_tested_archive": "sha256:db21f091e69dcbd9d90cdd48fe10a4d0dabd619224be45917088b2c825332665",
+  "registry_archive": "sha256:c99e2897c0e99363492f9430ddb235b031b0f8b8ca4948933927ae14728f6baf",
+  "payload_members": 219,
+  "payload_members_identical": true,
+  "different_generated_members": [
+    "checksums.sha256",
+    "meta/build.json"
+  ],
+  "target": {
+    "os": "linux",
+    "arch": "x86_64",
+    "min_os": "",
+    "libc": "gnu",
+    "min_libc": "2.34",
+    "compute_backend": "rocm",
+    "cuda_version": "",
+    "min_cuda_driver": ""
+  }
+}

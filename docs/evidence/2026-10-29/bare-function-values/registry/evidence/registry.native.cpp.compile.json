@@ -1,0 +1,9 @@
+{
+  "schema": "sputnik.native.compile.v1",
+  "mode": "thinlto",
+  "optimization": "O2",
+  "cxx": "clang++-19",
+  "jobs": 8,
+  "partitions": 16,
+  "compile_link_ms": 194830
+}
