@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-26",
+  "directAPI": {
+    "codes": 1070,
+    "nativeCodes": 1070,
+    "fallbackCodes": 0,
+    "full": true,
+    "vmIndependent": true,
+    "runtimeBridge": false
+  },
+  "remote": {
+    "codes": 1114,
+    "nativeCodes": 1114,
+    "fallbackCodes": 0,
+    "full": true,
+    "vmIndependent": true,
+    "runtimeBridge": false
+  },
+  "remoteTests": 45,
+  "inputsRegressionRechecks": 5,
+  "workerProtocol": 17,
+  "compilerSha256": "6c2dbf724b97b60fddf71368cd8474b0c70f9be64281caa2c00665358b373123",
+  "workerSha256": "22cb67dea8fb73103273683fa0468695b823b9c21d203614ffcd1a00a1cd7668",
+  "remoteSha256": "76eaf730779fbd87b9b240c0cd5981faf6b515d44b7ea96508f0c370001b6292",
+  "coreArchiveSha256": "6afb2c34b8d7e9379ebf7000276de0edf985ff8c3b174c4abe0f3b0ff0981fb2",
+  "swiftApplicationSha256": "efa6a99c4db67c8f9461839902dcb7e3a4ee74d6b86ab12256b4829d4866c0d5"
+}

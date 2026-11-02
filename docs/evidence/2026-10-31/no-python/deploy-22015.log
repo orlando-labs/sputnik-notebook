@@ -1,0 +1,8 @@
+PASS quiescent state snapshot
+0
+7303e13eac12723d1e74bf8f753c2fd5100428d4fc4e598a714f4c07ed020a2f
+PASS quiescent state snapshot
+0
+PASS notebook GPU forward/backward without Python on 3 devices
+0
+PASS replaced rocm core: no Python, state and token preserved; backup=/home/slowpilot/sputnik-remote-core/backups/before-no-python-20261031T175915Z

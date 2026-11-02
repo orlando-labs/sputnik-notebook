@@ -1,0 +1,4 @@
+/Library/Developer/CommandLineTools/usr/bin/make -C ../sputnik-lang BUILD_DIR="build" runtime
+make[1]: Nothing to be done for `runtime'.
+build/notebook_worker_host_tests "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker"
+notebook_worker_host_tests: ok

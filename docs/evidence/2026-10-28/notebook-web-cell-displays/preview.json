@@ -1,0 +1,16 @@
+{
+  "pid": 13561,
+  "status": 200,
+  "assets": [
+    {
+      "path": "/assets/main-BGXDOv95.css",
+      "status": 200
+    },
+    {
+      "path": "/assets/main-78GuA2-k.js",
+      "status": 200
+    }
+  ],
+  "core_socket_preserved": true,
+  "database": "build/smoke-74948.sqlite"
+}

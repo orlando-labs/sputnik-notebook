@@ -1,0 +1,36 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/slowpilot/sputnik-releases/20261029-head-3eb0f05/src/torch/build/rocm-package-native
+[0/2] Re-checking globbed directories...
+[1/29] Building CXX object CMakeFiles/torch_adapter.dir/native/nn/attention.cpp.o
+[2/29] Building CXX object CMakeFiles/torch_adapter.dir/native/linalg/linalg.cpp.o
+[3/29] Building CXX object CMakeFiles/torch_adapter.dir/native/autograd/grad.cpp.o
+[4/29] Building CXX object CMakeFiles/torch_adapter.dir/native/fft/fft.cpp.o
+[5/29] Building CXX object CMakeFiles/torch_adapter.dir/native/distributed/ddp.cpp.o
+[6/29] Building CXX object CMakeFiles/torch_adapter.dir/native/distributed/process_group.cpp.o
+[7/29] Building CXX object CMakeFiles/torch_adapter.dir/native/nn/embedding.cpp.o
+[8/29] Building CXX object CMakeFiles/torch_adapter.dir/native/nn/sequence.cpp.o
+[9/29] Building CXX object CMakeFiles/torch_adapter.dir/native/nn/ctc.cpp.o
+[10/29] Building CXX object CMakeFiles/torch_adapter.dir/native/nn/functional.cpp.o
+[11/29] Building CXX object CMakeFiles/torch_adapter.dir/native/nn/spatial.cpp.o
+[12/29] Building CXX object CMakeFiles/torch_adapter.dir/native/onnx/lowering.cpp.o
+[13/29] Building CXX object CMakeFiles/torch_adapter.dir/native/onnx/save.cpp.o
+[14/29] Building CXX object CMakeFiles/torch_adapter.dir/native/onnx/nn_ops.cpp.o
+[15/29] Building CXX object CMakeFiles/torch_adapter.dir/native/onnx/tensor_ops.cpp.o
+[16/29] Building CXX object CMakeFiles/torch_adapter.dir/native/optim/validation.cpp.o
+[17/29] Building CXX object CMakeFiles/torch_adapter.dir/native/random/generator.cpp.o
+[18/29] Building CXX object CMakeFiles/torch_adapter.dir/native/onnx/trace.cpp.o
+[19/29] Building CXX object CMakeFiles/torch_adapter.dir/native/special/special.cpp.o
+[20/29] Building CXX object CMakeFiles/torch_notebook.dir/tools/notebook_abi.cpp.o
+[21/29] Building CXX object CMakeFiles/torch_adapter.dir/native/serialization/checkpoint.cpp.o
+[22/29] Building CXX object CMakeFiles/torch_adapter.dir/native/tensor/foreach.cpp.o
+[23/29] Building CXX object CMakeFiles/torch_adapter.dir/native/tensor/bytes.cpp.o
+[24/29] Building CXX object CMakeFiles/torch_adapter.dir/native/tensor/indexing.cpp.o
+[25/29] Building CXX object CMakeFiles/torch_adapter.dir/native/tensor/tensor.cpp.o
+[26/29] Linking CXX shared module libtorch_notebook.so
+[27/29] Building CXX object CMakeFiles/torch_probe.dir/tests/native_probe.cpp.o
+[28/29] Linking CXX executable torch_probe
+PASS cuda:0 forward=14 gradient=[2,4,6] trained_weight=3
+PASS cuda:0 forward=14 gradient=[2,4,6] trained_weight=3
+PASS cuda:0 forward=14 gradient=[2,4,6] trained_weight=3
+TORCH_PROVIDER_COMPLETE

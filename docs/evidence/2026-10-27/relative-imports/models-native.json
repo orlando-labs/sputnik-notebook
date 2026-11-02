@@ -1,0 +1,10 @@
+{
+  "status": "ok",
+  "source": "test/model_test.s",
+  "native_full_coverage": true,
+  "native_vm_independent": true,
+  "native_code_count": 1342,
+  "bytecode_code_count": 1342,
+  "native_fallback_code_count": 0,
+  "bytecode_fallback": false
+}

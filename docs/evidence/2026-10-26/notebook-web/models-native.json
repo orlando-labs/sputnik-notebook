@@ -1,0 +1,8081 @@
+{
+  "schema": "sputnik.executable.build.v2",
+  "status": "ok",
+  "source": "backend/model_test.s",
+  "output": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/model-native/models",
+  "module": "model_test",
+  "entry": "main",
+  "target": "native",
+  "native_backend": "cpp-bytecode-direct-v1",
+  "native_source": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/model-native/models.native.cpp",
+  "native_hash": "fc0112ad6ac80689a0ed624b297ca452004f5d6748e40b2a97206eb07554178c",
+  "native_cxx": "clang++",
+  "native_entry": true,
+  "native_full_coverage": true,
+  "native_body_coverage_full": true,
+  "native_vm_independent": true,
+  "native_runtime_bridge": false,
+  "native_runtime_bridge_kind": "",
+  "native_binary_size_bytes": 9470408,
+  "native_code_count": 1342,
+  "native_extension_code_count": 62,
+  "vm_fallback_code_count": 0,
+  "native_fallback_code_count": 0,
+  "bytecode_code_count": 1342,
+  "bytecode_fallback": false,
+  "native_fallback_reason": "",
+  "native_coverage": [
+    {
+      "code_id": 1,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 2,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 3,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 4,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 5,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 6,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 7,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 8,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 9,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 10,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 11,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 12,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 13,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 14,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 15,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 16,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 17,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 18,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 19,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 20,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 21,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 22,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 23,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 24,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 25,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 26,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 27,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 28,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 29,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 30,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 31,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 32,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 33,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 34,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 35,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 36,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 37,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 38,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 39,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 40,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 41,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 42,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 43,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 44,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 45,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 46,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 47,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 48,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 49,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 50,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 51,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 52,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 53,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 54,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 55,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 56,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 57,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 58,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 59,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 60,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 61,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 62,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 63,
+      "kind": "method",
+      "mode": "native-extension",
+      "reason": "direct native-extension ABI thunk"
+    },
+    {
+      "code_id": 64,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 65,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 66,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 67,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 68,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 69,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 70,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 71,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 72,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 73,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 74,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 75,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 76,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 77,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 78,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 79,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 80,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 81,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 82,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 83,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 84,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 85,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 86,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 87,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 88,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 89,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 90,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 91,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 92,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 93,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 94,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 95,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 96,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 97,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 98,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 99,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 100,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 101,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 102,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 103,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 104,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 105,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 106,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 107,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 108,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 109,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 110,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 111,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 112,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 113,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 114,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 115,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 116,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 117,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 118,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 119,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 120,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 121,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 122,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 123,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 124,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 125,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 126,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 127,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 128,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 129,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 130,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 131,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 132,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 133,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 134,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 135,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 136,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 137,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 138,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 139,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 140,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 141,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 142,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 143,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 144,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 145,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 146,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 147,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 148,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 149,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 150,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 151,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 152,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 153,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 154,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 155,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 156,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 157,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 158,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 159,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 160,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 161,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 162,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 163,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 164,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 165,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 166,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 167,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 168,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 169,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 170,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 171,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 172,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 173,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 174,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 175,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 176,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 177,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 178,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 179,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 180,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 181,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 182,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 183,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 184,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 185,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 186,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 187,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 188,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 189,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 190,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 191,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 192,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 193,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 194,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 195,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 196,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 197,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 198,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 199,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 200,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 201,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 202,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 203,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 204,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 205,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 206,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 207,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 208,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 209,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 210,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 211,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 212,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 213,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 214,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 215,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 216,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 217,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 218,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 219,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 220,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 221,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 222,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 223,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 224,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 225,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 226,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 227,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 228,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 229,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 230,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 231,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 232,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 233,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 234,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 235,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 236,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 237,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 238,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 239,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 240,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 241,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 242,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 243,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 244,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 245,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 246,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 247,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 248,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 249,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 250,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 251,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 252,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 253,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 254,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 255,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 256,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 257,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 258,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 259,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 260,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 261,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 262,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 263,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 264,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 265,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 266,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 267,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 268,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 269,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 270,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 271,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 272,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 273,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 274,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 275,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 276,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 277,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 278,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 279,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 280,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 281,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 282,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 283,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 284,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 285,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 286,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 287,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 288,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 289,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 290,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 291,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 292,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 293,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 294,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 295,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 296,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 297,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 298,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 299,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 300,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 301,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 302,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 303,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 304,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 305,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 306,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 307,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 308,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 309,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 310,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 311,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 312,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 313,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 314,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 315,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 316,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 317,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 318,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 319,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 320,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 321,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 322,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 323,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 324,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 325,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 326,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 327,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 328,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 329,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 330,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 331,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 332,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 333,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 334,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 335,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 336,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 337,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 338,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 339,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 340,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 341,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 342,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 343,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 344,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 345,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 346,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 347,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 348,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 349,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 350,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 351,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 352,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 353,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 354,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 355,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 356,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 357,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 358,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 359,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 360,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 361,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 362,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 363,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 364,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 365,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 366,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 367,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 368,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 369,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 370,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 371,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 372,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 373,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 374,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 375,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 376,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 377,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 378,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 379,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 380,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 381,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 382,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 383,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 384,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 385,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 386,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 387,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 388,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 389,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 390,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 391,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 392,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 393,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 394,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 395,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 396,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 397,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 398,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 399,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 400,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 401,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 402,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 403,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 404,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 405,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 406,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 407,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 408,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 409,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 410,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 411,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 412,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 413,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 414,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 415,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 416,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 417,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 418,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 419,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 420,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 421,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 422,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 423,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 424,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 425,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 426,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 427,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 428,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 429,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 430,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 431,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 432,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 433,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 434,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 435,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 436,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 437,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 438,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 439,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 440,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 441,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 442,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 443,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 444,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 445,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 446,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 447,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 448,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 449,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 450,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 451,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 452,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 453,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 454,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 455,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 456,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 457,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 458,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 459,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 460,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 461,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 462,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 463,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 464,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 465,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 466,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 467,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 468,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 469,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 470,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 471,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 472,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 473,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 474,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 475,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 476,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 477,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 478,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 479,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 480,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 481,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 482,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 483,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 484,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 485,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 486,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 487,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 488,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 489,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 490,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 491,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 492,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 493,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 494,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 495,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 496,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 497,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 498,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 499,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 500,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 501,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 502,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 503,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 504,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 505,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 506,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 507,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 508,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 509,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 510,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 511,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 512,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 513,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 514,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 515,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 516,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 517,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 518,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 519,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 520,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 521,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 522,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 523,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 524,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 525,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 526,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 527,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 528,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 529,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 530,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 531,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 532,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 533,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 534,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 535,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 536,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 537,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 538,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 539,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 540,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 541,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 542,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 543,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 544,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 545,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 546,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 547,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 548,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 549,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 550,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 551,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 552,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 553,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 554,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 555,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 556,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 557,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 558,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 559,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 560,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 561,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 562,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 563,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 564,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 565,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 566,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 567,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 568,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 569,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 570,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 571,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 572,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 573,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 574,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 575,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 576,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 577,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 578,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 579,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 580,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 581,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 582,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 583,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 584,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 585,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 586,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 587,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 588,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 589,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 590,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 591,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 592,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 593,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 594,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 595,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 596,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 597,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 598,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 599,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 600,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 601,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 602,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 603,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 604,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 605,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 606,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 607,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 608,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 609,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 610,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 611,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 612,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 613,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 614,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 615,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 616,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 617,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 618,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 619,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 620,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 621,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 622,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 623,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 624,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 625,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 626,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 627,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 628,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 629,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 630,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 631,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 632,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 633,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 634,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 635,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 636,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 637,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 638,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 639,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 640,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 641,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 642,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 643,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 644,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 645,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 646,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 647,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 648,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 649,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 650,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 651,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 652,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 653,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 654,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 655,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 656,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 657,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 658,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 659,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 660,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 661,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 662,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 663,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 664,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 665,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 666,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 667,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 668,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 669,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 670,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 671,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 672,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 673,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 674,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 675,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 676,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 677,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 678,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 679,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 680,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 681,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 682,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 683,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 684,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 685,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 686,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 687,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 688,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 689,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 690,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 691,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 692,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 693,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 694,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 695,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 696,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 697,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 698,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 699,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 700,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 701,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 702,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 703,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 704,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 705,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 706,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 707,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 708,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 709,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 710,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 711,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 712,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 713,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 714,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 715,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 716,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 717,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 718,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 719,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 720,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 721,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 722,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 723,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 724,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 725,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 726,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 727,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 728,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 729,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 730,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 731,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 732,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 733,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 734,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 735,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 736,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 737,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 738,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 739,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 740,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 741,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 742,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 743,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 744,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 745,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 746,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 747,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 748,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 749,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 750,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 751,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 752,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 753,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 754,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 755,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 756,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 757,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 758,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 759,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 760,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 761,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 762,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 763,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 764,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 765,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 766,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 767,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 768,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 769,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 770,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 771,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 772,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 773,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 774,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 775,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 776,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 777,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 778,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 779,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 780,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 781,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 782,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 783,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 784,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 785,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 786,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 787,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 788,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 789,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 790,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 791,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 792,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 793,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 794,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 795,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 796,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 797,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 798,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 799,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 800,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 801,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 802,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 803,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 804,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 805,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 806,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 807,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 808,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 809,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 810,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 811,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 812,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 813,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 814,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 815,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 816,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 817,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 818,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 819,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 820,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 821,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 822,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 823,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 824,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 825,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 826,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 827,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 828,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 829,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 830,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 831,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 832,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 833,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 834,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 835,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 836,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 837,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 838,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 839,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 840,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 841,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 842,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 843,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 844,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 845,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 846,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 847,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 848,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 849,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 850,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 851,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 852,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 853,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 854,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 855,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 856,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 857,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 858,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 859,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 860,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 861,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 862,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 863,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 864,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 865,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 866,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 867,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 868,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 869,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 870,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 871,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 872,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 873,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 874,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 875,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 876,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 877,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 878,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 879,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 880,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 881,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 882,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 883,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 884,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 885,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 886,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 887,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 888,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 889,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 890,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 891,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 892,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 893,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 894,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 895,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 896,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 897,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 898,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 899,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 900,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 901,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 902,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 903,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 904,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 905,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 906,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 907,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 908,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 909,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 910,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 911,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 912,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 913,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 914,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 915,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 916,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 917,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 918,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 919,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 920,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 921,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 922,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 923,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 924,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 925,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 926,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 927,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 928,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 929,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 930,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 931,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 932,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 933,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 934,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 935,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 936,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 937,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 938,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 939,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 940,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 941,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 942,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 943,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 944,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 945,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 946,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 947,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 948,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 949,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 950,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 951,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 952,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 953,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 954,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 955,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 956,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 957,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 958,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 959,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 960,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 961,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 962,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 963,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 964,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 965,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 966,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 967,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 968,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 969,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 970,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 971,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 972,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 973,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 974,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 975,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 976,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 977,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 978,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 979,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 980,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 981,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 982,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 983,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 984,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 985,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 986,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 987,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 988,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 989,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 990,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 991,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 992,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 993,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 994,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 995,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 996,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 997,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 998,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 999,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1000,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1001,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1002,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1003,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1004,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1005,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1006,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1007,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1008,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1009,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1010,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1011,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1012,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1013,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1014,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1015,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1016,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1017,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1018,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1019,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1020,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1021,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1022,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1023,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1024,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1025,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1026,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1027,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1028,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1029,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1030,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1031,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1032,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1033,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1034,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1035,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1036,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1037,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1038,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1039,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1040,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1041,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1042,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1043,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1044,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1045,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1046,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1047,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1048,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1049,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1050,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1051,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1052,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1053,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1054,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1055,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1056,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1057,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1058,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1059,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1060,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1061,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1062,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1063,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1064,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1065,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1066,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1067,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1068,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1069,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1070,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1071,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1072,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1073,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1074,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1075,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1076,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1077,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1078,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1079,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1080,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1081,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1082,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1083,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1084,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1085,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1086,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1087,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1088,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1089,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1090,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1091,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1092,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1093,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1094,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1095,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1096,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1097,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1098,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1099,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1100,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1101,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1102,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1103,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1104,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1105,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1106,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1107,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1108,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1109,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1110,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1111,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1112,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1113,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1114,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1115,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1116,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1117,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1118,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1119,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1120,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1121,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1122,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1123,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1124,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1125,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1126,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1127,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1128,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1129,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1130,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1131,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1132,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1133,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1134,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1135,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1136,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1137,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1138,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1139,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1140,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1141,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1142,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1143,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1144,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1145,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1146,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1147,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1148,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1149,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1150,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1151,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1152,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1153,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1154,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1155,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1156,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1157,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1158,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1159,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1160,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1161,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1162,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1163,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1164,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1165,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1166,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1167,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1168,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1169,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1170,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1171,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1172,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1173,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1174,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1175,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1176,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1177,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1178,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1179,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1180,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1181,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1182,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1183,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1184,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1185,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1186,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1187,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1188,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1189,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1190,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1191,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1192,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1193,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1194,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1195,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1196,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1197,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1198,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1199,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1200,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1201,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1202,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1203,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1204,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1205,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1206,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1207,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1208,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1209,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1210,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1211,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1212,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1213,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1214,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1215,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1216,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1217,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1218,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1219,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1220,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1221,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1222,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1223,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1224,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1225,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1226,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1227,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1228,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1229,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1230,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1231,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1232,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1233,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1234,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1235,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1236,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1237,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1238,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1239,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1240,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1241,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1242,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1243,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1244,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1245,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1246,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1247,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1248,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1249,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1250,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1251,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1252,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1253,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1254,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1255,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1256,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1257,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1258,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1259,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1260,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1261,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1262,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1263,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1264,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1265,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1266,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1267,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1268,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1269,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1270,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1271,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1272,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1273,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1274,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1275,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1276,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1277,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1278,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1279,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1280,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1281,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1282,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1283,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1284,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1285,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1286,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1287,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1288,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1289,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1290,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1291,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1292,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1293,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1294,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1295,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1296,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1297,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1298,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1299,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1300,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1301,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1302,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1303,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1304,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1305,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1306,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1307,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1308,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1309,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1310,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1311,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1312,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1313,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1314,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1315,
+      "kind": "default_thunk",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1316,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1317,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1318,
+      "kind": "rescue",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1319,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1320,
+      "kind": "ensure",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1321,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1322,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1323,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1324,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1325,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1326,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1327,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1328,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1329,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1330,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1331,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1332,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1333,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1334,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1335,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1336,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1337,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1338,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1339,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1340,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1341,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 1342,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    }
+  ]
+}

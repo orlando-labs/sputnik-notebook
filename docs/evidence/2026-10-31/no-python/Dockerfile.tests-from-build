@@ -1,0 +1,39 @@
+FROM sputnik-core-build:no-python AS build
+
+FROM build AS test
+COPY final-tests/ /src/sputnik-notebook/tests/
+
+ENV MALLOC_ARENA_MAX=2 SPUTNIK_PKG_HOME=/tmp/sputnik-test-packages
+RUN make -C /src/sputnik-notebook test-notebook-remote test-notebook-remote-serve \
+    && ! command -v python3 && ! command -v python
+
+FROM debian:bookworm-slim AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev \
+    zlib1g-dev libnuma1 libelf1 libdrm2 libdrm-amdgpu1 libpciaccess0 \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 1000 sputnik && useradd --uid 1000 --gid 1000 --create-home sputnik \
+    && ! command -v python3 && ! command -v python
+COPY --from=test /opt/pcre2 /opt/pcre2
+# Retain the SDK at its build location for worker/source-extension compilation.
+COPY --from=test /src/sputnik-lang /src/sputnik-lang
+COPY --from=test /src/sputnik-notebook/build/sputnik-notebook-remote /usr/local/bin/
+COPY --from=test /src/sputnik-notebook/build/sputnik-notebook-worker /usr/local/bin/
+COPY --from=test /src/sputnik-notebook/tools/notebook-remote/docker-healthcheck /usr/local/bin/sputnik-notebook-healthcheck
+RUN ln -s /src/sputnik-lang/build/sputnik /usr/local/bin/sputnik \
+    && mkdir -p /var/lib/sputnik-notebook /var/lib/sputnik-packages /var/cache/sputnik \
+    && chown -R sputnik:sputnik /var/lib/sputnik-notebook /var/lib/sputnik-packages /var/cache/sputnik
+ENV HOME=/home/sputnik MALLOC_ARENA_MAX=2 \
+    SPUTNIK_PKG_HOME=/var/lib/sputnik-packages \
+    SPUTNIK_NATIVE_RT_CACHE=/var/cache/sputnik/native-runtime \
+    SPUTNIK_NATIVE_EXT_CACHE=/var/cache/sputnik/native-extensions \
+    SPUTNIK_NATIVE_CXX=g++ PKG_CONFIG_PATH=/opt/pcre2/lib/pkgconfig \
+    LD_LIBRARY_PATH=/opt/pcre2/lib
+USER sputnik:sputnik
+EXPOSE 18765
+VOLUME ["/var/lib/sputnik-notebook", "/var/lib/sputnik-packages", "/var/cache/sputnik"]
+STOPSIGNAL SIGTERM
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s \
+    CMD ["/usr/local/bin/sputnik-notebook-healthcheck"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/sputnik-notebook-remote"]
+CMD ["--mode", "serve", "--host", "0.0.0.0", "--port", "18765", "--root", "/var/lib/sputnik-notebook", "--worker", "/usr/local/bin/sputnik-notebook-worker", "--sputnik", "/usr/local/bin/sputnik"]

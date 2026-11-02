@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-11-02T06:47:38.201Z",
+  "test_owned_remaining": 0,
+  "processes": [],
+  "excluded_existing_orbit_fixture_pids": [
+    37733,
+    38052,
+    39508,
+    39601
+  ],
+  "excluded_existing_orbit_fixtures_untouched": true,
+  "scope": "Notebook web test runners, VM/native backend fixtures, OAuth provider, Vite, temporary Core agents and their workers; app/plugin services excluded. No unrelated process was terminated."
+}

@@ -1,0 +1,5 @@
+ArgumentError: block expects 1 positional arguments, got 0
+ArgumentError: block expects 1 positional arguments, got 0
+  at c3204:8 (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/backend/database.s:20:5)
+  at c3205:45 (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/backend/database.s:14:3)
+  at c3218:79 (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/app_fixture.s:30:12)

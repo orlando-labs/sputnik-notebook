@@ -1,5 +1,5 @@
 #include "tools/isputnik/tabs.h"
-#include "tools/notebook-worker/presentation.h"
+#include "notebook/core/worker/presentation.h"
 #include "runtime/audio.h"
 #include <filesystem>
 #include <fstream>

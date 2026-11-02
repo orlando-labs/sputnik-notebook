@@ -1,6 +1,6 @@
 #include "tools/isputnik/tabs.h"
-#include "tools/notebook-worker/process.h"
-#include "tools/notebook-worker/presentation.h"
+#include "notebook/core/worker/process.h"
+#include "notebook/core/worker/presentation.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>

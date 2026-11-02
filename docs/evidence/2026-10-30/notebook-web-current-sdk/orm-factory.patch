@@ -1,0 +1,42 @@
+diff --git a/src/orm.s b/src/orm.s
+index 292f33b..76eb312 100644
+--- a/src/orm.s
++++ b/src/orm.s
+@@ -375,7 +375,7 @@ class ModelType:
+   def bound?():
+     @config.executor.present?
+   def set_record_factory!(&factory):
+-    @record_factory = factory
++    @record_factory = &factory
+     self
+   def new(attrs = {}, **kwargs):
+     values = attrs.merge(kwargs)
+diff --git a/test/selftest.s b/test/selftest.s
+index 0df6bc8..4ea8409 100644
+--- a/test/selftest.s
++++ b/test/selftest.s
+@@ -8,7 +8,7 @@ from sync import Mutex
+ 
+ export main
+ 
+-EXPECTED = 30
++EXPECTED = 32
+ 
+ class InstrumentationProbe:
+   def init():
+@@ -111,6 +111,15 @@ class LooseSignup:
+ def main():
+   score = 0
+ 
++  factory_calls = 0
++  factory_model = signup_model()
++  factory_model.set_record_factory! |attrs|:
++    factory_calls += 1
++    attrs
++  score = check(score, factory_calls == 0)
++  factory_record = factory_model.new(email: "factory@example.test")
++  score = check(score, factory_calls == 1 and factory_record[:email] == "factory@example.test")
++
+   query_output = io.Buffer.new
+   query_logger = orm.QueryLogger(to: query_output, dynamic: true, leave: true, refresh: 0.01, color: false)
+   parallel_queries = orm.Instrumentation([query_logger])

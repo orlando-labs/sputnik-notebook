@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-01",
+  "target": "lab.orlando-labs.com:22176",
+  "hostname": "ai-stt.orlando-labs.com",
+  "old_core_image_id": "sha256:98f862174b559490b410294835c3566ff40a40460c4c6bb743b71b7e6ccc042d",
+  "requested_image_tag": "docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0",
+  "requested_image_id": "sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4",
+  "published_manifest_digest": "sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c",
+  "state": "/home/slowpilot/sputnik-remote-core/state",
+  "state_size": "4.7 GiB",
+  "package_store": "/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-packages",
+  "cache": "/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-cache",
+  "active_project": {
+    "id": "902e652b-ebe7-4fb9-ba7a-23e78e1c3bbe",
+    "title": "ncae",
+    "head_at_preflight": "8d631370c1f9dc8bceaaaaf726c9826c852481f6f5928115152d6b2942608d87",
+    "runs": [],
+    "worker_grants": [],
+    "book_packages": []
+  },
+  "nvidia_driver": "580.105.08",
+  "selected_gpus": [
+    {
+      "name": "RTX 3090",
+      "uuid": "GPU-08a27f45-3e58-12a9-4626-4997e56e765f",
+      "compute_capability": "8.6"
+    },
+    {
+      "name": "RTX 4090",
+      "uuid": "GPU-f8d896e0-2607-a025-88a1-7ed8979035af",
+      "compute_capability": "8.9"
+    }
+  ],
+  "other_gpu": {
+    "name": "GTX 1080 Ti",
+    "uuid": "GPU-00d87f5e-0928-5f40-9355-a4e845909b50",
+    "compute_capability": "6.1",
+    "selected": false,
+    "reason": "Outside declared targets of the existing cu130 Torch artifact"
+  },
+  "torch": {
+    "name": "slowpilot/torch",
+    "version": "0.1.4",
+    "variant": "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+    "sha256": "sha256:aa74c897a9a662ececa7b14d0c02b6d35ac2900cd81ed49797845a8c3ffb2e81"
+  },
+  "pool_limits": {
+    "task": 56,
+    "ffi": 32
+  },
+  "registry_login_configured": false
+}

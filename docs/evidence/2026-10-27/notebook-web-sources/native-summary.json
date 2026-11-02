@@ -1,0 +1,26 @@
+{
+  "main": {
+    "native_backend": "cpp-bytecode-direct-v1",
+    "native_entry": true,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "native_code_count": 2929,
+    "native_extension_code_count": 81,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0
+  },
+  "fixture": {
+    "native_backend": "cpp-bytecode-direct-v1",
+    "native_entry": true,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "native_code_count": 2929,
+    "native_extension_code_count": 81,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0
+  }
+}

@@ -1,0 +1,28 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/selection-controls.spec.ts test/resources.spec.ts
+
+[WebServer] (node:16226) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:16237) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits (1.7s)
+  ✓   2 test/resources.spec.ts:46:1 › core stops a real run at its cumulative quota, shows exhaustion and retains history (2.1s)
+  ✓   3 test/resources.spec.ts:56:1 › storage quota rejects Run without accepting work and is visible in resource settings (768ms)
+  ✓   4 test/resources.spec.ts:65:1 › temporary public-limits preview edits only its copy and recovers a lost run reply without replay (2.6s)
+  ✓   5 test/resources.spec.ts:81:1 › public profile cannot lift the 60-second ceiling and preview Stop/ACL/CSRF remain enforced (1.3s)
+  ✓   6 test/selection-controls.spec.ts:43:1 › shared selection survives sort/filter, retains exact key/row, reopens and clears without implicit Run (2.1s)
+  ✓   7 test/selection-controls.spec.ts:47:1 › duplicate/null keys and ambiguous column names disable selection and Core rejects forged rows (2.1s)
+  ✓   8 test/selection-controls.spec.ts:52:1 › calendar and zoned UTC drafts reject DST gaps and require an explicit repeated-hour occurrence (1.1s)
+  ✓   9 test/selection-controls.spec.ts:56:1 › preset review applies exact values atomically and captured sets save independently from defaults (1.7s)
+  ✓  10 test/selection-controls.spec.ts:60:1 › preset management rejects incompatible imports atomically and Cancel is inert (953ms)
+  ✓  11 test/selection-controls.spec.ts:64:1 › stale parameter reviews preserve drafts and server validates all preset values atomically (5.3s)
+  ✓  12 test/selection-controls.spec.ts:68:1 › board designer authors date modes/zones, preset scope and selection bindings without executing (1.2s)
+  ✓  13 test/selection-controls.spec.ts:72:1 › viewer controls cannot apply dates, presets or selections and revoked access removes saved-set drafts (4.2s)
+  ✓  14 test/selection-controls.spec.ts:76:1 › shared selection filters image and completed audio by encoded asset identity and leaves collections intact (4.9s)
+  ✓  15 test/selection-controls.spec.ts:81:1 › legacy accepted carousel filenames resolve shared asset identity without changing stored collection order (1.5s)
+
+  15 passed (36.7s)

@@ -1,0 +1,15 @@
+{
+  "language_commit": "3eb0f05da50ba307d5f719e0b194de6317304b29",
+  "language_tree": "ddc873fe08ae070129545d6ac972906b4dd10c80",
+  "archive_sha256": "05c274739cb6c470b7171f6f6579cacba8975695aa8e6dc2d807f8d20cc1b2c3",
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261029-head-3eb0f05",
+  "notebook_commit": "a877de60beec13db3e97b0862f41d82c4d5a070d",
+  "pcre2_version": "10.47",
+  "sha256": {
+    "sputnik-notebook-worker": "5c939f5ccb981b6c9c8e21b0892c55181ee600c2776387ed027c3b0cb4283f0f",
+    "sputnik-notebook-remote": "20574fbec7319461c5f017bceec9941828365aa1a801dfe574804a1cf16e15ff",
+    "src/sputnik-lang/build/sputnik": "5b6d0b2783f28a98d3a4a6648d60a0e7f5cfb7d0d1f994ecdd867ba2b7db88a2",
+    "src/sputnik-lang/build/isputnik": "a542dffbea62ec5337bf1ea9c19d08f42880cb04845798a484877bb74b0dbe4c"
+  },
+  "notebook_test_fixtures": "package catalog and local package fixtures migrated to shared YAML manifests"
+}

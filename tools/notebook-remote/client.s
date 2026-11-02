@@ -1,7 +1,7 @@
 package notebook.remote.client
 
 from net.http import Client
-from notebook.remote.common import APIError, decode, digest, identifier, terminal?, project_files
+from notebook.core.common import APIError, decode, digest, identifier, terminal?, project_files
 
 export client
 
@@ -30,6 +30,12 @@ class RemoteClient:
     text = response.body_text()
     raise APIError(response.status, "HTTP #{response.status}: #{text}") unless response.status == 200
     decode(text)
+
+  def history_query():
+    parts = []
+    parts.push!("before=" + @args[:before].to_str) if @args[?:before]
+    parts.push!("limit=" + @args[:limit].to_str) if @args[?:limit]
+    if parts.empty? then "" else "?" + parts.join("&")
 
   def snapshot_body(id):
     directory = @args[?:directory]
@@ -90,7 +96,13 @@ class RemoteClient:
         {directory: directory, revision: record[:revision]}
       when "run":
         request("POST", route + "/runs", {command_id: id, revision: @args[?:revision], sheet_id: @args[?:sheet], cell_id: @args[?:cell], action: if @args[?:all] then "run_all" else "run"})
-      when "runs": request("GET", route + "/runs")
+      when "runs": request("GET", route + "/runs" + history_query())
+      when "change_run": request("POST", route + "/runs/" + identifier(@args[:run_id]) + "/metadata", decode(fs.read_text(@args[:request_file])))
+      when "storage": request("GET", route + "/storage")
+      when "resource_policy": request("GET", route + "/resource-policy")
+      when "set_resource_policy": request("PUT", route + "/resource-policy", decode(fs.read_text(@args[:request_file])))
+      when "collect_storage": request("POST", "/v1/maintenance/storage", {command_id: id, project_id: @args[?:project]})
+      when "service_history": request("GET", route + "/services/" + identifier(@args[?:board]) + "/" + identifier(@args[?:component]) + "/history" + history_query())
       when "registry": request("GET", route + "/registry")
       when "inputs": request("GET", route + "/inputs")
       when "set_inputs": request("PUT", route + "/inputs", decode(fs.read_text(@args[:request_file])))
@@ -102,6 +114,7 @@ class RemoteClient:
       when "worker_settings": request("GET", route + "/worker-settings/" + identifier(@args[:sheet]))
       when "configure_worker": request("PUT", route + "/worker-settings/" + identifier(@args[:sheet]), decode(fs.read_text(@args[:request_file])))
       when "receipt": request("GET", route + "/commands/" + @args[?:command_id])
+      when "restart_invocation": request("POST", route + "/restart", decode(fs.read_text(@args[:request_file])))
       when "restart":
         registry = null
         try: registry = request("GET", route + "/registry")

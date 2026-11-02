@@ -1,0 +1,3504 @@
+{
+  "slowpilot/notebook-ui": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/notebook-ui",
+    "revision": 4,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.notebook.ui",
+        "modules": [
+          "slowpilot.audio",
+          "slowpilot.notebook.ui"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/notebook-ui",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:10:39Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:6fc74e62b976d5ee73897399f8729e81bba97fe35882c409f82576e8940c198f",
+            "size": 28271,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/notebook-ui/versions/0.1.0/artifacts/bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "mixed",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:d54ddb021dc3953d83f2c204cbf28b034d442928f0ce860edbfa4668c410418c",
+            "size": 14228,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/notebook-ui/versions/0.1.0/artifacts/mixed/download",
+            "quarantined": false
+          },
+          {
+            "variant": "source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:d9e5bed70119c2702141921401e064b57be9cadb04e4ac8208aac924c016cb0c",
+            "size": 4227,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/notebook-ui/versions/0.1.0/artifacts/source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/orbit": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/orbit",
+    "revision": 3,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.orbit",
+        "modules": [
+          "slowpilot.orbit",
+          "slowpilot.orbit.html",
+          "slowpilot.orbit.middleware",
+          "slowpilot.orbit.multipart",
+          "slowpilot.orbit.security",
+          "slowpilot.orbit.telemetry",
+          "slowpilot.orbit.testing"
+        ],
+        "dependencies": [],
+        "capabilities": [
+          {
+            "name": "net.listen",
+            "target": "*",
+            "reason": "",
+            "flags": 0
+          },
+          {
+            "name": "random.secure",
+            "target": "*",
+            "reason": "",
+            "flags": 0
+          }
+        ],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/orbit",
+        "version": "1.0.0-rc.1",
+        "published_at": "2026-10-22T18:13:14Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "mixed",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:fd51e1c8b2588ba6306adfb9b47acf76d132a2dfe2bbd4e24431df41fffa7f41",
+            "size": 177442,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orbit/versions/1.0.0-rc.1/artifacts/mixed/download",
+            "quarantined": false
+          },
+          {
+            "variant": "source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:e15a445fdeb2adf633555c90a27776ead95a2b7ade12d6f274949f0e18bb8d63",
+            "size": 45947,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orbit/versions/1.0.0-rc.1/artifacts/source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/orbit-orm": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/orbit-orm",
+    "revision": 3,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.orbit.integrations.orm",
+        "modules": [
+          "slowpilot.orbit.integrations.orm"
+        ],
+        "dependencies": [
+          {
+            "name": "slowpilot/orbit",
+            "version": "1.0.0-rc.1",
+            "source": "registry"
+          },
+          {
+            "name": "slowpilot/orm",
+            "version": "0.1.0",
+            "source": "registry"
+          }
+        ],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/orbit-orm",
+        "version": "1.0.0-rc.1",
+        "published_at": "2026-10-22T18:13:28Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:9a4d9920f6489ba2dc4e8679de662d63e444ff07568827161a0d38d5ba2ad2fd",
+            "size": 15041,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orbit-orm/versions/1.0.0-rc.1/artifacts/bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:f8f8a38058a2faac6c912e3cc98cbf9920d5e690467a0f2b99fb7d6bd7d75325",
+            "size": 9045,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orbit-orm/versions/1.0.0-rc.1/artifacts/source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/orm": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/orm",
+    "revision": 3,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.orm",
+        "modules": [
+          "slowpilot.orm",
+          "slowpilot.orm.pool"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/orm",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:12:35Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "mixed",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:89236aeca8a264ab44a5cf5a1988c48d56be5eb5e52d3324f71a07ced4bd1a0d",
+            "size": 12199,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orm/versions/0.1.0/artifacts/mixed/download",
+            "quarantined": false
+          },
+          {
+            "variant": "source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:03a01a09c72ec768c2409b3791603f07e9c0097535f7d68fa1b30e1e14b391e8",
+            "size": 11281,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orm/versions/0.1.0/artifacts/source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/orm-sqlite3": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/orm-sqlite3",
+    "revision": 4,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.orm.sqlite3",
+        "modules": [
+          "slowpilot.orm.sqlite3",
+          "slowpilot.orm.sqlite3._adapter",
+          "slowpilot.orm.sqlite3._pool"
+        ],
+        "dependencies": [
+          {
+            "name": "slowpilot/orm",
+            "version": "0.1.0",
+            "source": "registry"
+          },
+          {
+            "name": "slowpilot/sqlite3",
+            "version": "0.1.0",
+            "source": "registry"
+          }
+        ],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/orm-sqlite3",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:12:49Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:8e0f454f8fbf73ac4f639c04d2c201bd9658efc9894661ac8b5a89f632c2115e",
+            "size": 43770,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orm-sqlite3/versions/0.1.0/artifacts/bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "mixed",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:685e95bbe725c3270936e4d7d7b15fe80850aa44cbff5ca007cb90321aaa3a61",
+            "size": 39009,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orm-sqlite3/versions/0.1.0/artifacts/mixed/download",
+            "quarantined": false
+          },
+          {
+            "variant": "source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:eb803a71b74e9bc370aa28e9d9a5779bcbdfe5749b0dc478d11921445e6c66df",
+            "size": 8265,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/orm-sqlite3/versions/0.1.0/artifacts/source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/plot": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/plot",
+    "revision": 9,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.plot",
+        "modules": [
+          "slowpilot.plot"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/plot",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:11:38Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:c2feefedb339eb03af064dad67db5639a07f82ff3be00e36b569ab4f4381cdb5",
+            "size": 259245,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/linux-x86_64-gnu-prebuilt-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:d408d02df4e393b18e897e640e5f8044716676ba15c58db8d1d20467ed4d61a5",
+            "size": 57331,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/linux-x86_64-gnu-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-source-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:d7cf29a5e34bd85d14f506862419b6500eff10bcf3fc598cf4b0ef04488b3ae4",
+            "size": 247210,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/linux-x86_64-gnu-source-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:19f1d7dc3ee14256f32cf6f5bc2f288be67f112340e53ab84976528611b628f9",
+            "size": 43785,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/linux-x86_64-gnu-source-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:e0485b82955e481023d470137e72618e2fb7cc2b2d1f654adc3c4ad83f7f676c",
+            "size": 254814,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/macos-aarch64-prebuilt-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:7fcdba670ad7dcda28e4af13a3c9f15187952c9d0e0bd78a21f16cea00861b59",
+            "size": 53339,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/macos-aarch64-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:9959636a483a49abdf0520d02372138e8cacfca27c439a3b1b2856258a7ec295",
+            "size": 247196,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/macos-aarch64-source-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:22d5c8273d7df09ead48e987bf1510ef5afdba9f104604addb3cca6f6267dfd2",
+            "size": 43773,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/plot/versions/0.1.0/artifacts/macos-aarch64-source-source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/progressbar": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/progressbar",
+    "revision": 3,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.progressbar",
+        "modules": [
+          "slowpilot.progressbar"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/progressbar",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:10:27Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:35fd79ccf712e3da30ed7bc7e6ec53ea171760c81d65f349e75ba619b1026bad",
+            "size": 13737,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/progressbar/versions/0.1.0/artifacts/bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "any",
+              "arch": "any",
+              "min_os": "",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "none",
+            "native_payload": false,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": null,
+              "sputnik_ext_abis": [],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:471c5506a2233f0de8b696cca53a8eb74c5c2125d9ceb3d88f46d2767fb749af",
+            "size": 2761,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/progressbar/versions/0.1.0/artifacts/source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/pycall": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/pycall",
+    "revision": 9,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.pycall",
+        "modules": [
+          "slowpilot.pycall"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/pycall",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:13:42Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.11.2",
+                  "abi": "cpython-3.11.2-linux-x86_64-gnu",
+                  "build_id": "sha256:4283b6fabf8d8e8e5d031fdbb32beaa1b0f38e54846224df962a068d2406d6ed",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:7d50c0721ee3e210a266da100dfdf5b10a8690167b33b73af912202caa5158a6",
+            "size": 43789,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/linux-x86_64-gnu-prebuilt-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.11.2",
+                  "abi": "cpython-3.11.2-linux-x86_64-gnu",
+                  "build_id": "sha256:4283b6fabf8d8e8e5d031fdbb32beaa1b0f38e54846224df962a068d2406d6ed",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:33c51f2e65293055f8291658888a982a00b77f700d76d3a35fb9926ec89b2079",
+            "size": 31512,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/linux-x86_64-gnu-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-source-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.11.2",
+                  "abi": "cpython-3.11.2-linux-x86_64-gnu",
+                  "build_id": "sha256:4283b6fabf8d8e8e5d031fdbb32beaa1b0f38e54846224df962a068d2406d6ed",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cpython-sdk",
+                  "kind": "sdk",
+                  "version": "3.11.2",
+                  "abi": "cpython-3.11.2-linux-x86_64-gnu",
+                  "build_id": "sha256:e6ec5b393c4cb4fdbab86319d571adfa255638a02e183de89421b76ac8b8a7d4",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cpython"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:ccbfdf90e1fe27aa05094c1fe20a3fcb87daa058417e10e8086c8311376a59c6",
+            "size": 22306,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/linux-x86_64-gnu-source-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.11.2",
+                  "abi": "cpython-3.11.2-linux-x86_64-gnu",
+                  "build_id": "sha256:4283b6fabf8d8e8e5d031fdbb32beaa1b0f38e54846224df962a068d2406d6ed",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cpython-sdk",
+                  "kind": "sdk",
+                  "version": "3.11.2",
+                  "abi": "cpython-3.11.2-linux-x86_64-gnu",
+                  "build_id": "sha256:e6ec5b393c4cb4fdbab86319d571adfa255638a02e183de89421b76ac8b8a7d4",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cpython"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:16627144a0587795bcd2eb68ca587195fc9b209b326d09e790e67ccfa3bbc298",
+            "size": 9546,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/linux-x86_64-gnu-source-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.14.6",
+                  "abi": "cpython-3.14.6-macos-aarch64",
+                  "build_id": "sha256:696ffa2cf9562522c387f7c2b3a990ef67e574df2d921822fe310ea35587cce0",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:00ac060f3fd2e3ecc6f7a8672d5c5da790eb95c2e36301ab70dbbb0f01a30ff9",
+            "size": 41756,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/macos-aarch64-prebuilt-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.14.6",
+                  "abi": "cpython-3.14.6-macos-aarch64",
+                  "build_id": "sha256:696ffa2cf9562522c387f7c2b3a990ef67e574df2d921822fe310ea35587cce0",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:aef8176bc267ef67847a50577f5add5cc4ebb39d5f671bb98ac86ed134790218",
+            "size": 29445,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/macos-aarch64-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.14.6",
+                  "abi": "cpython-3.14.6-macos-aarch64",
+                  "build_id": "sha256:696ffa2cf9562522c387f7c2b3a990ef67e574df2d921822fe310ea35587cce0",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cpython-sdk",
+                  "kind": "sdk",
+                  "version": "3.14.6",
+                  "abi": "cpython-3.14.6-macos-aarch64",
+                  "build_id": "sha256:914f425d4c322516ca5560adc3947f489e95c4eef741e242d2b53a52b0bae6ac",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cpython"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:72aa5d101cce75486f58050352386684085b7872cf93929d23de928817ae2972",
+            "size": 22699,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/macos-aarch64-source-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cpython",
+                  "kind": "runtime",
+                  "version": "3.14.6",
+                  "abi": "cpython-3.14.6-macos-aarch64",
+                  "build_id": "sha256:696ffa2cf9562522c387f7c2b3a990ef67e574df2d921822fe310ea35587cce0",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cpython-sdk",
+                  "kind": "sdk",
+                  "version": "3.14.6",
+                  "abi": "cpython-3.14.6-macos-aarch64",
+                  "build_id": "sha256:914f425d4c322516ca5560adc3947f489e95c4eef741e242d2b53a52b0bae6ac",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cpython"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:92775d306690b785c13c75842365d8d418648832abbc00a4cec0140d8154fb10",
+            "size": 9908,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/pycall/versions/0.1.0/artifacts/macos-aarch64-source-source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/rbcall": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/rbcall",
+    "revision": 9,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.rbcall",
+        "modules": [
+          "slowpilot.rbcall"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/rbcall",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:14:37Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "3.1.2",
+                  "abi": "cruby-3.1.2-linux-x86_64-gnu",
+                  "build_id": "sha256:b9b2ed86fe69fd5b0115a8893ade0423768444046d6a681ff2343e9869de654b",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:a8b7be8c34da89f0601c3b84539f3a5acb2302160acb9773762ef78e2bb07180",
+            "size": 69884,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/linux-x86_64-gnu-prebuilt-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "3.1.2",
+                  "abi": "cruby-3.1.2-linux-x86_64-gnu",
+                  "build_id": "sha256:b9b2ed86fe69fd5b0115a8893ade0423768444046d6a681ff2343e9869de654b",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:bc5b9dcf9752039dce280dc39ff1d23c4806ae23c154f00fd78a29694c517b15",
+            "size": 57800,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/linux-x86_64-gnu-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-source-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "3.1.2",
+                  "abi": "cruby-3.1.2-linux-x86_64-gnu",
+                  "build_id": "sha256:b9b2ed86fe69fd5b0115a8893ade0423768444046d6a681ff2343e9869de654b",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cruby-sdk",
+                  "kind": "sdk",
+                  "version": "3.1.2",
+                  "abi": "cruby-3.1.2-linux-x86_64-gnu",
+                  "build_id": "sha256:2b00e02f7dde5aee59f375132fc20a5ec4869799810b78068cd8497bdc929c8a",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cruby"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:e9057f03b90f4e0e228e485a48a742f3ade8cae76739eb1143cb0978eba820b8",
+            "size": 25250,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/linux-x86_64-gnu-source-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "3.1.2",
+                  "abi": "cruby-3.1.2-linux-x86_64-gnu",
+                  "build_id": "sha256:b9b2ed86fe69fd5b0115a8893ade0423768444046d6a681ff2343e9869de654b",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cruby-sdk",
+                  "kind": "sdk",
+                  "version": "3.1.2",
+                  "abi": "cruby-3.1.2-linux-x86_64-gnu",
+                  "build_id": "sha256:2b00e02f7dde5aee59f375132fc20a5ec4869799810b78068cd8497bdc929c8a",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cruby"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:facffc2388ec87a0b3beabb0dfed8038d80bf5aedae760bb7646011932361681",
+            "size": 12313,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/linux-x86_64-gnu-source-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "4.0.5",
+                  "abi": "cruby-4.0.5-macos-aarch64",
+                  "build_id": "sha256:d350427fd138e9d21189876a27a7c21e5e282216c736006fb104259919a8c4c4",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:1edd040ba1e5c9947d4268715f39bc15f372f29786edfecf76c59a6b8fbcfa5d",
+            "size": 58928,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/macos-aarch64-prebuilt-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "4.0.5",
+                  "abi": "cruby-4.0.5-macos-aarch64",
+                  "build_id": "sha256:d350427fd138e9d21189876a27a7c21e5e282216c736006fb104259919a8c4c4",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:e7c122d33ad1fa5c504e5770fc245088c00838b286fedd9fb205bd3f32ce17bd",
+            "size": 46929,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/macos-aarch64-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "4.0.5",
+                  "abi": "cruby-4.0.5-macos-aarch64",
+                  "build_id": "sha256:d350427fd138e9d21189876a27a7c21e5e282216c736006fb104259919a8c4c4",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cruby-sdk",
+                  "kind": "sdk",
+                  "version": "4.0.5",
+                  "abi": "cruby-4.0.5-macos-aarch64",
+                  "build_id": "sha256:ef87364bca3d7ae338e7baf7220cf14f01b8a438571078d2ea9696212bb24e5d",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cruby"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:efa266680ea3453a73313b9d266f498dc050b537943d3aa7e1cb93468431894f",
+            "size": 25625,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/macos-aarch64-source-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "cruby",
+                  "kind": "runtime",
+                  "version": "4.0.5",
+                  "abi": "cruby-4.0.5-macos-aarch64",
+                  "build_id": "sha256:d350427fd138e9d21189876a27a7c21e5e282216c736006fb104259919a8c4c4",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "cruby-sdk",
+                  "kind": "sdk",
+                  "version": "4.0.5",
+                  "abi": "cruby-4.0.5-macos-aarch64",
+                  "build_id": "sha256:ef87364bca3d7ae338e7baf7220cf14f01b8a438571078d2ea9696212bb24e5d",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "cruby"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:e7d5c077a8cdf8a0d0f34784cdc704a591940f9ed2b968a7c9f11c253072ead1",
+            "size": 12663,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/rbcall/versions/0.1.0/artifacts/macos-aarch64-source-source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/sqlite3": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/sqlite3",
+    "revision": 5,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.sqlite3",
+        "modules": [
+          "slowpilot.sqlite3"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/sqlite3",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:11:02Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "linux-x86_64-gnu-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:75bd0c864f71171a8c52b835609e8deae3f33b626aacc0e4a176208943172bcd",
+            "size": 869153,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/sqlite3/versions/0.1.0/artifacts/linux-x86_64-gnu-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.36",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:82283829986c1405070fb18fbf5e9fc131dc7056d65acfc86f8dd63f11b7fb86",
+            "size": 2623052,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/sqlite3/versions/0.1.0/artifacts/linux-x86_64-gnu-source-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:aa6fe4105c683cd2a6c829e642a8561a4d6843e9b96ebe1a9a1f532dc3a2a7e5",
+            "size": 793922,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/sqlite3/versions/0.1.0/artifacts/macos-aarch64-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [],
+              "native_providers": []
+            },
+            "sha256": "sha256:39283a340c56941038fd96f5f0c8376dbf993765ce733ddc7c72297a89c93b2e",
+            "size": 2623045,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/sqlite3/versions/0.1.0/artifacts/macos-aarch64-source-source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/system-io": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/system-io",
+    "revision": 7,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "slowpilot.sdk.fs",
+        "modules": [
+          "slowpilot.sdk.digest",
+          "slowpilot.sdk.fs",
+          "slowpilot.sdk.pkg",
+          "slowpilot.sdk.process"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/system-io",
+        "version": "0.1.0",
+        "published_at": "2026-10-22T18:15:45Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "macos-aarch64-prebuilt-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "system-io-runtime",
+                  "kind": "runtime",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:92d750b4a1446cc10cd98bb02f7ed928424b2a2dde6df02c3abc9410cf648ba7",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:285526fe6ad1180691bd5aabbff6eb6aaec35d78bd029da0fcf4dda170027122",
+            "size": 1999283,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/system-io/versions/0.1.0/artifacts/macos-aarch64-prebuilt-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-mixed",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "system-io-runtime",
+                  "kind": "runtime",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:92d750b4a1446cc10cd98bb02f7ed928424b2a2dde6df02c3abc9410cf648ba7",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:c4878e731d69bf5addc90e71ace75505b922994177f784780a50c8520ef3ef79",
+            "size": 1991557,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/system-io/versions/0.1.0/artifacts/macos-aarch64-prebuilt-mixed/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "system-io-runtime",
+                  "kind": "runtime",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:92d750b4a1446cc10cd98bb02f7ed928424b2a2dde6df02c3abc9410cf648ba7",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:ca0a461e1621f5027f142dd61c52daef87b881be4f076d9ec14197f46eeff4df",
+            "size": 1982085,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/system-io/versions/0.1.0/artifacts/macos-aarch64-prebuilt-source/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-bytecode",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "system-io-runtime",
+                  "kind": "runtime",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:92d750b4a1446cc10cd98bb02f7ed928424b2a2dde6df02c3abc9410cf648ba7",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "sputnik-sdk",
+                  "kind": "sdk",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:5eff40ce8f4f2d58547294c158ef4d33e7868e1611c52c39d1bb39dd2e71c830",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "system-io-runtime"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:832150615a5fbaacafb7aa632d0414d2dbb7abce259905ee6f25044d8754a5c3",
+            "size": 26983,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/system-io/versions/0.1.0/artifacts/macos-aarch64-source-bytecode/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-mixed",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [
+                [
+                  1,
+                  0
+                ]
+              ],
+              "profiles": [
+                0
+              ],
+              "bytecode_abi_hashes": [
+                "0000000000000000000000000000000000000000000000000000000000000000"
+              ],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "system-io-runtime",
+                  "kind": "runtime",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:92d750b4a1446cc10cd98bb02f7ed928424b2a2dde6df02c3abc9410cf648ba7",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "sputnik-sdk",
+                  "kind": "sdk",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:5eff40ce8f4f2d58547294c158ef4d33e7868e1611c52c39d1bb39dd2e71c830",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "system-io-runtime"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:90994d40de31e85dee862081e18e46b9eee14c82d2653e47a541badec4b307f8",
+            "size": 18836,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/system-io/versions/0.1.0/artifacts/macos-aarch64-source-mixed/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-source",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "system-io-runtime",
+                  "kind": "runtime",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:92d750b4a1446cc10cd98bb02f7ed928424b2a2dde6df02c3abc9410cf648ba7",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "sputnik-sdk",
+                  "kind": "sdk",
+                  "version": "0.1.0",
+                  "abi": "sputnik-sdk-5426b509acd4e1640ed0ab06f2e585c8cc1603f57c4ece166146468ebe712fc9",
+                  "build_id": "sha256:5eff40ce8f4f2d58547294c158ef4d33e7868e1611c52c39d1bb39dd2e71c830",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "system-io-runtime"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:9d1945f704d4435efb07e56f3e5c1c515c4fa50b6f38bc1dfff760d78609d503",
+            "size": 9759,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/system-io/versions/0.1.0/artifacts/macos-aarch64-source-source/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  },
+  "slowpilot/torch": {
+    "schema": "sputnik.registry.index.v1",
+    "package_ref": "slowpilot/torch",
+    "revision": 8,
+    "versions": [
+      {
+        "kind": "library",
+        "root_module": "",
+        "modules": [
+          "slowpilot.torch",
+          "slowpilot.torch.autograd",
+          "slowpilot.torch.autograd.context",
+          "slowpilot.torch.autograd.functional",
+          "slowpilot.torch.backends",
+          "slowpilot.torch.data",
+          "slowpilot.torch.data.collate",
+          "slowpilot.torch.data.concat_dataset",
+          "slowpilot.torch.data.data_loader",
+          "slowpilot.torch.data.dataset",
+          "slowpilot.torch.data.distributed_sampler",
+          "slowpilot.torch.data.iterable_dataset",
+          "slowpilot.torch.data.loader_worker",
+          "slowpilot.torch.data.random_sampler",
+          "slowpilot.torch.data.sequential_sampler",
+          "slowpilot.torch.data.subset",
+          "slowpilot.torch.data.tensor_dataset",
+          "slowpilot.torch.device",
+          "slowpilot.torch.distributed",
+          "slowpilot.torch.distributed.core",
+          "slowpilot.torch.distributed.ddp",
+          "slowpilot.torch.distributed.process_group",
+          "slowpilot.torch.dtype",
+          "slowpilot.torch.errors",
+          "slowpilot.torch.fft",
+          "slowpilot.torch.linalg",
+          "slowpilot.torch.nn",
+          "slowpilot.torch.nn.adaptive_avg_pool1d",
+          "slowpilot.torch.nn.adaptive_avg_pool2d",
+          "slowpilot.torch.nn.adaptive_avg_pool3d",
+          "slowpilot.torch.nn.adaptive_max_pool1d",
+          "slowpilot.torch.nn.adaptive_max_pool2d",
+          "slowpilot.torch.nn.adaptive_max_pool3d",
+          "slowpilot.torch.nn.alpha_dropout",
+          "slowpilot.torch.nn.attention_functional",
+          "slowpilot.torch.nn.avg_pool1d",
+          "slowpilot.torch.nn.avg_pool2d",
+          "slowpilot.torch.nn.avg_pool3d",
+          "slowpilot.torch.nn.batch_norm",
+          "slowpilot.torch.nn.batch_norm1d",
+          "slowpilot.torch.nn.batch_norm2d",
+          "slowpilot.torch.nn.batch_norm3d",
+          "slowpilot.torch.nn.bce_loss",
+          "slowpilot.torch.nn.bce_with_logits_loss",
+          "slowpilot.torch.nn.bilinear",
+          "slowpilot.torch.nn.constant_pad1d",
+          "slowpilot.torch.nn.constant_pad2d",
+          "slowpilot.torch.nn.constant_pad3d",
+          "slowpilot.torch.nn.conv1d",
+          "slowpilot.torch.nn.conv2d",
+          "slowpilot.torch.nn.conv3d",
+          "slowpilot.torch.nn.conv_transpose1d",
+          "slowpilot.torch.nn.conv_transpose2d",
+          "slowpilot.torch.nn.conv_transpose3d",
+          "slowpilot.torch.nn.convolution",
+          "slowpilot.torch.nn.cosine_embedding_loss",
+          "slowpilot.torch.nn.cosine_similarity",
+          "slowpilot.torch.nn.cross_entropy_loss",
+          "slowpilot.torch.nn.ctc_loss",
+          "slowpilot.torch.nn.dropout",
+          "slowpilot.torch.nn.dropout1d",
+          "slowpilot.torch.nn.dropout2d",
+          "slowpilot.torch.nn.dropout3d",
+          "slowpilot.torch.nn.dropout_functional",
+          "slowpilot.torch.nn.elu",
+          "slowpilot.torch.nn.embedding",
+          "slowpilot.torch.nn.embedding_bag",
+          "slowpilot.torch.nn.embedding_functional",
+          "slowpilot.torch.nn.feature_alpha_dropout",
+          "slowpilot.torch.nn.flatten",
+          "slowpilot.torch.nn.fold",
+          "slowpilot.torch.nn.functional",
+          "slowpilot.torch.nn.gaussian_nll_loss",
+          "slowpilot.torch.nn.gelu",
+          "slowpilot.torch.nn.glu",
+          "slowpilot.torch.nn.group_norm",
+          "slowpilot.torch.nn.gru",
+          "slowpilot.torch.nn.gru_cell",
+          "slowpilot.torch.nn.hardshrink",
+          "slowpilot.torch.nn.hardsigmoid",
+          "slowpilot.torch.nn.hardswish",
+          "slowpilot.torch.nn.hardtanh",
+          "slowpilot.torch.nn.hinge_embedding_loss",
+          "slowpilot.torch.nn.huber_loss",
+          "slowpilot.torch.nn.identity",
+          "slowpilot.torch.nn.init",
+          "slowpilot.torch.nn.instance_norm",
+          "slowpilot.torch.nn.instance_norm1d",
+          "slowpilot.torch.nn.instance_norm2d",
+          "slowpilot.torch.nn.instance_norm3d",
+          "slowpilot.torch.nn.interpolation",
+          "slowpilot.torch.nn.kl_div_loss",
+          "slowpilot.torch.nn.l1_loss",
+          "slowpilot.torch.nn.layer_norm",
+          "slowpilot.torch.nn.leaky_relu",
+          "slowpilot.torch.nn.linear",
+          "slowpilot.torch.nn.local_response_norm",
+          "slowpilot.torch.nn.log_sigmoid",
+          "slowpilot.torch.nn.log_softmax",
+          "slowpilot.torch.nn.lp_pool1d",
+          "slowpilot.torch.nn.lp_pool2d",
+          "slowpilot.torch.nn.lp_pool3d",
+          "slowpilot.torch.nn.lstm",
+          "slowpilot.torch.nn.lstm_cell",
+          "slowpilot.torch.nn.margin_ranking_loss",
+          "slowpilot.torch.nn.max_pool1d",
+          "slowpilot.torch.nn.max_pool2d",
+          "slowpilot.torch.nn.max_pool3d",
+          "slowpilot.torch.nn.max_unpool1d",
+          "slowpilot.torch.nn.max_unpool2d",
+          "slowpilot.torch.nn.max_unpool3d",
+          "slowpilot.torch.nn.mish",
+          "slowpilot.torch.nn.module",
+          "slowpilot.torch.nn.module_dict",
+          "slowpilot.torch.nn.module_list",
+          "slowpilot.torch.nn.mse_loss",
+          "slowpilot.torch.nn.multi_margin_loss",
+          "slowpilot.torch.nn.multihead_attention",
+          "slowpilot.torch.nn.multilabel_margin_loss",
+          "slowpilot.torch.nn.multilabel_soft_margin_loss",
+          "slowpilot.torch.nn.nll_loss",
+          "slowpilot.torch.nn.pairwise_distance",
+          "slowpilot.torch.nn.parameter_dict",
+          "slowpilot.torch.nn.parameter_list",
+          "slowpilot.torch.nn.pixel_shuffle",
+          "slowpilot.torch.nn.pixel_unshuffle",
+          "slowpilot.torch.nn.poisson_nll_loss",
+          "slowpilot.torch.nn.pooling_functional",
+          "slowpilot.torch.nn.prelu",
+          "slowpilot.torch.nn.recurrent",
+          "slowpilot.torch.nn.recurrent_core",
+          "slowpilot.torch.nn.reflection_pad1d",
+          "slowpilot.torch.nn.reflection_pad2d",
+          "slowpilot.torch.nn.reflection_pad3d",
+          "slowpilot.torch.nn.relu",
+          "slowpilot.torch.nn.relu6",
+          "slowpilot.torch.nn.replication_pad1d",
+          "slowpilot.torch.nn.replication_pad2d",
+          "slowpilot.torch.nn.replication_pad3d",
+          "slowpilot.torch.nn.rms_norm",
+          "slowpilot.torch.nn.rnn",
+          "slowpilot.torch.nn.rnn_cell",
+          "slowpilot.torch.nn.selu",
+          "slowpilot.torch.nn.sequential",
+          "slowpilot.torch.nn.sigmoid",
+          "slowpilot.torch.nn.silu",
+          "slowpilot.torch.nn.smooth_l1_loss",
+          "slowpilot.torch.nn.soft_margin_loss",
+          "slowpilot.torch.nn.softmax",
+          "slowpilot.torch.nn.softmax2d",
+          "slowpilot.torch.nn.softmin",
+          "slowpilot.torch.nn.softplus",
+          "slowpilot.torch.nn.softshrink",
+          "slowpilot.torch.nn.softsign",
+          "slowpilot.torch.nn.spatial_core",
+          "slowpilot.torch.nn.tanh",
+          "slowpilot.torch.nn.tanhshrink",
+          "slowpilot.torch.nn.threshold",
+          "slowpilot.torch.nn.transformer",
+          "slowpilot.torch.nn.transformer_decoder",
+          "slowpilot.torch.nn.transformer_decoder_layer",
+          "slowpilot.torch.nn.transformer_encoder",
+          "slowpilot.torch.nn.transformer_encoder_layer",
+          "slowpilot.torch.nn.triplet_margin_loss",
+          "slowpilot.torch.nn.triplet_margin_with_distance_loss",
+          "slowpilot.torch.nn.unfold",
+          "slowpilot.torch.nn.upsample",
+          "slowpilot.torch.nn.upsampling_bilinear2d",
+          "slowpilot.torch.nn.upsampling_nearest2d",
+          "slowpilot.torch.nn.utils.packed_sequence",
+          "slowpilot.torch.nn.utils.rnn",
+          "slowpilot.torch.nn.utils.sequence",
+          "slowpilot.torch.onnx",
+          "slowpilot.torch.onnx.core",
+          "slowpilot.torch.onnx.exporter",
+          "slowpilot.torch.onnx.program",
+          "slowpilot.torch.onnx.trace",
+          "slowpilot.torch.optim",
+          "slowpilot.torch.optim.adam",
+          "slowpilot.torch.optim.adamw",
+          "slowpilot.torch.optim.grad",
+          "slowpilot.torch.optim.lr_scheduler",
+          "slowpilot.torch.optim.lr_scheduler.cosine_annealing_lr",
+          "slowpilot.torch.optim.lr_scheduler.reduce_lr_on_plateau",
+          "slowpilot.torch.optim.lr_scheduler.step_lr",
+          "slowpilot.torch.optim.optimizer",
+          "slowpilot.torch.optim.sgd",
+          "slowpilot.torch.random",
+          "slowpilot.torch.random.core",
+          "slowpilot.torch.random.generator",
+          "slowpilot.torch.serialization",
+          "slowpilot.torch.serialization.state_dict",
+          "slowpilot.torch.special",
+          "slowpilot.torch.tensor.bytes",
+          "slowpilot.torch.tensor.complex",
+          "slowpilot.torch.tensor.core",
+          "slowpilot.torch.tensor.factories",
+          "slowpilot.torch.tensor.foreach",
+          "slowpilot.torch.tensor.indexing",
+          "slowpilot.torch.tensor.indexing_core",
+          "slowpilot.torch.tensor.slice",
+          "slowpilot.torch.tensor.value"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/torch",
+        "version": "0.1.3",
+        "published_at": "2026-10-30T06:35:42Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+            "kind": "library",
+            "bundle": "runtime",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.28",
+              "compute_backend": "cuda",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "13.0",
+              "min_cuda_driver": "580.105.08",
+              "cuda_architectures": [
+                "8.6",
+                "8.9"
+              ]
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-cxx11-linux-x86_64-gnu-cu130",
+                  "build_id": "sha256:badc2b8b108ccb207c4ece3440eded3c2630c8d765a1f51245b20edb659305f7",
+                  "provider": "bundled",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-cxx11-linux-x86_64-gnu-cu130",
+                  "build_id": "sha256:badc2b8b108ccb207c4ece3440eded3c2630c8d765a1f51245b20edb659305f7",
+                  "runtime_build_id": ""
+                }
+              ]
+            },
+            "sha256": "sha256:e57ee53c2a26a09584c547e668e159a2de4c0c19f41d5a459c1ebb2235b8d335",
+            "size": 1977457204,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/torch/versions/0.1.3/artifacts/linux-x86_64-gnu-cu130-prebuilt-source-runtime/download",
+            "quarantined": false
+          },
+          {
+            "variant": "linux-x86_64-gnu-rocm643-prebuilt-source-runtime",
+            "kind": "library",
+            "bundle": "runtime",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.34",
+              "compute_backend": "rocm",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-cxx11-linux-x86_64-gnu-rocm6.4.3",
+                  "build_id": "sha256:f4b4f3f5c511973518b352df2e9277480d0679e26da4f084052c9c07b9003d43",
+                  "provider": "bundled",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-cxx11-linux-x86_64-gnu-rocm6.4.3",
+                  "build_id": "sha256:f4b4f3f5c511973518b352df2e9277480d0679e26da4f084052c9c07b9003d43",
+                  "runtime_build_id": ""
+                }
+              ]
+            },
+            "sha256": "sha256:c99e2897c0e99363492f9430ddb235b031b0f8b8ca4948933927ae14728f6baf",
+            "size": 176356805,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/torch/versions/0.1.3/artifacts/linux-x86_64-gnu-rocm643-prebuilt-source-runtime/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-source-runtime",
+            "kind": "library",
+            "bundle": "runtime",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [
+                "cpu",
+                "mps"
+              ],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "provider": "bundled",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "runtime_build_id": ""
+                }
+              ]
+            },
+            "sha256": "sha256:0cc6072e5ae1a370d9e99c26c850feb1ac5306743d5bf69e1f3156e80635cf36",
+            "size": 94707514,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/torch/versions/0.1.3/artifacts/macos-aarch64-prebuilt-source-runtime/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-source-none",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [
+                "cpu",
+                "mps"
+              ],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "libtorch-sdk",
+                  "kind": "sdk",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "libtorch"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:65b5fcbe3598ef4ae12b7164bbfb6ef42c269174a6b66c11a5f0b54bfabe774d",
+            "size": 115000,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/torch/versions/0.1.3/artifacts/macos-aarch64-source-source-none/download",
+            "quarantined": false
+          }
+        ]
+      },
+      {
+        "kind": "library",
+        "root_module": "slowpilot.torch",
+        "modules": [
+          "slowpilot.torch",
+          "slowpilot.torch.autograd",
+          "slowpilot.torch.autograd.context",
+          "slowpilot.torch.autograd.functional",
+          "slowpilot.torch.backends",
+          "slowpilot.torch.data",
+          "slowpilot.torch.data.collate",
+          "slowpilot.torch.data.concat_dataset",
+          "slowpilot.torch.data.data_loader",
+          "slowpilot.torch.data.dataset",
+          "slowpilot.torch.data.distributed_sampler",
+          "slowpilot.torch.data.iterable_dataset",
+          "slowpilot.torch.data.loader_worker",
+          "slowpilot.torch.data.random_sampler",
+          "slowpilot.torch.data.sequential_sampler",
+          "slowpilot.torch.data.subset",
+          "slowpilot.torch.data.tensor_dataset",
+          "slowpilot.torch.device",
+          "slowpilot.torch.distributed",
+          "slowpilot.torch.distributed.core",
+          "slowpilot.torch.distributed.ddp",
+          "slowpilot.torch.distributed.process_group",
+          "slowpilot.torch.dtype",
+          "slowpilot.torch.errors",
+          "slowpilot.torch.fft",
+          "slowpilot.torch.linalg",
+          "slowpilot.torch.nn",
+          "slowpilot.torch.nn.adaptive_avg_pool1d",
+          "slowpilot.torch.nn.adaptive_avg_pool2d",
+          "slowpilot.torch.nn.adaptive_avg_pool3d",
+          "slowpilot.torch.nn.adaptive_max_pool1d",
+          "slowpilot.torch.nn.adaptive_max_pool2d",
+          "slowpilot.torch.nn.adaptive_max_pool3d",
+          "slowpilot.torch.nn.alpha_dropout",
+          "slowpilot.torch.nn.attention_functional",
+          "slowpilot.torch.nn.avg_pool1d",
+          "slowpilot.torch.nn.avg_pool2d",
+          "slowpilot.torch.nn.avg_pool3d",
+          "slowpilot.torch.nn.batch_norm",
+          "slowpilot.torch.nn.batch_norm1d",
+          "slowpilot.torch.nn.batch_norm2d",
+          "slowpilot.torch.nn.batch_norm3d",
+          "slowpilot.torch.nn.bce_loss",
+          "slowpilot.torch.nn.bce_with_logits_loss",
+          "slowpilot.torch.nn.bilinear",
+          "slowpilot.torch.nn.constant_pad1d",
+          "slowpilot.torch.nn.constant_pad2d",
+          "slowpilot.torch.nn.constant_pad3d",
+          "slowpilot.torch.nn.conv1d",
+          "slowpilot.torch.nn.conv2d",
+          "slowpilot.torch.nn.conv3d",
+          "slowpilot.torch.nn.conv_transpose1d",
+          "slowpilot.torch.nn.conv_transpose2d",
+          "slowpilot.torch.nn.conv_transpose3d",
+          "slowpilot.torch.nn.convolution",
+          "slowpilot.torch.nn.cosine_embedding_loss",
+          "slowpilot.torch.nn.cosine_similarity",
+          "slowpilot.torch.nn.cross_entropy_loss",
+          "slowpilot.torch.nn.ctc_loss",
+          "slowpilot.torch.nn.dropout",
+          "slowpilot.torch.nn.dropout1d",
+          "slowpilot.torch.nn.dropout2d",
+          "slowpilot.torch.nn.dropout3d",
+          "slowpilot.torch.nn.dropout_functional",
+          "slowpilot.torch.nn.elu",
+          "slowpilot.torch.nn.embedding",
+          "slowpilot.torch.nn.embedding_bag",
+          "slowpilot.torch.nn.embedding_functional",
+          "slowpilot.torch.nn.feature_alpha_dropout",
+          "slowpilot.torch.nn.flatten",
+          "slowpilot.torch.nn.fold",
+          "slowpilot.torch.nn.functional",
+          "slowpilot.torch.nn.gaussian_nll_loss",
+          "slowpilot.torch.nn.gelu",
+          "slowpilot.torch.nn.glu",
+          "slowpilot.torch.nn.group_norm",
+          "slowpilot.torch.nn.gru",
+          "slowpilot.torch.nn.gru_cell",
+          "slowpilot.torch.nn.hardshrink",
+          "slowpilot.torch.nn.hardsigmoid",
+          "slowpilot.torch.nn.hardswish",
+          "slowpilot.torch.nn.hardtanh",
+          "slowpilot.torch.nn.hinge_embedding_loss",
+          "slowpilot.torch.nn.huber_loss",
+          "slowpilot.torch.nn.identity",
+          "slowpilot.torch.nn.init",
+          "slowpilot.torch.nn.instance_norm",
+          "slowpilot.torch.nn.instance_norm1d",
+          "slowpilot.torch.nn.instance_norm2d",
+          "slowpilot.torch.nn.instance_norm3d",
+          "slowpilot.torch.nn.interpolation",
+          "slowpilot.torch.nn.kl_div_loss",
+          "slowpilot.torch.nn.l1_loss",
+          "slowpilot.torch.nn.layer_norm",
+          "slowpilot.torch.nn.leaky_relu",
+          "slowpilot.torch.nn.linear",
+          "slowpilot.torch.nn.local_response_norm",
+          "slowpilot.torch.nn.log_sigmoid",
+          "slowpilot.torch.nn.log_softmax",
+          "slowpilot.torch.nn.lp_pool1d",
+          "slowpilot.torch.nn.lp_pool2d",
+          "slowpilot.torch.nn.lp_pool3d",
+          "slowpilot.torch.nn.lstm",
+          "slowpilot.torch.nn.lstm_cell",
+          "slowpilot.torch.nn.margin_ranking_loss",
+          "slowpilot.torch.nn.max_pool1d",
+          "slowpilot.torch.nn.max_pool2d",
+          "slowpilot.torch.nn.max_pool3d",
+          "slowpilot.torch.nn.max_unpool1d",
+          "slowpilot.torch.nn.max_unpool2d",
+          "slowpilot.torch.nn.max_unpool3d",
+          "slowpilot.torch.nn.mish",
+          "slowpilot.torch.nn.module",
+          "slowpilot.torch.nn.module_dict",
+          "slowpilot.torch.nn.module_list",
+          "slowpilot.torch.nn.mse_loss",
+          "slowpilot.torch.nn.multi_margin_loss",
+          "slowpilot.torch.nn.multihead_attention",
+          "slowpilot.torch.nn.multilabel_margin_loss",
+          "slowpilot.torch.nn.multilabel_soft_margin_loss",
+          "slowpilot.torch.nn.nll_loss",
+          "slowpilot.torch.nn.pairwise_distance",
+          "slowpilot.torch.nn.parameter_dict",
+          "slowpilot.torch.nn.parameter_list",
+          "slowpilot.torch.nn.pixel_shuffle",
+          "slowpilot.torch.nn.pixel_unshuffle",
+          "slowpilot.torch.nn.poisson_nll_loss",
+          "slowpilot.torch.nn.pooling_functional",
+          "slowpilot.torch.nn.prelu",
+          "slowpilot.torch.nn.recurrent",
+          "slowpilot.torch.nn.recurrent_core",
+          "slowpilot.torch.nn.reflection_pad1d",
+          "slowpilot.torch.nn.reflection_pad2d",
+          "slowpilot.torch.nn.reflection_pad3d",
+          "slowpilot.torch.nn.relu",
+          "slowpilot.torch.nn.relu6",
+          "slowpilot.torch.nn.replication_pad1d",
+          "slowpilot.torch.nn.replication_pad2d",
+          "slowpilot.torch.nn.replication_pad3d",
+          "slowpilot.torch.nn.rms_norm",
+          "slowpilot.torch.nn.rnn",
+          "slowpilot.torch.nn.rnn_cell",
+          "slowpilot.torch.nn.selu",
+          "slowpilot.torch.nn.sequential",
+          "slowpilot.torch.nn.sigmoid",
+          "slowpilot.torch.nn.silu",
+          "slowpilot.torch.nn.smooth_l1_loss",
+          "slowpilot.torch.nn.soft_margin_loss",
+          "slowpilot.torch.nn.softmax",
+          "slowpilot.torch.nn.softmax2d",
+          "slowpilot.torch.nn.softmin",
+          "slowpilot.torch.nn.softplus",
+          "slowpilot.torch.nn.softshrink",
+          "slowpilot.torch.nn.softsign",
+          "slowpilot.torch.nn.spatial_core",
+          "slowpilot.torch.nn.tanh",
+          "slowpilot.torch.nn.tanhshrink",
+          "slowpilot.torch.nn.threshold",
+          "slowpilot.torch.nn.transformer",
+          "slowpilot.torch.nn.transformer_decoder",
+          "slowpilot.torch.nn.transformer_decoder_layer",
+          "slowpilot.torch.nn.transformer_encoder",
+          "slowpilot.torch.nn.transformer_encoder_layer",
+          "slowpilot.torch.nn.triplet_margin_loss",
+          "slowpilot.torch.nn.triplet_margin_with_distance_loss",
+          "slowpilot.torch.nn.unfold",
+          "slowpilot.torch.nn.upsample",
+          "slowpilot.torch.nn.upsampling_bilinear2d",
+          "slowpilot.torch.nn.upsampling_nearest2d",
+          "slowpilot.torch.nn.utils.packed_sequence",
+          "slowpilot.torch.nn.utils.rnn",
+          "slowpilot.torch.nn.utils.sequence",
+          "slowpilot.torch.onnx",
+          "slowpilot.torch.onnx.core",
+          "slowpilot.torch.onnx.exporter",
+          "slowpilot.torch.onnx.program",
+          "slowpilot.torch.onnx.trace",
+          "slowpilot.torch.optim",
+          "slowpilot.torch.optim.adam",
+          "slowpilot.torch.optim.adamw",
+          "slowpilot.torch.optim.grad",
+          "slowpilot.torch.optim.lr_scheduler",
+          "slowpilot.torch.optim.lr_scheduler.cosine_annealing_lr",
+          "slowpilot.torch.optim.lr_scheduler.reduce_lr_on_plateau",
+          "slowpilot.torch.optim.lr_scheduler.step_lr",
+          "slowpilot.torch.optim.optimizer",
+          "slowpilot.torch.optim.sgd",
+          "slowpilot.torch.random",
+          "slowpilot.torch.random.core",
+          "slowpilot.torch.random.generator",
+          "slowpilot.torch.serialization",
+          "slowpilot.torch.serialization.state_dict",
+          "slowpilot.torch.special",
+          "slowpilot.torch.tensor.bytes",
+          "slowpilot.torch.tensor.complex",
+          "slowpilot.torch.tensor.core",
+          "slowpilot.torch.tensor.factories",
+          "slowpilot.torch.tensor.foreach",
+          "slowpilot.torch.tensor.indexing",
+          "slowpilot.torch.tensor.indexing_core",
+          "slowpilot.torch.tensor.slice",
+          "slowpilot.torch.tensor.value"
+        ],
+        "dependencies": [],
+        "capabilities": [],
+        "schema": "sputnik.registry.release.v1",
+        "package_ref": "slowpilot/torch",
+        "version": "0.1.2",
+        "published_at": "2026-10-22T17:40:15Z",
+        "yanked": false,
+        "yank_reason": null,
+        "artifacts": [
+          {
+            "variant": "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+            "kind": "library",
+            "bundle": "runtime",
+            "target": {
+              "os": "linux",
+              "arch": "x86_64",
+              "min_os": "",
+              "libc": "gnu",
+              "min_libc": "2.28",
+              "compute_backend": "cuda",
+              "cpu_features": [],
+              "compute_backends": [],
+              "cuda_version": "13.0",
+              "min_cuda_driver": "580.105.08",
+              "cuda_architectures": [
+                "8.6",
+                "8.9"
+              ]
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-cxx11-linux-x86_64-gnu-cu130",
+                  "build_id": "sha256:badc2b8b108ccb207c4ece3440eded3c2630c8d765a1f51245b20edb659305f7",
+                  "provider": "bundled",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-cxx11-linux-x86_64-gnu-cu130",
+                  "build_id": "sha256:badc2b8b108ccb207c4ece3440eded3c2630c8d765a1f51245b20edb659305f7",
+                  "runtime_build_id": ""
+                }
+              ]
+            },
+            "sha256": "sha256:deb1645994782a29677163bb951efd3cfe2bd362b7ed1acce6cfae3ec6778655",
+            "size": 1977456268,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/torch/versions/0.1.2/artifacts/linux-x86_64-gnu-cu130-prebuilt-source-runtime/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-prebuilt-source-runtime",
+            "kind": "library",
+            "bundle": "runtime",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [
+                "cpu",
+                "mps"
+              ],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "prebuilt",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "provider": "bundled",
+                  "package": "",
+                  "runtime": ""
+                }
+              ],
+              "native_providers": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "runtime_build_id": ""
+                }
+              ]
+            },
+            "sha256": "sha256:37f0c2899ecf9e714b53a1bd3893f6f30210420ccf87016d45e026267bf99fa6",
+            "size": 94706725,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/torch/versions/0.1.2/artifacts/macos-aarch64-prebuilt-source-runtime/download",
+            "quarantined": false
+          },
+          {
+            "variant": "macos-aarch64-source-source-none",
+            "kind": "library",
+            "bundle": "none",
+            "target": {
+              "os": "macos",
+              "arch": "aarch64",
+              "min_os": "26.0",
+              "libc": "",
+              "min_libc": "",
+              "compute_backend": "none",
+              "cpu_features": [],
+              "compute_backends": [
+                "cpu",
+                "mps"
+              ],
+              "cuda_version": "",
+              "min_cuda_driver": "",
+              "cuda_architectures": []
+            },
+            "native_mode": "source",
+            "native_payload": true,
+            "dependencies": [],
+            "build_dependencies": [],
+            "compatibility": {
+              "bytecode_versions": [],
+              "profiles": [],
+              "bytecode_abi_hashes": [],
+              "sputnik_ext_abi": 1,
+              "sputnik_ext_abis": [
+                1
+              ],
+              "native_requirements": [
+                {
+                  "id": "libtorch",
+                  "kind": "runtime",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": ""
+                },
+                {
+                  "id": "libtorch-sdk",
+                  "kind": "sdk",
+                  "version": "2.14.0",
+                  "abi": "libtorch-2.14.0-macos-aarch64",
+                  "build_id": "sha256:ff327c4dd2f32d4858862f9b9f20c741ef4e300df1008d828268460b196aa7fe",
+                  "provider": "external",
+                  "package": "",
+                  "runtime": "libtorch"
+                }
+              ],
+              "native_providers": []
+            },
+            "sha256": "sha256:645c18ffbb76806e0796fb37281604e5d58ef4326cafcafe0da370fbc9aa8ceb",
+            "size": 113996,
+            "url": "https://registry.sputnik-lang.online/api/v1/namespaces/slowpilot/packages/torch/versions/0.1.2/artifacts/macos-aarch64-source-source-none/download",
+            "quarantined": false
+          }
+        ]
+      }
+    ],
+    "next_cursor": null
+  }
+}

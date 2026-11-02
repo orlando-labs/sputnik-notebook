@@ -1,0 +1,25 @@
+[
+  {
+    "after" : "2",
+    "before" : "1",
+    "case" : "invocation_restart",
+    "command_reported_success" : true,
+    "epoch_unchanged" : true
+  },
+  {
+    "case" : "carousel_selection",
+    "desktop_selected" : 1,
+    "server_result" : "\"First\""
+  },
+  {
+    "case" : "history_delete",
+    "deleted_locally" : true,
+    "reappeared_after_reconnect" : true
+  },
+  {
+    "a_still_active" : true,
+    "b_state" : "cancelled",
+    "case" : "targeted_stop",
+    "selected_target" : "board:a"
+  }
+]

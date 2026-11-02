@@ -1,0 +1,13 @@
+image=sha256:98f862174b559490b410294835c3566ff40a40460c4c6bb743b71b7e6ccc042d health=healthy restart=unless-stopped
+sputnik 1.0.0
+PASS no Python executable or installed python/libpython package
+PID                 NLWP                COMMAND
+2097816             1                   /usr/bin/tini -- /usr/local/bin/sputnik-notebook-remote --mode serve --host 0.0.0.0 --port 18765 --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik
+2097876             2                   /usr/local/bin/sputnik-notebook-remote --mode serve --host 0.0.0.0 --port 18765 --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik
+2097878             5                   /usr/local/bin/sputnik-notebook-remote --mode agent --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --python python3 --ruby ruby --sputnik /usr/local/bin/sputnik --orphan-gc-interval 0 --orphan-min-age 604800
+2097902             3                   /usr/local/bin/sputnik-notebook-remote --mode gateway --root /home/slowpilot/sputnik-remote-core/state --host 0.0.0.0 --port 18765
+pid=2097876 VmSize: 155516 kB VmRSS: 17488 kB Threads: 2  
+pid=2097878 VmSize: 207652 kB VmRSS: 28944 kB Threads: 5  
+pid=2097902 VmSize: 155516 kB VmRSS: 14252 kB Threads: 3  
+SPUTNIK_TASK_MAX_THREADS=56
+SPUTNIK_FFI_MAX_THREADS=32

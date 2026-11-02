@@ -1,0 +1,31 @@
+{
+  "core": {
+    "schema": "sputnik.build.result.v2",
+    "status": "ok",
+    "target": "native",
+    "native_graph_code_count": 1365,
+    "native_graph_native_code_count": 1365,
+    "native_graph_vm_fallback_code_count": 0,
+    "native_graph_full_coverage": true,
+    "native_graph_body_coverage_full": true,
+    "diagnostics": []
+  },
+  "fixture": {
+    "schema": "sputnik.executable.build.v2",
+    "status": "ok",
+    "target": "native",
+    "native_code_count": 3219,
+    "vm_fallback_code_count": 0,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true
+  },
+  "main": {
+    "schema": "sputnik.executable.build.v2",
+    "status": "ok",
+    "target": "native",
+    "native_code_count": 3219,
+    "vm_fallback_code_count": 0,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true
+  }
+}

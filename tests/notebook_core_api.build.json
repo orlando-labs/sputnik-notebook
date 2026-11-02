@@ -1,0 +1,4 @@
+{
+  "entry": "notebook_core_api_tests.s",
+  "dependencies": {"notebook-core": {"path": "../packages/notebook-core"}}
+}

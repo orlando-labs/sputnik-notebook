@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+for cache_id in i044iklm4k6agzi99iwoi9cel uuow73tcgpim24x2gci5eup9r tu4u2vqpg3ormzv3doi2ska7c wny3dtlhbvosrm5209mfcoh1v qf856ffhhwa4ngf5rx41jyq08 i13mx8uytk8fihdvbv2dhm2ka 3g2ac0qdgxaketnopwas2gv51 s39pz2wu78sl1i629y0kgvfb7 1vh7tyw4s2zn2mplsrkkq5m4y n9uvdo1dtr4srwfjrgdx3zflo lehrpg37luz59fyrcsqlrzxmd 75vw5kmimhap90gpo5ij2h4u7 xkbuefxclyx113vj7byio0pmv rqbtuzzvt1xd6eau39sn8fp03 lys2pyx9huhditblwrwjang9p yqzhw7952rji6ri72ywdz5l24 38v3jjmhdltoybydshg6a4llx 08rmw0rz3ugviw7sxjrk498d9 vnni78cdct6o0aa6ijnoek9ke ogymtxbcec69jrh6982yyd97n upjzh8xpl9ln3vt2f1y1eb8k2 tu6xqae8g0bwe43bavmgguctj elyixojlv11814mfh03m5hsfe jo6apsvetbjqqlwtmxnx2mqih xn6s9p5sl4qw08xorxax31el3; do
+  printf "REMOVE_CORE_CACHE %s\n" "$cache_id"
+  docker buildx prune --force --filter "id=$cache_id"
+done

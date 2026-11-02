@@ -1,0 +1,24 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/capture-annotations.spec.ts
+
+[WebServer] (node:50076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 11 tests using 1 worker
+
+(node:50096) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/capture-annotations.spec.ts:52:1 › explicit fake microphone capture creates PCM WAV locally, then Apply accepts exact bytes without a run (3.8s)
+  ✓   2 test/capture-annotations.spec.ts:56:1 › cancel, hidden view and interrupted tracks release recording without replacing the previous draft (1.4s)
+  ✓   3 test/capture-annotations.spec.ts:61:1 › denied and late permission results never leak a microphone or mutate accepted input (1.2s)
+  ✓   4 test/capture-annotations.spec.ts:65:1 › image regions use exact pixels, typed configured attributes and independent draft Undo/Redo (3.3s)
+  ✓   5 test/capture-annotations.spec.ts:69:1 › pointer drawing handles reverse rectangles, invalid coordinates block Apply, and Discard is inert (2.0s)
+  ✓   6 test/capture-annotations.spec.ts:73:1 › annotation source and schema mismatches are rejected by Core, with exact-receipt replay (2.4s)
+  ✓   7 test/capture-annotations.spec.ts:77:1 › stale annotation draft cannot retarget after a saved source update and can still export (2.6s)
+  ✓   8 test/capture-annotations.spec.ts:81:1 › replacing accepted image invalidates old labels while keeping their repair data in the notebook (4.1s)
+  ✓   9 test/capture-annotations.spec.ts:85:1 › designer owns annotation classes and recording permission without opening a microphone (1.5s)
+  ✓  10 test/capture-annotations.spec.ts:89:1 › revoked access stops a live microphone and prevents annotation acceptance for viewers (5.0s)
+  ✓  11 test/capture-annotations.spec.ts:93:1 › recording stops itself at 30 seconds, closes tracks and retains only a bounded WAV draft (31.5s)
+
+  11 passed (1.0m)

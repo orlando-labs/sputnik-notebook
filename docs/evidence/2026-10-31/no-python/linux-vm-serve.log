@@ -1,0 +1,23 @@
+ResourceBusyError: file is already locked
+ResourceBusyError: file is already locked
+  at c1085:48 (/src/sputnik-notebook/packages/notebook-core/src/notebook/core.s:161:14)
+  at c1337:23 (/src/sputnik-notebook/tools/notebook-remote/server.s:11:10)
+  at c1403:262 (/src/sputnik-notebook/tools/notebook-remote/main.s:55:34)
+IOError: execution agent exited during startup
+IOError: execution agent exited during startup
+  at c1400:289 (/src/sputnik-notebook/tools/notebook-remote/service.s:25:3)
+  at c1403:202 (/src/sputnik-notebook/tools/notebook-remote/main.s:54:32)
+IOError: execution agent exited; stopping service
+IOError: execution agent exited; stopping service
+  at c1400:289 (/src/sputnik-notebook/tools/notebook-remote/service.s:25:3)
+  at c1403:202 (/src/sputnik-notebook/tools/notebook-remote/main.s:54:32)
+AddressInUseError: listen: Address already in use
+AddressInUseError: listen: Address already in use
+  at c1357:17 (/src/sputnik-notebook/tools/notebook-remote/server.s:146:12)
+  at c1403:272 (/src/sputnik-notebook/tools/notebook-remote/main.s:56:11)
+IOError: HTTP gateway exited; stopping service
+IOError: HTTP gateway exited; stopping service
+  at c1400:289 (/src/sputnik-notebook/tools/notebook-remote/service.s:25:3)
+  at c1403:202 (/src/sputnik-notebook/tools/notebook-remote/main.s:54:32)
+PASS serve: SIGTERM cleanup, durable restart, duplicate ownership, agent failure and bind failure
+0

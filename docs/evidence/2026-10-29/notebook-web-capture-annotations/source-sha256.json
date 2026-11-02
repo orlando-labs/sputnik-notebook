@@ -1,0 +1,162 @@
+{
+  "recorded_at_utc": "2026-10-29T09:57:30.670715+00:00",
+  "note": "Final saved sources/assets/binaries; the only change after the eleven-scenario four-mode matrix was a toolbar label layout refinement covered by the final native layout check.",
+  "sources": {
+    "packages/notebook-core/src/notebook/core.s": {
+      "sha256": "0cc514e77052e9a2ec71517a87d27c0590820b277aea719bc85317853427b378",
+      "bytes": 64865
+    },
+    "packages/notebook-core/native/worker.cpp": {
+      "sha256": "93eeae575089761b4cab5423212c278bc04e50942712933588e7013153998424",
+      "bytes": 49765
+    },
+    "apps/notebook-web/backend/app.s": {
+      "sha256": "efb2f93e5d6a08feaabfc4744fd21811cc7cc0ab0f9a2f702263da90d5290539",
+      "bytes": 23966
+    },
+    "apps/notebook-web/frontend/vite.config.ts": {
+      "sha256": "c80a66dee1963e38c166941eda0c33d2e8270f69a330b879be597eb2ab94398b",
+      "bytes": 713
+    },
+    "apps/notebook-web/frontend/src/audio-recorder-worklet.js": {
+      "sha256": "224632596aac2104b74a5c3a8a14465f51dabf60557bf80a0544e4d591aa0428",
+      "bytes": 2102
+    },
+    "apps/notebook-web/frontend/src/audio-recording.ts": {
+      "sha256": "5600c99b335720ffc14afb93ee5cd3317f471db5a2f45e2fecc23b6a589d2fe5",
+      "bytes": 1843
+    },
+    "apps/notebook-web/frontend/src/NotebookAudioRecorder.vue": {
+      "sha256": "d615eecf2bed51006352f670e4faac79935fb6b286570245292d4ae1fc3c7e2c",
+      "bytes": 8067
+    },
+    "apps/notebook-web/frontend/src/image-annotations.ts": {
+      "sha256": "20ee85c27bf02fb0739df306e67b2fa7a8dd1282968411756f4f13b60c77383a",
+      "bytes": 5604
+    },
+    "apps/notebook-web/frontend/src/NotebookImageAnnotator.vue": {
+      "sha256": "a7d1d829ac120e80518b4fd4e6ac621ff1c6c34aacd79045371749215c874c6f",
+      "bytes": 13751
+    },
+    "apps/notebook-web/frontend/src/NotebookAnnotationSettings.vue": {
+      "sha256": "fdfe2974dcf4da4426f42f0cc60dfc76ddf74bf1e2a610e6d04cd32bff553358",
+      "bytes": 3121
+    },
+    "apps/notebook-web/frontend/src/NotebookMediaInput.vue": {
+      "sha256": "1b3b64e12481d26deec8ac410d8a15426af6eeaffbd0d48193776201d0703ab2",
+      "bytes": 9256
+    },
+    "apps/notebook-web/frontend/src/media-inputs.ts": {
+      "sha256": "80876e844297c4f9a9f44242ffa9c7397bdf9bb99ffd8c26526b21fc70573b1c",
+      "bytes": 5044
+    },
+    "apps/notebook-web/frontend/src/NotebookWorkspace.vue": {
+      "sha256": "1297f929f9bccbea34923a38072cc7ef9a473fa753c5ade72807fd4c097ada61",
+      "bytes": 59028
+    },
+    "apps/notebook-web/frontend/src/NotebookBoardCard.vue": {
+      "sha256": "94db27d0b6591d319fb27766fd98c4ef9095b67c3d6b39b36dcaafdfcb159728",
+      "bytes": 12008
+    },
+    "apps/notebook-web/frontend/src/NotebookBoardInspector.vue": {
+      "sha256": "17bfff379eebd78b724c9bf6000dd414bc608148669ded5fbfa8ed1871660d0e",
+      "bytes": 13925
+    },
+    "apps/notebook-web/frontend/src/NotebookDisplaySettings.vue": {
+      "sha256": "0d5520ed7570df56a50aeba91d8c5315e8f740a04e1789aa4e8660d309713a2f",
+      "bytes": 8287
+    },
+    "apps/notebook-web/frontend/src/board-editor.ts": {
+      "sha256": "66e5090c7d4f2e467bb4abd84975cd4971178a95755cc63d1777fb944c0e530b",
+      "bytes": 16573
+    },
+    "apps/notebook-web/frontend/src/style.css": {
+      "sha256": "9f94f59dfdc51db7088689baf8194642849b968979af9469abeaafa11dac1e92",
+      "bytes": 72678
+    },
+    "apps/notebook-web/frontend/test/capture-annotations.spec.ts": {
+      "sha256": "e10750c0e95da7eeae3619fcd5f0d461a43a6fb7596b0fcd872a4d6e41207258",
+      "bytes": 27580
+    },
+    "apps/notebook-web/tools/capture_test.mjs": {
+      "sha256": "fb5f0effcb8918e88f252a909fe516c1680a459075a5163ca89bce7a106ff31a",
+      "bytes": 4443
+    },
+    "apps/notebook-web/tools/board_editor_test.mjs": {
+      "sha256": "a091f637c304be50cdbdd23cf3e511547004de9f6219f69e355c3c478911cac5",
+      "bytes": 7707
+    },
+    "tests/notebook_media_acceptance_test.py": {
+      "sha256": "a930afabfe302fb57e165873e2a6e58e6258ad080835dd355d1a9908fd9a9775",
+      "bytes": 4575
+    },
+    "apps/notebook-web/sputnik.lock": {
+      "sha256": "60d54e6db392665ba6beaf1aeb25421ef154561281862289cae52db2bbd4910f",
+      "bytes": 1995
+    },
+    "apps/notebook-web/README.md": {
+      "sha256": "5859e2c44a2db90a3481710d549c021ca857d82d41da560aa1dd5f0469163a83",
+      "bytes": 45420
+    },
+    "packages/notebook-core/README.md": {
+      "sha256": "f779e7ed17842ed2e062519a569314a873422a2180919b6539bd450b7e6d18a7",
+      "bytes": 8565
+    },
+    "docs/engineering/notebook-web-implementation.md": {
+      "sha256": "a55b12624c5baefe1f14e210f88ffd1260f328f47e8e70c15a6a85c160d31cd6",
+      "bytes": 36202
+    },
+    "docs/engineering/notebook-web-gap-review-2026-10-27.md": {
+      "sha256": "792ba4aa44d31e81ca0520ea1e2172d98c3bfef00b60fecffb0c510aaf7c8407",
+      "bytes": 24014
+    },
+    "docs/engineering/notebook-remote-media-inputs.md": {
+      "sha256": "3e12f10252657a99df5eb14db79e0de54c0505472ed08f0943f4e730b7c9f9b9",
+      "bytes": 7901
+    },
+    "docs/evidence/2026-10-29/notebook-web-capture-annotations/README.md": {
+      "sha256": "e973d5194ca812ec8fb365fee4b998a1ba0e891af1dc7feca8968c90a042b105",
+      "bytes": 9255
+    }
+  },
+  "assets": {
+    "apps/notebook-web/frontend/dist/.vite/manifest.json": {
+      "sha256": "2915030453620f7e1f75aa8bcd1c9099cc29135c1c2a84fe37d1faaa9ca7ec9b",
+      "bytes": 399
+    },
+    "apps/notebook-web/frontend/dist/assets/audio-recorder-worklet-kCbMyL7d.js": {
+      "sha256": "224632596aac2104b74a5c3a8a14465f51dabf60557bf80a0544e4d591aa0428",
+      "bytes": 2102
+    },
+    "apps/notebook-web/frontend/dist/assets/main-BKSB8gqm.js": {
+      "sha256": "dba266368e8d38bde95afd860e6c576a14759ac7ca52a73c4deb7e95a570a9e7",
+      "bytes": 538282
+    },
+    "apps/notebook-web/frontend/dist/assets/main-BRw3HD7M.css": {
+      "sha256": "2e81fe756542124455dcc95c16467c203a3753e54cbbebc5a1def1bb822cd373",
+      "bytes": 63427
+    }
+  },
+  "binaries": {
+    "build/sputnik-notebook-worker": {
+      "sha256": "7d799f4fbffd98d7a9b6380169db0d1ca4c7681925e54d78a3d6f42e591b7573",
+      "bytes": 10573544
+    },
+    "build/sputnik-notebook-remote": {
+      "sha256": "089ec2278505284a706525ccadcd86624c1d1414713ff3f91873a15dbead7bba",
+      "bytes": 18995240
+    },
+    "apps/notebook-web/build/fixture-native/fixture": {
+      "sha256": "d60d2a8393dcacde0259b5127f68931ddd14350722695c3242bd3284f14a997a",
+      "bytes": 28202232
+    },
+    "apps/notebook-web/build/native/notebook-web": {
+      "sha256": "5c06e53aebc31948fcfc758fa14eee876e2344803a2d928e4042226a9b08f4e4",
+      "bytes": 28317824
+    },
+    "../sputnik-lang/build/sputnik": {
+      "sha256": "152c2137d59322021543f90a006c893e825f4110cea24a4aec75d28ee78291b7",
+      "bytes": 10945224
+    }
+  }
+}

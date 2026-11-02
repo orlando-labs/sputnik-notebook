@@ -1,0 +1,20 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test inputs.spec.ts
+
+[WebServer] (node:958) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/inputs.spec.ts:31:1 › project and local Apply are atomic, exact and inert until a world is initialized; Watch and Manual follow core semantics (2.2s)
+  ✓  2 test/inputs.spec.ts:50:1 › parameter conflicts preserve drafts and invalid/busy/revoked requests leave accepted values unchanged (3.4s)
+  ✓  3 test/inputs.spec.ts:69:1 › input definitions and cell controls are authored as inert drafts and survive save with exact metadata (1.3s)
+  ✓  4 test/inputs.spec.ts:79:1 › input commands recover accepted and unaccepted response loss without duplicate runs or automatic replay (1.0s)
+  ✓  5 test/inputs.spec.ts:97:1 › an active run rejects project and local edits and retains its frozen input version (2.8s)
+  ✓  6 test/inputs.spec.ts:109:1 › typed controls preserve large integers, ranges and configs; rejected config batches keep every draft and accepted value (1.2s)
+  ✓  7 test/inputs.spec.ts:142:1 › parameter drafts guard navigation and layouts fit light/dark desktop and mobile (1.8s)
+
+  7 passed (16.9s)

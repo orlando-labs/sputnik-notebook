@@ -287,8 +287,8 @@ private final class Scanner {
         while index < scalars.count && isIdentifierPart(current) { index += 1 }
         let word = substring(start, index)
 
-        // In Sputnik `r` is a lexical raw-string tag only when immediately
-        // adjacent to its delimiter. Treat the whole spelling as a string so
+        // An adjacent `r` tag preserves regexp escapes. Treat the whole spelling
+        // as a string so
         // neither a keyword nor a comment can leak out of it.
         if word == "r", index < scalars.count, current == 34 || current == 39 {
             scanString(start: start, quoteIndex: index, raw: true)
@@ -393,6 +393,7 @@ private final class Scanner {
             scalars[quoteIndex].value == 34 && scalars[quoteIndex + 1].value == 34 &&
             scalars[quoteIndex + 2].value == 34
         let quote = scalars[quoteIndex].value
+        let tagged = quoteIndex > 0 && isIdentifierPart(scalars[quoteIndex - 1].value)
         let controls = triple && !raw && quoteIndex > 0 &&
             isIdentifierPart(scalars[quoteIndex - 1].value)
         var segment = start
@@ -430,12 +431,15 @@ private final class Scanner {
                 if index < scalars.count { index += 1 }
                 continue
             }
-            if !raw && quote == 34 && current == 35 && peekValue == 123 {
+            if (quote == 34 || tagged) && current == 35 && peekValue == 123 {
                 consumeInterpolation()
                 continue
             }
             if !triple && (current == 10 || current == 13) { break }
             index += 1
+        }
+        if tagged && isIdentifierStart(current) {
+            while index < scalars.count && isIdentifierPart(current) { index += 1 }
         }
         emit(start: segment, end: index, category: .string)
         recordMacroToken()
@@ -502,8 +506,7 @@ private final class Scanner {
         while cursor < scalars.count && isIdentifierPart(scalars[cursor].value) { cursor += 1 }
         if cursor < scalars.count && (scalars[cursor].value == 63 || scalars[cursor].value == 33) { cursor += 1 }
         index = cursor
-        let isTemplate = substring(start, index) == "@template" && current == 40
-        emit(start: start, end: index, category: isTemplate ? .keyword : .variable)
+        emit(start: start, end: index, category: .variable)
         recordMacroToken()
         return true
     }
@@ -521,7 +524,7 @@ private final class Scanner {
     }
 
     private func operatorOrPunctuationLength(at position: Int) -> (Int, SputnikSyntaxCategory)? {
-        let operators = [".?.", "...", "<=>", "===", "**", "//", "=~", "==", "!~", "!=", "<<", ">>", "<=", ">=", "->", ".."]
+        let operators = [".?.", "...", "<=>", "===", "**", "//", "~=", "==", "!=", "<<", ">>", "<=", ">=", "->", ".."]
         for spelling in operators {
             if matches(spelling, at: position) { return (spelling.unicodeScalars.count, .operator) }
         }

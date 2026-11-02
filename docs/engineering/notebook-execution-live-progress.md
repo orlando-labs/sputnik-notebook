@@ -28,7 +28,7 @@ so saved remote results remain readable.
 The macOS GUI uses isolated execution for all projects by default, including
 module editors, Watch updates and boards. isputnik has not switched:
 
-- `tools/notebook-worker/`: reusable POSIX process supervisor and a single-sheet
+- `packages/notebook-core/`: reusable POSIX process supervisor and a single-sheet
   `sputnik-notebook-worker` executable. `posix_spawn` starts a fresh runtime; it
   does not fork a live VM. Load is inert; Source, Run and Apply operate on a
   private Session. The worker has no project-save command.

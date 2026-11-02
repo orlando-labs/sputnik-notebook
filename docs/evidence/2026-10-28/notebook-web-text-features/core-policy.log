@@ -1,0 +1,17 @@
+test_accounting_failure_stops_work_and_recovers_without_replay (__main__.PolicyTests) ... ok
+test_age_revision_retention_output_cap_and_deletion_recovery (__main__.PolicyTests) ... ok
+test_book_override_mode_requires_launch_flag_and_preserves_operator_ceilings (__main__.PolicyTests) ... ok
+test_collection_preserves_failure_and_previous_result_and_expires_receipts (__main__.PolicyTests) ... ok
+test_desktop_app_and_authored_book_limits_cannot_raise_server_policy (__main__.PolicyTests) ... ok
+test_inheritance_aggregate_user_quota_and_disk_reserve (__main__.PolicyTests) ... ok
+test_lease_expiry_stops_active_work_and_user_budget_survives_new_session (__main__.PolicyTests) ... ok
+test_operator_policy_file_applies_hierarchy_at_startup (__main__.PolicyTests) ... ok
+test_parallel_runs_share_a_durable_total_time_budget (__main__.PolicyTests) ... ok
+test_registry_is_bounded_and_history_pages_survive_collection (__main__.PolicyTests) ... ok
+test_temporary_profile_rejects_dependency_installation_and_grants (__main__.PolicyTests) ... ok
+test_temporary_sessions_are_clean_on_reopen_expiry_and_restart (__main__.PolicyTests) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 6.619s
+
+OK

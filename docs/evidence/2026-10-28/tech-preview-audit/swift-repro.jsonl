@@ -1,0 +1,4 @@
+{"B_source_after_save":"999\n","displayed_B_before_save":"2\n","old_callback_rejected":true,"save_succeeded":true,"test":"old_remote_export_during_open"}
+{"displayed_error":"succeeded","displayed_ok":true,"displayed_result":"42","displayed_stale":false,"latest_run_state":"interrupted","test":"terminal_invocation_without_artifact"}
+{"remote_error":"agent reply lost after accepting command"}
+{"accepted_command_count":2,"distinct_command_ids":2,"first_call_succeeded":false,"pending_after_503":false,"second_call_succeeded":true,"test":"accepted_run_then_gateway_503"}

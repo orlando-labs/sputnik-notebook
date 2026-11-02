@@ -1,0 +1,42 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/public.spec.ts test/resources.spec.ts test/workspace.spec.ts test/execution.spec.ts
+
+[WebServer] (node:1545) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 29 tests using 1 worker
+
+(node:1577) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/execution.spec.ts:60:1 › Run All, single-cell run, output, failure, provenance and history (3.2s)
+  ✓   2 test/execution.spec.ts:108:1 › live output and accepted work survive reload and closing the page without replay (7.1s)
+  ✓   3 test/execution.spec.ts:135:1 › cooperative Stop, Force Stop, explicit restart and stale epoch protection (3.4s)
+  ✓   4 test/execution.spec.ts:170:1 › lost accepted Run response is recovered by receipt after reload with one physical run (1.5s)
+  ✓   5 test/execution.spec.ts:197:1 › an unaccepted request retries only on explicit action with its original ID and revision (897ms)
+  ✓   6 test/execution.spec.ts:228:1 › execution enforces project/run ownership, role changes, receipts, CSRF and safe DTOs (3.0s)
+  ✓   7 test/execution.spec.ts:284:1 › Stop during preparation is cancellation; an unobserved child error fails the run (1.6s)
+  ✓   8 test/public.spec.ts:21:1 › guest opens the pinned public template inertly, edits/runs explicitly and discards its private copy (2.3s)
+  ✓   9 test/public.spec.ts:45:1 › two anonymous visitors are isolated; CSRF, forged authority and private APIs remain rejected (431ms)
+  ✓  10 test/public.spec.ts:69:1 › lost opening/run replies recover the same commands only on explicit retry or receipt check (1.7s)
+  ✓  11 test/public.spec.ts:92:1 › tighter book quota stops work; fresh copies keep charged visitor time and the public/storage ceilings (2.3s)
+  ✓  12 test/public.spec.ts:112:1 › lease expiry and hidden/disconnected views discard public copies without replay (15.4s)
+  ✓  13 test/public.spec.ts:124:1 › admission serializes concurrent opens and bounds repeated copies for the same anonymous visitor (451ms)
+  ✓  14 test/public.spec.ts:133:1 › actual 60-second aggregate ceiling survives a fresh copy (1.0m)
+  ✓  15 test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits (1.2s)
+  ✓  16 test/resources.spec.ts:46:1 › core stops a real run at its cumulative quota, shows exhaustion and retains history (1.9s)
+  ✓  17 test/resources.spec.ts:56:1 › storage quota rejects Run without accepting work and is visible in resource settings (619ms)
+  ✓  18 test/resources.spec.ts:65:1 › temporary public-limits preview edits only its copy and recovers a lost run reply without replay (2.3s)
+  ✓  19 test/resources.spec.ts:81:1 › public profile cannot lift the 60-second ceiling and preview Stop/ACL/CSRF remain enforced (902ms)
+  ✓  20 test/workspace.spec.ts:25:1 › anonymous shell, SSR assets, negotiation, CSRF and private API (180ms)
+  ✓  21 test/workspace.spec.ts:54:1 › GitHub account, project UI, persistent identity and logout 204 (1.2s)
+  ✓  22 test/workspace.spec.ts:91:1 › two accounts: private projects, viewer/editor ACL, owner controls and revocation (912ms)
+  ✓  23 test/workspace.spec.ts:128:1 › failed authorization and invalid callback leave no authenticated account (375ms)
+  ✓  24 test/workspace.spec.ts:141:1 › library search, details, sort, last opened, collapse and refresh (990ms)
+  ✓  25 test/workspace.spec.ts:184:1 › new notebook dialog handles keyboard, validation and recoverable failures (676ms)
+  ✓  26 test/workspace.spec.ts:210:1 › owner sharing UI, read-only metadata and account-scoped library preferences (1.7s)
+  ✓  27 test/workspace.spec.ts:259:3 › welcome and project layout: light, desktop and mobile (1.1s)
+  ✓  28 test/workspace.spec.ts:259:3 › welcome and project layout: dark, desktop and mobile (1.1s)
+  ✓  29 test/workspace.spec.ts:301:1 › library works when browser storage is unavailable (680ms)
+
+  29 passed (2.1m)

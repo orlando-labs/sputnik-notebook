@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-01",
+  "notebook_head": "314ff6c1dd2dd54a19c72744651ef421053d6e91",
+  "language_head": "c17d12b2e25c2dd2cb0b9e41835b0a8e33925573",
+  "working_tree": "Both repositories contain pre-existing changes; source and binary hashes identify this audit.",
+  "sha256": {
+    "build/sputnik-notebook-remote": "b326089a4983c736241c8fbf4b390e4866f087c7439c14c6864721c657efbf54",
+    "build/sputnik-notebook-worker": "3db49d132fd0e0bc8cb2847b57e9825a4f9e8344e244cb3a8860a6e5f8d97c58",
+    "build/notebook-remote-tests": "92244cc839c29451e387d88a9c9c1f8ad2f7c886b65c993e5fcdd3c626eb6a0c",
+    ".build/remote-action-audit-probe": "a6b1a9a8256dc5922d6b929e115ad9c24bb545642b569cf788ffe95f5e700121",
+    "build/core/libNotebookCore.a": "8e38db12092e73fb75606eca1eabac536040cecbfe56a9e9c4f946f7394a4579",
+    "docs/evidence/2026-11-01/remote-action-audit/inventory.json": "5012dc9ffb63aa63c8a521ca036b48a908386d60881e42cf8eeeb60d4bccbbc1",
+    "docs/evidence/2026-11-01/remote-action-audit/probe.swift": "da1cac46f44d6108e17836c097fcb721d5a02093eaad98aa1719c2f88e7e2bbf"
+  }
+}

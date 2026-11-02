@@ -1,0 +1,13 @@
+{
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261028-regexp-77650e1",
+  "base_release": "20261026-templates-2622f9d",
+  "language_commit": "77650e1e73bae5505d819e1d95f037be7592e19d",
+  "notebook_commit": "a877de60beec13db3e97b0862f41d82c4d5a070d",
+  "pcre2_version": "10.47",
+  "pcre2_source_sha256": "47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7",
+  "sha256": {
+    "sputnik-notebook-worker": "d175fe0e5343e1e121272d6842aea745ede890926ab44ae0a65f472aeac5bc11",
+    "sputnik-notebook-remote": "7161dce1b479a87aad40003f0f14d33e89b496ee04c3ad77394794e16e16d8de",
+    "src/sputnik-lang/build/sputnik": "6ac25b8c73c8b454ff516e2da8e2de2ad255fb5e2af44004d45e26100ac75788"
+  }
+}

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+container=sputnik-remote-core
+docker inspect "$container" --format 'image={{.Image}} health={{.State.Health.Status}} restart={{.HostConfig.RestartPolicy.Name}}'
+[[ $(docker inspect "$container" --format '{{.State.Health.Status}}') == healthy ]]
+[[ $(docker inspect "$container" --format '{{.Image}}') == sha256:98f862174b559490b410294835c3566ff40a40460c4c6bb743b71b7e6ccc042d ]]
+docker exec "$container" sh -c '
+  if command -v python3 || command -v python; then exit 1; fi
+  if dpkg-query -W -f="\${Package}\n" | grep -E "^(python|libpython)"; then exit 1; fi
+  sputnik --version
+  printf "PASS no Python executable or installed python/libpython package\n"
+'
+docker top "$container" -eo pid,nlwp,args
+for pid in $(docker top "$container" -eo pid,args | awk '/--mode (serve|agent|gateway)/ && !/tini/ {print $1}'); do
+  printf 'pid=%s ' "$pid"
+  awk '/^VmSize:|^VmRSS:|^Threads:/ {printf "%s %s %s ", $1,$2,$3} END {print ""}' "/proc/$pid/status"
+done
+docker inspect "$container" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -E '^SPUTNIK_(TASK|FFI)_MAX_THREADS='

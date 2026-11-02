@@ -1,0 +1,3 @@
+./tools/build
+{"status":"ok","native_output":"/Users/slowpilot/workspace/sputnik/sputnik-registry/.build/native/registry","native_hash":"a169f92109152c0289d686c69f80d09c3f318aaeac64e6b59f93a6ad54e86f3f","code_count":2053,"native_code_count":2053}
+/Users/slowpilot/workspace/sputnik/sputnik-registry/.build/registry.build.json

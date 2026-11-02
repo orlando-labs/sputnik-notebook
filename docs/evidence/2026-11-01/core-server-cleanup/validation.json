@@ -1,0 +1,123 @@
+{
+  "started_date": "2026-11-01",
+  "completed_date": "2026-11-02",
+  "state": "complete",
+  "scope": "Notebook-only server artifacts; unrelated services, registry data and package builds preserved",
+  "image_id": "sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4",
+  "image_tag": "docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0",
+  "image_manifest_digest": "sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c",
+  "hosts": {
+    "22015": {
+      "bare_host_notebook_processes": 0,
+      "container": "sputnik-remote-core",
+      "container_id": "d038ddbe7e633f086b5413c489cb80e86cfd763d5100da312747776868990c61",
+      "pid": 341443,
+      "health": "healthy",
+      "state_token_mounts_pid_preserved": true,
+      "host_artifacts_and_stopped_predecessors_removed": true,
+      "notebook_build_cache_records_remaining": 0,
+      "gpu_forward_backward": {
+        "state": "passed",
+        "devices": 3,
+        "type": "MI50"
+      },
+      "retained_host_mounts": [
+        "/home/slowpilot/sputnik-remote-core/state",
+        "/home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-packages",
+        "/home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-cache",
+        "/opt/rocm-6.4.3",
+        "/home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/rocblas/library"
+      ]
+    },
+    "22136": {
+      "bare_host_notebook_processes": 0,
+      "notebook_build_publication_artifacts_removed": true,
+      "notebook_local_images_removed": true,
+      "notebook_build_cache_records_remaining": 0,
+      "empty_publication_parent_removed": true,
+      "unrelated_registry_package_builds_preserved": true
+    },
+    "22176": {
+      "bare_host_notebook_processes": 0,
+      "container": "sputnik-remote-core",
+      "container_id": "e9e703defb069beccaa9a53caea6065a25c1381ea0d506276999b6657457884a",
+      "pid": 2906385,
+      "health": "healthy",
+      "state_token_mounts_pid_preserved": true,
+      "host_artifacts_and_stopped_predecessors_removed": true,
+      "notebook_build_cache_records_remaining": 0,
+      "gpu_forward_backward": {
+        "state": "passed",
+        "devices": 2,
+        "type": [
+          "RTX 3090",
+          "RTX 4090"
+        ]
+      },
+      "retained_host_mounts": [
+        "/home/slowpilot/sputnik-remote-core/state",
+        "/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-packages",
+        "/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-cache"
+      ]
+    }
+  },
+  "checks": {
+    "cleanup_apply": "passed on all three hosts",
+    "final_audit_no_remaining_cleanup_candidates": "passed on all three hosts",
+    "cgroups_all_observed_notebook_processes_in_docker": "passed",
+    "container_restarts_during_cleanup": 0,
+    "registry_manifest_preserved": true,
+    "global_docker_prune_used": false,
+    "working_container_volumes_preserved": true,
+    "pending_actions": []
+  },
+  "deleted_artifact_categories": [
+    "host executables and launchers",
+    "retired releases and source/build trees",
+    "transfer archives and temporary probes",
+    "host logs and pid files",
+    "unmounted SDK/package caches",
+    "deployment backups",
+    "stopped predecessor containers and their anonymous volumes",
+    "unused Notebook images",
+    "Notebook-specific BuildKit cache"
+  ],
+  "evidence_sha256": {
+    "22015-after-plan.log": "7015232d74f18a7990d0d6d4b0c993d58080b84dae1f201c958a3c51cfd7750d",
+    "22015-cache-after.log": "05a2df2bd29f28747993177900ee835da0cd23a1688e4590c2203c62ac1b016d",
+    "22015-cache-before.log": "0ebe79d44799b63a5b665806dd07f2cd9d86a7016e1419e5d9576a3ce1f7707a",
+    "22015-cache-cleanup.log": "6e3afd8ab246c658c058aacc10da64ab41cf08dc49ec5206d20726c26090028c",
+    "22015-cache-ids.txt": "7c53bd8cad8887a5c6eee62e4fe7547d90416798615f0026b6b1cd321d848720",
+    "22015-cache-selected.log": "7a6f38b007018309b00ca31c6a2960647b0ce17c970def53d2c89be05dcfac0c",
+    "22015-cleanup.log": "eef5df633771efd7ad2e9d2ee4f57597362c6ae435b5bbb3d53ca1b81a872b8d",
+    "22015-final-audit.log": "7015232d74f18a7990d0d6d4b0c993d58080b84dae1f201c958a3c51cfd7750d",
+    "22015-gpu-after.log": "b0de8b8f2bd58fb322263f521f64f8d3576bcd2c2564511bfb2a136305c44bb9",
+    "22015-image-cache-cleanup.log": "b113664c36575d8eb183f6daa5eea1ebc343127e9d3ddd03709772324489cf31",
+    "22015-plan.log": "3216924a0cd99c6dcaa6f307ec2545273b114f660185473cd213250ea00f6ea9",
+    "22015-prune-cache.sh": "93f12adef75391f2884429bbc79ec746a9c5db428d9b18431df9eaaa21e8639d",
+    "22015-prune-image-cache.sh": "e3e4e9b3cf7177d57bdca6119bd80518d1438246afaa2e34e58b2ca70e7b9d5b",
+    "22136-after-plan.log": "30e822202315d868348c4b7d4c5d21ed52b28323dd6171c6ab9950f5d43a5379",
+    "22136-cache-after.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "22136-cache-before.log": "c1f3c02e85eb4b7eb59459dc45f45777ea3cf8d948ecc88c86890077eaff8e27",
+    "22136-cache-cleanup.log": "4be8138f2bb6672135de0cacba9c04617ba887e5d22bf18c864cc26642306380",
+    "22136-cache-ids.txt": "ef4f93020bb07175efbb3ba0abdbf120cb2e0461b5779bd7056dec8283d9ea6c",
+    "22136-cache-selected.log": "d123ebd3445248c929677bccab2e031f593273e780aafcd5479d73e27110bb2b",
+    "22136-cleanup.log": "76ea3c2a9523148d69bb6e6c1f3f640545c73da805c6a1c2bfcece89cc338023",
+    "22136-empty-parent-cleanup.log": "b30d37fe99bf0c47343549fc2a0eba4b2aa552a8fbaa3256e34df58662ca1fbc",
+    "22136-final-audit.log": "30e822202315d868348c4b7d4c5d21ed52b28323dd6171c6ab9950f5d43a5379",
+    "22136-plan.log": "b4ada23002b0f0fde8a2eb1f02ed65d2b49d996bc3716d4301bb3db956c94bff",
+    "22136-prune-cache.sh": "74762da000ee99d4efa55f84cabcd1f4e03e9dda8daff6c60316c85cf3974ae2",
+    "22176-after-plan.log": "fec8f0ea6c97f3713bb66f9464bc99f50640c4ee9ebe013848153d10b26d7f07",
+    "22176-cache-before.log": "a4058b9d9a5cb0261d3199850680426598b98d732ab87989e268443a5bfb2c7d",
+    "22176-cache-ids.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "22176-cache-selected.log": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "22176-cleanup.log": "3939734199ef8c97bbda3cf075a72dcc2205cd4673cc3cbf07e8096573e613b5",
+    "22176-final-audit.log": "fec8f0ea6c97f3713bb66f9464bc99f50640c4ee9ebe013848153d10b26d7f07",
+    "22176-gpu-after.log": "6299c49767175b3fbe4d87752514e710ea400296fe56f04ed4660babe9caa076",
+    "22176-plan.log": "cca7011657874c32edffd95eff9c91a58d274e266b2b1b9ab6d93ca9188cba06",
+    "README.md": "bb3199c57a337c16023273bedd1b2ed69cbe6befba6e9335ddd9e78d496e182a",
+    "cleanup-server": "e5fa096cd79e4530a37b45f1484bb61be664049c14c9a1270c2aeb2a71b7eb7f",
+    "gpu-check.s": "8fbdfbe618c76d720930fb4344010d60b0c1d538433b2094089f7012f6661ffe",
+    "registry-manifest-after.json": "f36bcd2d06154e1c8155f795b141b7f71edbf0a2fd41050431c2bc311c528eb6"
+  }
+}

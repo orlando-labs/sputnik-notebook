@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+root=${SPUTNIK_REMOTE_ROOT:-/var/lib/sputnik-notebook}
+port=${SPUTNIK_REMOTE_PORT:-18765}
+test -s "$root/token"
+# Send the token over stdin, keeping it out of process arguments and logs.
+{
+  printf 'header = "Authorization: Bearer '
+  tr -d '\r\n' < "$root/token"
+  printf '"\n'
+} | curl --config - --fail --silent --show-error --max-time 4 \
+  "http://127.0.0.1:$port/v1/health" >/dev/null

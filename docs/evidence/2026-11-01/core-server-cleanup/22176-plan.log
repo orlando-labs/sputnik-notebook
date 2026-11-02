@@ -1,0 +1,82 @@
+DOCKER_PROCESS pid=2906385 comm=tini
+DOCKER_PROCESS pid=2906444 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906446 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906470 comm=sputnik-noteboo
+PASS_NO_BARE_HOST_NOTEBOOK_PROCESSES checked=4
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/transfer
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/cxx
+KEEP_MOUNT /home/slowpilot/sputnik-remote-core/state
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/current
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/start-current.sh
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/agent.pid
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/agent-current.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/gateway.pid
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/gateway-current.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/recovery-start.json
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/backups
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261022-for-8f1a849
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261023-then-845ab2c
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261024-native-b19d72a
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261025-remote-inputs-watch-actions
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261026-templates-2622f9d
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261028-regexp-77650e1
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261029-membership
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261029-head-3eb0f05
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261029-bare-805bea6
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261029-bare-d86d41e
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261030-head-c4b56bc
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261030-auto-5d291d7
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/inputs.tar
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/build-cuda-package.sh
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/launcher.log
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/build.log
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/._sputnik-language-current-20261031.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/sputnik-language-current-20261031.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/._sputnik-torch-current-20261031.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/sputnik-torch-current-20261031.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/._sputnik-gloo-74cc005.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/sputnik-gloo-74cc005.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/src
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/cxx
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/env.sh
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/packages
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/retry-build.log
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/registry-cuda-014
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/native-rt-cache
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/retry-package.sh
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/retry-package.log
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/run-container
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/docker-core-release.py
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/finish-toolchain.sh
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/finish-toolchain.log
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/core-image.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-stage.log
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-stage-state
+KEEP_MOUNT /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-packages
+KEEP_MOUNT /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-cache
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-stage-result.json
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-deploy-result.json
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/env-before-container-packages.sh
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-check.s
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/redeploy-container
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/core-no-python.tar.gz
+REMOVE_PATH /ssd1Tb/sputnik-remote-core-releases/20261101-notebook-core
+REMOVE_PATH /ssd1Tb/sputnik-package-home
+REMOVE_PATH /home/slowpilot/.sputnik/packages
+REMOVE_PATH /home/slowpilot/.sputnik/packages.empty-before-ssd-20261030
+REMOVE_PATH /home/slowpilot/.cache/sputnik
+REMOVE_PATH /home/slowpilot/.local/bin/sputnik
+REMOVE_CONTAINER /sputnik-core-before-20261101T180857Z
+REMOVE_CONTAINER /sputnik-core-before-no-python-20261031T180013Z
+REMOVE_IMAGE sha256:1b3d3c648eed1436cf8cefbc1c9779528f3c6de37b3abd3bb209ba331127c789
+REMOVE_IMAGE sha256:1d7b96cff6c0b12253f102e9d9618cec65aa3244aa6a4c3b7eabb0da74a2f5d1
+KEEP_USED_IMAGE sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4
+REMOVE_IMAGE sha256:98f862174b559490b410294835c3566ff40a40460c4c6bb743b71b7e6ccc042d
+PASS_CORE_CONTAINER_MOUNTS_PID_AND_TOKEN_UNCHANGED
+DOCKER_PROCESS pid=2906385 comm=tini
+DOCKER_PROCESS pid=2906444 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906446 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906470 comm=sputnik-noteboo
+PASS_NO_BARE_HOST_NOTEBOOK_PROCESSES checked=4
+PASS_CLEANUP_plan profile=22176

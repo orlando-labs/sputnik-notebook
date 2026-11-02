@@ -1,0 +1,18 @@
+{
+  "base_language_commit": "05142d10d2638955b0b5842f9001938161b6f1ba",
+  "files": [
+    "runtime/concurrency.cpp",
+    "runtime/concurrency.h",
+    "runtime/vm.cpp",
+    "runtime/world.cpp",
+    "tools/sputnik/main.cpp",
+    "tests/blocking_ffi_tests.cpp",
+    "tests/stdlib_task_tests.cpp",
+    "tests/fixtures/native_blocking/bridge.cpp",
+    "tests/fixtures/native_blocking/progress.s",
+    "Makefile",
+    "docs/engineering/native-blocking.md"
+  ],
+  "patch_sha256": "6954924a4634e710c8abbc177c88cf6c2b443fd3a19c1321d55331473c0466e3",
+  "scope": "Only lazy thread pool changes; unrelated working tree changes excluded"
+}

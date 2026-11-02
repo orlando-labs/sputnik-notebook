@@ -1,0 +1,23 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test sources-transfer.spec.ts
+
+[WebServer] (node:93758) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:93768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/sources-transfer.spec.ts:33:1 › module and binary file changes save atomically, preserve hidden resources and execute imported helper (2.6s)
+  ✓  2 test/sources-transfer.spec.ts:49:1 › file conflicts keep the complete draft; export historical revision and recover draft bundle (1.5s)
+
+  ✓  3 test/sources-transfer.spec.ts:61:1 › ZIP and folder imports retain full document, int64 metadata, files and idempotent receipts without running (1.7s)
+
+  ✓  4 test/sources-transfer.spec.ts:82:1 › imports reject unsafe archives and unauthorized file/dependency operations (2.2s)
+  ✓  5 test/sources-transfer.spec.ts:94:1 › registry packages install, recover an accepted response loss, and remove through owner UI (2.7s)
+
+  ✓  6 test/sources-transfer.spec.ts:108:1 › import resumes the same command across reload and accepted response loss (1.7s)
+  ✓  7 test/sources-transfer.spec.ts:125:1 › file save retries retain command identity and source layout fits desktop and mobile themes (2.2s)
+
+  7 passed (18.9s)

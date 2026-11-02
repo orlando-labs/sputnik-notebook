@@ -1,0 +1,16 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/run-history.spec.ts --grep immutable snapshot retains
+
+[WebServer] (node:22216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] file:///Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/tools/smoke_server.mjs:61
+[WebServer]     if (children.some(child => child.exitCode !== null || child.signalCode !== null)) throw new Error('Smoke child exited; inspect build/smoke-' + values.mode + '.log')
+[WebServer]                                                                                             ^
+[WebServer] 
+[WebServer] Error: Smoke child exited; inspect build/smoke-production.log
+[WebServer]     at file:///Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/tools/smoke_server.mjs:61:93
+[WebServer] 
+[WebServer] Node.js v26.3.0
+Error: Process from config.webServer was not able to start. Exit code: 1
+

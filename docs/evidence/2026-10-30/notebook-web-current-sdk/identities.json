@@ -1,0 +1,10 @@
+{
+  "sdk_commit": "b3ed894aeadac1062bfb1c9cf46bc4022d99dd5d",
+  "sdk_source_clean": true,
+  "compiler_sha256": "d09f2da5d370e1b8ef10ad9618fe1742f1a05f9b43c266e0b46bb1fd834cb35e",
+  "orbit_commit": "ecb0d1132f8e309c5849ef11e5914b8675a185b5",
+  "orm_base_commit": "e5c3df00a8c223c973329f3b6110d7f22d7533ec",
+  "orm_fix": "ModelType.set_record_factory! retains &factory; two regression checks in selftest (32 total).",
+  "web_compiler": "Default current workspace SDK; SPUTNIK override not used",
+  "native_cache": "Independent fixture/main SPUTNIK_VM_CACHE paths"
+}

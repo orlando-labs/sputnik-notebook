@@ -1,0 +1,5 @@
+PASS preview HTTP 200 and current production assets
+PASS independent stage-3 core agent; zero active runs before upgrade
+Preview http://127.0.0.1:3010
+Web PID 93244; agent PID 94138
+Existing catalog and core root retained

@@ -1,4 +1,4 @@
-#include "tools/notebook-macos/NotebookBridge.h"
+#include "notebook/core/notebook.h"
 #include "runtime/notebook_display.h"
 #include "notebook/project.h"
 #include "tools/isputnik/session.h"

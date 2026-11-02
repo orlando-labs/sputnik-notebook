@@ -1,0 +1,20 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/environments.spec.ts
+
+[WebServer] (node:17007) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:17016) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/environments.spec.ts:24:1 › operator defaults deny preparation and arbitrary server paths, grants and unknown sheets (2.7s)
+  ✓  2 test/environments.spec.ts:37:1 › worker review is inert until confirmation; stale drafts survive and receipts recover a lost response (6.3s)
+  ✓  3 test/environments.spec.ts:55:1 › saved revision, active run and settings CAS reject reset without erasing worker state (4.1s)
+  ✓  4 test/environments.spec.ts:70:1 › owner-only settings preserve private grants and revocation closes drafts (7.5s)
+  -  5 test/environments.spec.ts:81:1 › preparation is explicit, saved-only and exposes safe generations with retry and ready binding
+  ✓  6 test/environments.spec.ts:106:1 › storage admission rejects settings and preparation, while temporary copies cannot change runtime privileges (1.0s)
+
+  1 skipped
+  5 passed (24.2s)

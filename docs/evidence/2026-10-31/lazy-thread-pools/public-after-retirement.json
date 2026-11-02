@@ -1,0 +1,74 @@
+[
+  {
+    "name": "slowpilot/notebook-ui",
+    "version": "0.1.1",
+    "artifacts": 3,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/orbit",
+    "version": "1.0.0-rc.2",
+    "artifacts": 2,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/orbit-orm",
+    "version": "1.0.0-rc.2",
+    "artifacts": 2,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/orm",
+    "version": "0.1.1",
+    "artifacts": 2,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/orm-sqlite3",
+    "version": "0.1.1",
+    "artifacts": 3,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "artifacts": 8,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/progressbar",
+    "version": "0.1.1",
+    "artifacts": 2,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "artifacts": 8,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "artifacts": 8,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/sqlite3",
+    "version": "0.1.1",
+    "artifacts": 4,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/system-io",
+    "version": "0.1.1",
+    "artifacts": 6,
+    "retired_versions_404": 1
+  },
+  {
+    "name": "slowpilot/torch",
+    "version": "0.1.4",
+    "artifacts": 4,
+    "retired_versions_404": 2
+  }
+]

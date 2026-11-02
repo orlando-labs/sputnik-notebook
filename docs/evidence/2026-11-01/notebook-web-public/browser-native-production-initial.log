@@ -1,0 +1,81 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/public.spec.ts test/resources.spec.ts test/workspace.spec.ts test/execution.spec.ts
+
+[WebServer] (node:99123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 29 tests using 1 worker
+
+(node:99297) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/execution.spec.ts:60:1 › Run All, single-cell run, output, failure, provenance and history (3.2s)
+  ✓   2 test/execution.spec.ts:108:1 › live output and accepted work survive reload and closing the page without replay (7.5s)
+  ✓   3 test/execution.spec.ts:135:1 › cooperative Stop, Force Stop, explicit restart and stale epoch protection (4.4s)
+  ✓   4 test/execution.spec.ts:170:1 › lost accepted Run response is recovered by receipt after reload with one physical run (1.6s)
+  ✓   5 test/execution.spec.ts:197:1 › an unaccepted request retries only on explicit action with its original ID and revision (972ms)
+  ✓   6 test/execution.spec.ts:228:1 › execution enforces project/run ownership, role changes, receipts, CSRF and safe DTOs (3.1s)
+  ✓   7 test/execution.spec.ts:284:1 › Stop during preparation is cancellation; an unobserved child error fails the run (2.1s)
+  ✓   8 test/public.spec.ts:21:1 › guest opens the pinned public template inertly, edits/runs explicitly and discards its private copy (2.6s)
+  ✓   9 test/public.spec.ts:45:1 › two anonymous visitors are isolated; CSRF, forged authority and private APIs remain rejected (1.0s)
+  ✓  10 test/public.spec.ts:69:1 › lost opening/run replies recover the same commands only on explicit retry or receipt check (2.1s)
+  ✓  11 test/public.spec.ts:92:1 › tighter book quota stops work; fresh copies keep charged visitor time and the public/storage ceilings (2.7s)
+  ✓  12 test/public.spec.ts:112:1 › lease expiry and hidden/disconnected views discard public copies without replay (15.9s)
+  ✓  13 test/public.spec.ts:124:1 › admission serializes concurrent opens and bounds repeated copies for the same anonymous visitor (585ms)
+  ✓  14 test/public.spec.ts:133:1 › actual 60-second aggregate ceiling survives a fresh copy (1.0m)
+  ✘  15 test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits (5.4s)
+(node:498) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  16 test/resources.spec.ts:46:1 › core stops a real run at its cumulative quota, shows exhaustion and retains history (2.1s)
+  ✓  17 test/resources.spec.ts:56:1 › storage quota rejects Run without accepting work and is visible in resource settings (638ms)
+  ✓  18 test/resources.spec.ts:65:1 › temporary public-limits preview edits only its copy and recovers a lost run reply without replay (2.4s)
+  ✓  19 test/resources.spec.ts:81:1 › public profile cannot lift the 60-second ceiling and preview Stop/ACL/CSRF remain enforced (910ms)
+  ✓  20 test/workspace.spec.ts:25:1 › anonymous shell, SSR assets, negotiation, CSRF and private API (179ms)
+  ✓  21 test/workspace.spec.ts:54:1 › GitHub account, project UI, persistent identity and logout 204 (1.1s)
+  ✓  22 test/workspace.spec.ts:91:1 › two accounts: private projects, viewer/editor ACL, owner controls and revocation (921ms)
+  ✓  23 test/workspace.spec.ts:128:1 › failed authorization and invalid callback leave no authenticated account (375ms)
+  ✓  24 test/workspace.spec.ts:141:1 › library search, details, sort, last opened, collapse and refresh (1.0s)
+  ✓  25 test/workspace.spec.ts:184:1 › new notebook dialog handles keyboard, validation and recoverable failures (674ms)
+  ✓  26 test/workspace.spec.ts:210:1 › owner sharing UI, read-only metadata and account-scoped library preferences (1.8s)
+  ✓  27 test/workspace.spec.ts:259:3 › welcome and project layout: light, desktop and mobile (1.1s)
+  ✓  28 test/workspace.spec.ts:259:3 › welcome and project layout: dark, desktop and mobile (1.1s)
+  ✓  29 test/workspace.spec.ts:301:1 › library works when browser storage is unavailable (703ms)
+
+
+  1) test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('account-name')
+    Expected: "Alice"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" getByTestId('account-name') with timeout 5000ms
+      - waiting for getByTestId('account-name')
+
+
+      3 |
+      4 | async function login(page: Page, user = 'Alice') {
+    > 5 |   await page.goto('/'); await page.getByRole('button', { name: 'Continue with GitHub' }).click(); await page.getByRole('button', { name: `Sign in as ${user}` }).click(); await expect(page.getByTestId('account-name')).toHaveText(user)
+        |                                                                                                                                                                                                                          ^
+      6 | }
+      7 | async function request(page: Page, path: string, method = 'GET', data?: unknown) {
+      8 |   const token = (await page.context().cookies()).find(cookie => cookie.name === 'orbit-csrf')?.value
+        at login (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/resources.spec.ts:5:218)
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/resources.spec.ts:24:3
+
+    Error Context: test-results/production-native/resources-resource-setting-476b6-s-and-preserve-saved-limits/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/resources-resource-setting-476b6-s-and-preserve-saved-limits/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/resources-resource-setting-476b6-s-and-preserve-saved-limits/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits 
+  28 passed (2.4m)

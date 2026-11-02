@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-31",
+  "host": {
+    "os": "Darwin",
+    "macos": "26.6.2",
+    "machine": "arm64",
+    "node": "v26.3.0",
+    "chromium": "152.0.7977.82"
+  },
+  "checkouts": {
+    "sputnik-notebook": "314ff6c1dd2dd54a19c72744651ef421053d6e91",
+    "sputnik-lang": "05142d10d2638955b0b5842f9001938161b6f1ba",
+    "orm": "e5c3df00a8c223c973329f3b6110d7f22d7533ec",
+    "orbit": "ecb0d1132f8e309c5849ef11e5914b8675a185b5",
+    "sqlite3": "5ef7fdd2d82a256715860979c5857be073155e77"
+  },
+  "sdk_override": false,
+  "sdk_changes_since_native_build": "tests/regexp_unicode_test.py | 9 ++++++++-\n 1 file changed, 8 insertions(+), 1 deletion(-)",
+  "native_builds": "Unchanged binaries and application/Core source hashes from 2026-10-30 current-SDK integration; compiler/runtime unchanged by test-only SDK 05142d1. Only the new C-API transfer probe was compiled for this audit.",
+  "nginx_installed": false,
+  "external_deployment": false
+}

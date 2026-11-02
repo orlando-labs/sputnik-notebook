@@ -1,0 +1,28 @@
+[
+  {
+    "source": "backend/main.s",
+    "status": "ok",
+    "native_code_count": 2760,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0,
+    "native_hash": "fd586cc308d4c2311aaa593bc1005a35c81d23ff4cd283a874ef6cdef55e84db",
+    "native_binary_size_bytes": 23601136
+  },
+  {
+    "source": "test/app_fixture.s",
+    "status": "ok",
+    "native_code_count": 2760,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0,
+    "native_hash": "1b83447669632cca5fb7f1c235b8665a7b1a69cf6ec4a8d0878d3378a46d815c",
+    "native_binary_size_bytes": 23502040
+  }
+]

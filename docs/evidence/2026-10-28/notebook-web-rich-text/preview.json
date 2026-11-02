@@ -1,0 +1,18 @@
+{
+  "url": "http://127.0.0.1:3010",
+  "pid": 63090,
+  "page_status": 200,
+  "assets": [
+    {
+      "path": "/assets/main-BApLz1GP.js",
+      "status": 200
+    },
+    {
+      "path": "/assets/main-D2k45Qmi.css",
+      "status": 200
+    }
+  ],
+  "database_retained": true,
+  "external_core_socket_retained": true,
+  "log": "build/preview-stage4f1.log"
+}

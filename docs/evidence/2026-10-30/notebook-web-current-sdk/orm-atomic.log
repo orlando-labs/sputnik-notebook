@@ -1,0 +1,3 @@
+ValueError: ORM atomicity: cancellation rolls back and releases lease
+ValueError: ORM atomicity: cancellation rolls back and releases lease
+  at c1291:39 (test/atomicity_selftest.s:275:3)

@@ -1,0 +1,44 @@
+[WebServer] (node:21922) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 31 tests using 1 worker
+
+(node:21962) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/environments.spec.ts:24:1 › operator defaults deny preparation and arbitrary server paths, grants and unknown sheets (1.6s)
+  ✓   2 test/environments.spec.ts:37:1 › worker review is inert until confirmation; stale drafts survive and receipts recover a lost response (5.0s)
+  ✓   3 test/environments.spec.ts:55:1 › saved revision, active run and settings CAS reject reset without erasing worker state (3.7s)
+  ✓   4 test/environments.spec.ts:70:1 › owner-only settings preserve private grants and revocation closes drafts (5.5s)
+  -   5 test/environments.spec.ts:81:1 › preparation is explicit, saved-only and exposes safe generations with retry and ready binding
+  ✓   6 test/environments.spec.ts:106:1 › storage admission rejects settings and preparation, while temporary copies cannot change runtime privileges (687ms)
+  ✓   7 test/execution.spec.ts:60:1 › Run All, single-cell run, output, failure, provenance and history (2.0s)
+  ✓   8 test/execution.spec.ts:108:1 › live output and accepted work survive reload and closing the page without replay (7.0s)
+  ✓   9 test/execution.spec.ts:135:1 › cooperative Stop, Force Stop, explicit restart and stale epoch protection (3.5s)
+  ✓  10 test/execution.spec.ts:170:1 › lost accepted Run response is recovered by receipt after reload with one physical run (1.5s)
+  ✓  11 test/execution.spec.ts:197:1 › an unaccepted request retries only on explicit action with its original ID and revision (1.1s)
+  ✓  12 test/execution.spec.ts:228:1 › execution enforces project/run ownership, role changes, receipts, CSRF and safe DTOs (4.6s)
+  ✓  13 test/execution.spec.ts:284:1 › Stop during preparation is cancellation; an unobserved child error fails the run (1.7s)
+  ✓  14 test/sources-transfer.spec.ts:24:1 › module and binary file changes save atomically, preserve hidden resources and execute imported helper (1.6s)
+  ✓  15 test/sources-transfer.spec.ts:40:1 › file conflicts keep the complete draft; export historical revision and recover draft bundle (1.1s)
+
+  ✓  16 test/sources-transfer.spec.ts:52:1 › ZIP and folder imports retain full document, int64 metadata, files and idempotent receipts without running (1.3s)
+
+  ✓  17 test/sources-transfer.spec.ts:73:1 › imports reject unsafe archives and unauthorized file/dependency operations (1.4s)
+  ✓  18 test/sources-transfer.spec.ts:85:1 › registry packages install, recover an accepted response loss, and remove through owner UI (2.2s)
+  ✓  19 test/sources-transfer.spec.ts:99:1 › native builds explain required permissions, reset consent per build and link to worker grants (783ms)
+
+  ✓  20 test/sources-transfer.spec.ts:117:1 › import resumes the same command across reload and accepted response loss (1.3s)
+  ✓  21 test/sources-transfer.spec.ts:134:1 › file save retries retain command identity and source layout fits desktop and mobile themes (1.6s)
+  ✓  22 test/workspace.spec.ts:25:1 › anonymous shell, SSR assets, negotiation, CSRF and private API (166ms)
+  ✓  23 test/workspace.spec.ts:54:1 › GitHub account, project UI, persistent identity and logout 204 (1.3s)
+  ✓  24 test/workspace.spec.ts:91:1 › two accounts: private projects, viewer/editor ACL, owner controls and revocation (1.0s)
+  ✓  25 test/workspace.spec.ts:128:1 › failed authorization and invalid callback leave no authenticated account (361ms)
+  ✓  26 test/workspace.spec.ts:141:1 › library search, details, sort, last opened, collapse and refresh (1.2s)
+  ✓  27 test/workspace.spec.ts:184:1 › new notebook dialog handles keyboard, validation and recoverable failures (738ms)
+  ✓  28 test/workspace.spec.ts:210:1 › owner sharing UI, read-only metadata and account-scoped library preferences (1.9s)
+  ✓  29 test/workspace.spec.ts:259:3 › welcome and project layout: light, desktop and mobile (1.1s)
+  ✓  30 test/workspace.spec.ts:259:3 › welcome and project layout: dark, desktop and mobile (1.1s)
+  ✓  31 test/workspace.spec.ts:301:1 › library works when browser storage is unavailable (784ms)
+
+  1 skipped
+  30 passed (1.1m)

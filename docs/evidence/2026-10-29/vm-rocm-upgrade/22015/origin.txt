@@ -1,0 +1,1 @@
+https://repo.radeon.com/rocm/rhel9/6.3.4/main/rocblas-4.3.0.60304-76.el9.x86_64.rpm

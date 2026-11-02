@@ -1,0 +1,6 @@
+{
+  "api_gpu": "passed",
+  "devices": 3,
+  "run_id": "d5a0c1b407593c470c6ce77319b959f1",
+  "project": "container_gpu_validation_f35f7f8597a74cca91e72de4ac3f1443"
+}

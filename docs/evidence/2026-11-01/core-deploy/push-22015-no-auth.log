@@ -1,0 +1,13 @@
+The push refers to repository [docker.orlando-labs.com/sputnik-remote-core]
+a7ff14538100: Preparing
+1b35ffe3ffa0: Preparing
+a3f8062bd35d: Preparing
+8b99a5576fa7: Preparing
+ded34a8ea16f: Preparing
+21372cb165ee: Preparing
+6b76aed0bccc: Preparing
+44a87794b739: Preparing
+21372cb165ee: Waiting
+6b76aed0bccc: Waiting
+44a87794b739: Waiting
+no basic auth credentials

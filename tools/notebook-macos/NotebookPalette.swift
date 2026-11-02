@@ -3,13 +3,14 @@ import Observation
 import SwiftUI
 
 enum NotebookColorPreset: String, CaseIterable, Identifiable {
-    case sputnik, espresso, seaGlass, syrah, charlock, lunar, oliveLeaf
+    case sputnik, system, espresso, seaGlass, syrah, charlock, lunar, oliveLeaf
     case persianPlum, tangerine, autumn, moss, blackberry, lavender, riverJade
 
     var id: String { rawValue }
     var title: String {
         switch self {
         case .sputnik: return "Sputnik · Default"
+        case .system: return "System"
         case .espresso: return "Espresso & Coral"
         case .seaGlass: return "Sea Glass"
         case .syrah: return "Syrah & Blue Glow"
@@ -31,6 +32,7 @@ enum NotebookColorPreset: String, CaseIterable, Identifiable {
     var swatches: [UInt32] {
         switch self {
         case .sputnik: return [0x2a2a35, 0xb98391, 0xe2e2da]
+        case .system: return [] // Semantic system colors have no fixed HEX values.
         case .espresso: return [0x413333, 0xf2765e, 0xf5ebdd]
         case .seaGlass: return [0x303841, 0x76abae, 0xf5f5f5]
         case .syrah: return [0x6a282c, 0xb2d4dd, 0xe2eaeb]
@@ -45,6 +47,11 @@ enum NotebookColorPreset: String, CaseIterable, Identifiable {
         case .lavender: return [0x17313e, 0xc5b0cd, 0xf3e2d4]
         case .riverJade: return [0x0b0909, 0x408175, 0xb5b9f0]
         }
+    }
+
+    var previewColors: [NSColor] {
+        self == .system ? [.labelColor, .controlAccentColor, .windowBackgroundColor]
+            : swatches.map(NotebookPalette.native)
     }
 }
 
@@ -98,15 +105,74 @@ enum NotebookPalette {
     ]
 
     private static let palettes: [NotebookColorPreset: [[String: UInt32]]] =
-        Dictionary(uniqueKeysWithValues: NotebookColorPreset.allCases.map { preset in
+        Dictionary(uniqueKeysWithValues: NotebookColorPreset.allCases.filter { $0 != .system }.map { preset in
             (preset, [makeColors(preset, dark: false), makeColors(preset, dark: true)])
         })
 
     private static func adaptive(_ name: String, preset: NotebookColorPreset? = nil) -> NSColor {
         NSColor(name: NSColor.Name("Sputnik.\(preset?.rawValue ?? "current").\(name)")) { appearance in
+            let preset = preset ?? selection.preset
+            if preset == .system { return systemColor(name, in: appearance) }
             let dark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-            return native(palettes[preset ?? selection.preset]![dark ? 1 : 0][name]!)
+            let role: String
+            switch name {
+            case "topBar", "sidebarSelection": role = "surface"
+            case "textSelectionBackground": role = "selection"
+            case "textSelectionForeground": role = "ink"
+            case "syntax.keyword", "caret": role = "accent"
+            default: role = name
+            }
+            let color = native(palettes[preset]![dark ? 1 : 0][role]!)
+            return name == "textSelectionBackground" ? color.withAlphaComponent(0.35) : color
         }
+    }
+
+    /// Resolve semantic AppKit colors in the requested appearance, including
+    /// accessibility variants. Never cache their RGB values in a preset table.
+    private static func systemColor(_ name: String, in appearance: NSAppearance) -> NSColor {
+        let color: NSColor
+        switch name {
+        case "canvas", "sidebar", "topBar": color = .windowBackgroundColor
+        case "surface": color = .controlBackgroundColor
+        case "editor": color = .textBackgroundColor
+        case "rule": color = .separatorColor
+        case "ink": color = .labelColor
+        case "slate", "muted": color = .secondaryLabelColor
+        case "accent": color = .controlAccentColor
+        case "selection", "textSelectionBackground": color = .selectedTextBackgroundColor
+        case "textSelectionForeground": color = .selectedTextColor
+        case "sidebarSelection": color = .unemphasizedSelectedContentBackgroundColor
+        case "caret", "syntax.operator": color = .textColor
+        case "error": color = .systemRed
+        case "success", "category.annotations", "syntax.string": color = .systemGreen
+        case "category.layout": color = .systemPink
+        case "category.controls", "syntax.number": color = .systemOrange
+        case "category.services", "syntax.type": color = .systemPurple
+        case "syntax.keyword": color = .controlAccentColor
+        case "syntax.comment": color = .secondaryLabelColor
+        case "syntax.variable": color = .systemTeal
+        default: preconditionFailure("Unknown system color role: \(name)")
+        }
+        var resolved: NSColor!
+        appearance.performAsCurrentDrawingAppearance {
+            resolved = color.usingColorSpace(.sRGB)!
+            if name.hasPrefix("syntax.") {
+                let background = NSColor.textBackgroundColor.usingColorSpace(.sRGB)!
+                let ink = NSColor.textColor.usingColorSpace(.sRGB)!
+                // System accents are designed for controls. Syntax needs text
+                // contrast, including when the user picks a light accent.
+                func hex(_ color: NSColor) -> UInt32 {
+                    let alpha = color.alphaComponent
+                    let channels = zip([color.redComponent, color.greenComponent, color.blueComponent],
+                                       [background.redComponent, background.greenComponent, background.blueComponent])
+                    return channels.reduce(UInt32(0)) { value, pair in
+                        (value << 8) | UInt32(((pair.0 * alpha + pair.1 * (1 - alpha)) * 255).rounded())
+                    }
+                }
+                resolved = native(readable(hex(resolved), on: [hex(background)], toward: hex(ink)))
+            }
+        }
+        return resolved
     }
 
     private static func color(_ name: String) -> Color {
@@ -189,12 +255,16 @@ enum NotebookPalette {
     static let nativeMuted = adaptive("muted")
     static let nativeAccent = adaptive("accent")
     static let nativeFoxglove = adaptive("selection")
+    static let nativeCaret = adaptive("caret")
+    static let nativeTextSelectionBackground = adaptive("textSelectionBackground")
+    static let nativeTextSelectionForeground = adaptive("textSelectionForeground")
     static var canvas: Color { color("canvas") }
     static var sidebar: Color { color("sidebar") }
-    static var sidebarSelectionOutline: Color { currentPreset == .sputnik ? rule : sputnik }
-    static var topBar: Color { color("surface") }
-    static var card: Color { topBar }
-    static var cardSelected: Color { topBar }
+    static var sidebarSelection: Color { color("sidebarSelection") }
+    static var sidebarSelectionOutline: Color { currentPreset == .sputnik || currentPreset == .system ? rule : sputnik }
+    static var topBar: Color { color("topBar") }
+    static var card: Color { color("surface") }
+    static var cardSelected: Color { card }
     static var editor: Color { color("editor") }
     static var rule: Color { color("rule") }
     static var ink: Color { color("ink") }
@@ -219,7 +289,7 @@ enum NotebookPalette {
         }
     }
 
-    static let syntaxKeyword = nativeAccent
+    static let syntaxKeyword = adaptive("syntax.keyword")
     static let syntaxType = adaptive("syntax.type")
     static let syntaxNumber = adaptive("syntax.number")
     static let syntaxString = adaptive("syntax.string")

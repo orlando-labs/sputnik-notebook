@@ -11,7 +11,12 @@ struct NotebookRunHistoryView: View {
     @State private var other: NotebookRunRecord?
     @State private var details: NotebookRunRecord?
     @State private var title = ""
-    private var runs: [NotebookRunSummary] { history.runs.filter { $0.tab == tab.id } }
+    @State private var restoreScope = "project"
+    @State private var restoreVersion = ""
+    @State private var reviewRunID = ""
+    @State private var loadGeneration = 0
+    private var runs: [NotebookRunSummary] { (model.remote.isSelected ? model.remote.historyRuns.map(\.historySummary) : history.runs).filter { $0.tab == tab.id } }
+    private var changing: Bool { model.busy || (model.remote.isSelected && (model.remote.busy || model.remote.historyBusy || !model.remote.connected || model.remote.hasPending)) }
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if compare {
@@ -21,34 +26,58 @@ struct NotebookRunHistoryView: View {
                 Text("Choose a run…").tag("")
                 ForEach(runs) { Text(($0.pinned ? "📌 " : "") + $0.title + " · " + $0.status).tag($0.id) }
             }
+            if model.remote.isSelected {
+                HStack {
+                    Button("Refresh server history") {
+                        reviewRunID = ""
+                        model.remote.loadHistory { success in if success { load() } }
+                    }.disabled(changing || model.remote.historyBusy)
+                    Button("Load older runs") { model.remote.loadHistory(older: true) }.disabled(changing || model.remote.historyBusy || !model.remote.historyHasMore)
+                    if model.remote.historyBusy { ProgressView().controlSize(.small) }
+                }
+                if !model.remote.supportsHistory { Text("Update the remote core to manage retained server history.").font(.caption) }
+            }
             if let record {
                 if compare, let other { comparison(other, record) }
                 else {
                     HStack {
-                        TextField("Run title", text: $title).onSubmit { history.rename(record.id, title: title); load() }
-                        Button(record.pinned ? "Unpin" : "Pin") { history.pin(record.id); load() }
-                        Button("Rename") { history.rename(record.id, title: title); load() }.disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
+                        TextField("Run title", text: $title).onSubmit { change(title: title) }
+                        Button(record.pinned ? "Unpin" : "Pin") { change(pinned: !record.pinned) }
+                        Button("Rename") { change(title: title) }.disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }.disabled(changing)
                     Text("\(record.status) · \(record.backend) · \(record.started.formatted())").font(.caption).foregroundStyle(NotebookPalette.muted)
                     HStack {
                         Button("Inspect snapshot") { details = record }
-                        Button("Restore scalar parameters") { model.restoreRunParameters(record) }.disabled(model.busy || model.remote.active || model.remote.isSelected)
+                        Button("Restore scalar parameters") {
+                            model.restoreRunParameters(record, scope: restoreScope, expectedVersion: model.remote.isSelected ? restoreVersion : nil)
+                        }.disabled(changing || model.remote.active || (model.remote.isSelected && (!model.remote.canApplyProjectInputs || restoreVersion != model.remote.acceptedInputVersion)))
                         NotebookObjectMenu(title: "Run actions") {
                             Button("Export snapshot…") { export(record) }
-                            Button("Delete run", role: .destructive) { history.remove(record.id); selected = ""; load() }
+                            Button("Delete run", role: .destructive) { change(remove: true) }.disabled(changing)
                         }
                     }
-                    Text("Restore changes local accepted scalar inputs without running code. Audio assets and sources remain visible in Inspect snapshot.")
+                    if model.remote.isSelected {
+                        Picker("Restore scope", selection: $restoreScope) {
+                            Text("Project parameters").tag("project")
+                            ForEach(record.cellInputs.keys.sorted(), id: \.self) { Text("Cell \($0) parameters").tag($0) }
+                        }
+                        if restoreVersion != model.remote.acceptedInputVersion { Text("Accepted parameters changed. Reload the snapshot before restoring.").font(.caption).foregroundStyle(NotebookPalette.error) }
+                    }
+                    Text(model.remote.isSelected ? "Restore applies one scalar scope on the server. Watch cells may refresh; media assets and authored defaults are preserved." : "Restore changes local accepted scalar inputs without running code. Audio assets and sources remain visible in Inspect snapshot.")
                         .font(.caption).foregroundStyle(NotebookPalette.muted)
                 }
             } else { Text("Explicit sheet and cell runs are saved here, including errors and Stop.").font(.callout).foregroundStyle(NotebookPalette.muted) }
-            Text("Retention: 20 recent runs + up to 10 pinned · 256 MiB per notebook").font(.caption2).foregroundStyle(NotebookPalette.muted)
-            if let error = history.error { Text(error).font(.caption).foregroundStyle(NotebookPalette.error) }
+            Text(model.remote.isSelected ? "Server retention and quotas apply · up to 10 pinned · current presentations are protected from deletion" : "Retention: 20 recent runs + up to 10 pinned · 256 MiB per notebook").font(.caption2).foregroundStyle(NotebookPalette.muted)
+            if let error = model.remote.isSelected ? model.remote.historyError : history.error { Text(error).font(.caption).foregroundStyle(NotebookPalette.error) }
         }
-        .onAppear { if selected.isEmpty { selected = runs.first?.id ?? "" }; if compare && baseline.isEmpty { baseline = runs.dropFirst().first?.id ?? "" }; load() }
+        .onAppear { if model.remote.isSelected && !model.remote.historyLoaded { model.remote.loadHistory() }; choose(); load() }
         .onChange(of: selected) { _, _ in load() }
         .onChange(of: baseline) { _, _ in load() }
         .onChange(of: history.runs.map(\.id)) { _, _ in if selected.isEmpty { selected = runs.first?.id ?? "" }; load() }
+        .onChange(of: model.remote.historyRuns.map { $0.id + ":" + $0.metadata.version }) { _, _ in choose(); load() }
+        .onChange(of: model.remote.connected) { _, connected in if connected && !model.remote.historyLoaded { model.remote.loadHistory() } }
+        .onChange(of: model.remote.busy) { _, busy in if !busy && model.remote.connected && !model.remote.historyLoaded { model.remote.loadHistory() } }
+        .onChange(of: model.remote.isSelected) { _, _ in selected = ""; baseline = ""; choose(); load() }
         .sheet(item: $details) { record in NotebookRunSnapshotView(model: model, record: record).frame(minWidth: 780, minHeight: 620) }
     }
     @ViewBuilder private func comparison(_ baseline: NotebookRunRecord, _ candidate: NotebookRunRecord) -> some View {
@@ -88,12 +117,46 @@ struct NotebookRunHistoryView: View {
         return a == b ? "=" : "changed"
     }
     private func load() {
+        if model.remote.isSelected {
+            loadGeneration += 1
+            let generation = loadGeneration, selectedID = selected, baselineID = baseline
+            record = nil; other = nil
+            Task { @MainActor in
+                do {
+                    let candidate = selectedID.isEmpty ? nil : try await model.remote.historyRecord(selectedID)
+                    let base = !compare || baselineID.isEmpty ? nil : try await model.remote.historyRecord(baselineID)
+                    guard generation == loadGeneration, selected == selectedID, baseline == baselineID, model.remote.isSelected else { return }
+                    record = candidate; other = base; title = candidate?.title ?? ""
+                    if reviewRunID != selectedID { restoreVersion = model.remote.acceptedInputVersion; reviewRunID = selectedID }
+                    if restoreScope != "project" && candidate?.cellInputs[restoreScope] == nil { restoreScope = "project" }
+                } catch { if generation == loadGeneration { model.error = error.localizedDescription } }
+            }
+            return
+        }
         record = selected.isEmpty ? nil : try? history.load(selected); title = record?.title ?? ""
         other = baseline.isEmpty ? nil : try? history.load(baseline)
     }
+    private func choose() {
+        if !runs.contains(where: { $0.id == selected }) { selected = runs.first?.id ?? "" }
+        if compare && !runs.contains(where: { $0.id == baseline }) { baseline = runs.dropFirst().first?.id ?? "" }
+    }
+    private func change(title: String? = nil, pinned: Bool? = nil, remove: Bool = false) {
+        guard let record else { return }
+        if model.remote.isSelected {
+            model.remote.changeHistory(record, title: title, pinned: pinned, remove: remove) { success in if success { choose(); load() } }
+        } else {
+            if remove { history.remove(record.id); choose() }
+            else if title != nil { history.rename(record.id, title: title!) }
+            else { history.pin(record.id) }
+            load()
+        }
+    }
     private func export(_ record: NotebookRunRecord) {
         let panel = NSSavePanel(); panel.nameFieldStringValue = "run.json"
-        if panel.runModal() == .OK, let url = panel.url { do { try history.export(record.id, to: url) } catch { history.error = error.localizedDescription } }
+        if panel.runModal() == .OK, let url = panel.url { do {
+            if model.remote.isSelected { try JSONEncoder().encode(record).write(to: url, options: .atomic) }
+            else { try history.export(record.id, to: url) }
+        } catch { model.error = error.localizedDescription } }
     }
     private func exportComparison(_ first: [String: String], _ second: [String: String], keys: [String]) {
         func csv(_ text: String) -> String { "\"" + text.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }

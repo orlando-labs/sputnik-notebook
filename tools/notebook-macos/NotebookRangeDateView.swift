@@ -154,7 +154,14 @@ struct NotebookDateInputView: View {
         let value = DateFormatter(); value.locale = Locale(identifier: "en_US_POSIX"); value.calendar = Calendar(identifier: .gregorian)
         value.timeZone = timeZone; value.dateFormat = "yyyy-MM-dd"; return value
     }
-    private var serialized: String { mode == "date" ? dateFormatter.string(from: date) : ISO8601DateFormatter().string(from: date) }
+    var canApply: Bool { supportedZone && !model.busy && (!model.remote.isSelected || model.remote.canApplyProjectInputs) && (edited || input.editingText.isEmpty) }
+    static func encodedValue(_ date: Date, mode: String, zone: String) throws -> String {
+        guard let timeZone = TimeZone(identifier: zone) else { throw NotebookRemoteFailure(status: 422, message: "Choose a valid time zone.") }
+        let formatter = DateFormatter(); formatter.locale = Locale(identifier: "en_US_POSIX"); formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = timeZone; formatter.dateFormat = "yyyy-MM-dd"
+        let value = mode == "date" ? formatter.string(from: date) : ISO8601DateFormatter().string(from: date)
+        return String(decoding: try JSONEncoder().encode(value), as: UTF8.self)
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             DatePicker(input.title, selection: Binding(get: { date }, set: { date = $0; edited = true }), displayedComponents: mode == "date" ? [.date] : [.date, .hourAndMinute])
@@ -167,9 +174,11 @@ struct NotebookDateInputView: View {
             }
             HStack {
                 Button("Apply") {
-                    let value = String(decoding: try! JSONEncoder().encode(serialized), as: UTF8.self)
-                    model.setProjectInputs([input.id: value]) { success in if success { edited = false } }
-                }.disabled(!supportedZone || model.busy || model.remote.isSelected || (!edited && !input.editingText.isEmpty))
+                    do {
+                        let value = try Self.encodedValue(date, mode: mode, zone: zone)
+                        model.setProjectInputs([input.id: value]) { success in if success { edited = false } }
+                    } catch { model.error = error.localizedDescription }
+                }.disabled(!canApply).accessibilityIdentifier("date-input-apply")
                 Button("Reset draft", action: reset).disabled(model.busy)
                 Text(input.editingText.isEmpty ? "No accepted date" : input.editingText).font(.system(.caption, design: .monospaced)).textSelection(.enabled)
             }

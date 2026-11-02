@@ -1,0 +1,166 @@
+{
+  "sources": {
+    "packages/notebook-core/native/host.cpp": {
+      "sha256": "f79feed9d440451d1404811f0c563709351accefc8cd8bd3c0c070b1055c5364",
+      "bytes": 34826
+    },
+    "packages/notebook-core/src/notebook/core/host.s": {
+      "sha256": "d6011e33a1db31b0eec69641739ad11a0f71c466a9f7ceb2e9ea2faa058197de",
+      "bytes": 3187
+    },
+    "apps/notebook-web/backend/app.s": {
+      "sha256": "15907370699cdf05c98ca6bd27f9b64cd385e3416eaa43643369a1f26393ca2a",
+      "bytes": 22458
+    },
+    "apps/notebook-web/backend/results.s": {
+      "sha256": "36b8cde837cefda0bb72cf50b5e08875a927a118fbf17331b24c113104f3fc74",
+      "bytes": 5659
+    },
+    "apps/notebook-web/backend/execution.s": {
+      "sha256": "4eb293093951d74a38603ddb2f998f190a08e6a3ec74d3e45c4bb10ea9f772af",
+      "bytes": 13731
+    },
+    "apps/notebook-web/frontend/src/audio.ts": {
+      "sha256": "6e45fd4c4bd087c9a0861cfde6fd79baa846c476990dabd5c9bd41dd98c1c129",
+      "bytes": 9057
+    },
+    "apps/notebook-web/frontend/src/NotebookAudio.vue": {
+      "sha256": "5cf2834d4e254b0006b73d7e83a3f9ea1ed3edc1ebc7187ed111c02301ecd090",
+      "bytes": 14207
+    },
+    "apps/notebook-web/frontend/src/rich.ts": {
+      "sha256": "9c4ab1f0236b7dfa2d712dc221a2639749004b364908b31e1845d8bd025fcd8f",
+      "bytes": 3355
+    },
+    "apps/notebook-web/frontend/src/execution.ts": {
+      "sha256": "8b03f6dc404dcdd2503d7b7603c46db74949c81cc7bc62b73ef8195c03ca25de",
+      "bytes": 22964
+    },
+    "apps/notebook-web/frontend/src/board-execution.ts": {
+      "sha256": "91eab1adc1fcd6d71005b2d96298408ab2955f21c080d790e658525e74d4df52",
+      "bytes": 5018
+    },
+    "apps/notebook-web/frontend/src/NotebookPreview.vue": {
+      "sha256": "397bc0cc56e778955b345ad8de986986b727e4f837126eb1d31562b506664c2e",
+      "bytes": 13787
+    },
+    "apps/notebook-web/frontend/src/NotebookRichOutput.vue": {
+      "sha256": "e5f188fa111fcd55f85d57b9e01ef5b650e19182d25118994f227ab703997a3d",
+      "bytes": 2262
+    },
+    "apps/notebook-web/frontend/src/NotebookCellOutput.vue": {
+      "sha256": "0fb6549066a2764e4a81298ac5b5f31f5b717af046612784b7e14a14ac8e5da1",
+      "bytes": 2360
+    },
+    "apps/notebook-web/frontend/src/inputs.ts": {
+      "sha256": "fde832ccf71299f748cc34140b8e7265d2d92aeaad928d42acbccfceab6460f9",
+      "bytes": 10275
+    },
+    "apps/notebook-web/frontend/src/displays.ts": {
+      "sha256": "0a0c4797109573c8fb72734e5d4856ae157be458957c3f77b240849e7c66e712",
+      "bytes": 6351
+    },
+    "apps/notebook-web/frontend/src/NotebookCellDisplay.vue": {
+      "sha256": "64903441e64b2ceabcd38ee62932771f8f38a85b7c4df6698fc1e93fabfb662b",
+      "bytes": 5095
+    },
+    "apps/notebook-web/frontend/src/NotebookDisplaySettings.vue": {
+      "sha256": "29d4aa7bf260be71fc2d93c06dba397b4cf8ee4b384b852a18b3be770fcdb875",
+      "bytes": 7121
+    },
+    "apps/notebook-web/frontend/src/NotebookBoardCard.vue": {
+      "sha256": "3917e0ab01b63603af26afc059eff0e7f1649b094e6c0979ef8854c9c4bcfad4",
+      "bytes": 11803
+    },
+    "apps/notebook-web/frontend/src/NotebookBoardInspector.vue": {
+      "sha256": "f56f0355593b09afd82530ac051b94bf0695cfc339abfbe1627de0c6bf653afe",
+      "bytes": 12559
+    },
+    "apps/notebook-web/frontend/src/board-editor.ts": {
+      "sha256": "a50862411a2f6bed34e54236726acad4a021f35ac28dc1fa5254b64d7ea1c61d",
+      "bytes": 15705
+    },
+    "apps/notebook-web/frontend/src/style.css": {
+      "sha256": "68fe65afc44a838357c658674400e8e0d9903806368b4a1ce42fef89c8fc0aa9",
+      "bytes": 69824
+    },
+    "apps/notebook-web/frontend/test/audio.spec.ts": {
+      "sha256": "afb848778a019c0d04ef7e43f139936f7eb3519289fc34595ff233fcb028facc",
+      "bytes": 19830
+    },
+    "apps/notebook-web/frontend/test/boards.spec.ts": {
+      "sha256": "3da15c3d61396e70ace78e6af4335896f07d2fd6f16b161b339c5c59a32bf3c2",
+      "bytes": 23662
+    },
+    "apps/notebook-web/frontend/test/rich-results.spec.ts": {
+      "sha256": "f58321e0d742cba29b1c491ee4793b1ae24a97502a616c7bee29a68d00756ca2",
+      "bytes": 47068
+    },
+    "apps/notebook-web/tools/audio_test.mjs": {
+      "sha256": "9d66139632810189bb55a1db59e315de7deeca6dc26efd60f9f5eea6bde39351",
+      "bytes": 3565
+    },
+    "apps/notebook-web/tools/package_fixture.mjs": {
+      "sha256": "66bf55d4b6cdb823ca0b331c6dd4c2df7b766857a6dec5c500f27f396dbd38fa",
+      "bytes": 2660
+    },
+    "apps/notebook-web/sputnik.lock": {
+      "sha256": "60d54e6db392665ba6beaf1aeb25421ef154561281862289cae52db2bbd4910f",
+      "bytes": 1995
+    },
+    "apps/notebook-web/README.md": {
+      "sha256": "7111c492b798ff7452d6e6c5a79d9f2160b34d64a8ec21eeada2fa06f97af89a",
+      "bytes": 41733
+    },
+    "packages/notebook-core/README.md": {
+      "sha256": "34c77f001a373814bd97edb0041b61f39a3ddd3919e21a863d72ed44f9f62699",
+      "bytes": 7753
+    },
+    "docs/engineering/notebook-web-implementation.md": {
+      "sha256": "367105461a21591e83120da83189e2ecd7ba860187f6b07f1ecef883a7a9dad4",
+      "bytes": 32944
+    },
+    "docs/engineering/notebook-web-gap-review-2026-10-27.md": {
+      "sha256": "d917bfed90dc60ab3377cbb6a7e677664bd03fdc70bb8adf66422724951fec0a",
+      "bytes": 22543
+    }
+  },
+  "assets": {
+    "apps/notebook-web/frontend/dist/.vite/manifest.json": {
+      "sha256": "465131b599979cfaf32383fd888a16090f27ca4129ea321b832fd9dda64e5488",
+      "bytes": 184
+    },
+    "apps/notebook-web/frontend/dist/assets/main-DjxyKKuI.js": {
+      "sha256": "53d49c2ff411577631ba536f05a45f5cda1724ed41c67b03907af1c62e08de48",
+      "bytes": 499078
+    },
+    "apps/notebook-web/frontend/dist/assets/main-B2aQ4Kyx.css": {
+      "sha256": "8be978e3336a5e261ecaca46a1e101c7b4ce5a7b66ecad2f06273a08b94819cc",
+      "bytes": 60910
+    }
+  },
+  "binaries": {
+    "apps/notebook-web/build/fixture-native/fixture": {
+      "sha256": "483cf5b74c293565fda72cc8660c9e24f6fe7cd8cfb7feef01bd46c64f397ecf",
+      "bytes": 28003976
+    },
+    "apps/notebook-web/build/native/notebook-web": {
+      "sha256": "d50e46bd5ef9953e15b60eccece4418f69889df0435e5101d2458856d09432a1",
+      "bytes": 28119568
+    },
+    "build/sputnik-notebook-worker": {
+      "sha256": "107c6cfbf0dca2d9486d6180b57f5852c252a382057f14422fb6c3acb9ba7378",
+      "bytes": 10509176
+    },
+    "build/sputnik-notebook-remote": {
+      "sha256": "06369411d6e8d0e69c5b7a547fb2702f73aded5fddbbcfaa2a69c70abc4d0582",
+      "bytes": 18549320
+    },
+    "../sputnik-lang/build/sputnik": {
+      "sha256": "6ff975f5bed22c4205f056ce7c5833d56c3cbf6968590e2faa576a6e0e0bfc00",
+      "bytes": 10906088
+    }
+  },
+  "recorded_at_utc": "2026-10-29T07:38:26.268353+00:00",
+  "note": "Current final source/assets/binaries after the last lifecycle refinement; native coverage is in native-summary.json. Shared SDK changes belong to another task."
+}

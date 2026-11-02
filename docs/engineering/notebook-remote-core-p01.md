@@ -141,7 +141,7 @@ standard library (`28fe1f0`). Исходники notebook — `a877de6`; точ�
 локальных пакетов и SHA-256 архивов закреплены в
 [release manifest](../evidence/2026-10-26/release.json).
 
-Внешние `.html.sv`, `.sql.sv` и `.cmd.sv` подключаются через `@template` и
+Внешние `.html.sv`, `.sql.sv` и `.cmd.sv` подключаются через `template` и
 `source_formats` build manifest. Они встраиваются при сборке; notebook cell не
 получает неявный filesystem loader. Runtime `%for` работает и в isolated worker.
 Linux-проверки включают parser/VM/session tests, язык и внешние шаблоны в
@@ -160,6 +160,29 @@ Backup — `backups/before-templates-20261026T084237Z`. Тестовый про�
 macOS bundle пересобран с тем же SDK; проверены подпись, bundled compiler,
 45 remote-интеграций и UI smoke с шаблоном через isolated worker:
 [локальная сборка](../evidence/2026-10-26/local-build.json).
+
+2026-10-28 compiler/runtime, worker и native agent/gateway обновлены до
+`releases/20261028-regexp-77650e1` (физический каталог —
+`/ssd1Tb/sputnik-remote-core-releases/20261028-regexp-77650e1`).
+Язык закреплён коммитом `77650e1`: Unicode regexp на PCRE2, флаги `r"…"mi`,
+безопасная интерполяция, симметричный `~=` и публикация целого условия в `$_`.
+`=~`/`!~` удалены. Notebook на сервере сохраняет исходную ревизию
+`a877de6` предыдущего рабочего релиза; локальный выделенный notebook-core и
+клиент пересобраны из текущего workspace.
+
+Системная PCRE2 10.32 не используется: PCRE2 10.47 собрана отдельно в
+`/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47`. Проверены фактические
+loaded-library paths обоих процессов. Пройдены Linux VM/full-native проверки,
+notebook compiler/session tests и 46 remote API-интеграций. Рабочий HTTP API
+вернул `42` для regexp/Unicode/`$_`, повтор CommandId вернул прежний RunId;
+проверочный проект удалён через API.
+
+Переключение выполнено без активных Run, живых idle runtime и включённых
+services, с повторной проверкой под SQLite writer lock. Предыдущие проекты,
+ревизии, запуски, receipts и token сохранены; `quick_check` — `ok`.
+Backup: `backups/before-regexp-20261028T083834Z`.
+`start-current.sh` и symlink `current` указывают на новый release.
+[Manifest, SHA-256 и отчёты проверки](../evidence/2026-10-28/vm-regexp-upgrade/README.md).
 
 Из серверного checkout:
 

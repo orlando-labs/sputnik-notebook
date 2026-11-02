@@ -1,0 +1,31 @@
+{
+  "rebuilt": false,
+  "prior_stage": "notebook-web-board-actions",
+  "binaries_unchanged": true,
+  "builds": {
+    "main": {
+      "status": "ok",
+      "native_full_coverage": true,
+      "native_body_coverage_full": true,
+      "native_vm_independent": true,
+      "native_runtime_bridge": false,
+      "vm_fallback_code_count": 0,
+      "native_fallback_code_count": 0,
+      "bytecode_fallback": false,
+      "native_code_count": 3018,
+      "binary_sha256": "f4a8c9fe8f8ea41897dd3f0ad4d8ebbb89bc9d2b3953843c69e1e5e8bea434ca"
+    },
+    "fixture": {
+      "status": "ok",
+      "native_full_coverage": true,
+      "native_body_coverage_full": true,
+      "native_vm_independent": true,
+      "native_runtime_bridge": false,
+      "vm_fallback_code_count": 0,
+      "native_fallback_code_count": 0,
+      "bytecode_fallback": false,
+      "native_code_count": 3018,
+      "binary_sha256": "01eb6165d6976757a2531c57d9d61231d0eb70c76fe8909876c433131195d087"
+    }
+  }
+}

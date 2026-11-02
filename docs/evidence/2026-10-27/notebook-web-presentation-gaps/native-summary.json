@@ -1,0 +1,24 @@
+{
+  "main": {
+    "status": "ok",
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0,
+    "bytecode_fallback": false,
+    "native_bodies": 2957
+  },
+  "fixture": {
+    "status": "ok",
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0,
+    "bytecode_fallback": false,
+    "native_bodies": 2957
+  }
+}

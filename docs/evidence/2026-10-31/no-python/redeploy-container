@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release=$1
+backend=$2
+image=$3
+root=/home/slowpilot/sputnik-remote-core
+state=$root/state
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+backup=$root/backups/before-no-python-$stamp
+previous=sputnik-core-before-no-python-$stamp
+mkdir -p "$backup"
+chmod 700 "$backup"
+cp -p "$root/start-current.sh" "$backup/start-current.sh"
+token_before=$(sha256sum "$state/token" | cut -d' ' -f1)
+container=sputnik-remote-core
+gateway=$(docker top "$container" -eo pid,args | awk '/--mode gateway/ {print $1}')
+[[ "$gateway" =~ ^[0-9]+$ ]] || { printf 'Could not identify one gateway\n' >&2; exit 1; }
+rollback=true
+stopped=false
+renamed=false
+cleanup() {
+  if "$rollback"; then
+    if "$stopped"; then
+      if "$renamed"; then
+        docker rm -f sputnik-remote-core >/dev/null 2>&1 || true
+        docker rename "$previous" sputnik-remote-core
+      fi
+      docker update --restart unless-stopped sputnik-remote-core >/dev/null
+      docker start sputnik-remote-core >/dev/null
+    else
+      kill -CONT "$gateway" 2>/dev/null || true
+      docker update --restart unless-stopped sputnik-remote-core >/dev/null
+    fi
+  fi
+}
+trap cleanup EXIT
+check() {
+  docker exec -e SPUTNIK_PKG_HOME=/tmp/maintenance-packages "$container" sputnik run /tmp/container-check.s \
+    --grant fs.read --grant fs.write --grant fs.metadata --grant net.connect --grant random.secure -- \
+    --root "$state" "$@"
+}
+docker cp "$release/container-check.s" "$container:/tmp/container-check.s"
+docker update --restart=no "$container" >/dev/null
+# Freeze admission while the independent agent is audited. An active runtime
+# rejects replacement and the trap resumes the original gateway.
+kill -STOP "$gateway"
+check --mode audit --output /tmp/state-before.json
+docker cp "$container:/tmp/state-before.json" "$backup/state-before.json"
+# Terminate the frozen gateway before it can admit a queued new request.
+kill -TERM "$gateway"
+kill -CONT "$gateway"
+docker stop "$container" >/dev/null
+stopped=true
+for file in metadata.sqlite metadata.sqlite-wal; do
+  if [[ -f "$state/$file" ]]; then cp -p "$state/$file" "$backup/$file"; fi
+done
+docker rename "$container" "$previous"
+renamed=true
+args=(--image "$image" --backend "$backend" --state "$state" --root "$state"
+  --packages "$release/container-packages" --cache "$release/container-cache")
+if [[ "$backend" == cuda ]]; then
+  args+=(--gpu-devices GPU-08a27f45-3e58-12a9-4626-4997e56e765f,GPU-f8d896e0-2607-a025-88a1-7ed8979035af)
+  gpus=2
+else
+  args+=(--tensile "$root/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/rocblas/library")
+  gpus=3
+fi
+"$release/run-container" "${args[@]}"
+for ((i=0;i<90;i++)); do
+  if [[ $(docker inspect --format '{{.State.Health.Status}}' "$container") == healthy ]]; then break; fi
+  sleep 1
+done
+[[ $(docker inspect --format '{{.State.Health.Status}}' "$container") == healthy ]]
+docker exec "$container" sh -c 'if command -v python3 || command -v python; then exit 1; fi; if dpkg-query -W -f="\${Package}\n" | grep -E "^(python|libpython)"; then exit 1; fi'
+docker cp "$release/container-check.s" "$container:/tmp/container-check.s"
+check --mode audit --output /tmp/state-after.json
+docker cp "$container:/tmp/state-after.json" "$backup/state-after.json"
+cmp "$backup/state-before.json" "$backup/state-after.json"
+[[ $(sha256sum "$state/token" | cut -d' ' -f1) == "$token_before" ]]
+check --mode gpu --gpus "$gpus"
+rollback=false
+printf 'PASS replaced %s core: no Python, state and token preserved; backup=%s\n' "$backend" "$backup"

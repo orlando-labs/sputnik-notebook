@@ -1,0 +1,14 @@
+{
+  "web_restart": {
+    "same_run": true,
+    "same_epoch": true,
+    "replayed_requests": 0,
+    "result": "42"
+  },
+  "worker_crash": {
+    "state": "interrupted",
+    "requires_explicit_restart": true,
+    "new_epoch": true,
+    "result": "84"
+  }
+}

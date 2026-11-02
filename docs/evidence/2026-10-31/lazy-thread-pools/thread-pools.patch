@@ -1,0 +1,1147 @@
+diff --git a/runtime/concurrency.cpp b/runtime/concurrency.cpp
+index 753b190..765e61e 100644
+--- a/runtime/concurrency.cpp
++++ b/runtime/concurrency.cpp
+@@ -12,7 +12,9 @@
+ #include <algorithm>
+ #include <array>
+ #include <atomic>
++#include <charconv>
+ #include <condition_variable>
++#include <cstdlib>
+ #include <deque>
+ #include <functional>
+ #include <limits>
+@@ -31,6 +33,27 @@ namespace sputnik::runtime {
+ 
+ namespace {
+ thread_local bool tls_runtime_blocking_ffi_thread = false;
++
++std::size_t thread_limit_from_environment(const char *name,
++                                        std::size_t fallback) {
++  const char *text = std::getenv(name);
++  if (!text) return fallback;
++  const std::string value(text);
++  std::size_t limit = 0;
++  const auto result = std::from_chars(value.data(), value.data() + value.size(), limit);
++  if (result.ec != std::errc{} || result.ptr != value.data() + value.size() ||
++      limit == 0) {
++    throw RuntimeTaskFailure("ArgumentError",
++                             std::string(name) + " must be a positive integer");
++  }
++  return limit;
++}
++
++std::size_t default_ffi_thread_limit() {
++  const std::size_t hardware = std::max(1U, std::thread::hardware_concurrency());
++  return thread_limit_from_environment("SPUTNIK_FFI_MAX_THREADS",
++      std::max<std::size_t>(4, std::min<std::size_t>(32, hardware * 2)));
++}
+ }
+ 
+ bool current_runtime_is_blocking_ffi_thread() {
+@@ -39,19 +62,11 @@ bool current_runtime_is_blocking_ffi_thread() {
+ 
+ class RuntimeBlockingFfiExecutor::Impl {
+ public:
+-  Impl() {
+-    const std::size_t hardware =
+-        std::max<std::size_t>(1U, std::thread::hardware_concurrency());
+-    const std::size_t worker_count =
+-        std::max<std::size_t>(4U, std::min<std::size_t>(32U, hardware * 2U));
+-    workers_.reserve(worker_count);
+-    try {
+-      std::lock_guard<std::mutex> lock(mutex_);
+-      for (std::size_t index = 0; index < worker_count; ++index)
+-        start_worker_locked(true);
+-    } catch (...) {
+-      stop_and_join();
+-      throw;
++  Impl(std::size_t worker_count, std::chrono::milliseconds idle_timeout)
++      : worker_count_(worker_count ? worker_count : default_ffi_thread_limit()),
++        idle_timeout_(idle_timeout) {
++    if (idle_timeout_ <= std::chrono::milliseconds::zero()) {
++      throw RuntimeTaskFailure("ArgumentError", "FFI idle timeout must be positive");
+     }
+   }
+ 
+@@ -70,7 +85,7 @@ public:
+     }
+   }
+ 
+-  void submit(std::function<void()> function) {
++  void submit(std::function<void()> function, std::function<void()> completion) {
+     if (!function) {
+       return;
+     }
+@@ -81,17 +96,36 @@ public:
+                                  "blocking FFI executor is shutting down");
+       }
+       reap_workers_locked();
+-      // Every job may wait for a producer that itself needs FFI. A fixed
+-      // concurrency cap would prevent that producer from ever entering.
+-      // Keep the idle pool bounded, but give queued work a carrier even when
+-      // all existing carriers are occupied by synchronous foreign stacks.
+-      if (queue_.size() >= available_workers_) start_worker_locked(false);
+-      queue_.push_back(std::move(function));
++      // An enqueued job reserves an available carrier even before that
++      // carrier takes it. Do not reject a burst while capacity can still grow.
++      if (queue_.size() >= available_workers_) {
++        if (workers_.size() >= worker_count_) {
++          // A queued producer may be needed by every occupied foreign stack.
++          // Fail explicitly instead of exceeding the limit or deadlocking it.
++          throw RuntimeTaskFailure("ResourceBusyError",
++              "blocking FFI thread pool is full (limit " +
++              std::to_string(worker_count_) +
++              "); retry later or increase SPUTNIK_FFI_MAX_THREADS");
++        }
++        start_worker_locked();
++      }
++      queue_.push_back(Job{std::move(function), std::move(completion)});
+     }
+     ready_.notify_one();
+   }
+ 
++  RuntimeBlockingFfiStats stats() const {
++    std::lock_guard<std::mutex> lock(mutex_);
++    return {worker_count_, live_workers_, live_workers_ - available_workers_,
++            queue_.size()};
++  }
++
+ private:
++  struct Job {
++    std::function<void()> function;
++    std::function<void()> completion;
++  };
++
+   struct Worker {
+     std::thread thread;
+     std::shared_ptr<std::atomic<bool>> exited;
+@@ -105,7 +139,7 @@ private:
+     }
+   }
+ 
+-  void start_worker_locked(bool core) {
++  void start_worker_locked() {
+     // Grow metadata before creating a joinable thread so allocation failure
+     // cannot destroy an unjoined std::thread during vector reallocation.
+     workers_.reserve(workers_.size() + 1U);
+@@ -114,53 +148,63 @@ private:
+     workers_.back().exited = exited;
+     try {
+       workers_.back().thread = std::thread(
+-          [this, core, exited] { worker_loop(core, exited); });
++          [this, exited] { worker_loop(exited); });
+     } catch (...) {
+       workers_.pop_back();
+       throw;
+     }
+     ++available_workers_;
++    ++live_workers_;
+   }
+ 
+-  void worker_loop(bool core, const std::shared_ptr<std::atomic<bool>> &exited) {
++  void worker_loop(const std::shared_ptr<std::atomic<bool>> &exited) {
+     while (true) {
+-      std::function<void()> function;
++      Job job;
+       {
+         std::unique_lock<std::mutex> lock(mutex_);
+         const auto ready = [this] { return stopping_ || !queue_.empty(); };
+-        bool awakened = true;
+-        if (core) ready_.wait(lock, ready);
+-        else awakened = ready_.wait_for(lock, std::chrono::seconds(30), ready);
++        const bool awakened = ready_.wait_for(lock, idle_timeout_, ready);
+         if ((!awakened || stopping_) && queue_.empty()) {
+           --available_workers_;
+-          lock.unlock();
++          --live_workers_;
+           exited->store(true, std::memory_order_release);
+           return;
+         }
+-        function = std::move(queue_.front());
++        job = std::move(queue_.front());
+         queue_.pop_front();
+         --available_workers_;
+       }
+       try {
+         tls_runtime_blocking_ffi_thread = true;
+-        function();
++        job.function();
+       } catch (...) {
+         // Submitted jobs own their completion/error channel. An exception must
+         // never terminate an executor worker or the process.
+       }
++      // Captures may own foreign finalizers. Retire them while this carrier
++      // still owns its capacity and retains the nested-FFI inline context.
++      job.function = {};
+       tls_runtime_blocking_ffi_thread = false;
+       {
+         std::lock_guard<std::mutex> lock(mutex_);
+         ++available_workers_;
+       }
++      try {
++        if (job.completion) job.completion();
++      } catch (...) {
++        // Completion observers must not terminate an executor worker either.
++      }
+     }
+   }
+ 
+-  std::mutex mutex_;
++  mutable std::mutex mutex_;
+   std::condition_variable ready_;
+-  std::deque<std::function<void()>> queue_;
++  std::deque<Job> queue_;
+   std::vector<Worker> workers_;
+   std::size_t available_workers_ = 0;
++  std::size_t live_workers_ = 0;
++  const std::size_t worker_count_;
++  const std::chrono::milliseconds idle_timeout_;
+   bool stopping_ = false;
+ };
+ 
+@@ -171,13 +215,19 @@ RuntimeBlockingFfiExecutor &RuntimeBlockingFfiExecutor::instance() {
+   return *executor;
+ }
+ 
+-RuntimeBlockingFfiExecutor::RuntimeBlockingFfiExecutor()
+-    : impl_(std::make_unique<Impl>()) {}
++RuntimeBlockingFfiExecutor::RuntimeBlockingFfiExecutor(
++    std::size_t worker_count, std::chrono::milliseconds idle_timeout)
++    : impl_(std::make_unique<Impl>(worker_count, idle_timeout)) {}
+ 
+ RuntimeBlockingFfiExecutor::~RuntimeBlockingFfiExecutor() = default;
+ 
+-void RuntimeBlockingFfiExecutor::submit(std::function<void()> function) {
+-  impl_->submit(std::move(function));
++void RuntimeBlockingFfiExecutor::submit(std::function<void()> function,
++                                        std::function<void()> completion) {
++  impl_->submit(std::move(function), std::move(completion));
++}
++
++RuntimeBlockingFfiStats RuntimeBlockingFfiExecutor::stats() const {
++  return impl_->stats();
+ }
+ 
+ struct RuntimeTaskContext::State {
+@@ -2676,11 +2726,6 @@ public:
+       return;
+     }
+     started_ = true;
+-    workers_.reserve(worker_count_);
+-    const std::shared_ptr<Impl> self = shared_from_this();
+-    for (std::size_t index = 0; index < worker_count_; ++index) {
+-      workers_.emplace_back([self, index]() { self->worker_loop(index); });
+-    }
+   }
+ 
+   void shutdown() {
+@@ -2716,6 +2761,8 @@ public:
+       }
+     }
+     workers_.clear();
++    std::lock_guard<std::mutex> lock(mutex_);
++    stats_.live_worker_count = 0;
+   }
+ 
+   std::uint64_t spawn_strand(StrandFunction function) {
+@@ -3125,7 +3172,26 @@ private:
+       return worker_count;
+     }
+     const unsigned int hardware = std::thread::hardware_concurrency();
+-    return hardware == 0 ? 2 : static_cast<std::size_t>(hardware);
++    return thread_limit_from_environment("SPUTNIK_TASK_MAX_THREADS",
++        hardware == 0 ? 2 : static_cast<std::size_t>(hardware));
++  }
++
++  void grow_workers_locked(std::size_t desired, bool required = false) {
++    desired = std::min(desired, worker_count_);
++    while (!shutdown_requested_ && workers_.size() < desired) {
++      const auto self = shared_from_this();
++      const std::size_t index = workers_.size();
++      try {
++        workers_.reserve(index + 1);
++        workers_.emplace_back([self, index]() { self->worker_loop(index); });
++      } catch (...) {
++        // Existing workers can drain ordinary queued work if the OS refuses
++        // extra threads. A first worker or a targeted worker is indispensable.
++        if (workers_.empty() || required) throw;
++        break;
++      }
++      stats_.live_worker_count = workers_.size();
++    }
+   }
+ 
+   static bool is_terminal_state(RuntimeStrandState state) {
+@@ -3168,6 +3234,13 @@ private:
+         parent_context == nullptr ? RuntimeTaskContext::create()
+                                   : parent_context->inherited_snapshot();
+     std::unique_lock<std::mutex> lock(mutex_);
++    if (shutdown_requested_) {
++      throw RuntimeTaskFailure("RuntimeError", "scheduler is shutting down");
++    }
++    // Sleeping tasks still need one worker to observe their deadlines. Start
++    // it before publishing the task so thread creation failure leaves no
++    // accepted task without an executor.
++    grow_workers_locked(1);
+     const std::uint64_t strand_id = next_strand_id_++;
+     std::uint64_t parent_task_id = current_runtime_scheduler_identity() == this
+                                        ? current_runtime_task_id()
+@@ -3212,6 +3285,9 @@ private:
+       ++stored.wake_generation;
+       timers_.push(TimerEntry{std::chrono::steady_clock::now() + delay,
+                               strand_id, stored.wake_generation});
++      // A synchronous call may occupy every existing worker. Leave capacity
++      // to observe this deadline rather than waiting for that call to finish.
++      grow_workers_locked(busy_worker_count_ + 1);
+     } else {
+       enqueue_runnable_locked(strand_id, std::nullopt);
+     }
+@@ -3237,6 +3313,12 @@ private:
+                           strand.state != RuntimeStrandState::Sleeping)) {
+       return;
+     }
++    if (worker_index.has_value()) {
++      grow_workers_locked(*worker_index + 1, true);
++    } else {
++      grow_workers_locked(busy_worker_count_ +
++                          runnable_queue_depth_locked() + 1);
++    }
+     strand.state = RuntimeStrandState::Runnable;
+     strand.queued = true;
+     if (worker_index.has_value() && !local_queues_.empty()) {
+@@ -3622,6 +3704,8 @@ private:
+         while (!shutdown_requested_) {
+           strand_id = next_runnable_locked(worker_index);
+           if (strand_id != 0) {
++            ++busy_worker_count_;
++            if (!timers_.empty()) grow_workers_locked(busy_worker_count_ + 1);
+             function = strands_[strand_id].function;
+             sync_owner_id = strands_[strand_id].sync_owner_id;
+             cancellation_requested = strands_[strand_id].cancellation_requested;
+@@ -3673,6 +3757,7 @@ private:
+ 
+       {
+         std::lock_guard<std::mutex> lock(mutex_);
++        --busy_worker_count_;
+         auto found = strands_.find(strand_id);
+         if (found != strands_.end() && found->second.park_pending) {
+           // Layer B: the strand parked itself. Release the worker without
+@@ -3777,6 +3862,9 @@ private:
+   RuntimeSchedulerStats stats_;
+   std::uint64_t next_strand_id_ = 1;
+   std::uint64_t running_count_ = 0;
++  // Includes workers synchronously joining another task: their C++ stack
++  // still occupies an OS worker even while the logical task is Waiting.
++  std::size_t busy_worker_count_ = 0;
+   bool started_ = false;
+   bool shutdown_requested_ = false;
+ };
+diff --git a/runtime/concurrency.h b/runtime/concurrency.h
+index 3c97ce0..e31962d 100644
+--- a/runtime/concurrency.h
++++ b/runtime/concurrency.h
+@@ -99,22 +99,36 @@ private:
+ // Process-wide executor for foreign calls that may block an OS thread. VM
+ // strands park before submitting work here, so scheduler workers remain
+ // available. Native stack-preserving task drivers also wait outside scheduler
+-// workers. Synchronous callbacks can retain a carrier, so the executor grows
+-// when all carriers are occupied; surplus idle carriers retire after a timeout.
++// workers. Carriers start on demand up to a hard limit; saturation raises a
++// ResourceBusyError instead of queuing a potentially dependent foreign call.
++struct RuntimeBlockingFfiStats {
++  std::size_t worker_count = 0;
++  std::size_t live_worker_count = 0;
++  std::size_t busy_worker_count = 0;
++  std::size_t queued_job_count = 0;
++};
++
+ class RuntimeBlockingFfiExecutor {
+ public:
+   static RuntimeBlockingFfiExecutor &instance();
++  // Zero reads SPUTNIK_FFI_MAX_THREADS, defaulting to 4..32 workers according
++  // to hardware concurrency. No workers are created by construction.
++  explicit RuntimeBlockingFfiExecutor(
++      std::size_t worker_count = 0,
++      std::chrono::milliseconds idle_timeout = std::chrono::seconds(30));
++  ~RuntimeBlockingFfiExecutor();
+ 
+   RuntimeBlockingFfiExecutor(const RuntimeBlockingFfiExecutor &) = delete;
+   RuntimeBlockingFfiExecutor &
+   operator=(const RuntimeBlockingFfiExecutor &) = delete;
+ 
+-  void submit(std::function<void()> function);
++  // completion runs after the foreign call releases its pool capacity, so a
++  // resumed caller can immediately submit its next call even at limit one.
++  void submit(std::function<void()> function,
++              std::function<void()> completion = {});
++  RuntimeBlockingFfiStats stats() const;
+ 
+ private:
+-  RuntimeBlockingFfiExecutor();
+-  ~RuntimeBlockingFfiExecutor();
+-
+   class Impl;
+   std::unique_ptr<Impl> impl_;
+ };
+@@ -132,12 +146,16 @@ enum class RuntimeStrandState {
+ };
+ 
+ struct RuntimeSchedulerConfig {
++  // Maximum OS workers. Workers are started only when work needs them; zero
++  // reads SPUTNIK_TASK_MAX_THREADS, defaulting to hardware concurrency.
+   std::size_t worker_count = 0;
+   std::uint64_t first_worker_id = 1;
+ };
+ 
+ struct RuntimeSchedulerStats {
++  // Configured limit and actual number of started OS workers, respectively.
+   std::uint64_t worker_count = 0;
++  std::uint64_t live_worker_count = 0;
+   std::uint64_t strands_created = 0;
+   std::uint64_t strands_completed = 0;
+   std::uint64_t strands_failed = 0;
+diff --git a/runtime/vm.cpp b/runtime/vm.cpp
+index 19c971e..4ab87b9 100644
+--- a/runtime/vm.cpp
++++ b/runtime/vm.cpp
+@@ -12662,75 +12662,97 @@ private:
+          task_context, scheduler_identity,
+          stdout_writer, stderr_writer,
+          task](std::shared_ptr<Vm> vm_owner) mutable {
+-          RuntimeBlockingFfiExecutor::instance().submit(
+-              [pending, caller_ptr, fn, method,
+-               pos_args = std::move(pos_args), self = std::move(self),
+-               strand_id, task_id, sync_owner_id, cancel_flag, cancel_owner, run_cancellation,
+-               run_cancellation_masked, task_context,
+-               scheduler_identity, stdout_writer, stderr_writer, task,
+-               vm_owner = std::move(vm_owner)]() mutable {
+-                RuntimeStrandScope strand_scope(strand_id);
+-                RuntimeRunCancellationScope run_scope(run_cancellation);
+-                RuntimeRunCancellationMask cleanup_mask(run_cancellation_masked);
+-                RuntimeTaskScope task_scope(task_id, cancel_flag, sync_owner_id,
+-                                            task_context, scheduler_identity, cancel_owner);
+-                RuntimeOutputScope output_scope(stdout_writer, stderr_writer);
+-                IoParkGuard io_park_guard(false);
+-                bool ok = false;
+-                Value value = Value::null();
+-                std::string exception_error_name;
+-                std::string exception_message;
+-                vm_owner->blocking_native_unwind_boundary_ =
+-                    vm_owner->frames_.size() - 1U;
+-                try {
+-                  NativeExtCallOutcome outcome =
+-                      method ? sputnik_ext_invoke_method(
+-                                   *vm_owner, caller_ptr,
+-                                   vm_owner->type_registry()
+-                                       .native_package_tags(),
+-                                   reinterpret_cast<SputnikMethodFn>(fn), self,
+-                                   pos_args)
+-                             : sputnik_ext_invoke_free(
+-                                   *vm_owner, caller_ptr,
+-                                   vm_owner->type_registry()
+-                                       .native_package_tags(),
+-                                   reinterpret_cast<SputnikFreeFn>(fn), pos_args);
+-                  ok = outcome.ok;
+-                  value = std::move(outcome.value);
+-                } catch (const RuntimeTaskCancelled &) {
+-                  exception_error_name = "CancelledError";
+-                  exception_message = "task cancelled";
+-                } catch (const RuntimeTaskFailure &failure) {
+-                  exception_error_name = failure.error_name();
+-                  exception_message = failure.message();
+-                } catch (const std::exception &error) {
+-                  exception_error_name = "RuntimeError";
+-                  exception_message = error.what();
+-                } catch (...) {
+-                  exception_error_name = "RuntimeError";
+-                  exception_message = "blocking FFI call failed";
+-                }
+-                vm_owner->blocking_native_unwind_boundary_.reset();
+-                {
+-                  std::lock_guard<std::mutex> lock(pending->mutex);
+-                  pending->ok = ok;
+-                  pending->value = std::move(value);
+-                  pending->exception_error_name =
+-                      std::move(exception_error_name);
+-                  pending->exception_message = std::move(exception_message);
+-                  pending->fault = std::move(vm_owner->fault_);
+-                  pending->escaped_exception = std::move(vm_owner->escaped_exception_);
+-                  pending->escaped_throw = std::move(vm_owner->escaped_throw_);
+-                  pending->escaped_nonlocal_return =
+-                      std::move(vm_owner->escaped_nonlocal_return_);
+-                  vm_owner->fault_.reset();
+-                  vm_owner->escaped_exception_.reset();
+-                  vm_owner->escaped_throw_.reset();
+-                  vm_owner->escaped_nonlocal_return_.reset();
+-                  pending->ready = true;
+-                }
+-                task->scheduler().wake_strand(strand_id);
+-              });
++          const auto reject = [&](const std::string &name,
++                                  const std::string &message) {
++            {
++              std::lock_guard<std::mutex> lock(pending->mutex);
++              pending->exception_error_name = name;
++              pending->exception_message = message;
++              pending->ready = true;
++            }
++            // Submission happens after park_current(). Publish the fault as a
++            // completion and resume the VM so rescue/ensure can handle it.
++            task->scheduler().wake_strand(strand_id);
++          };
++          try {
++            RuntimeBlockingFfiExecutor::instance().submit(
++                [pending, caller_ptr, fn, method,
++                 pos_args = std::move(pos_args), self = std::move(self),
++                 strand_id, task_id, sync_owner_id, cancel_flag, cancel_owner, run_cancellation,
++                 run_cancellation_masked, task_context,
++                 scheduler_identity, stdout_writer, stderr_writer, task,
++                 vm_owner = std::move(vm_owner)]() mutable {
++                  RuntimeStrandScope strand_scope(strand_id);
++                  RuntimeRunCancellationScope run_scope(run_cancellation);
++                  RuntimeRunCancellationMask cleanup_mask(run_cancellation_masked);
++                  RuntimeTaskScope task_scope(task_id, cancel_flag, sync_owner_id,
++                                              task_context, scheduler_identity, cancel_owner);
++                  RuntimeOutputScope output_scope(stdout_writer, stderr_writer);
++                  IoParkGuard io_park_guard(false);
++                  bool ok = false;
++                  Value value = Value::null();
++                  std::string exception_error_name;
++                  std::string exception_message;
++                  vm_owner->blocking_native_unwind_boundary_ =
++                      vm_owner->frames_.size() - 1U;
++                  try {
++                    NativeExtCallOutcome outcome =
++                        method ? sputnik_ext_invoke_method(
++                                     *vm_owner, caller_ptr,
++                                     vm_owner->type_registry()
++                                         .native_package_tags(),
++                                     reinterpret_cast<SputnikMethodFn>(fn), self,
++                                     pos_args)
++                               : sputnik_ext_invoke_free(
++                                     *vm_owner, caller_ptr,
++                                     vm_owner->type_registry()
++                                         .native_package_tags(),
++                                     reinterpret_cast<SputnikFreeFn>(fn), pos_args);
++                    ok = outcome.ok;
++                    value = std::move(outcome.value);
++                  } catch (const RuntimeTaskCancelled &) {
++                    exception_error_name = "CancelledError";
++                    exception_message = "task cancelled";
++                  } catch (const RuntimeTaskFailure &failure) {
++                    exception_error_name = failure.error_name();
++                    exception_message = failure.message();
++                  } catch (const std::exception &error) {
++                    exception_error_name = "RuntimeError";
++                    exception_message = error.what();
++                  } catch (...) {
++                    exception_error_name = "RuntimeError";
++                    exception_message = "blocking FFI call failed";
++                  }
++                  vm_owner->blocking_native_unwind_boundary_.reset();
++                  {
++                    std::lock_guard<std::mutex> lock(pending->mutex);
++                    pending->ok = ok;
++                    pending->value = std::move(value);
++                    pending->exception_error_name =
++                        std::move(exception_error_name);
++                    pending->exception_message = std::move(exception_message);
++                    pending->fault = std::move(vm_owner->fault_);
++                    pending->escaped_exception = std::move(vm_owner->escaped_exception_);
++                    pending->escaped_throw = std::move(vm_owner->escaped_throw_);
++                    pending->escaped_nonlocal_return =
++                        std::move(vm_owner->escaped_nonlocal_return_);
++                    vm_owner->fault_.reset();
++                    vm_owner->escaped_exception_.reset();
++                    vm_owner->escaped_throw_.reset();
++                    vm_owner->escaped_nonlocal_return_.reset();
++                  }
++                }, [pending, task, strand_id] {
++                  {
++                    std::lock_guard<std::mutex> lock(pending->mutex);
++                    pending->ready = true;
++                  }
++                  task->scheduler().wake_strand(strand_id);
++                });
++          } catch (const RuntimeTaskFailure &error) {
++            reject(error.error_name(), error.message());
++          } catch (const std::exception &error) {
++            reject("RuntimeError", error.what());
++          }
+         };
+     park_request_ = std::move(park);
+     *parked = true;
+diff --git a/runtime/world.cpp b/runtime/world.cpp
+index 2f09789..cd625d8 100644
+--- a/runtime/world.cpp
++++ b/runtime/world.cpp
+@@ -1321,11 +1321,18 @@ ExecutionResult RuntimeWorld::invoke_native_extension(
+     } else {
+       auto completion = std::make_shared<std::promise<ExecutionResult>>();
+       std::future<ExecutionResult> result_future = completion->get_future();
+-      RuntimeBlockingFfiExecutor::instance().submit(
+-          [completion, invoke = std::move(invoke)]() mutable {
+-            completion->set_value(invoke());
+-          });
+-      result = result_future.get();
++      auto pending_result = std::make_shared<ExecutionResult>();
++      try {
++        RuntimeBlockingFfiExecutor::instance().submit(
++            [pending_result, invoke = std::move(invoke)]() mutable {
++              *pending_result = invoke();
++            }, [completion, pending_result] {
++              completion->set_value(std::move(*pending_result));
++            });
++        result = result_future.get();
++      } catch (const RuntimeTaskFailure &failure) {
++        result = {Value::null(), Fault{failure.error_name(), failure.message(), 0, 0}};
++      }
+     }
+     {
+       std::lock_guard<std::recursive_mutex> execution_guard(
+diff --git a/tools/sputnik/main.cpp b/tools/sputnik/main.cpp
+index 7c4844c..ceda3b6 100644
+--- a/tools/sputnik/main.cpp
++++ b/tools/sputnik/main.cpp
+@@ -26207,29 +26209,41 @@ static NativeValue sputnik_native_extension_invoke(
+       sputnik::runtime::current_runtime_stderr();
+   auto completion = std::make_shared<std::promise<NativeValue>>();
+   std::future<NativeValue> result = completion->get_future();
+-  sputnik::runtime::RuntimeBlockingFfiExecutor::instance().submit(
+-      [completion, fn = thunk.fn, method,
+-       copied_args = std::move(copied_args),
+-       copied_self = std::move(copied_self), strand_id, task_id, sync_owner_id,
+-       cancel_flag, cancel_owner, run_cancellation, cleanup, annotation,
+-       task_context, scheduler_identity, stdout_writer,
+-       stderr_writer]() mutable {
+-        sputnik::runtime::RuntimeStrandScope strand_scope(strand_id);
+-        sputnik::runtime::RuntimeRunCancellationScope run_scope(run_cancellation);
+-        sputnik::runtime::RuntimeRunCancellationMask cleanup_mask(cleanup);
+-        sputnik::runtime::RuntimeTaskAnnotationScope annotation_scope(annotation);
+-        sputnik::runtime::RuntimeTaskScope task_scope(
+-            task_id, cancel_flag, sync_owner_id, task_context,
+-            scheduler_identity, cancel_owner);
+-        sputnik::runtime::RuntimeOutputScope output_scope(stdout_writer,
+-                                                        stderr_writer);
+-        try {
+-          completion->set_value(sputnik_native_extension_invoke_inline(
+-              fn, method, copied_args, copied_self));
+-        } catch (...) {
+-          completion->set_exception(std::current_exception());
+-        }
+-      });
++  struct PendingForeignResult {
++    NativeValue value;
++    std::exception_ptr failure;
++  };
++  auto pending = std::make_shared<PendingForeignResult>();
++  try {
++    sputnik::runtime::RuntimeBlockingFfiExecutor::instance().submit(
++        [pending, fn = thunk.fn, method,
++         copied_args = std::move(copied_args),
++         copied_self = std::move(copied_self), strand_id, task_id, sync_owner_id,
++         cancel_flag, cancel_owner, run_cancellation, cleanup, annotation,
++         task_context, scheduler_identity, stdout_writer,
++         stderr_writer]() mutable {
++          sputnik::runtime::RuntimeStrandScope strand_scope(strand_id);
++          sputnik::runtime::RuntimeRunCancellationScope run_scope(run_cancellation);
++          sputnik::runtime::RuntimeRunCancellationMask cleanup_mask(cleanup);
++          sputnik::runtime::RuntimeTaskAnnotationScope annotation_scope(annotation);
++          sputnik::runtime::RuntimeTaskScope task_scope(
++              task_id, cancel_flag, sync_owner_id, task_context,
++              scheduler_identity, cancel_owner);
++          sputnik::runtime::RuntimeOutputScope output_scope(stdout_writer,
++                                                          stderr_writer);
++          try {
++            pending->value = sputnik_native_extension_invoke_inline(
++                fn, method, copied_args, copied_self);
++          } catch (...) {
++            pending->failure = std::current_exception();
++          }
++        }, [completion, pending]() mutable {
++          if (pending->failure) completion->set_exception(pending->failure);
++          else completion->set_value(std::move(pending->value));
++        });
++  } catch (const sputnik::runtime::RuntimeTaskFailure &failure) {
++    throw NativeRaised{native_named_error(failure.error_name(), failure.message())};
++  }
+   NativeCycleSuspension suspension;
+   return result.get();
+ }
+diff --git a/tests/blocking_ffi_tests.cpp b/tests/blocking_ffi_tests.cpp
+index 085c89f..893f806 100644
+--- a/tests/blocking_ffi_tests.cpp
++++ b/tests/blocking_ffi_tests.cpp
+@@ -209,45 +209,140 @@ void test_native_stack_driver() {
+   native_test_runtime = nullptr;
+ }
+ 
+-void test_ffi_saturated_producer() {
++void test_thread_pool_environment() {
+   using namespace sputnik::runtime;
+-  const auto hardware = std::max(1U, std::thread::hardware_concurrency());
+-  const auto width = std::max(4U, std::min(32U, hardware * 2U));
++  for (const char *name : {"SPUTNIK_TASK_MAX_THREADS", "SPUTNIK_FFI_MAX_THREADS"}) {
++    const char *previous = std::getenv(name);
++    const bool had_previous = previous != nullptr;
++    const std::string saved = previous ? previous : "";
++    setenv(name, "3", 1);
++    if (std::string(name) == "SPUTNIK_TASK_MAX_THREADS") {
++      RuntimeScheduler scheduler;
++      expect(scheduler.stats().worker_count == 3 &&
++                 scheduler.stats().live_worker_count == 0,
++             "task pool limit must honor ENV without starting threads");
++      expect(RuntimeScheduler(2).stats().worker_count == 2,
++             "explicit scheduler configuration must override ENV");
++    } else {
++      RuntimeBlockingFfiExecutor executor;
++      expect(executor.stats().worker_count == 3 &&
++                 executor.stats().live_worker_count == 0,
++             "FFI pool limit must honor ENV without starting threads");
++      expect(RuntimeBlockingFfiExecutor(2).stats().worker_count == 2,
++             "explicit FFI configuration must override ENV");
++    }
++    for (const char *invalid : {"", "0", "-1", "2x", " 2", "184467440737095516160"}) {
++      setenv(name, invalid, 1);
++      bool rejected = false;
++      try {
++        if (std::string(name) == "SPUTNIK_TASK_MAX_THREADS") { RuntimeScheduler scheduler; }
++        else { RuntimeBlockingFfiExecutor executor; }
++      } catch (const RuntimeTaskFailure &error) {
++        rejected = error.error_name() == "ArgumentError" &&
++                   error.message().find(name) != std::string::npos;
++      }
++      expect(rejected, "invalid ENV thread limits must fail explicitly");
++    }
++    if (had_previous) setenv(name, saved.c_str(), 1);
++    else unsetenv(name);
++  }
++}
++
++void test_ffi_lazy_bounded_pool() {
++  using namespace sputnik::runtime;
++  RuntimeBlockingFfiExecutor executor(2, std::chrono::milliseconds(50));
++  expect(executor.stats().live_worker_count == 0, "FFI starts with no carriers");
+   std::mutex mutex;
+   std::condition_variable changed;
+   unsigned entered = 0, completed = 0;
+   bool released = false;
+-  for (unsigned i = 0; i < width; ++i) {
+-    RuntimeBlockingFfiExecutor::instance().submit([&] {
++  for (unsigned i = 0; i < 2; ++i) {
++    executor.submit([&] {
+       std::unique_lock<std::mutex> lock(mutex);
+       ++entered;
+       changed.notify_all();
+       expect(changed.wait_for(lock, std::chrono::seconds(2), [&] { return released; }),
+-             "occupied FFI carriers must allow a producer to enter FFI");
++             "bounded FFI test releases occupied carriers");
+       ++completed;
+       changed.notify_all();
+     });
+   }
+   {
+     std::unique_lock<std::mutex> lock(mutex);
+-    expect(changed.wait_for(lock, std::chrono::seconds(2), [&] { return entered == width; }),
+-           "fill the FFI idle pool");
++    expect(changed.wait_for(lock, std::chrono::seconds(2), [&] { return entered == 2; }),
++           "FFI demand starts carriers up to its limit");
++  }
++  bool rejected = false;
++  std::atomic<bool> unexpected{false};
++  try { executor.submit([&] { unexpected = true; }); }
++  catch (const RuntimeTaskFailure &error) {
++    rejected = error.error_name() == "ResourceBusyError" &&
++               error.message().find("pool is full") != std::string::npos;
+   }
+-  RuntimeBlockingFfiExecutor::instance().submit([&] {
++  expect(rejected && executor.stats().live_worker_count == 2 &&
++             executor.stats().queued_job_count == 0,
++         "saturated FFI must reject without queueing or exceeding the limit");
++  {
+     std::lock_guard<std::mutex> lock(mutex);
+     released = true;
+     changed.notify_all();
++  }
++  {
++    std::unique_lock<std::mutex> lock(mutex);
++    expect(changed.wait_for(lock, std::chrono::seconds(2), [&] { return completed == 2; }),
++           "accepted FFI jobs finish after overload");
++  }
++  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
++  while (executor.stats().live_worker_count != 0 &&
++         std::chrono::steady_clock::now() < deadline)
++    std::this_thread::sleep_for(std::chrono::milliseconds(1));
++  expect(executor.stats().live_worker_count == 0 && !unexpected,
++         "all idle FFI carriers retire and rejected jobs never execute later");
++  executor.submit([&] {
++    std::lock_guard<std::mutex> lock(mutex);
++    ++completed;
++    changed.notify_all();
+   });
+   std::unique_lock<std::mutex> lock(mutex);
+-  expect(changed.wait_for(lock, std::chrono::seconds(2), [&] { return completed == width; }),
+-         "FFI producer breaks saturated callback waits");
++  expect(changed.wait_for(lock, std::chrono::seconds(2), [&] { return completed == 3; }),
++         "FFI restarts lazily after idle retirement");
++}
++
++void test_ffi_completion_releases_capacity_before_resume() {
++  using namespace sputnik::runtime;
++  RuntimeBlockingFfiExecutor executor(1);
++  std::mutex mutex;
++  std::condition_variable changed;
++  unsigned completed = 0;
++  for (unsigned i = 0; i < 128; ++i) {
++    executor.submit([] {}, [&] {
++      expect(executor.stats().busy_worker_count == 0,
++             "FFI completion must observe released capacity");
++      // A continuation may start its next foreign call on this same carrier.
++      executor.submit([] {});
++      std::lock_guard<std::mutex> lock(mutex);
++      ++completed;
++      changed.notify_all();
++    });
++    std::unique_lock<std::mutex> lock(mutex);
++    expect(changed.wait_for(lock, std::chrono::seconds(2),
++                            [&] { return completed == i + 1; }),
++           "completion can submit its next call at a one-thread FFI limit");
++    lock.unlock();
++    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
++    while ((executor.stats().busy_worker_count || executor.stats().queued_job_count) &&
++           std::chrono::steady_clock::now() < deadline)
++      std::this_thread::yield();
++  }
+ }
+ } // namespace
+ 
+ int main() {
+   using namespace sputnik::runtime;
++  test_thread_pool_environment();
+   test_native_stack_driver();
+-  test_ffi_saturated_producer();
++  test_ffi_lazy_bounded_pool();
++  test_ffi_completion_releases_capacity_before_resume();
+   auto &registry = NativeExtRegistry::global();
+   registry.register_thunk("test.blocking.wait", reinterpret_cast<void *>(&wait_socket));
+   registry.register_thunk("test.blocking.release", reinterpret_cast<void *>(&release_socket));
+diff --git a/tests/stdlib_task_tests.cpp b/tests/stdlib_task_tests.cpp
+index 307f0b9..d704ba1 100644
+--- a/tests/stdlib_task_tests.cpp
++++ b/tests/stdlib_task_tests.cpp
+@@ -8,6 +8,7 @@
+ 
+ #include <atomic>
+ #include <chrono>
++#include <condition_variable>
+ #include <cstdlib>
+ #include <functional>
+ #include <iostream>
+@@ -141,6 +142,109 @@ void expect_state(sputnik::runtime::RuntimeTaskHandleState actual,
+   expect(actual == expected, message);
+ }
+ 
++void test_scheduler_lazy_bounded_workers() {
++  using namespace sputnik::runtime;
++  RuntimeTaskModule task(3);
++  task.scheduler().start();
++  expect(task.scheduler().stats().worker_count == 3 &&
++             task.scheduler().stats().live_worker_count == 0,
++         "an empty scheduler must not start OS workers");
++  for (int i = 0; i < 8; ++i) {
++    expect(task.spawn([] { return Value::integer(42); })
++               .wait(std::chrono::seconds(2)).ok,
++           "a lazy worker must execute sequential tasks");
++    expect(task.scheduler().stats().live_worker_count == 1,
++           "sequential work must reuse one worker");
++  }
++
++  std::mutex mutex;
++  std::condition_variable changed;
++  bool release = false;
++  unsigned entered = 0, completed = 0;
++  std::vector<RuntimeTaskHandle> handles;
++  for (int i = 0; i < 16; ++i) {
++    handles.push_back(task.spawn([&] {
++      std::unique_lock<std::mutex> lock(mutex);
++      ++entered;
++      changed.notify_all();
++      expect(changed.wait_for(lock, std::chrono::seconds(5),
++                              [&] { return release; }),
++             "bounded scheduler test must release its workers");
++      ++completed;
++      return Value::null();
++    }));
++  }
++  {
++    std::unique_lock<std::mutex> lock(mutex);
++    expect(changed.wait_for(lock, std::chrono::seconds(2),
++                            [&] { return entered == 3; }),
++           "queued demand must grow the scheduler to its worker limit");
++    expect(task.scheduler().stats().live_worker_count == 3 && entered == 3,
++           "excess work must queue without creating extra OS workers");
++    release = true;
++    changed.notify_all();
++  }
++  for (auto &handle : handles) {
++    expect(handle.wait(std::chrono::seconds(2)).ok,
++           "all queued work must drain after capacity becomes available");
++  }
++  expect(completed == 16, "bounded workers must execute every task once");
++  task.scheduler().shutdown();
++  expect(task.scheduler().stats().live_worker_count == 0,
++         "shutdown must join all lazily created workers");
++  bool rejected = false;
++  try { task.spawn([] { return Value::null(); }); }
++  catch (const RuntimeTaskFailure &) { rejected = true; }
++  expect(rejected && task.scheduler().stats().live_worker_count == 0,
++         "submissions after shutdown must not restart workers");
++}
++
++void test_scheduler_lazy_timer_and_join() {
++  using namespace sputnik::runtime;
++  RuntimeScheduler timer(8);
++  std::atomic<bool> fired{false};
++  timer.spawn_sleeping_strand(std::chrono::milliseconds(20), [&] { fired = true; });
++  expect(timer.wait_until_idle(std::chrono::seconds(2)) && fired,
++         "a sleeping first task must start a worker to observe its deadline");
++  expect(timer.stats().live_worker_count == 1,
++         "a single timer must not populate the entire worker pool");
++
++  RuntimeScheduler occupied(2);
++  std::atomic<bool> entered{false};
++  std::mutex mutex;
++  std::condition_variable changed;
++  bool released = false;
++  occupied.spawn_strand([&] {
++    std::unique_lock<std::mutex> lock(mutex);
++    entered = true;
++    expect(changed.wait_for(lock, std::chrono::seconds(2), [&] { return released; }),
++           "a timer must run while another worker blocks synchronously");
++  });
++  expect(wait_for_condition([&] { return entered.load(); }, std::chrono::seconds(2)),
++         "timer regression occupies the first lazy worker");
++  occupied.spawn_sleeping_strand(std::chrono::milliseconds(10), [&] {
++    std::lock_guard<std::mutex> lock(mutex);
++    released = true;
++    changed.notify_all();
++  });
++  expect(occupied.wait_until_idle(std::chrono::seconds(3)),
++         "a sleeping submission must grow the pool to service its deadline");
++
++  RuntimeTaskModule task(3);
++  auto parent = task.spawn([&] {
++    auto child = task.spawn([&] {
++      return task.spawn([] { return Value::integer(42); })
++          .wait(std::chrono::seconds(2)).value;
++    });
++    return child.wait(std::chrono::seconds(2)).value;
++  });
++  auto result = parent.wait(std::chrono::seconds(3));
++  expect(result.ok && result.value.is_integer() && result.value.as_integer() == 42,
++         "synchronous join stacks must count as occupied workers during growth");
++  expect(task.scheduler().stats().live_worker_count == 3,
++         "nested joins must obtain available workers up to the limit");
++}
++
+ void test_std010_task_async_spawn_and_wait_return_values() {
+   sputnik::runtime::RuntimeTaskModule task(2);
+ 
+@@ -2383,6 +2487,8 @@ void test_layerb_io_park_via_reactor() {
+ }
+ 
+ int main() {
++  test_scheduler_lazy_bounded_workers();
++  test_scheduler_lazy_timer_and_join();
+   test_layerb_scheduler_park_resume_frees_worker();
+   test_layerb_io_park_via_reactor();
+   test_layerb_cooperative_sleep_parks_in_task();
+diff --git a/tests/fixtures/native_blocking/bridge.cpp b/tests/fixtures/native_blocking/bridge.cpp
+index 3ea2618..5386ba4 100644
+--- a/tests/fixtures/native_blocking/bridge.cpp
++++ b/tests/fixtures/native_blocking/bridge.cpp
+@@ -38,10 +38,12 @@ SputnikStatus blocking_pressure_reset(SputnikCtx *cx, const SputnikValue *args,
+   pressure_waits = 0;
+   pressure_callbacks = 0;
+   pressure_released = false;
+-  const auto hardware = std::thread::hardware_concurrency();
+-  const auto width = mode == 2
+-      ? std::max(4U, std::min(32U, std::max(1U, hardware) * 2U))
+-      : (hardware == 0 ? 2U : hardware);
++  const auto ffi_limit = sputnik::runtime::RuntimeBlockingFfiExecutor::instance()
++                             .stats().worker_count;
++  const auto task_limit = static_cast<std::size_t>(
++      sputnik::runtime::RuntimeScheduler().stats().worker_count);
++  const auto width = mode == 3 ? ffi_limit : mode == 2 ? ffi_limit - 1
++                                                   : std::min(ffi_limit, task_limit);
+   *out = sputnik_make_int(cx, width);
+   return SPUTNIK_OK;
+ }
+diff --git a/tests/fixtures/native_blocking/progress.s b/tests/fixtures/native_blocking/progress.s
+index 8643811..45d78c6 100644
+--- a/tests/fixtures/native_blocking/progress.s
++++ b/tests/fixtures/native_blocking/progress.s
+@@ -11,9 +11,14 @@ native def batch(callback) from "blocking.batch" blocking
+ 
+ def main():
+   parser = ArgParser(name: "blocking progress")
+-  parser.arg("--case", choices: ["native", "callback", "ffi-producer"], default: "native")
++  parser.arg("--case", choices: ["native", "callback", "ffi-producer", "ffi-overload", "ffi-sequential"], default: "native")
+   selected = parser.parse_or_raise["case"]
+-  mode = if selected == "native" then 0 else if selected == "callback" then 1 else 2
++  if selected == "ffi-sequential":
++    256.times:
++      raise ValueError("sequential FFI result") unless release_ffi()
++    print "PASS sequential FFI calls at a one-thread limit"
++    return 0
++  mode = if selected == "native" then 0 else if selected == "callback" then 1 else if selected == "ffi-producer" then 2 else 3
+   width = reset(mode)
+   channel = Channel.new(capacity: 0)
+   readers = Array.of(width):
+@@ -33,11 +38,23 @@ def main():
+       release_native()
+     elif mode == 1:
+       width.times: channel.send(42, timeout: 2.0)
+-    else:
++    elif mode == 2:
+       release_ffi()
++    else:
++      rejected = false
++      cleaned = false
++      try:
++        release_ffi()
++      rescue ResourceBusyError |error|:
++        rejected = error.message.contains?("pool is full")
++      ensure:
++        cleaned = true
++        release_native()
++      raise ValueError("full FFI pool must raise a catchable error and run ensure") unless rejected and cleaned
+     true
+   readers.each:
+     raise ValueError("blocking result") unless $it.wait == 42
+   raise ValueError("producer result") unless producer.wait
++  release_ffi() if mode == 3
+   print "PASS blocking #{mode} progress with #{width} waits"
+   0
+diff --git a/Makefile b/Makefile
+index 459ff44..e85252d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -894,18 +904,24 @@ test-native-blocking: $(BUILD_DIR)/sputnik $(BUILD_DIR)/blocking_ffi_tests check
+ 	$(BUILD_DIR)/native_blocking/control/test.blocking.vm_control > $(BUILD_DIR)/native_blocking/control-native.out
+ 	cmp $(BUILD_DIR)/native_blocking/vm-control.out $(BUILD_DIR)/native_blocking/control-native.out
+ 
+-# Exercise waits with no spare scheduler workers, including a producer that
+-# needs to enter FFI while the original idle pool is fully occupied.
++# Exercise waits with no spare scheduler workers, bounded FFI producer progress,
++# and a catchable overload fault when the FFI limit is fully occupied.
+ .PHONY: check-native-blocking-progress
++check-native-blocking-progress: export SPUTNIK_TASK_MAX_THREADS = 2
++check-native-blocking-progress: export SPUTNIK_FFI_MAX_THREADS = 4
+ check-native-blocking-progress: $(BUILD_DIR)/sputnik
+ 	mkdir -p $(BUILD_DIR)/native_blocking/progress
+ 	$(BUILD_DIR)/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case native > $(BUILD_DIR)/native_blocking/progress/vm-native.out
+ 	$(BUILD_DIR)/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case callback > $(BUILD_DIR)/native_blocking/progress/vm-callback.out
+ 	$(BUILD_DIR)/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case ffi-producer > $(BUILD_DIR)/native_blocking/progress/vm-ffi-producer.out
++	$(BUILD_DIR)/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case ffi-overload > $(BUILD_DIR)/native_blocking/progress/vm-ffi-overload.out
++	SPUTNIK_FFI_MAX_THREADS=1 $(BUILD_DIR)/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case ffi-sequential > $(BUILD_DIR)/native_blocking/progress/vm-ffi-sequential.out
+ 	$(BUILD_DIR)/sputnik build tests/fixtures/native_blocking/progress.build.json --target native --require-full-native --out-dir $(BUILD_DIR)/native_blocking/progress > $(BUILD_DIR)/native_blocking/progress/build.json
+ 	$(BUILD_DIR)/native_blocking/progress/test.blocking.progress --case native
+ 	$(BUILD_DIR)/native_blocking/progress/test.blocking.progress --case callback
+ 	$(BUILD_DIR)/native_blocking/progress/test.blocking.progress --case ffi-producer
++	$(BUILD_DIR)/native_blocking/progress/test.blocking.progress --case ffi-overload
++	SPUTNIK_FFI_MAX_THREADS=1 $(BUILD_DIR)/native_blocking/progress/test.blocking.progress --case ffi-sequential
+ 
+ .PHONY: test-native-trivial-methods
+ test-native-trivial-methods: $(BUILD_DIR)/sputnik
+diff --git a/docs/engineering/native-blocking.md b/docs/engineering/native-blocking.md
+index 9411044..a3288a1 100644
+--- a/docs/engineering/native-blocking.md
++++ b/docs/engineering/native-blocking.md
+@@ -98,14 +98,47 @@ while waiting for the foreign completion. A cancelled native task publishes
+ cancelled status only after its foreign stack has unwound. A foreign library
+ that does not cooperate with cancellation must finish before task retirement.
+ 
+-The FFI executor keeps an initial idle pool of 4..32 workers. If queued work has
+-no available carrier, it creates a surplus carrier rather than imposing a cap
+-on in-flight waits. This lets a producer enter FFI even when every initial
+-carrier is retained by a waiting callback. Surplus workers retire after 30
+-seconds idle and are joined on subsequent submissions. Native-stack retention
+-therefore still consumes an OS thread per concurrent foreign invocation; total
+-active threads are limited by OS resources, not a fixed pool cap. Scheduler
+-parking and FFI producer progress are separate guarantees.
++Both the task scheduler and the FFI executor create OS workers on demand.
++Constructing an empty pool creates no workers. Task workers grow with runnable
++demand up to their configured limit, reuse existing threads, and queue excess
++tasks. One worker also observes deadlines when the first task is sleeping.
++Synchronous task joins still occupy an OS worker and count toward demand.
++Started task workers remain available until scheduler shutdown. Scheduler
++statistics distinguish the configured `worker_count` limit from the actual
++`live_worker_count`.
++
++Configure limits in the service environment before launching the process:
++
++```sh
++export SPUTNIK_TASK_MAX_THREADS=4
++export SPUTNIK_FFI_MAX_THREADS=8
++```
++
++`SPUTNIK_TASK_MAX_THREADS` defaults to hardware concurrency (2 if unknown).
++`SPUTNIK_FFI_MAX_THREADS` defaults to twice hardware concurrency, clamped to
++4..32. Each value must be a positive decimal integer; empty, zero, negative,
++malformed and overflowing values raise `ArgumentError` naming the variable.
++Limits are read when the corresponding pool is constructed; explicit nonzero
++C++ worker counts override ENV. FFI carriers all retire after 30 seconds idle,
++are joined on a subsequent submission, and start again when needed.
++
++The FFI limit is hard. When every carrier is occupied or already reserved by
++an accepted job, a new submission raises `ResourceBusyError` with
++`blocking FFI thread pool is full`, the limit and the ENV setting to adjust.
++Rejected jobs are never queued or executed later. In a resumable VM the fault
++wakes the parked strand and runs normal `rescue`/`ensure`; freeing a carrier
++allows subsequent calls to proceed. A synchronous nested foreign call already
++on an FFI carrier runs inline and does not acquire a second carrier.
++Completion notifications run after the foreign call releases its capacity,
++so sequential calls at a one-thread limit do not spuriously report overload.
++
++This explicit overload behavior replaces unbounded surplus threads: a queued
++foreign producer could otherwise deadlock when all bounded carriers are waiting
++for its result. Applications should leave capacity for independent producers,
++handle the error, retry after capacity is released, or raise the configured
++limit. These are pool limits, not a cap on every OS thread in the process:
++native-stack task drivers and service/reactor threads have separate lifetimes.
++Scheduler parking and FFI producer progress remain separate guarantees.
+ 
+ Use `blocking` for waits and I/O that must yield a resumable VM worker. A CPU
+ kernel also prevents cooperative switching until it returns, but relocating
+@@ -129,15 +162,21 @@ counts and scheduler park/resume stats. Both cases pass in the VM.
+ The same unit executable compiles the exact generated native stack driver
+ against a one-worker scheduler. It checks a nested blocking callback, task-local
+ context, 64 immediate-completion races, cancellation/cleanup and park/resume
+-statistics. It also fills the original FFI idle pool and submits a producer
+-through FFI, proving that the producer obtains a carrier.
++statistics. It also checks ENV validation and precedence, empty pool startup,
++bounded FFI growth, explicit overload rejection, idle retirement and restart.
++Task tests cover sequential reuse, excess queued work, initial sleeping tasks,
++nested synchronous joins and shutdown.
+ 
+ `tests/fixtures/native_blocking/progress.build.json` has `--case native`,
+-`--case callback` and `--case ffi-producer`. The first two start one wait per
+-default scheduler worker, then an async producer. The third occupies the
+-initial FFI pool with callbacks that call another blocking binding, then
+-submits a producer through its own blocking binding. Timeouts bound failures.
+-All three are part of `make test-native-blocking` in VM and full native.
++`--case callback`, `--case ffi-producer` and `--case ffi-overload`. The first two
++fill the scheduler's configured worker budget, then start an async producer.
++The third leaves one FFI carrier available for its blocking producer. The
++fourth fills the hard FFI limit, catches the extra producer's overload fault,
++checks `ensure`, releases the waits through an inline binding and successfully
++retries the blocking call. Timeouts bound failures. All four run with task/FFI
++limits of 2/4 in `make test-native-blocking`, in VM and full native.
++The additional `--case ffi-sequential` checks 256 successive calls with an
++FFI limit of one in both backends.
+ 
+ Before the 2026-10-09 fix, the full-native pressure build had full coverage and
+ no bytecode fallback, but **both modes failed** on the ten-worker host. The direct

@@ -1,0 +1,25 @@
+{
+  "accepted_at": "2026-11-02T06:45:35.025Z",
+  "sdk": {
+    "version": "sputnik 1.0.0",
+    "head": "c17d12b2e25c2dd2cb0b9e41835b0a8e33925573",
+    "worktree_changes": [
+      "M packages/notebook_ui/release/package.json",
+      " M packages/progressbar/release/package.json",
+      " M packages/system_io/tools/configure.py",
+      " M tools/isputnik/dependencies.cpp",
+      " M tools/isputnik/environment.cpp",
+      " M tools/isputnik/tabs.cpp",
+      " M tools/isputnik/tabs.h"
+    ]
+  },
+  "notebook": {
+    "head": "314ff6c1dd2dd54a19c72744651ef421053d6e91",
+    "existing_worktree_changes_preserved": true
+  },
+  "node": "v26.3.0",
+  "compiler": "../sputnik-lang/build/sputnik",
+  "sputnik_override": false,
+  "python_added_to_tooling": false,
+  "scope": "Local web Stage 4i.3; no external deployment"
+}

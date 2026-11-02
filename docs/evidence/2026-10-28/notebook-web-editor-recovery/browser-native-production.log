@@ -1,0 +1,22 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/editor-recovery.spec.ts
+
+[WebServer] (node:5346) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:5397) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/editor-recovery.spec.ts:25:1 › sheet duplicate/reorder/delete preserves metadata, fresh identities and board controllers without execution (1.2s)
+  ✓  2 test/editor-recovery.spec.ts:39:1 › module rename and binary resource move commit atomically and reject path/case collisions (1.3s)
+  ✓  3 test/editor-recovery.spec.ts:49:1 › independent concurrent edits combine explicitly and a second server race still uses CAS (1.3s)
+  ✓  4 test/editor-recovery.spec.ts:59:1 › source and file conflicts require choices, cancel keeps the draft and review fits mobile (1.7s)
+  ✓  5 test/editor-recovery.spec.ts:71:1 › local recovery restores full source and binary drafts after reload and resolves a changed base explicitly (1.3s)
+  ✓  6 test/editor-recovery.spec.ts:79:1 › uncertain save survives reload with the original command, preserves newer edits and adds no duplicate revision (1.3s)
+  ✓  7 test/editor-recovery.spec.ts:86:1 › separate tabs keep independent journals and other projects cannot see their recovery copies (1.5s)
+  ✓  8 test/editor-recovery.spec.ts:92:1 › recovery respects account/ACL and unavailable local storage does not block explicit Save (1.5s)
+  ✓  9 test/editor-recovery.spec.ts:102:1 › restoring checks current edit access after a role downgrade and keeps the recovery copy (2.1s)
+
+  9 passed (15.7s)

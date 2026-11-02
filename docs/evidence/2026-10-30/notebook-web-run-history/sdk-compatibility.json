@@ -1,0 +1,11 @@
+{
+  "current_sdk_commit": "5d291d72f95eb30846e05f3b50d5d2c77000b384",
+  "current_sdk_clean": true,
+  "current_sdk_compiler_sha256": "05e066aaea9d9c516a6e97049d2fbea57f225c16de5ca9554348c8483ec9ae95",
+  "orbit_commit": "ecb0d1132f8e309c5849ef11e5914b8675a185b5",
+  "orm_commit": "e5c3df00a8c223c973329f3b6110d7f22d7533ec",
+  "verified_web_sdk_commit": "3eb0f05da50ba307d5f719e0b194de6317304b29",
+  "verified_web_compiler_sha256": "57f271d5231b478411ddca6df0ce7d79d1606fdd0d17941a10202079b4933bc3",
+  "core_compiler": "current workspace SDK",
+  "web_gate": "Current SDK callback arity error at database.s:20; no SDK/sibling sources edited by this stage."
+}

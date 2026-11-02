@@ -1,0 +1,360 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/media-inputs.spec.ts test/capture-annotations.spec.ts test/resources.spec.ts test/audio.spec.ts test/board-designer.spec.ts
+
+[WebServer] (node:61711) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 45 tests using 1 worker
+
+(node:61719) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/audio.spec.ts:28:1 › file audio plays locally, seeks, changes volume and exports exact bytes without another run (2.8s)
+  ✓   2 test/audio.spec.ts:36:1 › authored audio owns matching automatic channels and board settings retain metadata through Save (2.0s)
+  ✓   3 test/audio.spec.ts:42:1 › PCM stream grows live, reconnects without replay, exports retained frames and resets its token (5.1s)
+  ✓   4 test/audio.spec.ts:48:1 › browser conversion handles encoded WAV and corrupted media keeps scalar results and original export (1.2s)
+  ✓   5 test/audio.spec.ts:53:1 › ordered runtime controls target the source cell once and never autoplay a reconnected view (5.1s)
+  ✓   6 test/audio.spec.ts:58:1 › stale source, board navigation and role revocation stop playback and release local media (4.6s)
+  ✓   7 test/audio.spec.ts:63:1 › audio projection limits retain scalar/chart data and bound tracks across cells (1.6s)
+  ✓   8 test/audio.spec.ts:67:1 › temporary preview uses shared audio while its 60-second budget and template remain intact (2.3s)
+  ✓   9 test/audio.spec.ts:72:1 › the aggregate audio byte budget preserves other results when several large tracks are published (3.4s)
+  ✓  10 test/board-designer.spec.ts:36:1 › create a board with inert palette/inspector/preview drafts, explicit save and runnable bindings (2.0s)
+  ✓  11 test/board-designer.spec.ts:79:1 › legacy editing preserves opaque settings and exact metadata through drag, duplication and undo/redo (1.3s)
+  ✓  12 test/board-designer.spec.ts:115:1 › nested panels can be authored, reordered, removed and restored with stable bindings (1.3s)
+  ✓  13 test/board-designer.spec.ts:141:1 › designer enforces viewer/revocation and preserves its committed draft across revision conflicts (3.9s)
+  ✓  14 test/board-designer.spec.ts:165:1 › designer shortcut, lost Save receipt and board duplicate/delete keep explicit lifecycle semantics (1.5s)
+  ✓  15 test/media-inputs.spec.ts:36:1 › file draft is inert; Apply preserves exact bytes, accepts a usable input and replaces it in the same worker (2.7s)
+  ✓  16 test/media-inputs.spec.ts:46:1 › accepted audio reaches AudioTrack.from_input; preview and reload never autoplay or run (1.5s)
+  ✓  17 test/media-inputs.spec.ts:51:1 › image collection applies, appends and clears through the shared runtime image reader (2.5s)
+  ✓  18 test/media-inputs.spec.ts:55:1 › idempotent receipt and CAS reject changed payloads, obsolete source and accepted parameter versions (702ms)
+  ✓  19 test/media-inputs.spec.ts:59:1 › invalid encodings, extension policy, corrupt audio and disabled image acceptance leave the head intact (751ms)
+  ✓  20 test/media-inputs.spec.ts:65:1 › uncertain accepted media is recovered after reload without repeating Apply (931ms)
+  ✓  21 test/media-inputs.spec.ts:69:1 › viewer can read accepted media, but cannot accept; revoked membership denies bytes and receipts (3.7s)
+  ✓  22 test/media-inputs.spec.ts:73:1 › storage quota rejects asset acceptance before publication and no computation is charged (681ms)
+  ✓  23 test/media-inputs.spec.ts:77:1 › active execution freezes its asset version and rejects replacement until it finishes (2.8s)
+  ✓  24 test/media-inputs.spec.ts:81:1 › multiple media drafts stay separate and require explicit discard before applying one (843ms)
+  ✓  25 test/media-inputs.spec.ts:85:1 › a managed file grants reads only inside the private input namespace (1.0s)
+  ✓  26 test/media-inputs.spec.ts:90:1 › designer authors File/Audio Input and image permissions through the normal draft and Save (1.0s)
+  ✓  27 test/media-inputs.spec.ts:95:1 › unavailable media recovery storage leaves existing scalar parameter controls usable (723ms)
+  ✓  28 test/media-inputs.spec.ts:100:1 › editable image inputs retain their shared renderer for published runtime images (801ms)
+  ✓  29 test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits (1.2s)
+  ✓  30 test/resources.spec.ts:46:1 › core stops a real run at its cumulative quota, shows exhaustion and retains history (2.5s)
+  ✓  31 test/resources.spec.ts:56:1 › storage quota rejects Run without accepting work and is visible in resource settings (684ms)
+  ✓  32 test/resources.spec.ts:65:1 › temporary public-limits preview edits only its copy and recovers a lost run reply without replay (2.4s)
+  ✓  33 test/resources.spec.ts:81:1 › public profile cannot lift the 60-second ceiling and preview Stop/ACL/CSRF remain enforced (1.0s)
+(node:62127) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  34 test/capture-annotations.spec.ts:52:1 › explicit fake microphone capture creates PCM WAV locally, then Apply accepts exact bytes without a run (0ms)
+(node:62128) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  35 test/capture-annotations.spec.ts:56:1 › cancel, hidden view and interrupted tracks release recording without replacing the previous draft (0ms)
+(node:62129) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  36 test/capture-annotations.spec.ts:61:1 › denied and late permission results never leak a microphone or mutate accepted input (0ms)
+(node:62130) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  37 test/capture-annotations.spec.ts:65:1 › image regions use exact pixels, typed configured attributes and independent draft Undo/Redo (0ms)
+(node:62131) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  38 test/capture-annotations.spec.ts:69:1 › pointer drawing handles reverse rectangles, invalid coordinates block Apply, and Discard is inert (0ms)
+(node:62132) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  39 test/capture-annotations.spec.ts:73:1 › annotation source and schema mismatches are rejected by Core, with exact-receipt replay (0ms)
+(node:62134) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  40 test/capture-annotations.spec.ts:77:1 › stale annotation draft cannot retarget after a saved source update and can still export (0ms)
+(node:62142) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  41 test/capture-annotations.spec.ts:81:1 › replacing accepted image invalidates old labels while keeping their repair data in the notebook (0ms)
+(node:62143) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  42 test/capture-annotations.spec.ts:85:1 › designer owns annotation classes and recording permission without opening a microphone (0ms)
+(node:62144) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  43 test/capture-annotations.spec.ts:89:1 › revoked access stops a live microphone and prevents annotation acceptance for viewers (0ms)
+(node:62145) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  44 test/capture-annotations.spec.ts:93:1 › recording stops itself at 30 seconds, closes tracks and retains only a bounded WAV draft (0ms)
+(node:62146) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  45 test/capture-annotations.spec.ts:97:1 › microphone policy permits only this origin and retains CSP and other standard protections (0ms)
+
+
+  1) test/capture-annotations.spec.ts:52:1 › explicit fake microphone capture creates PCM WAV locally, then Apply accepts exact bytes without a run 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-explic-9e0f1-s-exact-bytes-without-a-run/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-explic-9e0f1-s-exact-bytes-without-a-run/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-explic-9e0f1-s-exact-bytes-without-a-run/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) test/capture-annotations.spec.ts:56:1 › cancel, hidden view and interrupted tracks release recording without replacing the previous draft 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-cancel-d38e3-eplacing-the-previous-draft/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-cancel-d38e3-eplacing-the-previous-draft/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-cancel-d38e3-eplacing-the-previous-draft/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) test/capture-annotations.spec.ts:61:1 › denied and late permission results never leak a microphone or mutate accepted input 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-denied-40e60-ne-or-mutate-accepted-input/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-denied-40e60-ne-or-mutate-accepted-input/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-denied-40e60-ne-or-mutate-accepted-input/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) test/capture-annotations.spec.ts:65:1 › image regions use exact pixels, typed configured attributes and independent draft Undo/Redo 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-image--bb66b-independent-draft-Undo-Redo/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-image--bb66b-independent-draft-Undo-Redo/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-image--bb66b-independent-draft-Undo-Redo/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) test/capture-annotations.spec.ts:69:1 › pointer drawing handles reverse rectangles, invalid coordinates block Apply, and Discard is inert 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-pointe-3b33a--Apply-and-Discard-is-inert/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-pointe-3b33a--Apply-and-Discard-is-inert/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-pointe-3b33a--Apply-and-Discard-is-inert/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) test/capture-annotations.spec.ts:73:1 › annotation source and schema mismatches are rejected by Core, with exact-receipt replay 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-annota-1c853-e-with-exact-receipt-replay/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-annota-1c853-e-with-exact-receipt-replay/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-annota-1c853-e-with-exact-receipt-replay/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) test/capture-annotations.spec.ts:77:1 › stale annotation draft cannot retarget after a saved source update and can still export 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-stale--12177-update-and-can-still-export/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-stale--12177-update-and-can-still-export/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-stale--12177-update-and-can-still-export/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) test/capture-annotations.spec.ts:81:1 › replacing accepted image invalidates old labels while keeping their repair data in the notebook 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-replac-e2446-repair-data-in-the-notebook/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-replac-e2446-repair-data-in-the-notebook/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-replac-e2446-repair-data-in-the-notebook/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) test/capture-annotations.spec.ts:85:1 › designer owns annotation classes and recording permission without opening a microphone 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-design-e83d8-ithout-opening-a-microphone/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-design-e83d8-ithout-opening-a-microphone/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-design-e83d8-ithout-opening-a-microphone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) test/capture-annotations.spec.ts:89:1 › revoked access stops a live microphone and prevents annotation acceptance for viewers 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-revoke-325c4-tion-acceptance-for-viewers/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-revoke-325c4-tion-acceptance-for-viewers/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-revoke-325c4-tion-acceptance-for-viewers/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) test/capture-annotations.spec.ts:93:1 › recording stops itself at 30 seconds, closes tracks and retains only a bounded WAV draft 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-record-97c10-ns-only-a-bounded-WAV-draft/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-record-97c10-ns-only-a-bounded-WAV-draft/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-record-97c10-ns-only-a-bounded-WAV-draft/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) test/capture-annotations.spec.ts:97:1 › microphone policy permits only this origin and retains CSP and other standard protections 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/slowpilot/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/production-native/capture-annotations-microp-8a88e--other-standard-protections/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/capture-annotations-microp-8a88e--other-standard-protections/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/capture-annotations-microp-8a88e--other-standard-protections/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12 failed
+    test/capture-annotations.spec.ts:52:1 › explicit fake microphone capture creates PCM WAV locally, then Apply accepts exact bytes without a run 
+    test/capture-annotations.spec.ts:56:1 › cancel, hidden view and interrupted tracks release recording without replacing the previous draft 
+    test/capture-annotations.spec.ts:61:1 › denied and late permission results never leak a microphone or mutate accepted input 
+    test/capture-annotations.spec.ts:65:1 › image regions use exact pixels, typed configured attributes and independent draft Undo/Redo 
+    test/capture-annotations.spec.ts:69:1 › pointer drawing handles reverse rectangles, invalid coordinates block Apply, and Discard is inert 
+    test/capture-annotations.spec.ts:73:1 › annotation source and schema mismatches are rejected by Core, with exact-receipt replay 
+    test/capture-annotations.spec.ts:77:1 › stale annotation draft cannot retarget after a saved source update and can still export 
+    test/capture-annotations.spec.ts:81:1 › replacing accepted image invalidates old labels while keeping their repair data in the notebook 
+    test/capture-annotations.spec.ts:85:1 › designer owns annotation classes and recording permission without opening a microphone 
+    test/capture-annotations.spec.ts:89:1 › revoked access stops a live microphone and prevents annotation acceptance for viewers 
+    test/capture-annotations.spec.ts:93:1 › recording stops itself at 30 seconds, closes tracks and retains only a bounded WAV draft 
+    test/capture-annotations.spec.ts:97:1 › microphone policy permits only this origin and retains CSP and other standard protections 
+  33 passed (1.2m)

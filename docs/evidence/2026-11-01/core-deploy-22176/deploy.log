@@ -1,0 +1,10 @@
+PASS quiescent state snapshot
+0
+e9e703defb069beccaa9a53caea6065a25c1381ea0d506276999b6657457884a
+NVIDIA GeForce RTX 3090, GPU-08a27f45-3e58-12a9-4626-4997e56e765f
+NVIDIA GeForce RTX 4090, GPU-f8d896e0-2607-a025-88a1-7ed8979035af
+PASS quiescent state snapshot
+0
+PASS short torch import, shared package reference and GPU forward/backward without Python on 2 devices
+0
+PASS 22176: healthy updated core, short torch import, both NVIDIA GPUs, no Python, state/token preserved; image=sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4 backup=/ssd1Tb/sputnik-remote-core-releases/20261101-notebook-core/backups/before-core-20261101T180857Z previous=sputnik-core-before-20261101T180857Z

@@ -1,0 +1,25 @@
+{
+  "core": {
+    "schema": "sputnik.build.result.v2",
+    "status": "ok",
+    "target": "native",
+    "native_graph_code_count": 1357,
+    "native_graph_native_code_count": 1357,
+    "native_graph_vm_fallback_code_count": 0,
+    "diagnostics": []
+  },
+  "fixture": {
+    "schema": "sputnik.executable.build.v2",
+    "status": "ok",
+    "target": "native",
+    "native_code_count": 3134,
+    "vm_fallback_code_count": 0
+  },
+  "main": {
+    "schema": "sputnik.executable.build.v2",
+    "status": "ok",
+    "target": "native",
+    "native_code_count": 3134,
+    "vm_fallback_code_count": 0
+  }
+}

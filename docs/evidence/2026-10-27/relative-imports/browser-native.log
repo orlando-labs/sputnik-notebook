@@ -1,0 +1,17 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test
+
+[WebServer] (node:70061) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:70066) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/workspace.spec.ts:25:1 › anonymous shell, SSR assets, negotiation, CSRF and private API (420ms)
+  ✓  2 test/workspace.spec.ts:54:1 › GitHub account, project UI, persistent identity and logout 204 (773ms)
+  ✓  3 test/workspace.spec.ts:83:1 › two accounts: private projects, viewer/editor ACL, owner controls and revocation (790ms)
+  ✓  4 test/workspace.spec.ts:119:1 › failed authorization and invalid callback leave no authenticated account (322ms)
+
+  4 passed (5.0s)

@@ -1,0 +1,7 @@
+{
+  "port": 22176,
+  "archive": "/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/registry-cuda-014/torch-0.1.4-linux-x86_64-gnu-cu130-prebuilt-source-runtime.sputnikpkg",
+  "delegated_token_id": "2b6d6f37b889fd5b83ee0b17e469c72c",
+  "published": true,
+  "temporary_token_revoked": true
+}

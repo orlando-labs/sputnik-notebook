@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-28",
+  "platform": "macOS arm64",
+  "notebook_head": "082c8eb2c26aa0ca724fa3be4226755b48977024",
+  "scope": "current working tree; pre-existing uncommitted work preserved",
+  "linux_executed": false,
+  "sha256": {
+    "packages/notebook-core/src/notebook/core.s": "1181753aa6f7ac4635b11ac288fd63b7cdfc20576e9fd51730ac1b1220a70318",
+    "packages/notebook-core/src/notebook/core/policy.s": "6d9e4d3d6944f1480e069ec8d8378622703f1fb42ae3b9a72d48218589409c24",
+    "packages/notebook-core/src/notebook/core/storage.s": "137518be345f94f2d4c5f8d10a799f959c7600d0023eb99de593c063a0347b00",
+    "packages/notebook-core/src/notebook/core/services.s": "e3fc2cd0406b9f3c7d4e6d5e21054a31d2d25d33b89c2d2031c427232fdafbdd",
+    "packages/notebook-core/src/notebook/core/host.s": "85bcd5405d5394b258c6879e4be5d7e3e9a9f8d2d76f3ebf737e0c561cd2f30b",
+    "packages/notebook-core/native/host.cpp": "50c4696ac461af1eaabd4a2d3e599f01a343110b324abf1ad6fd78c606cb0740",
+    "packages/notebook-core/sputnik.toml": "7052d71b99b885c2e043f5e80fb04689577f49109b19a2b4b9fda07623452ce9",
+    "tools/notebook-remote/main.s": "2098daf361fce439ed430460e0697a0931c5313adbee03fd8e99d44e73dc8cb5",
+    "tools/notebook-remote/server.s": "24eed97ee236b4ca1461dee5c3e29931d033fcbcb077b7a49fbd50d5aa930ed0",
+    "tools/notebook-remote/client.s": "a8e5864f8af334945fdee6a12af1bc5066d9e70ae3f6a2cc1165395c81ae07bf",
+    "tools/notebook-remote/policy.example.json": "c659c42657cf77f051e7b4fea407f4f897f2fe288f5bfa92bcc17cb804db7851",
+    "tools/notebook-macos/NotebookRemote.swift": "d85dd63264ac28d6fedf3923efb5a31edb88b5c74d061587ffffac4634b65cdc",
+    "apps/notebook-web/backend/preview.s": "7accb7eb47926893889c6b873971f61281f556cedb9e55b6b3214af9d3b58b50",
+    "apps/notebook-web/backend/catalog.s": "5b06ee4fa81422133b5f8f6a092c5c4769de4c13240d14da5971fb7ab913251a",
+    "apps/notebook-web/backend/app.s": "1787c40f9e281fbf916fb3dd9386c23716713202d67a66386b252d416dae2ee7",
+    "apps/notebook-web/backend/execution.s": "464c27c8e2895d62e9f42b86300da97d4176ddc2ccaaeedfc4d8fdf6b79d3491",
+    "apps/notebook-web/backend/notebooks.s": "06ad8fc3061edeb5fa278768bb5a541c0d9c57479a39c384f0b7afd0f45cb494",
+    "apps/notebook-web/db/migrations/003_preview_sessions.sql": "89976a648a3513f2e72afbf94d8b9101ccf66b2277513ba31ac89b621af09a13",
+    "apps/notebook-web/frontend/src/execution.ts": "26f88ce6227d151344031117f188a1216c636f1ec9f809e6aef06dbcfd457afb",
+    "apps/notebook-web/frontend/src/NotebookWorkspace.vue": "d8d98c2f2d38e68075d774d0bb7feb328d53c8212fd115a953492dcc31ab81d0",
+    "tests/notebook_policy_tests.py": "ddcb8868d1503a719b68394c74786b7b127b1f8c477646226611389efbe0bfb0",
+    "tests/notebook_remote_tests.py": "b33b635510ba3ce28cb2fa2c770677a8a9cbbfaf022b60f91e7d2bb31da86bfc",
+    "tests/notebook_core_api_tests.s": "c7b7f34e073276abb0b30388dee904b90cec9d4f64b933eaac97c1461f37f2aa",
+    "tests/notebook_macos_remote_tests.swift": "a3942ab8c5618f49e51d643f6ed1688880c2be895a03a0b9800c8b8ef4bf9041",
+    "apps/notebook-web/test/preview_test.s": "862922f23d71ee9c512ee0fa5f89f36eb5d3e15b060129126193e3dc1a5a8087",
+    "apps/notebook-web/tools/preview_test.mjs": "f027d4df1bae90a27b166253438a1de91d3473a493b439b34e54776975ed89fe",
+    "build/sputnik-notebook-remote": "3c914526b96519529dfdc4b359528ce3db1dcdb03203fc8762a9a6810e9d2d86",
+    "build/sputnik-notebook-worker": "0fc26c74fee3277ff46910341b01b9d4f87589c4bcf2638c3d740a56e88b190f",
+    "build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook": "0ddce9720b3f7ab6fd0c3f483556b793829c4922abf3ca48090d872538d8b42c"
+  },
+  "verified": {
+    "remote_integration": 48,
+    "policy_integration": 10,
+    "core": [
+      "VM",
+      "full-native",
+      "readiness",
+      "worker host"
+    ],
+    "swift": [
+      "model",
+      "remote UI",
+      "remote work",
+      "packaged app smoke"
+    ],
+    "web_preview": [
+      "VM",
+      "full-native"
+    ],
+    "browser": {
+      "scenarios_passed": 20,
+      "initial_run_passed": 18,
+      "corrected_history_assertions_passed": 2
+    }
+  }
+}

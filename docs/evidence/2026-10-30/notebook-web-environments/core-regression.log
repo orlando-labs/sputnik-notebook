@@ -1,0 +1,6 @@
+test_managed_environment_reuse_restart_failure_and_logs (__main__.RemoteTests) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 5.748s
+
+OK

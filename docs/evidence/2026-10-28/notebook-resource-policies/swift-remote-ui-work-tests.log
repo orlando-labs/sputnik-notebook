@@ -1,0 +1,205 @@
+/Library/Developer/CommandLineTools/usr/bin/make -C ../sputnik-lang BUILD_DIR="build" runtime
+make[1]: Nothing to be done for `runtime'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../sputnik-lang BUILD_DIR="build" "build/sputnik"
+build/notebook_worker_host_tests "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker"
+make[1]: `build/sputnik' is up to date.
+python3 tests/notebook_remote_command_test.py "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+SPUTNIK_NATIVE_CXX="clang++" "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik" build tools/notebook-remote/sputnik.build.json --target native --require-full-native --out-dir "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native" --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant net.listen --grant net.connect --grant random.secure --grant process.spawn
+notebook_worker_host_tests: ok
+build/notebook_core_readiness_tests
+notebook_core_readiness_tests: ok
+node tests/notebook_core_test.mjs --native
+notebook_remote_command_test: VM and full native passed
+PASS notebook-core package boundary and direct API (VM/full-native)
+{
+  "schema": "sputnik.build.result.v2",
+  "status": "ok",
+  "name": "notebook.remote.main",
+  "root": "notebook.remote.main",
+  "target": "native",
+  "inputs": ["/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/environment.h","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/grants.h","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/presentation.h","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/process.h","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/protocol.h","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/native/bundle.cpp","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/native/host.cpp","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/native/presentation.cpp","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/native/process.cpp","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/native/protocol.cpp","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/sputnik.toml","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/client.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/common.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/dependencies.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/environments.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/host.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/policy.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/services.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/storage.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/client.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/common.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/local_dependencies.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/main.s","/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/server.s","/Users/slowpilot/workspace/sputnik/sqlite3/native/sqlite3.c","/Users/slowpilot/workspace/sputnik/sqlite3/native/sqlite3.h","/Users/slowpilot/workspace/sputnik/sqlite3/native/sqlite3_ext.c","/Users/slowpilot/workspace/sputnik/sqlite3/sputnik.build.yaml","/Users/slowpilot/workspace/sputnik/sqlite3/sputnik.toml","/Users/slowpilot/workspace/sputnik/sqlite3/src/sqlite3.s"],
+  "out_dir": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native",
+  "cache_dir": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache",
+  "native_output": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.main",
+  "native_backend": "cpp-bytecode-direct-v1",
+  "native_hash": "ac9770b9428c7cb57ac224e9bc636425b24de70ec2740c2e3c4052ebf1a6027c",
+  "native_source": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp",
+  "native_cxx": "clang++",
+  "native_bytecode_fallback": false,
+  "native_graph_module_count": 15,
+  "native_graph_code_count": 1320,
+  "native_graph_native_code_count": 1320,
+  "native_graph_vm_fallback_code_count": 0,
+  "native_graph_fallback_code_count": 0,
+  "native_binary_size_bytes": 18383768,
+  "native_graph_body_coverage_full": true,
+  "native_graph_full_coverage": true,
+  "native_graph_runtime_bridge": false,
+  "native_graph_runtime_bridge_kind": "",
+  "native_graph_vm_independent": true,
+  "native_extensions": [
+    {"name":"notebook_core_host","sputnik_ext_abi_version":1,"target_triple":"aarch64-apple-darwin","native_source_sha256":"sha256:422c617b8cc7431569c8abdfcc7b03db3e4340dc134dd668799e18004ba4550f","exported_symbol_sha256":"sha256:8907ba297b32a3c2983824f2e291ecd3770d66b434a4b98b0d17d620943d6f37","types":[{"sputnik":"notebook.core.host.Worker","tag":"notebook.core.Worker","ownership":"owned","destructor":"nb_core_worker_free"},{"sputnik":"sqlite3.Conn","tag":"sqlite3.Conn","ownership":"owned","destructor":"amsq_conn_free"},{"sputnik":"sqlite3.LeaseConn","tag":"sqlite3.LeaseConn","ownership":"collected","destructor":"amsq_lease_conn_free"},{"sputnik":"sqlite3.PoolCore","tag":"sqlite3.PoolCore","ownership":"collected","destructor":"amsq_pool_core_free"},{"sputnik":"sqlite3.Stmt","tag":"sqlite3.Stmt","ownership":"owned","destructor":"amsq_stmt_free"}],"errors":[{"name":"Sqlite3.BindError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.BusyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ConstraintError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.CorruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.Error","parent":"NativeError","default_message":"","default_exit_code":""},{"name":"Sqlite3.InterruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonbUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.LockedError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.MisuseError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.OpenError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolClosedError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolLeaseError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolTimeoutError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PrepareError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.RangeError","parent":"Sqlite3.BindError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ReadOnlyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.StepError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.TransactionError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""}]},
+    {"name":"sqlite3","sputnik_ext_abi_version":1,"target_triple":"aarch64-apple-darwin","native_source_sha256":"sha256:40f27d94bb0c3c83bb23345d3031568b279ea4f3bb9a90223a1954fd1a75fe59","exported_symbol_sha256":"sha256:3acd6904e20120582e597ea5f33bc5020ed6b308771d73be03cf96b4a3c2ad41","types":[],"errors":[]}
+  ],
+  "profiles": {
+    "required": ["core.v1"],
+    "optional": [],
+    "forbidden": []
+  },
+  "artifacts": [
+    {"name":"notebook.remote.main","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/main.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.main.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.remote.main-2efafad9e4f0bf602941e022b71af8413c2010183c5a8da570b85263fde32731.sputnikbc","cache_key":"2efafad9e4f0bf602941e022b71af8413c2010183c5a8da570b85263fde32731","source_hash":"2098daf361fce439ed430460e0697a0931c5313adbee03fd8e99d44e73dc8cb5","artifact_hash":"d860d0a72fe80bba12aee0edefef21cb3b9931354e2d99eeb755f2f9de22f6da","abi_hash":"333db7635434b349adcac311f0b23acf7f1089a403188877573c2ea1dc90e69d","native_output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.main","native_hash":"ac9770b9428c7cb57ac224e9bc636425b24de70ec2740c2e3c4052ebf1a6027c","native_backend":"cpp-bytecode-direct-v1","native_eligible":true,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":33094,"native_bytes":18383768},
+    {"name":"notebook.remote.server","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/server.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.server.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.remote.server-c03b38e8e46262435187cdde46c8e54d8311d6d1d121280578f06c49f32e3e29.sputnikbc","cache_key":"c03b38e8e46262435187cdde46c8e54d8311d6d1d121280578f06c49f32e3e29","source_hash":"24eed97ee236b4ca1461dee5c3e29931d033fcbcb077b7a49fbd50d5aa930ed0","artifact_hash":"53c1e75b5416e35c09d72b70229404cd3782f399a3bbd7e9827d8f857af0d247","abi_hash":"d5ed09526709e009ce0e720c9d935fc124c641a3eee5907bca881229713c6c36","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":181699,"native_bytes":0},
+    {"name":"notebook.remote.client","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/client.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.client.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.remote.client-80572c6f59ac3d9d45f04a9d231f1dd51c5218afa89120acec068c18e72bd864.sputnikbc","cache_key":"80572c6f59ac3d9d45f04a9d231f1dd51c5218afa89120acec068c18e72bd864","source_hash":"a8e5864f8af334945fdee6a12af1bc5066d9e70ae3f6a2cc1165395c81ae07bf","artifact_hash":"f4d9bca3c10c86ef4bfaa5457b92eabe4bd17d7431600e0e5128600a185e375d","abi_hash":"948842ccb02046ba0d319ee94b0a25cfcba97c180aa1a2a1c795acb07f00e177","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":181340,"native_bytes":0},
+    {"name":"notebook.remote.local_dependencies","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/local_dependencies.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.local_dependencies.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.remote.local_dependencies-c175051626bdac4a998949f6354660f78df8af73b02284a8168b43e47a919fa5.sputnikbc","cache_key":"c175051626bdac4a998949f6354660f78df8af73b02284a8168b43e47a919fa5","source_hash":"df17bd9d7db952059014dc7676c72468625efc43e295d662fa4ff82eef101e24","artifact_hash":"e6877b25dce6a8844e0dfc0cbc1410b76c2e4260ef9395c995aff8152619b637","abi_hash":"e142494a045ad9704dfab878c804de9352ca56dfe2cc0a9a6956af24de898e9f","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":32946,"native_bytes":0},
+    {"name":"notebook.remote.common","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/tools/notebook-remote/common.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.common.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.remote.common-874c601a4066cfd5744f5a6980a706b3de0f8b3ae5fcdd545f0e648d817b813e.sputnikbc","cache_key":"874c601a4066cfd5744f5a6980a706b3de0f8b3ae5fcdd545f0e648d817b813e","source_hash":"531af475c2579dc28ce3290b5b00feab88660146ffe201d64b9a04715d4173db","artifact_hash":"cb72b24fb72385a255db08110390cd5f399af35199ce33a79cb649b03ffb6a6a","abi_hash":"1b724ef4cefff3791dbd6c169998c9b33511a449019a4f6950d86aee7df5445a","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":9988,"native_bytes":0},
+    {"name":"notebook.core","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core-680dc7f6b0eca21ac8328edb75b1dd5f04cd54d5c61830f2f1531abd3756be0c.sputnikbc","cache_key":"680dc7f6b0eca21ac8328edb75b1dd5f04cd54d5c61830f2f1531abd3756be0c","source_hash":"1181753aa6f7ac4635b11ac288fd63b7cdfc20576e9fd51730ac1b1220a70318","artifact_hash":"a37a88f69b1201b8c0f07a1c1c034a8b13df71c9e5087cfd9111717ac1ff632a","abi_hash":"00de3a0f32e7b3e22d0ae4766520d21299d471a9f6311c9eab32bfa2754120e6","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":1302990,"native_bytes":0},
+    {"name":"notebook.core.common","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/common.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.common.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.common-134f42ad3909ff9f30b903b104f105e658a3c1cde8fcf9103e351bd50492204a.sputnikbc","cache_key":"134f42ad3909ff9f30b903b104f105e658a3c1cde8fcf9103e351bd50492204a","source_hash":"e6a60a0e1e6e838269884db5acf3fa2ba3d584bc20fb7c8f5692a988a079d04b","artifact_hash":"f9041c8badda7cfa6c1ceb4d8ca38fbc4aa0df1bf920248c54295dc22b745e6d","abi_hash":"8f42a59e1c4e9643d235ab30c2d3479f34eed74225dca8a03f595b3da54d3e82","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":66319,"native_bytes":0},
+    {"name":"notebook.core.client","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/client.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.client.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.client-f3fc91944234e7d3bed189299b80ebb6ac6df2097d4bbaf4a644db906f10a01c.sputnikbc","cache_key":"f3fc91944234e7d3bed189299b80ebb6ac6df2097d4bbaf4a644db906f10a01c","source_hash":"1ab447d24dabc55984e28fd8708a0d4b03b5189aa136d6e6a8af35948250730e","artifact_hash":"bc86bdc5e72caea6064cbdeda1f5be11959e262003a7b0d0bcff6346b4692e70","abi_hash":"a119541237d53a9c763d8baa933db37cdd071de8d94e8a9dd3d6769155ada46a","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":37180,"native_bytes":0},
+    {"name":"sqlite3","path":"/Users/slowpilot/workspace/sputnik/sqlite3/src/sqlite3.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/sqlite3.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/sqlite3-a85c83cf1b8b91ede8d61d981182c8d025334688691e0f5e30999e8393b4f8c5.sputnikbc","cache_key":"a85c83cf1b8b91ede8d61d981182c8d025334688691e0f5e30999e8393b4f8c5","source_hash":"dd603b72850a2325944aae210b86a63794ca14e516d78fc2ba6242ae6a4a950a","artifact_hash":"82ecc43e19ffd54a1d4a07c76c27a03739ad05b4c8bfa30c9a56e76db3c60746","abi_hash":"bb9859f9995218852abdc120e2e20e9a992beb3e927cb55a78410067fc1551f9","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":804995,"native_bytes":0},
+    {"name":"notebook.core.host","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/host.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.host.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.host-8c810b458b46b6d5c7603d7c742f9ab5354abd718b3e57b849450c315b9776d3.sputnikbc","cache_key":"8c810b458b46b6d5c7603d7c742f9ab5354abd718b3e57b849450c315b9776d3","source_hash":"85bcd5405d5394b258c6879e4be5d7e3e9a9f8d2d76f3ebf737e0c561cd2f30b","artifact_hash":"b66a053b7987fad2c00a5a53515420a14463f73b07ec8f6909ae9360359d45ab","abi_hash":"5a9f746ceca0f6edf91dcad324fe41b2d537f90ef207540f6fc98817fafb6ccd","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":39482,"native_bytes":0},
+    {"name":"notebook.core.environments","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/environments.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.environments.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.environments-22c3c0db3bc970ee3767ae6ac360c09f3dad4324d9171720fb8d50ace6e5ea43.sputnikbc","cache_key":"22c3c0db3bc970ee3767ae6ac360c09f3dad4324d9171720fb8d50ace6e5ea43","source_hash":"26d37fdbac15fbf4a60740230a8339d33cfad415298bb5fe0430555fc2322944","artifact_hash":"0c32354f95bc7543b8579f78328fab17931146134a55fc20659864e4e0000df7","abi_hash":"7d3cbd00277fdf241209a6ed99ca682a96be08e62f4321fb1180dd798efc60fd","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":223914,"native_bytes":0},
+    {"name":"notebook.core.dependencies","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/dependencies.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.dependencies.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.dependencies-575fc4744ee8cab875ceb7230370c44b6d231ddd98bdc8b800ac7591e4d16157.sputnikbc","cache_key":"575fc4744ee8cab875ceb7230370c44b6d231ddd98bdc8b800ac7591e4d16157","source_hash":"b7be5e525e339a05ec26e1930463e38609dd7937310ee2dc82d2de8bf817a71f","artifact_hash":"b6922505646ff1eb7fc153317ea591c1776b57f7d9ffd8f3f5cba77a67305c62","abi_hash":"f47959151b49789c1b65ed6fe88f557147e39428bb1d322b0536adad8ab3be13","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":196670,"native_bytes":0},
+    {"name":"notebook.core.services","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/services.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.services.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.services-47c4014a7dcc6a8eface58e3158941c64a9e2acedc4b2c456ab07e331bbe4716.sputnikbc","cache_key":"47c4014a7dcc6a8eface58e3158941c64a9e2acedc4b2c456ab07e331bbe4716","source_hash":"e3fc2cd0406b9f3c7d4e6d5e21054a31d2d25d33b89c2d2031c427232fdafbdd","artifact_hash":"a5d3482732d259f848f0126893596225a7a5a47b893a57710e3eefc881c126ff","abi_hash":"cd1a4127956163d0e83011c02da4966434adb7b2c56248089c296c73f89ce8ce","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":269518,"native_bytes":0},
+    {"name":"notebook.core.storage","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/storage.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.storage.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.storage-6af486c6134b39c7a4d9af4521ffbbc907da1258618e1f34fc67e3fc268fce39.sputnikbc","cache_key":"6af486c6134b39c7a4d9af4521ffbbc907da1258618e1f34fc67e3fc268fce39","source_hash":"137518be345f94f2d4c5f8d10a799f959c7600d0023eb99de593c063a0347b00","artifact_hash":"ab651b3cc03f468fe8cdf4e2b6c554bf7fc8c49c3290381f5d618d556eed4117","abi_hash":"2b6a9c1fa0505f56476475eeab9d6147d50cd5b3ce0962387aa5a13ddb8efcef","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":369778,"native_bytes":0},
+    {"name":"notebook.core.policy","path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/packages/notebook-core/src/notebook/core/policy.s","output":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.core.policy.sputnikbc","cache_path":"/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/.cache/notebook.core.policy-6165609df29d57d39d53d26c81391966a01ad90caa2b3128fc4a83f050e1d4b6.sputnikbc","cache_key":"6165609df29d57d39d53d26c81391966a01ad90caa2b3128fc4a83f050e1d4b6","source_hash":"1584300eb5d0705ace24277c737ee3e4e6b8c45f9754b080b3a09146f1cf8438","artifact_hash":"8b8d289070ab233a33dd7bfb93356efdb54358e35d4b560688f2f987cb3b6509","abi_hash":"7621d48ea9ce934480da0645190a3fd0b984aad57ee8c1080f3daf2593036507","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":true,"bootstrap":"","bytes":255815,"native_bytes":0}
+  ],
+  "diagnostics": []
+}
+cp "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/remote-native/notebook.remote.main" "build/sputnik-notebook-remote.tmp"
+mv -f "build/sputnik-notebook-remote.tmp" "build/sputnik-notebook-remote"
+python3 tests/notebook_remote_tests.py --worker "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker" --core "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote"
+python3 tests/notebook_policy_tests.py --worker "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker" --core "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote"
+python3 tests/notebook_remote_ui_tests.py --test "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/notebook_macos_remote_tests" --core "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote" --worker "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker" --keep
+ln -sf ../sputnik-notebook-remote "build/notebook-macos/sputnik-notebook-remote"
+python3 tests/notebook_remote_ui_tests.py --test "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/notebook_macos_remote_work_tests" --core "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote" --worker "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker"
+test_auth_and_snapshot_roundtrip (__main__.RemoteTests) ... test_accounting_failure_stops_work_and_recovers_without_replay (__main__.PolicyTests) ... ok
+test_board_actions_isolate_controller_keep_state_and_capture_arguments (__main__.RemoteTests) ... ok
+test_age_revision_retention_output_cap_and_deletion_recovery (__main__.PolicyTests) ... ok
+test_cell_inputs_atomic_watch_manual_scope_and_receipts (__main__.RemoteTests) ... ok
+test_collection_preserves_failure_and_previous_result_and_expires_receipts (__main__.PolicyTests) ... ok
+test_cell_inputs_busy_runtime_and_frozen_run_snapshot (__main__.RemoteTests) ... ok
+test_inheritance_aggregate_user_quota_and_disk_reserve (__main__.PolicyTests) ... ok
+test_lease_expiry_stops_active_work_and_user_budget_survives_new_session (__main__.PolicyTests) ... ok
+test_cell_inputs_persist_and_revalidate_changed_definitions (__main__.RemoteTests) ... ok
+test_child_failure_is_not_reported_as_success (__main__.RemoteTests) ... ok
+test_cli_snapshots_dependency_inputs_and_rejects_symlink_parents (__main__.RemoteTests) ... ok
+test_deleting_project_stops_owner_and_preserves_history (__main__.RemoteTests) ... ok
+test_dependency_operation_rejects_active_run_and_resolves_ruby_lock (__main__.RemoteTests) ... ok
+test_parallel_runs_share_a_durable_total_time_budget (__main__.PolicyTests) ... ok
+test_registry_is_bounded_and_history_pages_survive_collection (__main__.PolicyTests) ... ok
+test_temporary_profile_rejects_dependency_installation_and_grants (__main__.PolicyTests) ... ok
+test_dependency_packages_install_remove_receipts_and_worker_imports (__main__.RemoteTests) ... ok
+test_temporary_sessions_are_clean_on_reopen_expiry_and_restart (__main__.PolicyTests) ... ok
+test_disconnected_client_and_restarted_gateway (__main__.RemoteTests) ... ok
+Remote work tests passed: project inputs, idle Watch, action receipt recovery, server periodic close/reconnect/pause and retained history
+
+----------------------------------------------------------------------
+Ran 9 tests in 6.646s
+
+OK
+bash tools/notebook-macos/package-app.sh "build/notebook-macos/SputnikNotebook" "build/Sputnik Notebook.app" "/opt/homebrew/Cellar/openssl@3/3.6.2/lib" "build/sputnik-notebook-worker" "build/sputnik-notebook-remote" "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik" "../sputnik-lang"
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libssl.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libcrypto.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libpcre2-8.0.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libyaml-0.2.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libarchive.13.dylib
+ok
+test_edit_during_run_and_reuse_live_runtime (__main__.RemoteTests) ... /Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libnettle.9.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libgmp.10.dylib
+ok
+test_first_run_prepares_python_environment (__main__.RemoteTests) ... /Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libssl.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libssl.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libcrypto.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libpcre2-8.0.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libyaml-0.2.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/liblzma.5.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libzstd.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/liblz4.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libb2.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libnettle.9.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libgmp.10.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/liblzma.5.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libzstd.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/liblz4.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: build/Sputnik Notebook.app/Contents/Frameworks/libb2.1.dylib
+build/Sputnik Notebook.app/Contents/MacOS/sputnik-notebook-worker: replacing existing signature
+build/Sputnik Notebook.app/Contents/MacOS/sputnik-notebook-remote: replacing existing signature
+build/Sputnik Notebook.app/Contents/MacOS/sputnik: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libssl.3.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libcrypto.3.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libpcre2-8.0.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libyaml-0.2.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libarchive.13.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libhogweed.7.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libnettle.9.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libgmp.10.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/liblzma.5.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libzstd.1.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/liblz4.1.dylib: replacing existing signature
+build/Sputnik Notebook.app/Contents/Frameworks/libb2.1.dylib: replacing existing signature
+build/Sputnik Notebook.app: replacing existing signature
+Built build/Sputnik Notebook.app (minimum macOS 26.0, including bundled dependencies)
+ok
+test_force_stop_and_worker_crash_stop_external_process_groups (__main__.RemoteTests) ... ok
+test_idle_watch_agent_pump_quiets_and_never_executes_new_drafts (__main__.RemoteTests) ... ok
+test_live_presentation_can_be_restored_by_another_client (__main__.RemoteTests) ... ok
+test_lost_response_does_not_duplicate_run (__main__.RemoteTests) ... ok
+test_managed_environment_reuse_restart_failure_and_logs (__main__.RemoteTests) ... ok
+test_native_cli_upload_run_and_receipt (__main__.RemoteTests) ... ok
+test_orphan_gc_schedule (__main__.RemoteTests) ... PASS server selection, snapshot upload and native presentation
+PASS close/reopen during Run, draft recovery, live progress, same runtime epoch
+PASS draft preservation across terminal publication
+PASS server-copy reconstruction and historical presentation
+PASS Force Stop and explicit runtime restart
+PASS concurrent sheets, focused progress and independent Stop
+PASS retained result after same-source Force Stop and reconnect
+PASS lost Run acknowledgement and durable receipt recovery
+PASS inert notebook metadata and private command authorization
+PASS Discard, competing writer and explicit conflict resolution
+PASS worker grant settings, scoped command, reconnect and revocation through the notebook model
+notebook remote UI integration tests passed
+remote UI artifacts: /tmp/spr-test-_40seovf/client
+remote test state: /tmp/spr-test-_40seovf/new/state
+ok
+test_orphan_gc_uses_registry_ownership_and_first_seen_age (__main__.RemoteTests) ... ok
+test_owner_removal_stops_run_and_prevents_id_reuse (__main__.RemoteTests) ... ok
+test_package_catalog_uses_execution_host_without_retiring_workers (__main__.RemoteTests) ... ok
+test_parallel_request_correlation (__main__.RemoteTests) ... ok
+test_prepared_gui_snapshot_is_immutable_and_can_be_checked_out (__main__.RemoteTests) ... ok
+test_project_inputs_atomic_multi_sheet_and_frozen_snapshots (__main__.RemoteTests) ... ok
+test_project_inputs_busy_sheet_rejects_whole_batch_and_persists (__main__.RemoteTests) ... ok
+test_restart_is_durable_before_destroying_heap (__main__.RemoteTests) ... ok
+test_restart_then_delete_waits_for_all_runtime_owners (__main__.RemoteTests) ... ok
+test_retry_after_cancelled_preparation_requires_runtime_restart (__main__.RemoteTests) ... ok
+test_runtime_has_a_private_working_directory (__main__.RemoteTests) ... ok
+test_server_periodic_error_policy_and_module_edit_pause (__main__.RemoteTests) ... ok
+test_server_periodic_gateway_restart_pause_receipt_and_agent_restart (__main__.RemoteTests) ... ok
+test_server_periodic_sqlite_busy_does_not_publish_phantom_run (__main__.RemoteTests) ... ok
+test_service_once_receipt_stop_and_removed_owner (__main__.RemoteTests) ... ok
+test_snapshot_nested_tree_survives_agent_restart (__main__.RemoteTests) ... ok
+test_snapshot_publication_failure_preserves_head_and_receipt (__main__.RemoteTests) ... ok
+test_stop_during_preparation (__main__.RemoteTests) ... ok
+test_stop_force_stop_and_stale_epoch (__main__.RemoteTests) ... ok
+test_template_loops_in_remote_worker (__main__.RemoteTests) ... ok
+test_unicode_regexp_flags_interpolation_and_condition_result (__main__.RemoteTests) ... ok
+test_unsafe_upload_and_project_inputs (__main__.RemoteTests) ... ok
+test_watch_completion_delete_race_reaps_owner (__main__.RemoteTests) ... ok
+test_worker_environment_override_requires_restart_when_changed (__main__.RemoteTests) ... ok
+test_worker_grants_refuse_active_runtime (__main__.RemoteTests) ... ok
+test_worker_grants_scope_revoke_receipts_and_stale_settings (__main__.RemoteTests) ... ok
+test_worker_settings_retire_action_worlds (__main__.RemoteTests) ... ok
+test_z_agent_failure_is_interrupted_without_replay (__main__.RemoteTests) ... ok
+
+----------------------------------------------------------------------
+Ran 48 tests in 51.253s
+
+OK

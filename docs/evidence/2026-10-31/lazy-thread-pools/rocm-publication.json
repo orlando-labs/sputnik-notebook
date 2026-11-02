@@ -1,0 +1,7 @@
+{
+  "port": 22015,
+  "archive": "/home/slowpilot/sputnik-releases/20261031-current-c17d12b/registry-rocm-014/torch-0.1.4-linux-x86_64-gnu-rocm643-prebuilt-source-runtime.sputnikpkg",
+  "delegated_token_id": "a9729dc29f5220dc19bb4e1232e163fa",
+  "published": true,
+  "temporary_token_revoked": true
+}

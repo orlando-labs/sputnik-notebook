@@ -21,7 +21,6 @@ import urllib.error
 import urllib.request
 import uuid
 
-from notebook_package_catalog_test import PackageCatalogFixture
 
 TOOLS = Path(__file__).resolve().parents[1] / "tools" / "notebook-remote"
 TERMINAL = {"succeeded", "failed", "cancelled", "force-stopped", "interrupted"}
@@ -66,7 +65,7 @@ def document(source="42\n", modules=False, board=False):
     return value
 
 
-class RemoteTests(unittest.TestCase):
+class RemoteHarness(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.directory = Path(tempfile.mkdtemp(prefix="spr-test-", dir="/tmp"))
@@ -75,8 +74,6 @@ class RemoteTests(unittest.TestCase):
         cls.logs = []
         cls.process_env = dict(os.environ)
         compiler = Path(__file__).resolve().parents[2] / "sputnik-lang/build/sputnik"
-        cls.catalog_fixture = PackageCatalogFixture(compiler)
-        cls.process_env["SPUTNIK_PKG_REGISTRY"] = cls.catalog_fixture.origin
         cls.process_env.pop("SPUTNIK_PKG_CREDENTIALS", None)
         if OPTIONS.bridges:
             workspace = Path(__file__).resolve().parents[2]
@@ -96,7 +93,7 @@ class RemoteTests(unittest.TestCase):
         log = (cls.directory / ("agent-" + uuid.uuid4().hex + ".log")).open("wb")
         cls.logs.append(log)
         compiler = Path(__file__).resolve().parents[2] / "sputnik-lang/build/sputnik"
-        agent = subprocess.Popen([OPTIONS.core, "--mode", "agent", "--root", str(cls.root), "--worker", OPTIONS.worker, "--python", OPTIONS.python, "--ruby", OPTIONS.ruby, "--sputnik", str(compiler)], stdout=log, stderr=log, env=cls.process_env)
+        agent = subprocess.Popen([OPTIONS.core, "--mode", "agent", "--root", str(cls.root), "--worker", OPTIONS.worker, "--python", OPTIONS.python, "--ruby", OPTIONS.ruby, "--sputnik", str(compiler)] + getattr(cls, 'agent_extra_args', []), stdout=log, stderr=log, env=cls.process_env)
         eventually(lambda: (cls.root / "agent.sock").exists() and rpc(cls.root, "health")["status"] == 200, timeout=90)
         cls.token = (cls.root / "token").read_text().strip()
         return agent
@@ -137,7 +134,6 @@ class RemoteTests(unittest.TestCase):
                     process.wait()
         for log in cls.logs:
             log.close()
-        cls.catalog_fixture.close()
         if not OPTIONS.keep:
             shutil.rmtree(str(cls.directory))
         else:
@@ -175,6 +171,8 @@ class RemoteTests(unittest.TestCase):
             return value if value["state"] == state or (state is None and value["state"] in TERMINAL) else None
         return eventually(ready)
 
+
+class RemoteTests(RemoteHarness):
     def test_bare_function_variables_preserve_explicit_references(self):
         source = '''
 callback = &print
@@ -182,6 +180,53 @@ copied = &callback
 value = copied
 raise ValueError("function was not invoked") unless value == null
 raise ValueError("reference changed") unless (&callback) == (&print)
+42
+'''
+        revision, _ = self.upload(document(source))
+        run, body = self.start(revision)
+        result = self.wait_run(run)
+        self.assertEqual(result["state"], "succeeded", result)
+        self.assertEqual(result["result"]["cells"][0]["result"], "42", result)
+        self.assertEqual(self.start(revision, command=body["command_id"])[0], run)
+
+    def test_membership_methods_and_nested_patterns(self):
+        source = '''
+choices = [409, 410]
+raise ValueError("in?") unless 409.in?(choices) and not 500.in?(choices)
+raise ValueError("one_of?") unless 409.one_of?(400, 409) and not 409.one_of?(choices)
+raise ValueError("spread target") unless [1, 2].one_of?(*[[1, 2]])
+raise ValueError("falsy receiver") unless null.in?([null]) and false.one_of?(null, false)
+matched = case {status: 409, code: "busy"}:
+  when {status: in choices, code: in ["busy", "wait"]}: true
+  else: false
+raise ValueError("nested pattern") unless matched
+selected = [409, 410].map |code as in choices|: code - 400
+raise ValueError("block capture") unless selected == [9, 10]
+42
+'''
+        revision, _ = self.upload(document(source))
+        run, body = self.start(revision)
+        result = self.wait_run(run)
+        self.assertEqual(result["state"], "succeeded", result)
+        self.assertEqual(result["result"]["cells"][0]["result"], "42", result)
+        self.assertEqual(self.start(revision, command=body["command_id"])[0], run)
+
+    def test_unicode_regexp_flags_interpolation_and_condition_result(self):
+        source = r'''
+needle = "я+"
+pattern = r"\A#{needle}\z"i
+raise ValueError("symmetric regexp") unless pattern ~= "Я+" and "Я+" ~= pattern
+raise ValueError("suffix flags") unless r"^[a-z]+$"mi.match?("0\nABC\n1")
+hit = r"(?<letter>.)(x)?".match("я")
+raise ValueError("Unicode captures") unless hit[:letter] == "я" and hit.end == 1 and hit.byte_end == 2
+if pattern.match("Я+"):
+  raise ValueError("condition result") unless $_[0] == "Я+"
+else:
+  raise ValueError("regexp condition")
+10
+if 20 and ($_ + 2):
+  raise ValueError("logical condition") unless $_ == 12
+raise ValueError("zero-width progress") unless r"(?:|a)".scan("a").length == 3
 42
 '''
         revision, _ = self.upload(document(source))
@@ -313,8 +358,7 @@ raise ValueError("reference changed") unless (&callback) == (&print)
     def test_dependency_packages_install_remove_receipts_and_worker_imports(self):
         source = self.directory / (self.project + "-source")
         (source / "src").mkdir(parents=True)
-        (source / "sputnik.toml").write_text('[package]\nname = "notebook-probe"\nversion = "1.0.0"\nroot = "notebook_probe"\n'
-            '[[modules]]\nname = "notebook_probe"\npath = "src/probe.s"\n')
+        (source / "sputnik.build.yaml").write_text('schema: "sputnik.build.v1"\nname: "notebook-probe"\nversion: "1.0.0"\nsource_root: "."\nfiles:\n  - "src/probe.s"\nmodule_names:\n  "src/probe.s": "notebook_probe"\n')
         (source / "src/probe.s").write_text('package notebook_probe\nexport answer\ndef answer(): 789\n')
         revision, _ = self.upload(document('from notebook_probe import answer\nanswer()\n'))
         route = "/v1/projects/" + self.project + "/dependencies"
@@ -336,7 +380,10 @@ raise ValueError("reference changed") unless (&callback) == (&print)
         self.assertTrue(installed["stdout"])
         packages = self.request("GET", route)[1]["packages"]
         self.assertEqual([(p["name"], p["version"]) for p in packages], [("notebook-probe", "1.0.0")])
-        self.assertTrue((self.root / "projects" / self.project / "packages/notebook-probe/1.0.0/modules.index").exists())
+        package_root = self.root / "projects" / self.project / "packages/notebook-probe/1.0.0"
+        if packages[0].get("variant"):
+            package_root /= packages[0]["variant"]
+        self.assertTrue((package_root / "modules.index").exists())
         run, _ = self.start(revision)
         completed = self.wait_run(run)
         self.assertEqual(completed["state"], "succeeded", completed)
@@ -350,41 +397,14 @@ raise ValueError("reference changed") unless (&callback) == (&print)
         self.assertTrue(source.exists(), "removing an installation preserves original source")
 
     def test_package_catalog_uses_execution_host_without_retiring_workers(self):
-        revision, _ = self.upload(document())
-        run, _ = self.start(revision)
-        self.assertEqual(self.wait_run(run)["state"], "succeeded")
-        route = "/v1/projects/" + self.project + "/package-catalog"
-        body = dict(command_id=uuid.uuid4().hex, query="versions", source="editor-probe")
-        self.assertEqual(self.request("POST", route, body, token=False)[0], 401)
-        status, versions = self.request("POST", route, body)
-        self.assertEqual(status, 200, versions)
-        self.assertEqual(versions["package_ref"], "test/editor-probe")
-        self.assertEqual([r["version"] for r in versions["versions"]], ["3.0.0", "2.0.0-rc.1", "1.1.0", "1.0.0", "0.9.0"])
-        body.update(command_id=uuid.uuid4().hex, query="variants", source="test/editor-probe@1.0.0")
-        request_file = self.directory / (uuid.uuid4().hex + ".json")
-        request_file.write_text(json.dumps(body))
-        checked = subprocess.run([OPTIONS.core, "--mode", "cli", "--url", "http://127.0.0.1:" + str(self.port),
-                                  "--token-file", str(self.root / "token"), "--command", "package_catalog",
-                                  "--project", self.project, "--request-file", str(request_file)],
-                                 capture_output=True, text=True, timeout=30, env=self.process_env)
-        self.assertEqual(checked.returncode, 0, checked.stderr)
-        builds = json.loads(checked.stdout)
-        self.assertEqual(builds["recommended_variant"], "source")
-        selections = {a["variant"]: a["host_selection"] for a in builds["artifacts"]}
-        self.assertTrue(selections["source"]["compatible"])
-        self.assertFalse(selections["foreign"]["compatible"])
-        self.assertIn(builds["host"]["os"], ["macos", "linux"])
-        self.assertEqual(self.request("POST", route, dict(query="install", source="editor-probe"))[0], 400)
-        self.assertEqual(self.request("POST", route, dict(query="versions", source="--help"))[0], 400)
-        self.assertEqual(self.request("POST", route, dict(query="versions", source="missing"))[0], 422)
-        dependencies = self.request("GET", "/v1/projects/" + self.project + "/dependencies")[1]
-        self.assertEqual(dependencies["packages"], [])
-        self.assertEqual(dependencies["jobs"], [])
-        registry = self.request("GET", "/v1/projects/" + self.project + "/registry")[1]
-        self.assertNotIn(run["runtime_epoch"], registry["reset_epochs"])
-        again, _ = self.start(revision)
-        self.assertEqual(self.wait_run(again)["state"], "succeeded")
-        self.assertEqual(again["runtime_epoch"], run["runtime_epoch"], "catalog inspection keeps the execution runtime")
+        # The catalog fixture and assertions are implemented in Sputnik.
+        compiler = Path(__file__).resolve().parents[2] / "sputnik-lang/build/sputnik"
+        manifest = Path(__file__).with_name("notebook_remote_tests.build.json")
+        subprocess.run([str(compiler), "run", str(manifest),
+            *[v for grant in ("ffi", "time.now", "fs.read", "fs.write", "fs.metadata", "net.listen", "net.connect", "random.secure", "process.spawn") for v in ("--grant", grant)],
+            "--", "--mode", "catalog", "--root", str(self.directory / "sputnik-catalog"),
+            "--core", OPTIONS.core, "--worker", OPTIONS.worker, "--compiler", str(compiler)],
+            check=True, env=self.process_env, timeout=180)
 
     def test_dependency_operation_rejects_active_run_and_resolves_ruby_lock(self):
         revision, _ = self.upload(document('import task\ntask.sleep(1500)\n42\n'), {"Gemfile": b'source "https://rubygems.org"\n'})
@@ -906,6 +926,40 @@ raise ValueError("reference changed") unless (&callback) == (&print)
         self.assertNotEqual(restarted["runtime_epoch"], run["runtime_epoch"])
         self.assertEqual(self.wait_run(restarted)["state"], "succeeded")
 
+    def test_force_stop_and_worker_crash_stop_external_process_groups(self):
+        # capture() starts a separate process group. Both the shell and its
+        # child must be stopped before the agent publishes terminal lifecycle.
+        for crash in (False, True):
+            marker = self.directory / ("external-" + uuid.uuid4().hex)
+            started = marker.with_suffix(".started")
+            script = 'echo started > "{}"; sleep 2; echo leaked > "{}"'.format(started, marker)
+            source = 'system.command("/bin/sh", "-c", {}).capture(timeout: 30.0)\n42\n'.format(json.dumps(script))
+            if crash:
+                # Retire the previous force-stopped runtime before reusing the sheet.
+                registry = self.request("GET", "/v1/projects/" + self.project + "/registry")[1]
+                self.assertEqual(self.request("POST", "/v1/projects/" + self.project + "/restart",
+                    dict(command_id=uuid.uuid4().hex, sheet_id="main", runtime_epoch=registry["runtimes"][-1]["epoch"]))[0], 200)
+                base = registry["project"]["head"]
+            else:
+                base = None
+            revision, _ = self.upload(document(source), base=base)
+            route = "/v1/projects/" + self.project + "/worker-settings/main"
+            settings = self.request("GET", route)[1]
+            self.assertEqual(self.request("PUT", route, dict(command_id=uuid.uuid4().hex,
+                grants=["process.spawn=/bin/sh"], base_version=settings["version"], runtime_epoch=settings["runtime_epoch"]))[0], 200)
+            run, _ = self.start(revision)
+            eventually(started.exists)
+            registry = self.request("GET", "/v1/projects/" + self.project + "/registry")[1]
+            if crash:
+                worker = next(r for r in registry["runtimes"] if r["id"] == run["runtime_id"])["worker_pid"]
+                os.kill(worker, 9)
+            else:
+                self.assertEqual(self.request("POST", "/v1/runs/" + run["run_id"] + "/stop",
+                    dict(command_id=uuid.uuid4().hex, runtime_epoch=run["runtime_epoch"], force=True))[0], 200)
+            self.assertEqual(self.wait_run(run)["state"], "interrupted" if crash else "force-stopped")
+            time.sleep(2.2)
+            self.assertFalse(marker.exists(), "external process continued after terminal lifecycle")
+
     def test_deleting_project_stops_owner_and_preserves_history(self):
         revision, _ = self.upload(document("import task\ntask.sleep(60000)\n42\n"))
         run, _ = self.start(revision)
@@ -1102,11 +1156,11 @@ raise ValueError("reference changed") unless (&callback) == (&print)
         watches = eventually(lambda: [r for r in self.request("GET", route)[1]["runs"] if r["action"] == "watch"])
         self.wait_run(dict(run_id=watches[-1]["id"]))
         time.sleep(0.5)
-        count = len(self.request("GET", route)[1]["runs"])
+        count = len(self.request("GET", "/v1/projects/" + self.project + "/runs")[1]["runs"])
         self.assertEqual(count, 2)
         self.upload(document('raise "draft must not run"\n'), base=revision)
         time.sleep(0.4)
-        self.assertEqual(len(self.request("GET", route)[1]["runs"]), count)
+        self.assertEqual(len(self.request("GET", "/v1/projects/" + self.project + "/runs")[1]["runs"]), count)
         self.assertEqual(self.request("POST", "/v1/projects/" + self.project + "/runs", dict(command_id=uuid.uuid4().hex, revision=revision, sheet_id="main", cell_id="1", action="watch"))[0], 409)
 
     def test_watch_completion_delete_race_reaps_owner(self):
@@ -1146,7 +1200,9 @@ raise ValueError("reference changed") unless (&callback) == (&print)
         return reply, body
 
     def service_state(self):
-        return self.request("GET", "/v1/projects/" + self.project + "/services")[1]["services"][0]
+        status, reply = self.request("GET", "/v1/projects/" + self.project + "/services")
+        self.assertEqual(status, 200, reply)
+        return reply["services"][0]
 
     def test_board_actions_isolate_controller_keep_state_and_capture_arguments(self):
         doc, files = self.action_project()
@@ -1218,6 +1274,27 @@ raise ValueError("reference changed") unless (&callback) == (&print)
         self.upload(doc, files, base=revision)
         self.assertEqual(self.wait_run(dict(run_id=state["run_id"]))["state"], "cancelled")
         self.assertFalse(self.service_state()["enabled"])
+
+    def test_server_periodic_sqlite_busy_does_not_publish_phantom_run(self):
+        doc, files = self.action_project()
+        doc["boards"][0]["components"][1].update(period_seconds=0.3, run_immediately=False)
+        revision, _ = self.upload(doc, files)
+        self.service(revision, "start")
+        # Lock only this fixture database. BEGIN IMMEDIATE inside dispatch times
+        # out after 5s. Hold until the failure has occurred, then permit recovery.
+        with sqlite3.connect(str(self.root / "metadata.sqlite")) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            time.sleep(6.5)
+            connection.rollback()
+        eventually(lambda: not self.service_state()["enabled"])
+        state = self.service_state()
+        self.assertFalse(state["running"], state)
+        self.assertIn("locked", state["status"])
+        self.assertEqual(self.request("GET", "/v1/projects/" + self.project + "/runs")[1]["runs"], [])
+        self.service(revision, "start")
+        eventually(lambda: self.service_state()["runs"] > 0, timeout=25)
+        self.service(revision, "pause")
+        eventually(lambda: not self.service_state()["running"])
 
     def test_server_periodic_error_policy_and_module_edit_pause(self):
         doc, files = self.action_project()

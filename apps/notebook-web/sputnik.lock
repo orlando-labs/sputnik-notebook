@@ -1,0 +1,74 @@
+schema = "sputnik.packages.lock.v1"
+sputnik_version = "1.0.0"
+
+[[packages]]
+name = "notebook-core"
+version = "0.1.0"
+variant = "source"
+digest = "sha256:d37a4f441cadee77196723b3dc9e11067114a8be795e8d46b3fc18f092337472"
+source_kind = "path"
+source = "../../packages/notebook-core"
+
+[[packages]]
+name = "orbit"
+version = "1.0.0-rc.1"
+variant = "source"
+digest = "sha256:243a63b0845abe2f89cc7ba0635d02d226aadff352ae6f7defde62cf17689ce4"
+source_kind = "path"
+source = "../../../orbit"
+
+[[packages]]
+name = "orbit-oauth"
+version = "0.1.0-dev"
+variant = "source"
+digest = "sha256:5e73d369b5ac4c44d8bb4e0be10b22269377ac32bebdef881ea3c88422b54ab4"
+source_kind = "path"
+source = "../../../orbit/packages/orbit-oauth"
+
+[[packages]]
+name = "orbit-oauth-github"
+version = "0.1.0-dev"
+variant = "source"
+digest = "sha256:de17b38174a3d48690ed54f5c455359630f1dcde4a15dcf1e7d97d3195e4d558"
+source_kind = "path"
+source = "../../../orbit/packages/orbit-oauth-github"
+
+[[packages]]
+name = "orbit-orm"
+version = "1.0.0-rc.1"
+variant = "source"
+digest = "sha256:c34a9b8e8751884c536c3dd79f9161f5a572a2eb4f00604f17abea0e38e9a404"
+source_kind = "path"
+source = "../../../orbit/packages/orbit-orm"
+
+[[packages]]
+name = "orbit-session"
+version = "0.1.0-dev"
+variant = "source"
+digest = "sha256:60b0786e7d721ace4bf44f54a08cc4b0f69e93ada5b4fcd9ec9121c0448f7146"
+source_kind = "path"
+source = "../../../orbit/packages/orbit-session"
+
+[[packages]]
+name = "orbit-vite"
+version = "0.1.0-dev"
+variant = "source"
+digest = "sha256:25be2f69369ec31252c3c78950064a5a792794cd095d14861aa8e75f923e158a"
+source_kind = "path"
+source = "../../../orbit/packages/orbit-vite"
+
+[[packages]]
+name = "orm"
+version = "0.1.0"
+variant = "source"
+digest = "sha256:71ea96380c347eab7202d80a76fe14d86ea6d610fa554c0745e5fc7f61899fde"
+source_kind = "path"
+source = "../../../orm"
+
+[[packages]]
+name = "sqlite3"
+version = "0.1.0"
+variant = "source"
+digest = "sha256:6b36f2cb5f3291c861914b16e577de3af7805c116a13495be1134a3e555c5c08"
+source_kind = "path"
+source = "../../../sqlite3"

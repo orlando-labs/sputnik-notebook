@@ -1,0 +1,14 @@
+worker channel closed
+worker channel closed
+worker channel closed
+worker channel closed
+PASS remote action Restart: new heap/epoch, lost acknowledgement, no duplicate reset
+PASS remote targeted Stop/Force Stop: parallel actions and sheet, status, recovery
+PASS remote service Restart: pause requirement and new invocation epoch
+PASS remote Carousel: selected frame -> worker -> close/reopen/reconnect
+PASS remote Date/Time Apply: availability, timezone, UTC, accepted state, worker result
+PASS remote server history: paging, second client, Pin/Rename/Delete, CAS, lost replies, scoped exact restore
+PASS all five remote action regressions
+
+0
+worker channel closed

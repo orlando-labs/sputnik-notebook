@@ -1,0 +1,25 @@
+{
+  "name": "sputnik-notebook-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "markdown-it": "15.0.3",
+    "vue": "3.5.44"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@vitejs/plugin-vue": "6.0.10",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vue-tsc": "3.3.13"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

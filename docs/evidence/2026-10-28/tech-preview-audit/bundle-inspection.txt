@@ -1,0 +1,26 @@
+Executable=/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook
+Identifier=org.sputniklang.notebook
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20400 size=54129 flags=0x2(adhoc) hashes=1685+3 location=embedded
+VersionPlatform=1
+VersionMin=917504
+VersionSDK=1705216
+Hash type=sha256 size=32
+CandidateCDHash sha256=2e757634d78fa8f7bbb1adb77d6ac028194474eb
+CandidateCDHashFull sha256=2e757634d78fa8f7bbb1adb77d6ac028194474eb69605c4ae4531e9c88a3e2c8
+Hash choices=sha256
+CMSDigest=2e757634d78fa8f7bbb1adb77d6ac028194474eb69605c4ae4531e9c88a3e2c8
+CMSDigestType=2
+Executable Segment base=0
+Executable Segment limit=13549568
+Executable Segment flags=0x1
+Page size=16384
+CDHash=2e757634d78fa8f7bbb1adb77d6ac028194474eb
+Signature=adhoc
+Info.plist entries=15
+TeamIdentifier=not set
+Sealed Resources version=2 rules=13 files=141
+Internal requirements count=0 size=12
+
+LSMinimumSystemVersion: 26.0
+/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook: Mach-O 64-bit executable arm64

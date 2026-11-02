@@ -1,0 +1,22 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/audio.spec.ts
+
+[WebServer] (node:14925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:14933) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/audio.spec.ts:28:1 › file audio plays locally, seeks, changes volume and exports exact bytes without another run (2.3s)
+  ✓  2 test/audio.spec.ts:36:1 › authored audio owns matching automatic channels and board settings retain metadata through Save (1.7s)
+  ✓  3 test/audio.spec.ts:42:1 › PCM stream grows live, reconnects without replay, exports retained frames and resets its token (4.4s)
+  ✓  4 test/audio.spec.ts:48:1 › browser conversion handles encoded WAV and corrupted media keeps scalar results and original export (1.1s)
+  ✓  5 test/audio.spec.ts:53:1 › ordered runtime controls target the source cell once and never autoplay a reconnected view (4.9s)
+  ✓  6 test/audio.spec.ts:58:1 › stale source, board navigation and role revocation stop playback and release local media (4.4s)
+  ✓  7 test/audio.spec.ts:63:1 › audio projection limits retain scalar/chart data and bound tracks across cells (1.6s)
+  ✓  8 test/audio.spec.ts:67:1 › temporary preview uses shared audio while its 60-second budget and template remain intact (2.1s)
+  ✓  9 test/audio.spec.ts:72:1 › the aggregate audio byte budget preserves other results when several large tracks are published (3.4s)
+
+  9 passed (29.1s)

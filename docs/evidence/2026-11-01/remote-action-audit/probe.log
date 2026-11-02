@@ -1,0 +1,5 @@
+REPRO invocation_restart: success, counter 1 -> 2, same epoch true
+REPRO carousel_selection: desktop index 1, server reads "First"
+REPRO history_delete: deleted local record reappears after reconnect
+REPRO targeted_stop: A active true, B cancelled, desktop target board:a
+PASS audit reproductions completed

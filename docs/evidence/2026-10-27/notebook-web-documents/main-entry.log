@@ -1,0 +1,2 @@
+PASS notebook-web real entry (VM), lazy core client, empty private catalog
+PASS notebook-web real entry (full-native), lazy core client, empty private catalog

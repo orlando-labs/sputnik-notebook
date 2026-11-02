@@ -1,0 +1,175 @@
+{
+  "matched_owned_test_processes": 42,
+  "processes": [
+    {
+      "pid": 83420,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --port 49231 --callback-origin http://127.0.0.1:4418"
+    },
+    {
+      "pid": 83421,
+      "command": "/opt/homebrew/Cellar/node/26.3.0/bin/node /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/node_modules/vite/bin/vite.js"
+    },
+    {
+      "pid": 83422,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote --mode agent --root /private/tmp/sputnik-web-e2e-4418-83417 --worker /Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --sputnik /Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+    },
+    {
+      "pid": 83423,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/app_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --database /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/smoke-83418.sqlite --mode development --origin http://127.0.0.1:4418 --port 49232 --vite-origin http://127.0.0.1:49233 --github-origin http://127.0.0.1:49231 --core-root /private/tmp/sputnik-web-e2e-4418-83417"
+    },
+    {
+      "pid": 83569,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 3 --working-directory /private/tmp/sputnik-web-e2e-4418-83417/runtimes/f07af6782620b228e5088aa2cd6ed138/work --environment-directory /private/tmp/sputnik-web-e2e-4418-83417/revisions/d84c1f1f8c190b194c3f65801a11abcf2326119f75087c687280c6e28842faff --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 83673,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 6 --working-directory /private/tmp/sputnik-web-e2e-4418-83417/runtimes/368b5e26611cbf3d8d86e360c273356e/work --environment-directory /private/tmp/sputnik-web-e2e-4418-83417/revisions/381b939ea3364e9c15279e85172411a1e5104854f0d531d37274a31921f2c3e1 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 83676,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 7 --working-directory /private/tmp/sputnik-web-e2e-4418-83417/runtimes/7c9c0f0bf70e4ec39cf66e670d0ebe1c/work --environment-directory /private/tmp/sputnik-web-e2e-4418-83417/revisions/381b939ea3364e9c15279e85172411a1e5104854f0d531d37274a31921f2c3e1 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 83901,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --port 50226 --callback-origin http://127.0.0.1:4418"
+    },
+    {
+      "pid": 83902,
+      "command": "/opt/homebrew/Cellar/node/26.3.0/bin/node /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/node_modules/vite/bin/vite.js"
+    },
+    {
+      "pid": 83903,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote --mode agent --root /private/tmp/sputnik-web-e2e-4418-83898 --worker /Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --sputnik /Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+    },
+    {
+      "pid": 83904,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/app_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --database /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/smoke-83899.sqlite --mode development --origin http://127.0.0.1:4418 --port 50227 --vite-origin http://127.0.0.1:50228 --github-origin http://127.0.0.1:50226 --core-root /private/tmp/sputnik-web-e2e-4418-83898"
+    },
+    {
+      "pid": 84134,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 7 --working-directory /private/tmp/sputnik-web-e2e-4418-83898/runtimes/6d378ac4a12ced67a4fc662bd2caa917/work --environment-directory /private/tmp/sputnik-web-e2e-4418-83898/revisions/acebe6b5d536c55011b48d5d2e5232187dd56d7c925d83edf323f0e764db4ba6 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 84137,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 8 --working-directory /private/tmp/sputnik-web-e2e-4418-83898/runtimes/27ef02acff2aeb8ac8412e6aaf9fb7e4/work --environment-directory /private/tmp/sputnik-web-e2e-4418-83898/revisions/acebe6b5d536c55011b48d5d2e5232187dd56d7c925d83edf323f0e764db4ba6 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 84223,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --port 51104 --callback-origin http://127.0.0.1:4418"
+    },
+    {
+      "pid": 84224,
+      "command": "/opt/homebrew/Cellar/node/26.3.0/bin/node /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/node_modules/vite/bin/vite.js"
+    },
+    {
+      "pid": 84225,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote --mode agent --root /private/tmp/sputnik-web-e2e-4418-84220 --worker /Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --sputnik /Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+    },
+    {
+      "pid": 84226,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/app_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --database /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/smoke-84221.sqlite --mode development --origin http://127.0.0.1:4418 --port 51105 --vite-origin http://127.0.0.1:51106 --github-origin http://127.0.0.1:51104 --core-root /private/tmp/sputnik-web-e2e-4418-84220"
+    },
+    {
+      "pid": 84372,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 7 --working-directory /private/tmp/sputnik-web-e2e-4418-84220/runtimes/40b46e37ed38449bc152bd9c9a4fbff7/work --environment-directory /private/tmp/sputnik-web-e2e-4418-84220/revisions/dcb9b764cdc607b5e035cea9582673b581068bdab0350b5571d0c676de36984f --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 84375,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 8 --working-directory /private/tmp/sputnik-web-e2e-4418-84220/runtimes/77c74d2c24a19f361baaaefd6bcd843b/work --environment-directory /private/tmp/sputnik-web-e2e-4418-84220/revisions/dcb9b764cdc607b5e035cea9582673b581068bdab0350b5571d0c676de36984f --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 84467,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --port 51940 --callback-origin http://127.0.0.1:4428"
+    },
+    {
+      "pid": 84468,
+      "command": "/opt/homebrew/Cellar/node/26.3.0/bin/node /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/node_modules/vite/bin/vite.js"
+    },
+    {
+      "pid": 84469,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote --mode agent --root /private/tmp/sputnik-web-e2e-4428-84464 --worker /Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --sputnik /Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+    },
+    {
+      "pid": 84470,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/fixture-native/fixture --database /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/smoke-84465.sqlite --mode development --origin http://127.0.0.1:4428 --port 51941 --vite-origin http://127.0.0.1:51942 --github-origin http://127.0.0.1:51940 --core-root /private/tmp/sputnik-web-e2e-4428-84464 --allow-environment-preparation --web-worker-grants time.now,random.secure"
+    },
+    {
+      "pid": 84498,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --port 51981 --callback-origin http://127.0.0.1:4418"
+    },
+    {
+      "pid": 84499,
+      "command": "/opt/homebrew/Cellar/node/26.3.0/bin/node /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/node_modules/vite/bin/vite.js"
+    },
+    {
+      "pid": 84500,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote --mode agent --root /private/tmp/sputnik-web-e2e-4418-84495 --worker /Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --sputnik /Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+    },
+    {
+      "pid": 84501,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/app_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --database /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/smoke-84496.sqlite --mode development --origin http://127.0.0.1:4418 --port 51982 --vite-origin http://127.0.0.1:51983 --github-origin http://127.0.0.1:51981 --core-root /private/tmp/sputnik-web-e2e-4418-84495 --allow-environment-preparation --web-worker-grants time.now,random.secure"
+    },
+    {
+      "pid": 84532,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --port 52008 --callback-origin http://127.0.0.1:4427"
+    },
+    {
+      "pid": 84533,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote --mode agent --root /private/tmp/sputnik-web-e2e-4427-84525 --worker /Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --sputnik /Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+    },
+    {
+      "pid": 84534,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/fixture-native/fixture --database /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/smoke-84528.sqlite --mode production --origin http://127.0.0.1:4427 --port 52009 --vite-origin http://127.0.0.1:52010 --github-origin http://127.0.0.1:52008 --core-root /private/tmp/sputnik-web-e2e-4427-84525 --allow-environment-preparation --web-worker-grants time.now,random.secure"
+    },
+    {
+      "pid": 84633,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --port 52069 --callback-origin http://127.0.0.1:4417"
+    },
+    {
+      "pid": 84634,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-remote --mode agent --root /private/tmp/sputnik-web-e2e-4417-84600 --worker /Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --sputnik /Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik"
+    },
+    {
+      "pid": 84635,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik run /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/app_fixture.s --grant net.listen --grant net.connect --grant random.secure --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant ffi -- --database /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/build/smoke-84630.sqlite --mode production --origin http://127.0.0.1:4417 --port 52070 --vite-origin http://127.0.0.1:52071 --github-origin http://127.0.0.1:52069 --core-root /private/tmp/sputnik-web-e2e-4417-84600 --allow-environment-preparation --web-worker-grants time.now,random.secure"
+    },
+    {
+      "pid": 85173,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 7 --working-directory /private/tmp/sputnik-web-e2e-4428-84464/runtimes/51ff70b9f96a67c95ae84273b9fdf7ee/work --environment-directory /private/tmp/sputnik-web-e2e-4428-84464/revisions/969f12acc0b06df912a560dcc7e183fb8c06f55f9bf2df5359f7957e29ec117d --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85181,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 8 --working-directory /private/tmp/sputnik-web-e2e-4428-84464/runtimes/ed782e9383c47061f95b2d03c54ce6cd/work --environment-directory /private/tmp/sputnik-web-e2e-4428-84464/revisions/969f12acc0b06df912a560dcc7e183fb8c06f55f9bf2df5359f7957e29ec117d --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85189,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 7 --working-directory /private/tmp/sputnik-web-e2e-4418-84495/runtimes/f7b6eabe0637b4c7ca2cc0159d0d5950/work --environment-directory /private/tmp/sputnik-web-e2e-4418-84495/revisions/75b9609ac3aa95674d1e7030b7ac313f9549cac847eeb77dc5630cb437ee1d1a --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85192,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 8 --working-directory /private/tmp/sputnik-web-e2e-4418-84495/runtimes/4a1cba39f0cd63392ec527de48540f61/work --environment-directory /private/tmp/sputnik-web-e2e-4418-84495/revisions/75b9609ac3aa95674d1e7030b7ac313f9549cac847eeb77dc5630cb437ee1d1a --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85202,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 7 --working-directory /private/tmp/sputnik-web-e2e-4417-84600/runtimes/000c0825ad18a1df65c6d64942db61ad/work --environment-directory /private/tmp/sputnik-web-e2e-4417-84600/revisions/7d69600dde44ed0a8aea3beecf33a4fd293f46bcb0a781576007dd2aa2ece9e3 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85205,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 8 --working-directory /private/tmp/sputnik-web-e2e-4417-84600/runtimes/3cef88970f439e93f8e5daea69be9272/work --environment-directory /private/tmp/sputnik-web-e2e-4417-84600/revisions/7d69600dde44ed0a8aea3beecf33a4fd293f46bcb0a781576007dd2aa2ece9e3 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85238,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 10 --working-directory /private/tmp/sputnik-web-e2e-4427-84525/runtimes/d7ab85defcf5d03df420517698f2fa1c/work --environment-directory /private/tmp/sputnik-web-e2e-4427-84525/revisions/1f9f47c10f5569e2d6da61ea117f09edce7a9637306e341d56d287fbaf4ac2be --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85789,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 38 --working-directory /private/tmp/sputnik-web-e2e-4427-84525/runtimes/e488402ad18939f39deb7e45cfba41d3/work --environment-directory /private/tmp/sputnik-web-e2e-4427-84525/revisions/2410622bf10dfb664ff7b8d845a07b609ae022601800b8260ef6359b6a37cb85 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    },
+    {
+      "pid": 85792,
+      "command": "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker --notebook-worker 39 --working-directory /private/tmp/sputnik-web-e2e-4427-84525/runtimes/0acd0768dba687149afdca12ad35408c/work --environment-directory /private/tmp/sputnik-web-e2e-4427-84525/revisions/2410622bf10dfb664ff7b8d845a07b609ae022601800b8260ef6359b6a37cb85 --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a"
+    }
+  ],
+  "remaining_owned": [],
+  "unrelated_node_services": "Codex/ChatGPT plugin and artifact daemons left running"
+}

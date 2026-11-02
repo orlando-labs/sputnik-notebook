@@ -1,0 +1,56 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/runtime-observation.spec.ts test/parity-transfer.spec.ts
+
+[WebServer] (node:83899) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:83910) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 test/parity-transfer.spec.ts:10:1 › native palette → web edit/export → native reopen preserves every authored kind and bundled byte (2.4s)
+  ✓  2 test/runtime-observation.spec.ts:36:1 › sheet/cell/runtime status and real nested task failures remain bounded, source-safe and inert (3.5s)
+  ✓  3 test/runtime-observation.spec.ts:61:1 › captured Inspect/Pretty/table, literal Unicode Find and filtered logs export without execution (1.2s)
+  ✘  4 test/runtime-observation.spec.ts:78:1 › artifact references use the captured revision, reject external/traversal paths and preserve exact downloads (5.5s)
+(node:84006) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 test/runtime-observation.spec.ts:98:1 › new palette tools and status targets stage/save inertly and retain native extension fields (1.6s)
+  ✓  6 test/runtime-observation.spec.ts:110:1 › runtime status reports exhausted computation while observation controls remain inert (3.1s)
+  ✓  7 test/runtime-observation.spec.ts:116:1 › viewer can inspect saved artifacts and telemetry; revocation removes the loaded observations (4.2s)
+  ✓  8 test/runtime-observation.spec.ts:131:1 › status follows explicit action and service commands using saved targets and exact counters (1.3s)
+
+
+  1) test/runtime-observation.spec.ts:78:1 › artifact references use the captured revision, reject external/traversal paths and preserve exact downloads 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 1
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      91 |     await page.reload();await open(page);await expect(files).toContainText('Previous run · stale');await row('Report').getByRole('button',{name:'Preview',exact:true}).click();await expect(row('Report')).toContainText('old revision 🛰️')
+      92 |     page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Restart Worker…',exact:true}).click();await expect(page.getByRole('button',{name:'Run Sheet',exact:true})).toBeEnabled()
+    > 93 |     await page.getByRole('button',{name:'Run Sheet',exact:true}).click();await expect.poll(async()=>(await registry(page,id)).runs.length).toBe(2);await finish(page,id);await row('Report').getByRole('button',{name:'Preview',exact:true}).click();await expect(row('Report')).toContainText('new revision')
+         |                                                                                                                                            ^
+      94 |     const invalid=await request(page,base(id)+'/notebook/file?revision='+current.revision+'&path=../secret');expect(invalid.status()).toBe(422)
+      95 |   } finally {await release(page,id)}
+      96 | })
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/runtime-observation.spec.ts:93:140
+
+    Error Context: test-results/development-vm/runtime-observation-artifa-7c5c8-nd-preserve-exact-downloads/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/development-vm/runtime-observation-artifa-7c5c8-nd-preserve-exact-downloads/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/development-vm/runtime-observation-artifa-7c5c8-nd-preserve-exact-downloads/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    test/runtime-observation.spec.ts:78:1 › artifact references use the captured revision, reject external/traversal paths and preserve exact downloads 
+  7 passed (27.1s)

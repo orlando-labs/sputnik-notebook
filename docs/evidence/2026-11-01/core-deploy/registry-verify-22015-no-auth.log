@@ -1,0 +1,1 @@
+Error response from daemon: Get "https://docker.orlando-labs.com/v2/sputnik-remote-core/manifests/sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c": no basic auth credentials

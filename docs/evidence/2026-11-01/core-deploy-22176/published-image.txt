@@ -1,0 +1,3 @@
+docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0
+docker.orlando-labs.com/sputnik-remote-core@sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c
+sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4

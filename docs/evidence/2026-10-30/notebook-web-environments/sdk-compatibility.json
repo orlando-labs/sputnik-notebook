@@ -1,0 +1,11 @@
+{
+  "current_sdk_commit": "1b5bbfa41aed391ec8b91fe49bbccf1852ecdf24",
+  "current_sdk_source_clean": false,
+  "current_sdk_sha256": "db7338cbdf98ccd8c99889f057202974ddf0686dd920cc7244c61ad5d3726b01",
+  "orbit_commit": "ecb0d1132f8e309c5849ef11e5914b8675a185b5",
+  "orm_commit": "e5c3df00a8c223c973329f3b6110d7f22d7533ec",
+  "verified_web_sdk_commit": "3eb0f05da50ba307d5f719e0b194de6317304b29",
+  "verified_web_compiler_sha256": "57f271d5231b478411ddca6df0ce7d79d1606fdd0d17941a10202079b4933bc3",
+  "core_compiler": "current workspace SDK",
+  "current_web_sdk_gate": "Startup fails with ArgumentError: block expects 1 positional arguments, got 0; database.s:20:5. No SDK or sibling dependency sources changed in this stage."
+}

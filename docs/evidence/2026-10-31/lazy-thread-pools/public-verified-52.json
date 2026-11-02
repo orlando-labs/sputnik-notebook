@@ -1,0 +1,418 @@
+[
+  {
+    "name": "slowpilot/notebook-ui",
+    "version": "0.1.1",
+    "variant": "bytecode",
+    "sha256": "sha256:92c6dad6b9372b2f20aa382b5e57ffa5cfe05bf286f9b882f6f9651565a59058",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/notebook-ui",
+    "version": "0.1.1",
+    "variant": "mixed",
+    "sha256": "sha256:85a2e26e02335558358f28c30c4121463c9491619ce56ec89f977c70ec1f13e3",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/notebook-ui",
+    "version": "0.1.1",
+    "variant": "source",
+    "sha256": "sha256:502a4bf72c4586f37a548effe3344cb266876efaa9c4b82db6df5e4b936dc635",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orbit",
+    "version": "1.0.0-rc.2",
+    "variant": "mixed",
+    "sha256": "sha256:c8bdb8e7aad2a5a0756393b90c9de656443c19d0e929b28fd56445176a9b8815",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orbit",
+    "version": "1.0.0-rc.2",
+    "variant": "source",
+    "sha256": "sha256:26697f4ce6c12a9c9d07950f26d7f4acd7c9c2ad073c87bf15af4870a65473d9",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orbit-orm",
+    "version": "1.0.0-rc.2",
+    "variant": "bytecode",
+    "sha256": "sha256:dbc610302d84eca351c4ce032ee08d129ae03c26eea120acc3a92382f4e04f4a",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orbit-orm",
+    "version": "1.0.0-rc.2",
+    "variant": "source",
+    "sha256": "sha256:2a95f5fd4c8a6e041842204cbb278432475be6ca68c2aad989ca11dd22fc29b1",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orm",
+    "version": "0.1.1",
+    "variant": "mixed",
+    "sha256": "sha256:56452a15892105a04cb9c831b6d9126e7fa368f46a76f92fa00930f277d8038d",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orm",
+    "version": "0.1.1",
+    "variant": "source",
+    "sha256": "sha256:63a58c155097b9be04a04c4e1189df535c65d2a71c90e40cd3ae5664aea70299",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orm-sqlite3",
+    "version": "0.1.1",
+    "variant": "bytecode",
+    "sha256": "sha256:fc63bd4728bd5937d200ee4739b26aedd9335b03edf27d6c82a507b5a50f7006",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orm-sqlite3",
+    "version": "0.1.1",
+    "variant": "mixed",
+    "sha256": "sha256:75fa1dc82ce8fd1dcf98de1390bc70eb91ef3a28ea0f714b5ac36db8c85afb06",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/orm-sqlite3",
+    "version": "0.1.1",
+    "variant": "source",
+    "sha256": "sha256:4bdefdea6075cfb80715f3b6645c398409689048bc6921a5ae0f9f97b3c9541b",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+    "sha256": "sha256:854a0212373b28eff1b7b330f0527cab6861778f2c252c5b66fbe17b6c118601",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-prebuilt-source",
+    "sha256": "sha256:c3b678bd4280348affde0f2729303fcdd5a5ecab1ed15d02f69186a42a31cc03",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-source-bytecode",
+    "sha256": "sha256:cb14018016eedd99fc431237898db1cdd96997b79ea7db9f18de59db6f8e431c",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-source-source",
+    "sha256": "sha256:f186757014d019bb3bbbe196e80c566290a86b6cef7cbdfa17cf9764769b6165",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-bytecode",
+    "sha256": "sha256:d1529253d025cd590b86258612333d342eb22dc3e9e565507d2395ca97132e04",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-source",
+    "sha256": "sha256:f991758eaee26d0211ff80f0f8b344579ec52d38403c8218ea410dac7cf86d99",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-bytecode",
+    "sha256": "sha256:9b68319246b497caa8df1d346d10bf62e636362e36b005edecad47a815198509",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/plot",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-source",
+    "sha256": "sha256:1f80736199730da753a5a50e42712e80ae276c3396f2bf2ffd17edbe7aecf636",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/progressbar",
+    "version": "0.1.1",
+    "variant": "bytecode",
+    "sha256": "sha256:acc06d898756f5b13a8eb3baf09a46531584e559466d1dd550d0fb99d5d65b36",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/progressbar",
+    "version": "0.1.1",
+    "variant": "source",
+    "sha256": "sha256:1f052aa9daf7b71777aee7a6fc00ba8879d91d9d7264ce9bc2c6336ccd0567cf",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+    "sha256": "sha256:fa385d25431168e287a8926b0accc2e9bf9adabf6f26b935473df81d2dbce8f0",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-prebuilt-source",
+    "sha256": "sha256:bdb5cbc14221a8e04e1c2ccce31f696cb458721b6113e06ecdbf651b45236a14",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-source-bytecode",
+    "sha256": "sha256:7e802f1f9bc1a2263ac9e77bf8ea329348886c43dfaf7c77df2abb068f89d596",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-source-source",
+    "sha256": "sha256:ee910a76da5faa24335f1b15dce01ac0e844cf3ebbb69cb563e6a57ecf3dc6fb",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-bytecode",
+    "sha256": "sha256:69b87336398875ba03540050a251bf9b1624c8f8904572a5c86b7e476b25b709",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-source",
+    "sha256": "sha256:fe0cfc2e50430b16df5f63f671fc4156527b9d62719c03d7d89f135e0d85f355",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-bytecode",
+    "sha256": "sha256:ce9193575059e6c592a39cac5b21b0e2d2a2266bef889ba50fffa15a62a00c09",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/pycall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-source",
+    "sha256": "sha256:1b24fa4fcc9af583b04fabc75a09a5f754a978736b0ca91f9884eb1347e760ec",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+    "sha256": "sha256:77ee0f7830121e4ba580dc9f251b9d19452654cec2f889b2e1b31a065b556fef",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-prebuilt-source",
+    "sha256": "sha256:6719a14fc1d9f8c7ae49d8b41fb4c9a7c5ff1aacf7a4004c42702d2e10af3236",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-source-bytecode",
+    "sha256": "sha256:3c5037080d6b6ade33ce53555a9885cd0cbdc2e096f8facb8e68d289d72863d6",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-source-source",
+    "sha256": "sha256:9f8666e1d4b5bdba284b37d023f176353ee76e744f2f144d7a00fa75b6e95ee5",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-bytecode",
+    "sha256": "sha256:74e576d926b5b0e65e54bfa817fe30aa3e0e5b2ca448688f240faf15bf620cd9",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-source",
+    "sha256": "sha256:54366837a8cdf94d8e096615a0031f3af19f3f74ca347ad8f5b0b69e1f47436c",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-bytecode",
+    "sha256": "sha256:17991c7ba5824db1e7144b80375b1cb43a49b5d28fee2f946fd089d28fd401ad",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/rbcall",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-source",
+    "sha256": "sha256:bb82e0eba85d77bbd178789e39f29fcb5ff58f5588812a5d3744d0912cafa800",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/sqlite3",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-prebuilt-source",
+    "sha256": "sha256:c8eaa8fa0c8c601c9699deddc6d8b907d669e1b3b051b3882143d3d84dd0efaf",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/sqlite3",
+    "version": "0.1.1",
+    "variant": "linux-x86_64-gnu-source-source",
+    "sha256": "sha256:b63fb0f6693c8283e1f49b787dd7d183eabebf41c32fd1d55bf988b2c9d5b84c",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/sqlite3",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-source",
+    "sha256": "sha256:077d2973a3acd82cbffbbcaf6cefce99212a910d5558936581a58fab319ba14c",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/sqlite3",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-source",
+    "sha256": "sha256:425b2f85b017da3b6450a1e7617f9f0f9105f55ea6df0ec71b21c73abb56a891",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/system-io",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-bytecode",
+    "sha256": "sha256:8745996c6713dc675c0a1ffe4dbf03d06001d5d883fab41098d9968a1b9cef44",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/system-io",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-mixed",
+    "sha256": "sha256:ea98bf679b774acedbe74abfc5d1630f49ff4bdeb291a4a5bd965cc9da135d38",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/system-io",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-prebuilt-source",
+    "sha256": "sha256:366ebb5d0a3a0020df177fe8b88c37611cdd797a3bdf1776ad1eb52d1f60de2f",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/system-io",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-bytecode",
+    "sha256": "sha256:211041749489943ccccd74bfad38f3f09e1eff155cce8742b1271f601e659bf0",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/system-io",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-mixed",
+    "sha256": "sha256:dab3206405f4b1756710134eb2a39515f67d4d05986bb1f11e036649c4be0998",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/system-io",
+    "version": "0.1.1",
+    "variant": "macos-aarch64-source-source",
+    "sha256": "sha256:d0008fb26a0eceb134606805f1b07fb63be0b6580b7ec61dc87af4fea2cc60eb",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/torch",
+    "version": "0.1.4",
+    "variant": "macos-aarch64-prebuilt-source-runtime",
+    "sha256": "sha256:f3dace791bbe486e40e173d421acc59810ca4134a28df9d3aee74908b046172b",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/torch",
+    "version": "0.1.4",
+    "variant": "macos-aarch64-source-source-none",
+    "sha256": "sha256:de1db25811eaa67e95b7b3a991c8aa537ab7549aee4df0b1c811b8c96de6e14f",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/torch",
+    "version": "0.1.4",
+    "variant": "linux-x86_64-gnu-rocm643-prebuilt-source-runtime",
+    "sha256": "sha256:72a3ef90ea65d9fc98b205d8ec1eaa334f1cb2c3ea32f3e53cdff62d52d67334",
+    "public_download": true,
+    "root_alias": true
+  },
+  {
+    "name": "slowpilot/torch",
+    "version": "0.1.4",
+    "variant": "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+    "sha256": "sha256:aa74c897a9a662ececa7b14d0c02b6d35ac2900cd81ed49797845a8c3ffb2e81",
+    "public_download": true,
+    "root_alias": true
+  }
+]

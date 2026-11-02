@@ -1,0 +1,11 @@
+pool created
+migration completed
+ArgumentError: block expects 1 positional arguments, got 0
+ArgumentError: block expects 1 positional arguments, got 0
+  at c803:2 (/Users/slowpilot/workspace/sputnik/orm/src/orm.s:378:23)
+  at c1189:73 (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/backend/models.s:23:3)
+  at c1191:1 (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/backend/models.s:23:3)
+  at c1115:7 (/Users/slowpilot/workspace/sputnik/orm/src/orm/sqlite3/pool.s:105:7)
+  at c1090:4 (/Users/slowpilot/workspace/sputnik/orm/src/orm/sqlite3/pool.s:27:39)
+  at c1089:2 (/Users/slowpilot/workspace/sputnik/orm/src/orm/sqlite3/pool.s:27:19)
+  at c1309:31 (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/current_sdk_probe.s:11:3)

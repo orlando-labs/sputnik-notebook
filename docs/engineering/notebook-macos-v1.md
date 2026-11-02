@@ -22,6 +22,80 @@ open -a "build/Sputnik Notebook.app" "tools/notebook-macos/Samples/Rich Text.spu
 make test-notebook-macos
 ```
 
+### Build identity
+
+Each macOS build embeds an immutable `sputnik.notebook.build.v1` identity in its
+UI executable: Notebook SemVer and bundle build number from `Info.plist`, exact
+Sputnik language/VM SemVer from `runtime/version.h`, full commits and source
+cleanliness for both repositories, build channel/ID, and SHA-256 of the producing
+compiler executable. The compiler's `--version` must match the runtime headers.
+Dirty checkouts are explicitly marked; a commit alone does not identify their
+uncommitted changes. The compiler fingerprint additionally identifies the actual
+compiler bytes used to build native packages, before bundle relocation/signing.
+
+**Sputnik Notebook → About Sputnik Notebook** displays the versions, build label
+and full commits, with uncommitted-change or unknown-source-state markers.
+This works for both `.app` and direct executable launches, without reading Git
+or running a compiler when the About panel opens. `SputnikNotebook --build-info`
+prints the embedded JSON and exits without starting AppKit.
+
+```sh
+make -j4 notebook-macos NOTEBOOK_BUILD_CHANNEL=nightly NOTEBOOK_BUILD_ID=2026-11-01.42
+make -j4 notebook-macos NOTEBOOK_BUILD_CHANNEL=daily NOTEBOOK_BUILD_ID=2026-11-01
+make -j4 notebook-macos NOTEBOOK_BUILD_CHANNEL=release
+make test-notebook-build-info
+```
+
+The default channel is `development`; the optional build ID accepts letters,
+digits, dots, underscores, plus and minus. Channel/ID and Git changes are checked
+on every build. Unchanged metadata preserves its timestamp for incremental builds.
+There is no automatic wall-clock timestamp in the identity.
+
+Packaging exports the compiled identity to `Contents/Resources/build-info.json`
+and sets the bundle version fields from it. It verifies the producing compiler's
+fingerprint before relocating/signing the bundled tools. Repackaging cannot
+silently associate an existing UI binary with a different compiler or current
+Git revision. A runtime update requires a new Notebook release; release numbers
+of Notebook and Sputnik remain independent.
+
+Source archives without Git still record exact SemVer; their revision and
+cleanliness are `null`. CI can supply full original commits through
+`NOTEBOOK_SOURCE_REVISION` and `SPUTNIK_SOURCE_REVISION`. A supplied commit must
+agree with HEAD when Git is present. Nightly/daily builds require the Sputnik
+commit; an archive must provide `SPUTNIK_SOURCE_REVISION`. Cleanliness remains
+unknown for archives even with a supplied commit.
+
+### Project library
+
+The welcome screen's **Notebook Library** and each project's details can be
+expanded or collapsed. **Last Opened** is the default order; **Date Created**
+sorts newest first and **Name (A–Z)** uses the package name. Details expose the
+full selectable path, opening/creation dates, **Copy Path**, and **Show in Finder**.
+Missing packages retain their saved name with a separate **Missing** badge;
+opening and Finder actions are disabled until the package is restored. Availability refreshes when
+the app becomes active or the user presses Refresh.
+
+The app stores the catalog independently of AppKit's bounded recent history in
+`NotebookProjectLibrary.v1` in its preferences. The first launch with the library
+imports recent-document URLs once, retaining their order and unavailable paths.
+AppKit does not expose their historical opening dates; these show **Before library
+import** until the next successful open. Creation dates come from the filesystem
+and are retained when a package goes missing. Successful New/Open actions update
+library recency; failed opens and folder scans do not.
+
+**Add from Folder…** scans the selected directory recursively on a background
+queue and adds packages without opening or evaluating them. It skips hidden
+directories, package contents and symbolic links encountered during traversal.
+Canonical paths prevent duplicates across repeated scans and directory aliases.
+Unreadable subdirectories are counted in the result; failure to read the chosen
+root leaves the catalog intact. Sort order and library disclosure state persist.
+
+`make test-notebook-library` checks migration, persistence, all sort orders,
+missing/restored files, recursive scans, duplicates and scan failures, then renders
+the expanded, collapsed, empty and light/dark welcome views. Snapshots are written
+to `build/notebook-library/`. The model regressions also check successful/failed
+opening effects on the library.
+
 ### Worker execution
 
 ```sh
@@ -157,7 +231,7 @@ lossily. Runtime output can contain arbitrary bytes and is made display-safe.
 
 ## Ownership and scheduling
 
-`NotebookBridge.cpp` adapts `ProjectTabs`, `Session`, and the existing checked
+`notebook-core/native/notebook.cpp` adapts `ProjectTabs`, `Session`, and the existing checked
 project persistence APIs. It does not maintain a second dependency engine.
 Only UTF-8 JSON value snapshots cross the C/Swift boundary; heap Values and
 borrowed Session pointers never cross it. Every handle operation, destruction
@@ -302,3 +376,18 @@ with at least 1.2:1 surface contrast and 1.25:1 between selected navigation
 rows and their sidebar. Selected sheets, modules and boards also use a readable
 accent outline. `--theme-snapshot-dir <directory>` on the theme smoke test saves
 the actual workspace in every preset and light/dark mode for visual review.
+
+
+## VM и regexp — обновление 2026-10-28
+
+При изменении VM пересобираются общий `libNotebookCore.a`, worker,
+remote CLI/agent/gateway, Swift host и компилятор внутри `.app`.
+`isputnik` и native notebook-web также используют обновлённый runtime.
+Regexp теперь зависит от PCRE2; macOS bundle содержит `libpcre2-8`,
+его license notice и `pcre2.h` в SDK. Подсветка поддерживает `~=`,
+флаги `r"…"mi` и вложенные кавычки в интерполяции tagged strings.
+
+Проверены regexp/Unicode/`$_` в Session и isolated worker, direct core API
+в VM/full-native, remote API, подпись готового приложения и UI smoke через
+bundled worker. Результаты и SHA-256 артефактов:
+[VM/regexp upgrade](../evidence/2026-10-28/vm-regexp-upgrade/local-build.json).

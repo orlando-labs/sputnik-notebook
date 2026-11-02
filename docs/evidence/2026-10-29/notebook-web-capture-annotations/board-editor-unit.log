@@ -1,0 +1,2 @@
+PASS board command settings: exact scalar arguments, argument ordering, nonvisual service copies and schedule limits
+PASS board creation, atomic row moves, nested duplication/remapping, exact metadata, native limits and bounded undo/redo

@@ -1,0 +1,1 @@
+PASS bounded PCM16/WAV, clipping, invalid samples, worklet stop/30-second cap, exact source-pixel geometry, schema/attributes/Int64 and annotation bounds

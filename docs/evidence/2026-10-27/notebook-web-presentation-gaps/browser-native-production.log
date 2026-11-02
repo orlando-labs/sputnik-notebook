@@ -1,0 +1,61 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test
+
+[WebServer] (node:4123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 45 tests using 1 worker
+
+(node:4135) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/execution.spec.ts:60:1 › Run All, single-cell run, output, failure, provenance and history (1.9s)
+  ✓   2 test/execution.spec.ts:106:1 › live output and accepted work survive reload and closing the page without replay (6.9s)
+  ✓   3 test/execution.spec.ts:133:1 › cooperative Stop, Force Stop, explicit restart and stale epoch protection (4.3s)
+  ✓   4 test/execution.spec.ts:168:1 › lost accepted Run response is recovered by receipt after reload with one physical run (1.4s)
+  ✓   5 test/execution.spec.ts:195:1 › an unaccepted request retries only on explicit action with its original ID and revision (847ms)
+  ✓   6 test/execution.spec.ts:226:1 › execution enforces project/run ownership, role changes, receipts, CSRF and safe DTOs (2.1s)
+  ✓   7 test/execution.spec.ts:282:1 › Stop during preparation is cancellation; an unobserved child error fails the run (1.4s)
+  ✓   8 test/inputs.spec.ts:31:1 › project and local Apply are atomic, exact and inert until a world is initialized; Watch and Manual follow core semantics (2.2s)
+  ✓   9 test/inputs.spec.ts:53:1 › parameter conflicts preserve drafts and invalid/busy/revoked requests leave accepted values unchanged (3.3s)
+  ✓  10 test/inputs.spec.ts:72:1 › input definitions and cell controls are authored as inert drafts and survive save with exact metadata (1.9s)
+  ✓  11 test/inputs.spec.ts:82:1 › input commands recover accepted and unaccepted response loss without duplicate runs or automatic replay (952ms)
+  ✓  12 test/inputs.spec.ts:100:1 › an active run rejects project and local edits and retains its frozen input version (2.7s)
+  ✓  13 test/inputs.spec.ts:112:1 › typed controls preserve large integers, ranges and configs; rejected config batches keep every draft and accepted value (1.1s)
+  ✓  14 test/inputs.spec.ts:145:1 › parameter drafts guard navigation and layouts fit light/dark desktop and mobile (1.7s)
+  ✓  15 test/notebook.spec.ts:59:1 › legacy project initialization is explicit, idempotent, and saving is inert (921ms)
+  ✓  16 test/notebook.spec.ts:93:1 › stale editor keeps its draft on conflict and reload requires explicit discard (986ms)
+  ✓  17 test/notebook.spec.ts:121:1 › a lost save response retries the same durable command (591ms)
+  ✓  18 test/notebook.spec.ts:151:1 › document API enforces ACL, CSRF, validation and private identifiers (1.1s)
+  ✓  19 test/notebook.spec.ts:191:1 › web edits preserve bundled files, formatting and unknown metadata without execution (614ms)
+  ✓  20 test/notebook.spec.ts:218:1 › editor layout, navigation guard and offline loading recovery (1.6s)
+  ✓  21 test/rich-results.spec.ts:105:1 › implicit table preserves int64, typed sorting, filter, selection and exports without execution (1.3s)
+  ✓  22 test/rich-results.spec.ts:151:1 › table paging, sorting and downloads use every retained row (868ms)
+  ✓  23 test/rich-results.spec.ts:173:1 › published tables retain order, replace by ID, update live, preserve failure and clear on success (4.4s)
+  ✓  24 test/rich-results.spec.ts:204:1 › real plot scene supports zoom, pan, reset and PNG export in responsive themes (2.2s)
+  ✓  25 test/rich-results.spec.ts:259:1 › raster image collections, downloads, read-only sharing and corrupt artifact fallback (1.7s)
+  ✓  26 test/rich-results.spec.ts:320:1 › live progress, stopwatch and chart survive reload, preserve zoom and retain run history (8.8s)
+  ✓  27 test/rich-results.spec.ts:381:1 › Stop preserves partial progress and never completes an unfinished bar (2.3s)
+  ✓  28 test/rich-results.spec.ts:404:1 › large chart exports every retained sample and is readable only through the current ACL (1.3s)
+  ✓  29 test/sources-transfer.spec.ts:24:1 › module and binary file changes save atomically, preserve hidden resources and execute imported helper (1.3s)
+  ✓  30 test/sources-transfer.spec.ts:40:1 › file conflicts keep the complete draft; export historical revision and recover draft bundle (1.0s)
+
+  ✓  31 test/sources-transfer.spec.ts:52:1 › ZIP and folder imports retain full document, int64 metadata, files and idempotent receipts without running (1.1s)
+
+  ✓  32 test/sources-transfer.spec.ts:73:1 › imports reject unsafe archives and unauthorized file/dependency operations (1.3s)
+  ✓  33 test/sources-transfer.spec.ts:85:1 › registry packages install, recover an accepted response loss, and remove through owner UI (3.4s)
+
+  ✓  34 test/sources-transfer.spec.ts:99:1 › import resumes the same command across reload and accepted response loss (1.1s)
+  ✓  35 test/sources-transfer.spec.ts:116:1 › file save retries retain command identity and source layout fits desktop and mobile themes (1.5s)
+  ✓  36 test/workspace.spec.ts:25:1 › anonymous shell, SSR assets, negotiation, CSRF and private API (214ms)
+  ✓  37 test/workspace.spec.ts:54:1 › GitHub account, project UI, persistent identity and logout 204 (1.1s)
+  ✓  38 test/workspace.spec.ts:91:1 › two accounts: private projects, viewer/editor ACL, owner controls and revocation (946ms)
+  ✓  39 test/workspace.spec.ts:128:1 › failed authorization and invalid callback leave no authenticated account (395ms)
+  ✓  40 test/workspace.spec.ts:141:1 › library search, details, sort, last opened, collapse and refresh (1.1s)
+  ✓  41 test/workspace.spec.ts:184:1 › new notebook dialog handles keyboard, validation and recoverable failures (705ms)
+  ✓  42 test/workspace.spec.ts:210:1 › owner sharing UI, read-only metadata and account-scoped library preferences (1.8s)
+  ✓  43 test/workspace.spec.ts:259:3 › welcome and project layout: light, desktop and mobile (1.1s)
+  ✓  44 test/workspace.spec.ts:259:3 › welcome and project layout: dark, desktop and mobile (1.1s)
+  ✓  45 test/workspace.spec.ts:301:1 › library works when browser storage is unavailable (744ms)
+
+  45 passed (1.4m)

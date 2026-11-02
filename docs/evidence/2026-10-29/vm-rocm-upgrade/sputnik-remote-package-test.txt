@@ -1,0 +1,41 @@
+    def test_dependency_packages_install_remove_receipts_and_worker_imports(self):
+        source = self.directory / (self.project + "-source")
+        (source / "src").mkdir(parents=True)
+        (source / "sputnik.build.yaml").write_text('schema: "sputnik.build.v1"\nname: "notebook-probe"\nversion: "1.0.0"\nsource_root: "."\nfiles:\n  - "src/probe.s"\nmodule_names:\n  "src/probe.s": "notebook_probe"\n')
+        (source / "src/probe.s").write_text('package notebook_probe\nexport answer\ndef answer(): 789\n')
+        revision, _ = self.upload(document('from notebook_probe import answer\nanswer()\n'))
+        route = "/v1/projects/" + self.project + "/dependencies"
+        self.assertEqual(self.request("GET", route, token=False)[0], 401)
+        self.assertEqual(self.request("GET", route)[1]["packages"], [])
+        def change(action, package_source):
+            body = dict(command_id=uuid.uuid4().hex, action=action, source=package_source, version="1.0.0")
+            status, accepted = self.request("POST", route, body)
+            self.assertEqual(status, 200, accepted)
+            self.assertEqual(self.request("POST", route, body)[1], accepted)
+            def ready():
+                status, operation = self.request("GET", route + "/" + accepted["id"])
+                self.assertEqual(status, 200, operation)
+                return operation if operation["state"] not in ("queued", "running") else None
+            result = eventually(ready, timeout=60)
+            self.assertEqual(result["state"], "succeeded", result)
+            return result
+        installed = change("install_sputnik", str(source))
+        self.assertTrue(installed["stdout"])
+        packages = self.request("GET", route)[1]["packages"]
+        self.assertEqual([(p["name"], p["version"]) for p in packages], [("notebook-probe", "1.0.0")])
+        package_root = self.root / "projects" / self.project / "packages/notebook-probe/1.0.0"
+        if packages[0].get("variant"):
+            package_root /= packages[0]["variant"]
+        self.assertTrue((package_root / "modules.index").exists())
+        run, _ = self.start(revision)
+        completed = self.wait_run(run)
+        self.assertEqual(completed["state"], "succeeded", completed)
+        self.assertEqual(completed["result"]["cells"][0]["result"], "789")
+        change("remove_sputnik", "notebook-probe")
+        self.assertEqual(self.request("GET", route)[1]["packages"], [])
+        registry = self.request("GET", "/v1/projects/" + self.project + "/registry")[1]
+        self.assertIn(run["runtime_epoch"], registry["reset_epochs"], "other clients discard results from the retired package runtime")
+        run, _ = self.start(revision)
+        self.assertEqual(self.wait_run(run)["state"], "failed")
+        self.assertTrue(source.exists(), "removing an installation preserves original source")
+

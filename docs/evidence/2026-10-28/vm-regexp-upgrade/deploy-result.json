@@ -1,0 +1,131 @@
+{
+  "release": "/ssd1Tb/sputnik-remote-core-releases/20261028-regexp-77650e1",
+  "language_commit": "77650e1e73bae5505d819e1d95f037be7592e19d",
+  "previous_health": {
+    "protocol": 1,
+    "agent_pid": 2028052,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "backup": "/home/slowpilot/sputnik-remote-core/backups/before-regexp-20261028T083834Z",
+  "active_runs_interrupted": 0,
+  "idle_runtimes_reset": 0,
+  "enabled_services_interrupted": 0,
+  "health": {
+    "protocol": 1,
+    "agent_pid": 3546114,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "metadata_preserved": true,
+  "token_preserved": true,
+  "sqlite_quick_check": "ok",
+  "before": {
+    "projects": {
+      "count": 16,
+      "sha256": "a86fa24e4e8d363d2e9b7e614fecc32dbf3b269dbee83752cc508ad15a670587"
+    },
+    "revisions": {
+      "count": 31,
+      "sha256": "d9eb965d479aa81a8e747dda558a2d09ca83a111ab5d82190586e566d4a8b9ef"
+    },
+    "runs": {
+      "count": 85,
+      "sha256": "0f524e8a12a77438441275c9244959cf44cb916cfa48b74f5afb0a9a1bc9bc24"
+    },
+    "receipts": {
+      "count": 96,
+      "sha256": "0365520fb45fc1373cdd6e6a77e237850a5b299e66d4649d2d7d7b60838d9f6c"
+    },
+    "runtime_records": {
+      "count": 23,
+      "sha256": "d8840ed922f7a75a0071fe4fade97e46e925e33935ba082be6fd66e64e876777"
+    },
+    "services": {
+      "count": 2,
+      "sha256": "4ea72ad5fbd7271426e3207cd5391f471b63e1e812460ea1fb190b0cf0178032"
+    }
+  },
+  "after": {
+    "projects": {
+      "count": 17,
+      "sha256": "ce0f488e3e048268748c8a347e379b01b4e87f83e167cc2f6d878a9fe26f5fa5"
+    },
+    "revisions": {
+      "count": 32,
+      "sha256": "98c3ca22a5cf228e8a60775930c0f8ffb1f3c68cb384d439cb1805ddc8eda6b8"
+    },
+    "runs": {
+      "count": 86,
+      "sha256": "0c131fe7653c8518980f85e84dc44fe444180d90981ce7c73193e6945a79c4cb"
+    },
+    "receipts": {
+      "count": 99,
+      "sha256": "f30df4aa695c4f41659a2ca177ca2a0a9fb318bff9fffcfea22efd078c35540a"
+    },
+    "runtime_records": {
+      "count": 24,
+      "sha256": "e254cdd649908e5cc37da08feb8366b45037c79165d1507c56458d6ecda4fe8a"
+    },
+    "services": {
+      "count": 2,
+      "sha256": "4ea72ad5fbd7271426e3207cd5391f471b63e1e812460ea1fb190b0cf0178032"
+    }
+  },
+  "processes": {
+    "agent": {
+      "pid": 3546114,
+      "executable": "/ssd1Tb/sputnik-remote-core-releases/20261028-regexp-77650e1/sputnik-notebook-remote"
+    },
+    "gateway": {
+      "pid": 3546115,
+      "executable": "/ssd1Tb/sputnik-remote-core-releases/20261028-regexp-77650e1/sputnik-notebook-remote"
+    }
+  }
+}

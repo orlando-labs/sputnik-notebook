@@ -1,0 +1,5 @@
+docker.orlando-labs.com/sputnik-remote-core@sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c: Pulling from sputnik-remote-core
+Digest: sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c
+Status: Image is up to date for docker.orlando-labs.com/sputnik-remote-core@sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c
+docker.orlando-labs.com/sputnik-remote-core@sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c
+PASS_PUBLISHED_DIGEST_AND_IMAGE_ID

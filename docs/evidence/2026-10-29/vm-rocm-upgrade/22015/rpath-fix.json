@@ -1,0 +1,58 @@
+{
+  "pcre2": "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib",
+  "binaries": {
+    "sputnik-notebook-remote": {
+      "old_rpath": "/usr/lib64:/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib",
+      "new_rpath": "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib:/usr/lib64"
+    },
+    "sputnik-notebook-worker": {
+      "old_rpath": "/usr/lib64:/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib",
+      "new_rpath": "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib:/usr/lib64"
+    },
+    "src/sputnik-lang/build/sputnik": {
+      "old_rpath": "/usr/lib64:/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib",
+      "new_rpath": "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib:/usr/lib64"
+    },
+    "src/sputnik-lang/build/isputnik": {
+      "old_rpath": "/usr/lib64:/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib",
+      "new_rpath": "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib:/usr/lib64"
+    },
+    "src/sputnik-notebook/build/sputnik-notebook-remote": {
+      "old_rpath": "/usr/lib64:/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib",
+      "new_rpath": "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib:/usr/lib64"
+    },
+    "src/sputnik-notebook/build/sputnik-notebook-worker": {
+      "old_rpath": "/usr/lib64:/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib",
+      "new_rpath": "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib:/usr/lib64"
+    }
+  },
+  "health": {
+    "protocol": 1,
+    "agent_pid": 202561,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  }
+}

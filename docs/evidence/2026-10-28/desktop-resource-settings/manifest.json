@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-28",
+  "platform": "macOS arm64",
+  "scope": "current working tree; pre-existing work preserved",
+  "linux_executed": false,
+  "sha256": {
+    "tools/notebook-macos/NotebookResourcePolicy.swift": "a996485d6ae7d87414c6005b17e5cd5b920afef0288078635dbc1d656af08525",
+    "tools/notebook-macos/NotebookPreferences.swift": "da326023e5a4700d24b3a88f949ea53e7d9c53875b8a6af574ba3e1ad7068a96",
+    "tools/notebook-macos/NotebookBookSettingsView.swift": "4313b8963fd99b303009c918f04c78c8fbba565881f059c97e8cd84e3399ff9a",
+    "tools/notebook-macos/NotebookApp.swift": "0b11efcae2fa75c41639bae25d31c4f9efb9f1e747974c1a8c1a61992da3d6eb",
+    "tools/notebook-macos/NotebookModel.swift": "92bfdbcd92a495cfff8fc2209c33ece295b12d41f6dc84200aad97c57516562e",
+    "tools/notebook-macos/NotebookRunHistory.swift": "dcbad89d37f1df856c057b67e6fa5296443b1d70670f5fda080058096fc589fa",
+    "tools/notebook-macos/NotebookRemote.swift": "4a80a65864a3944f14fb3ed9b1c66fbf1fff0bccb5f578e5d2eeb824d253f23f",
+    "packages/notebook-core/native/notebook.cpp": "6302a5dbbfb7c23db16ee711f3266d31ea7feb13bcc6d7ae1d30e964f87cae89",
+    "packages/notebook-core/src/notebook/core/policy.s": "32d12b3934366fbc073946a1429626164ddf5d72ca62da8e6d6be3ed574eb8a3",
+    "packages/notebook-core/src/notebook/core.s": "de3a3a2d5157e510a922167250980712e5335431cb1fb01e97013bdf17ba5f54",
+    "tools/notebook-remote/server.s": "077c37386e769728610cdc8ad3d332327b2b6630f898f49f0571996808b31c6c",
+    "tools/notebook-remote/client.s": "45c7c577966dc7c5bc8f86f15f1876ca5ffb7c6fa9066a15d6978cd1772d642c",
+    "tests/notebook_macos_model_tests.swift": "f9c9d61830d3b722187ac10df8afeb9ab5ff96ed1cf0d4e8c49a06db183c0081",
+    "tests/notebook_macos_remote_tests.swift": "7b8690a170c45b2e9abfa1f39fecb9e57798b5712f3586a9be714c7771738fc6",
+    "tests/notebook_policy_tests.py": "62e6e9c65d4f24c5ca0ba95c0a6fae18e9e19a528244ebb584da5169027b0849",
+    "../sputnik-lang/tools/isputnik/tabs.h": "0dd747d81123674eb20d9bd7e8680d2734d12ccf35e67444e55dce8ca3a44f90",
+    "../sputnik-lang/tools/isputnik/tabs.cpp": "d9e625e8596b40253c0af35a912489f38b911ec9aed1e9ea3b38e4b3b0482664"
+  }
+}

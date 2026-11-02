@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-28",
+  "notebook_head": "082c8eb2c26aa0ca724fa3be4226755b48977024",
+  "scope": "current working tree, existing user changes preserved",
+  "sources": {
+    "tools/notebook-macos/NotebookModel.swift": "7219e55954fe384ffa86db971d3a99d1b8986ef5733e669216b529656fc050d5",
+    "tools/notebook-macos/NotebookRemote.swift": "dfae9a0c4a5ffe066a3e9fbaf44e1c488d4d04b5e32bfbb9e5e441f49524a5f9",
+    "packages/notebook-core/include/notebook/core/worker/process.h": "c7d8f7e72b02010c2a17a962555be9dc609499a52b84d2394f1e8c3c21261f58",
+    "packages/notebook-core/native/process.cpp": "c0e683f77c0b7f4ee6f1fec5e526e59c590aa288819783bb03b39b20c17dc512",
+    "packages/notebook-core/native/worker.cpp": "8546636db40192b2f576638e5ad57d2944647a19f1344dcc5b7ee0dcb82354e6",
+    "packages/notebook-core/src/notebook/core/services.s": "e4671598580b25f8a33e710094e533f632abdbf3446fefd5f0f40ac3b0048b0c",
+    "tests/notebook_macos_model_tests.swift": "8700b1fb5c6e8b582f890bc68bf6011fd90201ff596720fdbe3b547e2710c7d4",
+    "tests/notebook_worker_tests.cpp": "07504d6d2665c688343babaeecba0b1b9349434c7e40b94654598e795f6a1c13",
+    "tests/notebook_remote_tests.py": "eb74775f50482ac9cab2bd975e5402d1c2a84a6ccb96ccc70d12abf188635054"
+  },
+  "outputs": {
+    "build/sputnik-notebook-worker": "0fc26c74fee3277ff46910341b01b9d4f87589c4bcf2638c3d740a56e88b190f",
+    "build/sputnik-notebook-remote": "69b47486f09ffb8cc374a6cfff66a346da07e84e9c9355cddb5dbe99e07f915d",
+    "build/core/libNotebookCore.a": "25edd9ead5892474faad8481d4c40d8974220bb6ffa6d51b1b6cb82097bc4684",
+    "build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook": "0b9051d97b8477203a1ff9b7ce89943034aa30815e1eba75b83777798c744e19"
+  },
+  "platform_validated": "macOS arm64",
+  "linux_validation": false
+}

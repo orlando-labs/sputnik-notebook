@@ -1,0 +1,6 @@
+test_registry_is_bounded_and_history_pages_survive_collection (__main__.PolicyTests) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.608s
+
+OK

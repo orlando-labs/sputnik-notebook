@@ -1,0 +1,9 @@
+{
+  "language_commit": "c17d12b2e25c2dd2cb0b9e41835b0a8e33925573",
+  "language_tree": "cdb1c44dc44eb4d2615b4fefb6abce0cfce6a686",
+  "language_archive_sha256": "2ae52041473e24ef27faf57e4b7b2a9cc009dbac3503244ea2acc6814d834439",
+  "language_archive_bytes": 7877234,
+  "release": "/home/slowpilot/sputnik-releases/20261031-current-c17d12b",
+  "base_release": "/home/slowpilot/sputnik-releases/20261030-auto-5d291d7",
+  "language_worktree_clean": true
+}

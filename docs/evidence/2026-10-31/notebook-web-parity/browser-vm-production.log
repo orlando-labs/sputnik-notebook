@@ -1,0 +1,15 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/parity-transfer.spec.ts
+
+[WebServer] (node:21847) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:21883) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 test/parity-transfer.spec.ts:10:1 › native palette → web edit/export → native reopen preserves every authored kind and bundled byte (4.1s)
+
+  1 passed (7.1s)

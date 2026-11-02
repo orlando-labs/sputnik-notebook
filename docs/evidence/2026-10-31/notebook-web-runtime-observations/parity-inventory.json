@@ -1,0 +1,260 @@
+{
+  "date": "2026-10-31",
+  "swift_palette_tools": 35,
+  "persisted_kinds": 33,
+  "web_palette_kinds": 33,
+  "unavailable_tools": [],
+  "scope": "Source inventory plus separate native bridge/browser transfer acceptance; not SwiftUI visual equivalence",
+  "entries": [
+    {
+      "id": "tabs",
+      "title": "Tabs",
+      "kind": "tabs",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "split",
+      "title": "Split View",
+      "kind": "split",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "group",
+      "title": "Group / Accordion",
+      "kind": "group",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "input",
+      "title": "Input",
+      "kind": "input",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "config_editor",
+      "title": "Config Editor",
+      "kind": "input",
+      "web": "existing-kind-preset",
+      "limitations": "Uses an Input with JSON/YAML/TOML control settings, rather than a separate palette button."
+    },
+    {
+      "id": "parameter_form",
+      "title": "Parameter Form",
+      "kind": "parameter_form",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "parameter_presets",
+      "title": "Parameter Presets",
+      "kind": "parameter_presets",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "range_input",
+      "title": "Range Input",
+      "kind": "range_input",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "date_input",
+      "title": "Date / Time Input",
+      "kind": "date_input",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "audio_input",
+      "title": "Audio Input / Recorder",
+      "kind": "audio_input",
+      "web": "runtime-present",
+      "limitations": "Browser microphone permission and recorder formats depend on browser support; no Safari/mobile OS acceptance."
+    },
+    {
+      "id": "file_input",
+      "title": "File / Dataset Input",
+      "kind": "file_input",
+      "web": "runtime-present",
+      "limitations": "Managed upload and relative project members; arbitrary desktop/server file paths are not browser authority."
+    },
+    {
+      "id": "action",
+      "title": "Action Button",
+      "kind": "action",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "execution_controls",
+      "title": "Execution Controls",
+      "kind": "execution_controls",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "rich_text",
+      "title": "Text Cell",
+      "kind": "rich_text",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "text",
+      "title": "Text / Value",
+      "kind": "text",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "metric",
+      "title": "Metric / KPI",
+      "kind": "metric",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "status",
+      "title": "Status / Alert",
+      "kind": "status",
+      "web": "runtime-present",
+      "limitations": "Sheet/cell/action/service/runtime state and source navigation, with server quota status."
+    },
+    {
+      "id": "log",
+      "title": "Log Viewer",
+      "kind": "log",
+      "web": "runtime-present",
+      "limitations": "Bounded stdout/stderr with search, stream filter, copy and export; private worker source paths are not exposed."
+    },
+    {
+      "id": "artifacts",
+      "title": "Artifact Browser",
+      "kind": "artifacts",
+      "web": "runtime-present",
+      "limitations": "Captured path/name/caption records resolve immutable saved bundle members only; external and newly generated non-bundled files are unavailable."
+    },
+    {
+      "id": "result",
+      "title": "Result Inspector",
+      "kind": "result",
+      "web": "runtime-present",
+      "limitations": "Captured Inspect/Pretty, literal Find and table controls; search covers bounded snapshots, not the worker heap."
+    },
+    {
+      "id": "table",
+      "title": "Data Table",
+      "kind": "table",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "task_monitor",
+      "title": "Task Monitor",
+      "kind": "task_monitor",
+      "web": "runtime-present",
+      "limitations": "Up to 512 task records, parent tree, state/errors, duration and usage; only trusted cell/line references, never private worker paths."
+    },
+    {
+      "id": "run_history",
+      "title": "Run History",
+      "kind": "run_history",
+      "web": "runtime-present",
+      "limitations": "Shared server retention/pins; scalar restore is atomic per scope, not a whole local notebook heap."
+    },
+    {
+      "id": "experiment_compare",
+      "title": "Experiment Compare",
+      "kind": "experiment_compare",
+      "web": "runtime-present",
+      "limitations": "Exact scalar/metric deltas and CSV; same retained-snapshot limits as Run History."
+    },
+    {
+      "id": "image_annotator",
+      "title": "Image Annotator",
+      "kind": "image",
+      "web": "existing-kind-preset",
+      "limitations": "Uses Image/Carousel annotation settings, rather than a separate palette button."
+    },
+    {
+      "id": "audio_annotator",
+      "title": "Audio Annotator",
+      "kind": "audio_annotator",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "audio",
+      "title": "Audio Player",
+      "kind": "audio",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "progress",
+      "title": "Progress",
+      "kind": "progress",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "stopwatch",
+      "title": "Stopwatch",
+      "kind": "stopwatch",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "plot",
+      "title": "Figure",
+      "kind": "plot",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "live_chart",
+      "title": "Live Chart",
+      "kind": "live_chart",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "image",
+      "title": "Image",
+      "kind": "image",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "image_carousel",
+      "title": "Image Carousel",
+      "kind": "image_carousel",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "run",
+      "title": "Run Button",
+      "kind": "run",
+      "web": "runtime-present",
+      "limitations": "Runtime renderer present; this inventory does not assert equality of every inspector option."
+    },
+    {
+      "id": "periodic_work",
+      "title": "Periodic Work",
+      "kind": "periodic_work",
+      "web": "runtime-present",
+      "limitations": "Server schedule. Desktop pause-while-hidden is intentionally preserved without controlling server lifetime."
+    }
+  ],
+  "source_sha256": {
+    "../../tools/notebook-macos/NotebookBoard.swift": "74e21ae1e96310d2acc81ebbb689acca313d3f274ae527b4254bbc4829d9ec30",
+    "frontend/src/board-editor.ts": "ac417fde2390550d5d5290cb720463ccb2de5823aa03bcb4929074bbcbb3eca2",
+    "frontend/src/NotebookBoardCard.vue": "d8918435f7f74be15d144faba17bb4f0775a0e650dbb66e982fb931269f5cf84"
+  }
+}

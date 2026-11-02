@@ -1,0 +1,18 @@
+{
+  "implementation": "lazy task and blocking FFI pools with hard configurable limits",
+  "env": {
+    "SPUTNIK_TASK_MAX_THREADS": "positive integer; defaults to hardware concurrency",
+    "SPUTNIK_FFI_MAX_THREADS": "positive integer; defaults to clamp(2 * hardware concurrency, 4, 32)"
+  },
+  "overload_error": "ResourceBusyError",
+  "checks": {
+    "stdlib_task_tests": "passed",
+    "blocking_ffi_tests": "passed",
+    "vm_tests": "passed",
+    "sputnik_ext_tests": "passed",
+    "test-native-blocking": "passed in VM and full-native",
+    "patch_dry_run": "passed against language HEAD"
+  },
+  "server_22015": "full current toolchain Linux validation in progress; production service unchanged",
+  "current_language_commit": "c17d12b2e25c2dd2cb0b9e41835b0a8e33925573"
+}

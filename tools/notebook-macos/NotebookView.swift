@@ -10,8 +10,9 @@ struct NotebookView: View {
     @State private var boardPrompt: NotebookBoard?
     @State private var componentCell: NotebookCell?
     @State private var cellIDTarget: CellIDTarget?
-    @State private var manageDependencies = false
     @State private var manageInputs = false
+    @State private var renameTarget: NotebookTab?
+    @State private var sheetName = ""
 
     private var activeTab: NotebookTab? {
         model.activeTab
@@ -84,8 +85,23 @@ struct NotebookView: View {
         .sheet(item: $cellIDTarget) { target in
             NotebookCellIDEditor(model: model, cell: target.cell, tab: target.tab)
         }
-        .sheet(isPresented: $manageDependencies) { NotebookDependenciesView(model: model) }
+        .sheet(isPresented: $model.showDependencies) { NotebookDependenciesView(model: model) }
         .sheet(isPresented: $manageInputs) { NotebookProjectInputsView(model: model) }
+        .sheet(item: $renameTarget) { tab in
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Rename Sheet").font(.title2)
+                TextField("Sheet name", text: $sheetName).textFieldStyle(.roundedBorder)
+                HStack {
+                    Spacer()
+                    Button("Cancel", role: .cancel) { renameTarget = nil }.keyboardShortcut(.cancelAction)
+                    Button("Rename") {
+                        model.perform("rename_sheet", tab: tab, text: sheetName.trimmingCharacters(in: .whitespacesAndNewlines))
+                        renameTarget = nil
+                    }.disabled(sheetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sheetName.count > 200)
+                        .keyboardShortcut(.defaultAction)
+                }
+            }.padding(24).frame(width: 420)
+        }
     }
 
     private func notebookWorkspace(_ snapshot: NotebookSnapshot) -> some View {
@@ -179,7 +195,7 @@ struct NotebookView: View {
                             Button { model.selectBoard(board) } label: {
                                 Label(board.title, systemImage: "square.grid.2x2")
                                     .frame(maxWidth: .infinity, alignment: .leading).padding(9)
-                                    .background(model.selectedBoardID == board.id ? NotebookPalette.card : .clear, in: RoundedRectangle(cornerRadius: 8))
+                                    .background(model.selectedBoardID == board.id ? NotebookPalette.sidebarSelection : .clear, in: RoundedRectangle(cornerRadius: 8))
                                     .overlay {
                                         if model.selectedBoardID == board.id && NotebookPalette.currentPreset != .sputnik {
                                             RoundedRectangle(cornerRadius: 8)
@@ -200,7 +216,7 @@ struct NotebookView: View {
                     HStack {
                         Text("DEPENDENCIES").font(.system(size: 10, weight: .bold)).foregroundStyle(NotebookPalette.muted)
                         Spacer()
-                        Button { manageDependencies = true } label: { Image(systemName: "shippingbox") }
+                        Button { model.showDependencies = true } label: { Image(systemName: "shippingbox") }
                             .help("Manage dependencies").accessibilityLabel("Manage dependencies").disabled(model.busy || model.remote.busy)
                         Button { model.requestDependency?() } label: { Image(systemName: "plus") }
                             .help("Link package directory").accessibilityLabel("Link package directory").disabled(model.busy)
@@ -323,7 +339,7 @@ struct NotebookView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
             .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .background(selected ? NotebookPalette.card : .clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(selected ? NotebookPalette.sidebarSelection : .clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay {
                 if selected {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -333,15 +349,27 @@ struct NotebookView: View {
         }
         .buttonStyle(.plain)
         .disabled(!model.canNavigate)
+        .contextMenu {
+            if tab.kind == "sheet" {
+                Button("Rename Sheet…") { sheetName = tab.title; renameTarget = tab }
+                    .disabled(model.busy || model.executingCurrentWorker)
+            }
+        }
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private func actionBar(_ snapshot: NotebookSnapshot) -> some View {
         HStack(spacing: 10) {
             if let tab = activeTab {
-                Text(tab.title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(NotebookPalette.ink).lineLimit(1)
+                if tab.kind == "sheet" {
+                    Button { sheetName = tab.title; renameTarget = tab } label: {
+                        Label(tab.title, systemImage: "pencil")
+                            .font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                    }.buttonStyle(.plain).help("Rename Sheet…").accessibilityLabel("Rename Sheet · " + tab.title)
+                        .disabled(model.busy || model.executingCurrentWorker)
+                } else {
+                    Text(tab.title).font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                }
                 NotebookPageBadge(kind: tab.kind == "module" ? .module : .sheet, detail: tab.status)
             }
 
@@ -385,8 +413,7 @@ struct NotebookView: View {
                 }
                 .help("Run every cell in this sheet")
                 .buttonStyle(.bordered)
-                .disabled(model.busy || activeTab == nil || hasUnsupportedCell ||
-                          (model.remote.isSelected && (!model.remote.connected || model.remote.busy || model.executingCurrentWorker)))
+                .disabled(hasUnsupportedCell || !(activeTab.map { model.canRun($0) } ?? false))
 
                 Button {
                     guard let tab = activeTab else { return }
@@ -407,13 +434,8 @@ struct NotebookView: View {
     }
 
     private var canRunSelected: Bool {
-        guard !model.busy, let tab = activeTab, let cell = selectedCell else { return false }
-        if model.remote.isSelected {
-            return model.remote.connected && !model.remote.busy && !model.executingCurrentWorker &&
-                tab.kind == "sheet" && cell.kind == "code" && !hasUnsupportedCell
-        }
-        if tab.kind == "module" { return cell.kind == "code" }
-        return cell.kind == "code" && !tab.environment_stale && !hasUnsupportedCell
+        guard let tab = activeTab, let cell = selectedCell else { return false }
+        return model.canRun(tab, cell: cell) && !hasUnsupportedCell
     }
 
     private var hasUnsupportedCell: Bool {
@@ -455,9 +477,11 @@ struct NotebookView: View {
                     noticeCard(
                         symbol: "exclamationmark.triangle.fill",
                         title: "Module environment error",
-                        message: tab.environment_error,
+                        message: notebookEnvironmentMessage(tab.environment_error),
                         tone: .red
                     )
+                    Button("Open Dependencies…") { model.showDependencies = true }
+                        .disabled(model.busy || model.remote.busy)
                 }
 
                 if !tab.environment_output.isEmpty {
@@ -724,7 +748,7 @@ struct NotebookView: View {
                         Button("Stop", systemImage: "stop.fill") { model.stopExecution() }.font(.caption)
                     } else {
                         Button("Run", systemImage: "play.fill") { model.perform("run", tab: tab, cell: cell) }
-                            .font(.caption).disabled(model.busy)
+                            .font(.caption).disabled(!model.canRun(tab, cell: cell))
                     }
                 }
                 if supported && collapseAllowed {
@@ -1005,10 +1029,10 @@ struct NotebookView: View {
 
     private var welcomeView: some View {
         NotebookWelcomeView(
-            recentProjects: { NSDocumentController.shared.recentDocumentURLs },
+            library: model.library,
             newProject: model.newProject,
             openProject: model.openProject,
-            openRecentProject: { model.open(url: $0) })
+            openLibraryProject: { model.open(url: $0) })
             .disabled(model.busy)
     }
 

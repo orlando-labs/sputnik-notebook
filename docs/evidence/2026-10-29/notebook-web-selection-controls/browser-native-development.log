@@ -1,0 +1,23 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/selection-controls.spec.ts
+
+[WebServer] (node:2432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:2476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/selection-controls.spec.ts:43:1 › shared selection survives sort/filter, retains exact key/row, reopens and clears without implicit Run (5.1s)
+  ✓   2 test/selection-controls.spec.ts:47:1 › duplicate/null keys and ambiguous column names disable selection and Core rejects forged rows (3.3s)
+  ✓   3 test/selection-controls.spec.ts:52:1 › calendar and zoned UTC drafts reject DST gaps and require an explicit repeated-hour occurrence (1.8s)
+  ✓   4 test/selection-controls.spec.ts:56:1 › preset review applies exact values atomically and captured sets save independently from defaults (2.7s)
+  ✓   5 test/selection-controls.spec.ts:60:1 › preset management rejects incompatible imports atomically and Cancel is inert (2.1s)
+  ✓   6 test/selection-controls.spec.ts:64:1 › stale parameter reviews preserve drafts and server validates all preset values atomically (5.4s)
+  ✓   7 test/selection-controls.spec.ts:68:1 › board designer authors date modes/zones, preset scope and selection bindings without executing (1.4s)
+  ✓   8 test/selection-controls.spec.ts:72:1 › viewer controls cannot apply dates, presets or selections and revoked access removes saved-set drafts (4.9s)
+  ✓   9 test/selection-controls.spec.ts:76:1 › shared selection filters image and completed audio by encoded asset identity and leaves collections intact (4.7s)
+  ✓  10 test/selection-controls.spec.ts:81:1 › legacy accepted carousel filenames resolve shared asset identity without changing stored collection order (2.2s)
+
+  10 passed (35.4s)

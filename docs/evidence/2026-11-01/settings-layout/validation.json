@@ -1,0 +1,20 @@
+{
+  "changes": [
+    "Shared system window background for every Settings tab",
+    "Shared top alignment, padding and scrolling",
+    "Embedded server form uses natural content height",
+    "System text and control colors in Settings"
+  ],
+  "checks": {
+    "settings_renders": 32,
+    "light_and_dark": "passed",
+    "visual_review": [
+      "appearance",
+      "resources",
+      "servers"
+    ],
+    "codesign_deep_strict": "passed"
+  },
+  "app": "build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook",
+  "app_sha256": "195e82bb32121e06babf2d7a04d3266d004abefa09c7efe3817d81711a046807"
+}

@@ -1,0 +1,172 @@
+{
+  "date": "2026-10-28",
+  "language_commit": "77650e1e73bae5505d819e1d95f037be7592e19d",
+  "local_language_working_tree_overlay": true,
+  "rebuilt": {
+    "isputnik": {
+      "path": "sputnik-lang/build/isputnik",
+      "sha256": "7340049b2452f5e31eb5cef04cadcc3e444aba3288275e5ad6960babab1e57a6",
+      "bytes": 10471976
+    },
+    "notebook_core": {
+      "path": "sputnik-notebook/build/core/libNotebookCore.a",
+      "sha256": "b76008259273bd422edcfddb2964a74808dc099a44e1480ce1fbaeb33cf638c5",
+      "bytes": 4347896
+    },
+    "worker": {
+      "path": "sputnik-notebook/build/sputnik-notebook-worker",
+      "sha256": "606a0dbcfb973188da1d141e772fb2f8efb804b85b8e81eccfc2dac60dc63865",
+      "bytes": 10501608
+    },
+    "remote": {
+      "path": "sputnik-notebook/build/sputnik-notebook-remote",
+      "sha256": "c8989f66e5603263e5779537bf32b33519a5ca52d0986cf9f76504ad22f99a0b",
+      "bytes": 14829864
+    },
+    "macos": {
+      "path": "sputnik-notebook/build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook",
+      "sha256": "a65552558c1122568317a7278b7042ce28cdb920c3d4f51a458f39410df92203",
+      "bytes": 27672544
+    },
+    "bundled_compiler": {
+      "path": "sputnik-notebook/build/Sputnik Notebook.app/Contents/MacOS/sputnik",
+      "sha256": "0d9f0c54e14435a2dfefe09b7000c20f0eda62518c374668107df7fa99782542",
+      "bytes": 10834848
+    },
+    "notebook_web": {
+      "path": "sputnik-notebook/apps/notebook-web/build/native/notebook-web",
+      "sha256": "f4a8c9fe8f8ea41897dd3f0ad4d8ebbb89bc9d2b3953843c69e1e5e8bea434ca",
+      "bytes": 26961152
+    },
+    "registry": {
+      "path": "sputnik-registry/.build/native/registry",
+      "sha256": "a169f92109152c0289d686c69f80d09c3f318aaeac64e6b59f93a6ad54e86f3f",
+      "bytes": 23920568
+    },
+    "notebook-mnist": {
+      "path": "sputnik-notebook/build/notebook-mnist",
+      "sha256": "f4b896167bd59b077ae78ab22e0fa6199a39dfe6abd71b87a70f24c62b59a87c",
+      "bytes": 5809376
+    },
+    "notebook-mnist-benchmark": {
+      "path": "sputnik-notebook/build/notebook-mnist-benchmark",
+      "sha256": "8457749901cd869fef374ed76ca2b131b98969edad2322ea539d468b765c88db",
+      "bytes": 1084824
+    }
+  },
+  "tests": {
+    "isputnik": "all suites and system CLI passed",
+    "notebook_core": "direct package API in VM/full native; readiness and worker-host passed",
+    "notebook_worker": "process/IPC, cancellation and run-tasks passed",
+    "regexp_cell": "Unicode, flags, interpolation, symmetric ~=, capture positions, whole-condition $_ and removed operators passed",
+    "remote_api": "45 integrations plus added regexp smoke passed",
+    "macos": "syntax, signed bundle verification, isolated-worker UI smoke passed",
+    "registry": "772 integration assertions passed",
+    "notebook_web": "VM/full-native entry and full-native model/migration checks passed",
+    "packaged_regexp": "Packaged .app core + worker: Unicode, flags, interpolation, ~=, $_ and receipt replay passed"
+  },
+  "local_overlays": {
+    "sputnik-lang": {
+      "DESIGN-macro-system-2026-06-29.md": "4d5dc80f4da03077d036a942fc0c3258abebfd20286cf1d64fc8000dfae38781",
+      "DESIGN-web-framework-2026-07-13.md": "1ab5875ee55b0c5fae8c5a6ba362dda0ed6557e042fcc9fd12760a7dabf49de0",
+      "Makefile": "60cf069fcc8e1b3645283e09f9d589b7d19135009dd4970f00293b7943e6c88d",
+      "buildsys/build.cpp": "e75481a7781779e83cdb51e3c86c1ac5e7855206876a58ef8864b13b9fe84963",
+      "buildsys/build.h": "053bea1f36ddf3601663d1a5e13d8561970d8f3dc0a6a922935559033b841d6d",
+      "docs/cheat-sheet.md": "8d034e1868f0af84b78dd4e63959e4e4a8d5f87002c98f3e2899012d7b276b1e",
+      "docs/cheat-sheet.ru.md": "5913b7f959ce311d7c7c30377baad92beba607ea15a5013b1b53008749c13238",
+      "docs/engineering/build-v1.md": "4fa867e46962de59aefd73d300fd4c6def5176364447c81ffd3afeba18d98c0b",
+      "docs/engineering/external-templates-v1.md": "7636bb033fd667fa25f01114781eef13e2ea1db6f20114c911f60a68aa061896",
+      "docs/engineering/package-store-v1.md": "b8ef641e65132933a889e4985ba8c40b45f1da25243caaaf1b5e590154dd6236",
+      "docs/engineering/remote-io-api.md": "62771d736c4375d728ade3cd7d9927c7055d2cde6b319979fef61f39d10f3998",
+      "docs/engineering/spec-anchor-map-v1.md": "ef740a397143eee08b574a2544e41c69325e9a0926f3bf988e15ea0629787073",
+      "editors/vim/syntax/sputnik.vim": "c9c088372baf24bc8db12bdeec4ca4bf331fd44fdafd39ffddd8b74d59fcb959",
+      "editors/vim/test/syntax.vim": "b3a985c6a7adfef7a6eb2b24e2ca7a100993ca089f7a7ec9134ed6ab9e6c12ea",
+      "editors/vscode/syntaxes/sputnik.tmLanguage.json": "ac2a5931e643920365d1babf1a41e9f513a56dd933c5fb99345f205dfad122e0",
+      "editors/vscode/test/grammar.test.js": "034938fd272798692e041c699f5979357a19f18ff833cb1be9798b8c9e6efa82",
+      "frontend/parser/parser.cpp": "7e2eef2bb6a0a0d26fab72e059059affba63999b8af8ea1be7ace2045be6de1c",
+      "frontend/parser/parser.h": "0f76e3f716543fcfb2a9e5ce47f109c73a57f89b11036da0a042e051dcb3639e",
+      "frontend/templates/templates.cpp": "475b607eb042c90011976e78dd7037db8b3c8d39ef5be8f379d6403a7e04661f",
+      "package/distribution.cpp": "85da6fd7b778ce1fdcf03ff544273a2bce631f26099235e2db3ca60aae654ba0",
+      "package/package.cpp": "e7d1731e4fa3746c07c708b0e032894dfae0a820155ce720dd226f544b8d691d",
+      "package/package.h": "abac38980b69386229485126d52783c11f8430d289a0b847364f1e3af14a49e9",
+      "package/store.cpp": "8dd99e1917478d1f6a8c0d6c997452e9efc12a721e4fd892ccdf4ca81ce4a360",
+      "package/store.h": "e5a576ab1ef87e86f42b2632ffcf0ce473b0f246509920b8b08a68a88202aaf3",
+      "runtime/remote_io_native.inc": "42d68ad1fd35cafcf899964e1d79ff46b9bdc99b43c6e1b3d5c0e81921913641",
+      "runtime/vm.cpp": "3299753456c221aaf905cff6e13019e93248300535bcaa219725dd5bed0b650d",
+      "sputnik_runtime_project_design.md": "bfaa0cc8f56ee87262420d8be0d9816b75d8e5db1c9e8e59bdf4e5898eff79f6",
+      "sputnik_unified_final_spec.md": "590f08ceef1ef86920d98b6295edb538fbc67ef4de34cc4c1e8c138b57db7d43",
+      "tests/build_tests.cpp": "44686768b9bfa6dba14b852e3378662827332995f088b0f7ad6632e021160743",
+      "tests/external_templates_test.py": "ef5fc3b06ed4c1cb0d0eb0ae43b23182d7fa0c17926ebf3eb9ad055000781de3",
+      "tests/fixtures/external_templates/main.s": "38c927e04b6738878468c0abab4cf0b27b4ebb9d466fc54104f7579d351605ac",
+      "tests/fixtures/native_http_reader/main.s": "59ce841fde14cb743945c0f11ce6d351d169f6d412b8b3ac0e801fc44748abd4",
+      "tests/fixtures/native_open_protocol_core/main.s": "344aa76372ae78e774b2b374ecf6f93dc58bfe6b87a6da0e1267ed5a7f645489",
+      "tests/package_store_tests.cpp": "8b0818f1623c48cb2673601530898eba3c7e692046ed6d85ab8667797caed520",
+      "tests/parser_tests.cpp": "25692f88167b6e991d365c52e55e1efbf34d9915703dafa637cd172da4ad2355",
+      "tests/vm_tests.cpp": "f58a62c5e6a18563ea6087ce7008185540399636bbb1d34c9492645ef895894a",
+      "tools/isputnik/environment.cpp": "2e5428e3890112af01e041324c6cfa08dd405157c0a464377d9d19a7872efbd8",
+      "tools/isputnik/session.cpp": "436a795b9dc96430f5cc1055a165c4bffc4dc2cf397ff0ef44af2f36ffc2f464",
+      "tools/isputnik/session.h": "751fbb4265f279cc560ba5cad0713a8987fb90fb4921cd72992e03688e130581",
+      "tools/sputnik/main.cpp": "1755ca72114f13752af43e9d1d4803ba4fc5555b61319b6bd3756b9f10d36e50"
+    },
+    "sputnik-notebook": {
+      "Makefile": "5ef4cab0aef86f7473b35669cf4d1c6dfe482a71bb92a0ea0925af89f25ceba0",
+      "README.md": "0ad181ae777d898979dae879d19500e1ac00a4b27c74ebab7cdbaeb213cc555e",
+      "docs/engineering/notebook-execution-live-progress.md": "07c716e69896e17f351724c65e431877b6083720a2fec8641bbe005c875e9afb",
+      "docs/engineering/notebook-macos-v1.md": "8381315791f62bdeb2061eacf42368cf4a6bddc71d1d4cc3eed31d93c6d17699",
+      "docs/engineering/notebook-remote-core-p01.md": "f8b1394364ebf086c060a64a43efd0cfbe6f0edba1d610eca55e373f9f406a44",
+      "docs/engineering/notebook-remote-worker-architecture.md": "a8439c595698bce99405b79a3fbd794f01a8c67aac2bd53b7754c7214f08f43b",
+      "docs/product/notebook-component-palette-roadmap.md": "1f3af36f6cbe12822593a028bef44ce402c28eb9c967f97408bac175ab4e73b6",
+      "tests/notebook_audio_tests.cpp": "67b9fe781b648e7046ad5fb8d47df491521a57c6907159511efbdbcdd36d1f4a",
+      "tests/notebook_board_tests.cpp": "da6ba0fd56f4eb44c59cf28b5913967ee918b7142a9852d60a1774e6d00632bf",
+      "tests/notebook_cell_component_tests.cpp": "42a9c25f84a5ca2ab54f73833873b9205895e025db11ec33f92371e90ccbee38",
+      "tests/notebook_image_tests.cpp": "efaaa16656b19fde0b72bddb39d13ced5f0022a94b452839bc6739dd726999fd",
+      "tests/notebook_macos_bridge_tests.cpp": "9cf1fae96ae2763d0e21e91f39ddffc2d32f76267eb3837d71c10495a65f3209",
+      "tests/notebook_macos_model_tests.swift": "fcf09a247853db7eaa61845a2c9ed6c7402f1120fdf59133e369f3973ce157b0",
+      "tests/notebook_macos_syntax_tests.swift": "1da9f25dfccb64b13657791e52c9c4f5e16394ea7664ab0aedd0fe7290b0b53b",
+      "tests/notebook_periodic_tests.cpp": "a9f8c92b14456ad386a03d610234f3b3adefb5b810b40145dd79c629cb115aaf",
+      "tests/notebook_plot_tests.cpp": "e82958f78d71c7987af60a0d54bdb8f887f1d0bf14692763d13162ffc65cd344",
+      "tests/notebook_remote_command_test.py": "7639c21583e1dbf167171883e94514639aff3e2509552d26bfe8de0531c222bc",
+      "tests/notebook_remote_tests.py": "d1a978efb03e297d3772291cd5e2b053b2d6c8569e3b724ab8ea942ad9609c2f",
+      "tests/notebook_runtime_telemetry_tests.cpp": "08976c84a157d215283ac59bc2cb66f2cb9f354b6316a66ab75eb642fd2d291c",
+      "tests/notebook_table_tests.cpp": "f0ed277a65cf239f18c0cd917cb242686ea1ce10fecf3d7220f7bc4e794c816c",
+      "tests/notebook_worker_host_tests.cpp": "490c4121d4da329f5177042e7c1d47a688a7886af7e8af6a1de1138406a2bbe4",
+      "tests/notebook_worker_tests.cpp": "9c52a9e95f472910b9f861b4c0ab92a8c82bbf8ddd4218e732c4181bcb4b420a",
+      "tools/notebook-macos/NotebookApp.swift": "0b96864caf6b805029e3a7b568a07126f9595b11c209fb73da1119f5b7748c75",
+      "tools/notebook-macos/NotebookBridge.cpp": "deleted",
+      "tools/notebook-macos/NotebookBridge.h": "26a38ba6eb0e09637b36d7ec67f295eca638b6e05bbecc26467413b1fb6dae68",
+      "tools/notebook-macos/NotebookExecution.cpp": "deleted",
+      "tools/notebook-macos/NotebookExecution.h": "deleted",
+      "tools/notebook-macos/NotebookModel.swift": "be945fb285daa22ffc8252c1a9145ce073a264c73795b216d4a1ca7c5121f1f0",
+      "tools/notebook-macos/NotebookView.swift": "66e86f0859799e88a975783eb633539b0160b52cbb59bc993953e224bc3fef3a",
+      "tools/notebook-macos/NotebookWelcomeView.swift": "ea20a65a8e42d530774f6e6969e0fb35caefadcac8d733c321c064b3de94ca66",
+      "tools/notebook-macos/SputnikSyntax.swift": "377234847659fbe26ebfe38c0c52a84e159be49ca273714f76caccdefb96865c",
+      "tools/notebook-macos/package-app.sh": "7850f71e93f9b9392c8fad9a630d5fdea186faaaed179659ff49f676e63fb344",
+      "tools/notebook-mnist/benchmark.cpp": "a6512aa9b76defa2b0f466659472325ac3c78cec2c5565864a2a8b7a2282a19f",
+      "tools/notebook-mnist/main.cpp": "4d0e83c03bd88ccfe603331042ba2c8e5c8c4c8cf6f2937ffd894ea0ddb3306c",
+      "tools/notebook-remote/client.s": "b340473d7976b10cfeea5ac631e2b00f96e6320d54cdcc6271c835966e56ed68",
+      "tools/notebook-remote/common.s": "531af475c2579dc28ce3290b5b00feab88660146ffe201d64b9a04715d4173db",
+      "tools/notebook-remote/core.s": "deleted",
+      "tools/notebook-remote/dependencies.s": "deleted",
+      "tools/notebook-remote/environments.s": "deleted",
+      "tools/notebook-remote/host.cpp": "deleted",
+      "tools/notebook-remote/host.s": "deleted",
+      "tools/notebook-remote/local_dependencies.s": "df17bd9d7db952059014dc7676c72468625efc43e295d662fa4ff82eef101e24",
+      "tools/notebook-remote/server.s": "761548917543e9d5fc7e26179776577bcaba11dbbdf6eb3133647a9c3fbb715b",
+      "tools/notebook-remote/services.s": "deleted",
+      "tools/notebook-remote/sputnik.build.json": "d34ae240450ca3567162a7da7b753d40bf203cff67ab81cbc170d7456e6909e9",
+      "tools/notebook-worker/environment.h": "deleted",
+      "tools/notebook-worker/grants.h": "deleted",
+      "tools/notebook-worker/main.cpp": "bb84dd734ceca07293a0497bf47d36756482f5cf901eca03c5108df6bc57fa06",
+      "tools/notebook-worker/presentation.cpp": "deleted",
+      "tools/notebook-worker/presentation.h": "deleted",
+      "tools/notebook-worker/process.cpp": "deleted",
+      "tools/notebook-worker/process.h": "deleted",
+      "tools/notebook-worker/protocol.cpp": "deleted",
+      "tools/notebook-worker/protocol.h": "deleted",
+      "tools/notebook-worker/telemetry.h": "deleted"
+    },
+    "sputnik-registry": {
+      "tools/build.s": "0dae5b9f5e84c10731e59ea4224e1a1019a045915850f59b4ea2e65a36aa60eb"
+    }
+  }
+}

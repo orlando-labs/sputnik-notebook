@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-31",
+  "sputnik_version": "1.0.0",
+  "package_catalog_fixture": "tests/notebook_package_catalog_test.s",
+  "required_core_build_test_runtime_python_dependency": false,
+  "image": "docker.orlando-labs.com/sputnik-remote-core:20261031-1.0.0-no-python",
+  "also_tagged": "docker.orlando-labs.com/sputnik-remote-core:20261031-1.0.0",
+  "image_id": "sha256:98f862174b559490b410294835c3566ff40a40460c4c6bb743b71b7e6ccc042d",
+  "manifest_digest": "sha256:db154a325179e6e231578dbba20d2fe40bd43746236f095e726fc9569cd30535",
+  "transfer_sha256": "b8fa0a21fc47a125ff9c4a05b074f3c5f083de4683dd48112d4f1d16ad5442d1",
+  "linux_native_tests": "passed",
+  "native_vm_fallback": 0,
+  "macos_vm_native_tests": "passed",
+  "swift_catalog_ui": "passed",
+  "macos_application_assembly_signature": "passed",
+  "servers": {
+    "22015": {"health": "healthy", "python_packages": 0, "gpu_forward_backward_devices": 3, "state_and_token": "preserved"},
+    "22176": {"health": "healthy", "python_packages": 0, "gpu_forward_backward_devices": 2, "state_and_token": "preserved"}
+  },
+  "temporary_transfer_server": "removed"
+}

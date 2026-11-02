@@ -6,10 +6,27 @@ macOS interface. The curses console `isputnik` is built and distributed by
 projects and the language-owned session/engine sources.
 Modules accept `.s`, `.spu`, and `.sputnik`; newly created modules use `.s`.
 The bundled compiler and isolated workers support runtime `%for` in string-tag
-templates. External `.html.sv`, `.sql.sv`, and `.cmd.sv` files use `@template`
+templates. External `.html.sv`, `.sql.sv`, and `.cmd.sv` files use `template`
 declarations and `source_formats` in a build manifest; notebook cells do not
 implicitly load filesystem views. See the
 [external template contract](../sputnik-lang/docs/engineering/external-templates-v1.md).
+
+## Shared execution core
+
+[`notebook-core`](packages/notebook-core/README.md) owns document/execution C API,
+worker supervision/protocol/presentations, the worker loop and the durable
+Sputnik core API. Swift links `build/core/libNotebookCore.a`; remote HTTP/CLI
+adapters import the package by directory. The web backend can use the same
+`Core.handle` contract through `notebook.core.client.Client`. No Swift/AppKit
+code is required to build or exercise the core.
+
+See [the extraction boundary](docs/engineering/notebook-core.md).
+
+The [notebook-web scaffold](apps/notebook-web/README.md) provides an Orbit
+backend and Vue/Vite server workspace with GitHub accounts, private projects
+and owner/editor/viewer access. Its current project screen manages metadata and
+sharing; document editing and execution are the next integration stage. Local
+desktop notebooks remain independent of web accounts and server project records.
 
 ## Build
 
@@ -25,10 +42,16 @@ the build places a `sputnik-notebook-worker` link and `AppIcon.icns` beside that
 executable. Both direct launches and the `.app` bundle use the Sputnik notebook
 icon in the Dock; Finder also uses it for the `.app`.
 
-The start screen lists **Recent Notebooks** below **New Notebook** and
-**Open Notebook**. Click a name to reopen its `.sputnikbook`; the folder path
-distinguishes projects with the same name. The list uses the macOS recent-document
-history, persists across launches, and hides packages that are no longer available.
+The start screen offers an expandable **Notebook Library** below **New Notebook**
+and **Open Notebook**. Sort by **Last Opened** (default), **Date Created** (newest
+first), or **Name (A–Z)**. Expand a project for its full, copyable path and dates;
+use **Show in Finder** to reveal the package. Unavailable notebooks keep their
+saved name in the library with a separate **Missing** badge and become available
+again after restoring the file or reconnecting its drive. **Add from Folder…** scans a directory and its
+subfolders, adding `.sputnikbook` packages without duplicates or opening them.
+The library, sort order and expanded/collapsed state persist across launches.
+Existing macOS recent documents are imported once, preserving their order;
+their opening dates are recorded from the next successful open.
 
 All GUI execution uses isolated workers by default: sheets, module Run,
 automatic Watch updates, board inputs and Periodic Work share live progress
@@ -66,7 +89,7 @@ xcrun swift -module-cache-path build/notebook-macos/swift-cache \
 ```
 
 The Makefile builds the language runtime library as a dependency and compiles
-its shared session/engine sources for the GUI. macOS requires Xcode command-line tools and
+its shared session/engine sources once for notebook-core and all consumers. macOS requires Xcode command-line tools and
 macOS 14 or newer (bundled dependencies can raise the minimum OS version).
 Linux builds the isolated worker; OpenSSL and LibYAML development packages are required.
 The graphical application does not link ncurses. The compiler is C++17.
@@ -77,14 +100,26 @@ native UI checks are explicit: `make test-notebook-worker`,
 `make test-notebook-macos`. Build and test the terminal console in `sputnik-lang`
 with `make` and `make test-isputnik-tui`.
 
+**Sputnik Notebook → About Sputnik Notebook** shows the application's version,
+the exact bundled Sputnik language/VM version and full source commits, including
+uncommitted-change markers. This identity is frozen into the executable during
+the build and exported as `Contents/Resources/build-info.json` in the `.app`.
+Direct development launches show the same information. Run the executable with
+`--build-info` to print the JSON without opening a window. Nightly/daily builds
+can set `NOTEBOOK_BUILD_CHANNEL=nightly` (or `daily`) and
+`NOTEBOOK_BUILD_ID=2026-11-01.42`; see the [build identity contract](docs/engineering/notebook-macos-v1.md#build-identity).
+
 Choose Light or Dark in `Sputnik Notebook → Settings…` (`⌘,`). The theme
 applies immediately and is remembered between launches. **Appearance → Color
-Scheme** offers the original **Sputnik · Default** palette and thirteen presets
+Scheme** offers the original **Sputnik · Default** palette, **System**, and thirteen presets
 with color previews: Espresso & Coral, Sea Glass, Syrah & Blue Glow, Charlock,
 Lunar Silver, Olive Leaf, Persian Plum, Tangerine & Teal, Autumn Ember, Moss &
 Ivory, Blackberry & Honey, Lavender Haze and River Jade. Each works with Light
 and Dark; the choice updates open notebooks immediately and is saved across
 launches. Existing installations keep their current colors until a preset is chosen.
+**System** uses dynamic macOS colors for sheet and board backgrounds, cards,
+editors, navigation, text, separators and selections, and follows the system
+accent color in both Light and Dark. Its preview also uses the current system colors.
 
 **Settings… → Code Editing → Replace Greek letter names with symbols** is on
 by default. In code cells and modules, type a complete name followed by Space,
@@ -200,3 +235,5 @@ Verify their GUI lifecycle with `make test-notebook-remote-work`.
 
 Python/Ruby worker environments, persistent remote preparation and orphan
 collection are described in [Notebook foreign environments](docs/engineering/notebook-foreign-environments.md).
+
+Run the remote core in Docker with GPU access using the [container deployment guide](docs/engineering/remote-core-container.md).

@@ -1,0 +1,33 @@
+{
+  "checks": [
+    {
+      "backend": "VM",
+      "assets": "development",
+      "signal": "SIGTERM",
+      "owned_processes_before": 6,
+      "remaining": 0
+    },
+    {
+      "backend": "VM",
+      "assets": "development",
+      "signal": "SIGKILL",
+      "owned_processes_before": 6,
+      "remaining": 0
+    },
+    {
+      "backend": "native",
+      "assets": "production",
+      "signal": "SIGTERM",
+      "owned_processes_before": 5,
+      "remaining": 0
+    },
+    {
+      "backend": "native",
+      "assets": "production",
+      "signal": "SIGKILL",
+      "owned_processes_before": 5,
+      "remaining": 0
+    }
+  ],
+  "scope": "Only test-owned process groups/state roots; no production service lifetime changes."
+}

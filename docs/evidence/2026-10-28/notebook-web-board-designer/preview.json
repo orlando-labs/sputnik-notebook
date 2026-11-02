@@ -1,0 +1,18 @@
+{
+  "url": "http://127.0.0.1:3010",
+  "pid": 41049,
+  "page_status": 200,
+  "assets": [
+    {
+      "path": "/assets/main-57-icZ-4.js",
+      "status": 200
+    },
+    {
+      "path": "/assets/main-BflSAUPQ.css",
+      "status": 200
+    }
+  ],
+  "database_retained": true,
+  "external_core_socket_retained": true,
+  "log": "build/preview-stage4d.log"
+}

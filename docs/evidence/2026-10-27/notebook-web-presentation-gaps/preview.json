@@ -1,0 +1,16 @@
+{
+  "pid": 5636,
+  "status": 200,
+  "assets": [
+    {
+      "path": "/assets/main-Da_6Ijnv.css",
+      "status": 200
+    },
+    {
+      "path": "/assets/main-D5Gy1UDu.js",
+      "status": 200
+    }
+  ],
+  "core_socket_preserved": true,
+  "database": "build/smoke-74948.sqlite"
+}

@@ -1,0 +1,3 @@
+{caught: true, rows: 0, leased: 0}
+PASS orm atomicity
+0

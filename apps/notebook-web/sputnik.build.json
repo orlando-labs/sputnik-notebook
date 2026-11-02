@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "orbit": {"path": "../../../orbit"},
+    "orbit-session": {"path": "../../../orbit/packages/orbit-session"},
+    "orbit-oauth": {"path": "../../../orbit/packages/orbit-oauth"},
+    "orbit-oauth-github": {"path": "../../../orbit/packages/orbit-oauth-github"},
+    "orbit-vite": {"path": "../../../orbit/packages/orbit-vite"},
+    "orbit-orm": {"path": "../../../orbit/packages/orbit-orm"},
+    "orm": {"path": "../../../orm"},
+    "sqlite3": {"path": "../../../sqlite3"},
+    "notebook-core": {"path": "../../packages/notebook-core"}
+  },
+  "source_formats": [{"suffix": ".html.sv", "module": "orbit.html", "macro": "html"}]
+}

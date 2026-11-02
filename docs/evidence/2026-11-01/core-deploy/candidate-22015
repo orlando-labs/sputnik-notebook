@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release=/home/slowpilot/sputnik-releases/20261101-notebook-core
+container=sputnik-core-candidate-20261101
+state=$release/candidate-state
+packages=/home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-packages
+mkdir -p "$state"
+chmod 700 "$state"
+cleanup() { docker rm -fv "$container" >/dev/null 2>&1 || true; }
+trap cleanup EXIT
+"$release/run-container" --image "$1" --name "$container" --backend rocm \
+  --state "$state" --root "$state" --packages "$packages" --cache "$release/candidate-cache" \
+  --rocm-root /opt/rocm-6.4.3 --port 18766 --task-threads 56 --ffi-threads 32 \
+  --tensile /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/rocblas/library
+for ((i=0;i<90;i++)); do
+  if [[ $(docker inspect --format '{{.State.Health.Status}}' "$container") == healthy ]]; then break; fi
+  sleep 1
+done
+[[ $(docker inspect --format '{{.State.Health.Status}}' "$container") == healthy ]]
+docker exec "$container" sh -c 'if command -v python3 || command -v python; then exit 1; fi; sputnik --version'
+docker cp "$release/container-check.s" "$container:/tmp/container-check.s"
+docker exec -e SPUTNIK_PKG_HOME=/tmp/maintenance-packages "$container" sputnik run /tmp/container-check.s \
+  --grant fs.read --grant fs.write --grant fs.metadata --grant net.connect --grant random.secure -- \
+  --root "$state" --mode gpu --gpus 3
+printf 'PASS candidate: health, short imports, shared installation, 3xMI50, no Python\n'

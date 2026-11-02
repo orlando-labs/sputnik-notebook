@@ -1,0 +1,83 @@
+{
+  "schema": "sputnik.executable.build.v2",
+  "status": "ok",
+  "source": "tests/fixtures/native_qualified_binding/main.s",
+  "output": "build/native-qualified-binding",
+  "module": "native.qualified_binding",
+  "entry": "main",
+  "target": "native",
+  "native_backend": "cpp-bytecode-direct-v1",
+  "native_source": "build/native-qualified-binding.native.cpp",
+  "native_hash": "975915f65f16705243a79eb8303dba88ccd74fec99d580eb481eb54622232623",
+  "native_cxx": "clang++",
+  "native_entry": true,
+  "native_full_coverage": true,
+  "native_body_coverage_full": true,
+  "native_vm_independent": true,
+  "native_runtime_bridge": false,
+  "native_runtime_bridge_kind": "",
+  "native_binary_size_bytes": 1223112,
+  "native_code_count": 9,
+  "native_extension_code_count": 0,
+  "vm_fallback_code_count": 0,
+  "native_fallback_code_count": 0,
+  "bytecode_code_count": 9,
+  "bytecode_fallback": false,
+  "native_fallback_reason": "",
+  "native_coverage": [
+    {
+      "code_id": 1,
+      "kind": "module",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 2,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 3,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 4,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 5,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 6,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 7,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 8,
+      "kind": "block",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    },
+    {
+      "code_id": 9,
+      "kind": "method",
+      "mode": "direct-native",
+      "reason": "direct C++ native codegen"
+    }
+  ]
+}

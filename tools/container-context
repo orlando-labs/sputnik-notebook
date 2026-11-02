@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root=$(cd -- "$(dirname -- "$0")/.." && pwd -P)
+workspace=$(dirname -- "$root")
+mkdir -p "$root/.build"
+context=$(mktemp -d "${TMPDIR:-/tmp}/sputnik-container-context.XXXXXXXX")
+trap 'rm -rf -- "$context"' EXIT
+manifest="$context/SOURCE-MANIFEST.json"
+printf '{"schema":"sputnik.notebook.container-sources.v1","files":{' > "$manifest"
+first=true
+hash_file() {
+  if command -v sha256sum >/dev/null; then sha256sum "$1" | cut -d' ' -f1
+  else shasum -a 256 "$1" | cut -d' ' -f1; fi
+}
+for name in sputnik-lang sqlite3 orm orbit plot sputnik-notebook; do
+  repository="$workspace/$name"
+  git -C "$repository" ls-files -z --cached --others --exclude-standard > "$context/files"
+  while IFS= read -r -d '' relative; do
+    case "$relative" in docs/evidence/*|build/*|.build/*) continue;; esac
+    source="$repository/$relative"
+    [[ -f "$source" ]] || continue
+    [[ ! -L "$source" ]] || { printf 'Source symlink requires explicit handling: %s\n' "$source" >&2; exit 1; }
+    target="$context/$name/$relative"
+    mkdir -p -- "$(dirname -- "$target")"
+    cp -p -- "$source" "$target"
+    key="$name/$relative"
+    key=${key//\\/\\\\}; key=${key//\"/\\\"}; key=${key//$'\n'/\\n}; key=${key//$'\r'/\\r}; key=${key//$'\t'/\\t}
+    if "$first"; then first=false; else printf ',' >> "$manifest"; fi
+    printf '"%s":"%s"' "$key" "$(hash_file "$target")" >> "$manifest"
+  done < "$context/files"
+done
+printf '}}\n' >> "$manifest"
+rm -- "$context/files"
+COPYFILE_DISABLE=1 tar --no-xattrs -czf "$root/.build/container-context.tar.gz" -C "$context" .
+printf '%s\nsha256:%s\n' "$root/.build/container-context.tar.gz" "$(hash_file "$root/.build/container-context.tar.gz")"

@@ -1,0 +1,1 @@
+PASS exact selection scalar/row identity, duplicate/null/ambiguous keys, media SHA-256 bindings; strict calendar/UTC, IANA quarter-hour offsets and DST gaps/folds; preset scope/types/Int64/default separation/limits

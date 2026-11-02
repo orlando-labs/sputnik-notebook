@@ -1,0 +1,282 @@
+ID:		0rfmssvw3l2kxk9y1mimm2sc3
+Parent:		rmstb3qjpduphi9tf7axwq3s3
+Created at:	2026-10-31 21:24:09.485923901 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		0B
+Description:	mount / from exec /bin/sh -c ln -s /src/sputnik-lang/build/sputnik /usr/local/bin/sputnik     && mkdir -p /var/lib/sputnik-notebook /var/lib/sputnik-packages /var/cache/sputnik     && chown -R sputnik:sputnik /var/lib/sputnik-notebook /var/lib/sputnik-packages /var/cache/sputnik
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		5qynxt8gy25bjmjstl3zkeadq
+Created at:	2026-10-31 21:10:50.574778706 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		0B
+Description:	pulled from docker.io/library/debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		uepwsz5mbkjnm7ydo68pdoqyo
+Created at:	2026-10-31 21:10:50.50674821 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	local source for context
+Usage count:	1
+Last used:	22 hours ago
+Type:		source.local
+
+ID:		utdnwyatbq99h2s0gqlbzfur8
+Parent:		41sy66oz0s2h598uhlrlqlj4f
+Created at:	2026-10-31 21:11:44.368544767 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		0B
+Description:	[sdk 4/6] WORKDIR /src
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		rmstb3qjpduphi9tf7axwq3s3
+Parent:		qcbg5ra67uu0mh496zdzpbei6
+Created at:	2026-10-31 21:24:09.310825553 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		409B
+Description:	[runtime 7/8] COPY --from=test /src/sputnik-notebook/tools/notebook-remote/docker-healthcheck /usr/local/bin/sputnik-notebook-healthcheck
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		ok8u1ezcjor6li0e32t3dh9xa
+Created at:	2026-10-31 21:10:49.136427012 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		3.816kB
+Description:	local source for dockerfile
+Usage count:	1
+Last used:	22 hours ago
+Type:		source.local
+
+ID:		rvsiv90wlhjmpw7rw9l2kdvvi
+Parent:		ptd2fz53rn6nr7nsonsoox3dg
+Created at:	2026-10-31 21:13:11.601884619 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		148.1kB
+Description:	[build 2/6] COPY orm/ orm/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		myp2utrhw9ca3rbjdm21b4ouz
+Parent:		42g6n24b3y7rty6hs2bcx6g9a
+Created at:	2026-10-31 21:13:11.712873704 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		204.2kB
+Description:	[build 4/6] COPY plot/ plot/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		42g6n24b3y7rty6hs2bcx6g9a
+Parent:		rvsiv90wlhjmpw7rw9l2kdvvi
+Created at:	2026-10-31 21:13:11.674157297 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		932.1kB
+Description:	[build 3/6] COPY orbit/ orbit/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		jx3vx3bq0qgz6os3445fj1pgw
+Parent:		h3ff58102scz45a971u8s7tgt
+Created at:	2026-10-31 21:24:08.448936509 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		4.879MB
+Description:	[runtime 3/8] COPY --from=test /opt/pcre2 /opt/pcre2
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		lztfezhzpdrcaqgt5on5jardq
+Parent:		myp2utrhw9ca3rbjdm21b4ouz
+Created at:	2026-10-31 21:13:11.836434922 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		6.715MB
+Description:	[build 5/6] COPY sputnik-notebook/ sputnik-notebook/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		ptd2fz53rn6nr7nsonsoox3dg
+Parent:		mn4rdya8pijgpdp385lz5jrqv
+Created at:	2026-10-31 21:13:11.563709324 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		10.22MB
+Description:	[build 1/6] COPY sqlite3/ sqlite3/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		qcbg5ra67uu0mh496zdzpbei6
+Parent:		wk8emrd9h5cso00ajw1wzt7z9
+Created at:	2026-10-31 21:24:09.276642962 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		14.52MB
+Description:	[runtime 6/8] COPY --from=test /src/sputnik-notebook/build/sputnik-notebook-worker /usr/local/bin/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		hx2mzttj2vxltxf88os93d5yc
+Created at:	2026-10-31 21:13:11.871668975 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		19.24MB
+Description:	cached mount /src/sputnik-notebook/.build/native-runtime from exec /bin/sh -c SPUTNIK_NATIVE_RT_CACHE=/src/sputnik-notebook/.build/native-runtime     make -C sputnik-notebook -j${BUILD_JOBS} remote-core with id "//src/sputnik-notebook/.build/native-runtime"
+Usage count:	2
+Last used:	22 hours ago
+Type:		exec.cachemount
+
+ID:		1mpr04tu4wvlsixgyw4vuwmid
+Parent:		utdnwyatbq99h2s0gqlbzfur8
+Created at:	2026-10-31 21:11:44.820359493 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		24.8MB
+Description:	[sdk 5/6] COPY sputnik-lang/ sputnik-lang/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		41sy66oz0s2h598uhlrlqlj4f
+Parent:		vky3dsmq7xtfzrtwp3vck00z7
+Created at:	2026-10-31 21:11:44.334683504 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		25.62MB
+Description:	mount / from exec /bin/sh -c curl --fail --location --retry 3     https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.bz2     --output /tmp/pcre2.tar.bz2     && echo '47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7  /tmp/pcre2.tar.bz2' | sha256sum -c -     && cd /tmp && tar -xjf pcre2.tar.bz2 && cd pcre2-10.47     && ./configure --prefix=/opt/pcre2 --enable-unicode --enable-jit --disable-pcre2grep --disable-pcre2test     && make -j${BUILD_JOBS} && make install
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		wk8emrd9h5cso00ajw1wzt7z9
+Parent:		6vqeamio4e90474dol1tku3f6
+Created at:	2026-10-31 21:24:09.23862252 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		27.51MB
+Description:	[runtime 5/8] COPY --from=test /src/sputnik-notebook/build/sputnik-notebook-remote /usr/local/bin/
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		p98mgjy4j6ckvfhd11d1o9b15
+Created at:	2026-10-31 21:10:50.557528549 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		43.02MB
+Description:	local source for context
+Usage count:	1
+Last used:	22 hours ago
+Type:		source.local
+
+ID:		mn4rdya8pijgpdp385lz5jrqv
+Parent:		1mpr04tu4wvlsixgyw4vuwmid
+Created at:	2026-10-31 21:13:11.497191015 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		68.59MB
+Description:	mount / from exec /bin/sh -c make -C sputnik-lang -j${BUILD_JOBS} build/sputnik
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		6vqeamio4e90474dol1tku3f6
+Parent:		jx3vx3bq0qgz6os3445fj1pgw
+Created at:	2026-10-31 21:24:09.202779183 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		93.39MB
+Description:	[runtime 4/8] COPY --from=test /src/sputnik-lang /src/sputnik-lang
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		b6lelzii3bcdg1vdxw1xb09m5
+Parent:		rnanb4pmghbz2ubjyrdklnl31
+Created at:	2026-10-31 21:18:29.309269676 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		301.5MB
+Description:	mount / from exec /bin/sh -c make -C /src/sputnik-notebook test-notebook-remote test-notebook-remote-serve     && ! command -v python3 && ! command -v python
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		h3ff58102scz45a971u8s7tgt
+Parent:		5qynxt8gy25bjmjstl3zkeadq
+Created at:	2026-10-31 21:11:08.746472185 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		true
+Size:		309.1MB
+Description:	mount / from exec /bin/sh -c apt-get update && apt-get install -y --no-install-recommends     ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev     zlib1g-dev libnuma1 libelf1 libdrm2 libdrm-amdgpu1 libpciaccess0     && rm -rf /var/lib/apt/lists/*     && groupadd --gid 1000 sputnik && useradd --uid 1000 --gid 1000 --create-home sputnik     && ! command -v python3 && ! command -v python
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		rnanb4pmghbz2ubjyrdklnl31
+Parent:		lztfezhzpdrcaqgt5on5jardq
+Created at:	2026-10-31 21:18:29.28247549 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		562.7MB
+Description:	mount / from exec /bin/sh -c SPUTNIK_NATIVE_RT_CACHE=/src/sputnik-notebook/.build/native-runtime     make -C sputnik-notebook -j${BUILD_JOBS} remote-core
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular
+
+ID:		vky3dsmq7xtfzrtwp3vck00z7
+Parent:		5qynxt8gy25bjmjstl3zkeadq
+Created at:	2026-10-31 21:11:25.291570786 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		723.3MB
+Description:	mount / from exec /bin/sh -c apt-get update && apt-get install -y --no-install-recommends     build-essential clang-19 llvm-19 lld-19 pkg-config libssl-dev libarchive-dev     libyaml-dev zlib1g-dev bzip2 ca-certificates curl     && rm -rf /var/lib/apt/lists/*     && ! command -v python3 && ! command -v python
+Usage count:	1
+Last used:	22 hours ago
+Type:		regular

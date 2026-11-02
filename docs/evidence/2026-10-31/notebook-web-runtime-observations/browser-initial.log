@@ -1,0 +1,152 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/runtime-observation.spec.ts test/parity-transfer.spec.ts
+
+[WebServer] (node:83418) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:83476) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  1 test/parity-transfer.spec.ts:10:1 › native palette → web edit/export → native reopen preserves every authored kind and bundled byte (3.8s)
+  ✓  2 test/runtime-observation.spec.ts:36:1 › sheet/cell/runtime status and real nested task failures remain bounded, source-safe and inert (3.5s)
+  ✓  3 test/runtime-observation.spec.ts:61:1 › captured Inspect/Pretty/table, literal Unicode Find and filtered logs export without execution (1.4s)
+  ✘  4 test/runtime-observation.spec.ts:78:1 › artifact references use the captured revision, reject external/traversal paths and preserve exact downloads (30.1s)
+(node:83585) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 test/runtime-observation.spec.ts:97:1 › new palette tools and status targets stage/save inertly and retain native extension fields (5.6s)
+(node:83603) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 test/runtime-observation.spec.ts:109:1 › runtime status reports exhausted computation while observation controls remain inert (8.0s)
+(node:83625) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  7 test/runtime-observation.spec.ts:115:1 › viewer can inspect saved artifacts and telemetry; revocation removes the loaded observations (7.3s)
+(node:83654) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  8 test/runtime-observation.spec.ts:130:1 › status follows explicit action and service commands using saved targets and exact counters (1.3s)
+
+
+  1) test/runtime-observation.spec.ts:78:1 › artifact references use the captured revision, reject external/traversal paths and preserve exact downloads 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: test-results/development-vm/runtime-observation-artifa-7c5c8-nd-preserve-exact-downloads/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/development-vm/runtime-observation-artifa-7c5c8-nd-preserve-exact-downloads/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/development-vm/runtime-observation-artifa-7c5c8-nd-preserve-exact-downloads/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) test/runtime-observation.spec.ts:97:1 › new palette tools and status targets stage/save inertly and retain native extension fields 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('account-name')
+    Expected: "Alice"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" getByTestId('account-name') with timeout 5000ms
+      - waiting for getByTestId('account-name')
+
+
+      1 | import { test, expect, type Page } from '@playwright/test'
+      2 | import { readFile } from 'node:fs/promises'
+    > 3 | async function login(page: Page, user = 'Alice') { await page.goto('/'); await page.getByRole('button', { name: 'Continue with GitHub' }).click(); await page.getByRole('button', { name: `Sign in as ${user}` }).click(); await expect(page.getByTestId('account-name')).toHaveText(user) }
+        |                                                                                                                                                                                                                                                                           ^
+      4 | async function request(page: Page, path: string, method = 'GET', data?: unknown) {
+      5 |   const token = (await page.context().cookies()).find(cookie => cookie.name === 'orbit-csrf')?.value
+      6 |   return page.request.fetch(path, { method, data, headers: { Accept: 'application/json', Origin: new URL(page.url()).origin, ...(token ? { 'X-CSRF-Token': decodeURIComponent(token) } : {}) } })
+        at login (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/runtime-observation.spec.ts:3:267)
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/runtime-observation.spec.ts:98:3
+
+    Error Context: test-results/development-vm/runtime-observation-new-pa-19f15-ain-native-extension-fields/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/development-vm/runtime-observation-new-pa-19f15-ain-native-extension-fields/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/development-vm/runtime-observation-new-pa-19f15-ain-native-extension-fields/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) test/runtime-observation.spec.ts:109:1 › runtime status reports exhausted computation while observation controls remain inert 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('[data-board-component="quota"]')
+    Expected substring: "One run:"
+    Received string:    "quotaComputation quota exhaustedStop, results and retained history remain available. The worker also requires an explicit restart.Execution: 00:01.02 used · 00:00.00 remainingPrevious state · stale"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" locator('[data-board-component="quota"]') with timeout 5000ms
+      - waiting for locator('[data-board-component="quota"]')
+        14 × locator resolved to <section class="board-card" aria-label="quota" data-v-align="top" data-kind="status" data-h-align="stretch" data-testid="board-card" data-board-component="quota">…</section>
+           - unexpected value "quotaComputation quota exhaustedStop, results and retained history remain available. The worker also requires an explicit restart.Execution: 00:01.02 used · 00:00.00 remainingPrevious state · stale"
+
+
+      110 |   await login(page)
+      111 |   const {id}=await book(page,'import task\ntask.sleep(10000)\n42\n',[component('quota','status',{p1:{target_kind:'runtime'}}),component('tasks','task_monitor')],{},{total_run_seconds:1})
+    > 112 |   try {await page.getByRole('button',{name:'Run Sheet',exact:true}).click();expect((await finish(page,id)).state).toBe('force-stopped');await expect(card(page,'quota')).toContainText('Computation quota exhausted');await expect(card(page,'quota')).toContainText('One run:');await expect(page.getByRole('button',{name:'Run Sheet',exact:true})).toBeDisabled();expect((await registry(page,id)).runs).toHaveLength(1)}finally{await release(page,id)}
+          |                                                                                                                                                                                                                                                        ^
+      113 | })
+      114 |
+      115 | test('viewer can inspect saved artifacts and telemetry; revocation removes the loaded observations',async({page,browser,baseURL})=>{
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/runtime-observation.spec.ts:112:248
+
+    Error Context: test-results/development-vm/runtime-observation-runtim-b7b4a-ation-controls-remain-inert/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/development-vm/runtime-observation-runtim-b7b4a-ation-controls-remain-inert/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/development-vm/runtime-observation-runtim-b7b4a-ation-controls-remain-inert/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) test/runtime-observation.spec.ts:115:1 › viewer can inspect saved artifacts and telemetry; revocation removes the loaded observations 
+
+    Error: expect(locator).toBeDisabled() failed
+
+    Locator: getByRole('button', { name: 'Run Sheet', exact: true })
+    Expected: disabled
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeDisabled" getByRole('button', { name: 'Run Sheet', exact: true }) with timeout 5000ms
+      - waiting for getByRole('button', { name: 'Run Sheet', exact: true })
+
+
+      121 |     expect((await request(bob,base(id)+'/notebook')).status()).toBe(404)
+      122 |     expect((await request(page,base(id)+'/memberships','POST',{account_id:profile.id,role:'viewer'})).status()).toBe(200)
+    > 123 |     await bob.goto(`/projects/${id}`);await open(bob);await card(bob,'files').getByRole('button',{name:'Preview',exact:true}).click();await expect(card(bob,'files')).toContainText('private report');await expect(card(bob,'tasks')).toContainText('registered');await expect(bob.getByRole('button',{name:'Run Sheet',exact:true})).toBeDisabled()
+          |                                                                                                                                                                                                                                                                                                                                       ^
+      124 |     expect((await request(page,base(id)+'/memberships/'+profile.id,'DELETE')).status()).toBe(204)
+      125 |     await expect(card(bob,'files')).not.toContainText('private report');await expect(card(bob,'tasks')).not.toContainText('registered');expect((await request(bob,base(id)+'/notebook')).status()).toBe(404)
+      126 |   }finally{await context.close();await release(page,id)}
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/runtime-observation.spec.ts:123:327
+
+    Error Context: test-results/development-vm/runtime-observation-viewer-a66d8-ves-the-loaded-observations/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/development-vm/runtime-observation-viewer-a66d8-ves-the-loaded-observations/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/development-vm/runtime-observation-viewer-a66d8-ves-the-loaded-observations/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    test/runtime-observation.spec.ts:78:1 › artifact references use the captured revision, reject external/traversal paths and preserve exact downloads 
+    test/runtime-observation.spec.ts:97:1 › new palette tools and status targets stage/save inertly and retain native extension fields 
+    test/runtime-observation.spec.ts:109:1 › runtime status reports exhausted computation while observation controls remain inert 
+    test/runtime-observation.spec.ts:115:1 › viewer can inspect saved artifacts and telemetry; revocation removes the loaded observations 
+  4 passed (1.4m)

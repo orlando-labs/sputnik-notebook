@@ -1,0 +1,47 @@
+{
+  "scope": "notebook issues 1–9; macOS, web and shared notebook core",
+  "registry_changed": false,
+  "checks": {
+    "macos_build": "passed",
+    "codesign_deep_strict": "passed",
+    "macos_bridge": "passed",
+    "macos_model": "passed",
+    "macos_dependencies_real_fixture": "passed",
+    "remote_integration": "passed",
+    "web_build": "passed",
+    "browser_passed": 30,
+    "browser_skipped": 1
+  },
+  "native": {
+    "fallback_code_count": 0,
+    "vm_independent": true,
+    "full_coverage": true
+  },
+  "covered_regressions": [
+    "shared references across two books without a second download",
+    "short imports after short and canonical installation requests",
+    "removing one book reference preserves the second book",
+    "actual archive digest and identity verified before cache reuse",
+    "external symlinks excluded from dependency inventory",
+    "own notebook modules take precedence over package short names",
+    "sheet rename preserves stable id",
+    "old and new missing-import diagnostics omit server paths",
+    "explicit native and size consents reset per build",
+    "worker-grant editor remains explicit"
+  ],
+  "deployment": {
+    "target": "lab.orlando-labs.com:22015 / 3xMI50",
+    "state": "updated",
+    "date": "2026-11-01",
+    "evidence": "docs/evidence/2026-11-01/core-deploy/validation.json",
+    "publication": "complete",
+    "image_tag": "docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0",
+    "manifest_digest": "sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c"
+  },
+  "sha256": {
+    "build/sputnik-notebook-remote": "24532b9840f005fec567088dd38136b1fd04b0de681b1a987bb775a5b3ef2111",
+    "build/sputnik-notebook-worker": "3db49d132fd0e0bc8cb2847b57e9825a4f9e8344e244cb3a8860a6e5f8d97c58",
+    "build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook": "99d81c7a37c1bccad3a7885f2606eb81f6da84c454d9313e71e4760c19f9dbe9",
+    ".build/container-context.tar.gz": "4be747e601b92b4e591a6d7ec95005a67077320748d386471133d12e9c0798b8"
+  }
+}

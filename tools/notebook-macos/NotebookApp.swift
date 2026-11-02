@@ -5,6 +5,10 @@ import UniformTypeIdentifiers
 @main
 enum SputnikNotebookApplication {
     static func main() {
+        if Array(CommandLine.arguments.dropFirst()) == ["--build-info"] {
+            print(NotebookBuildMetadata.json)
+            return
+        }
         // A packaged OpenSSL build must not depend on Finder's working
         // directory or Homebrew's certificate path on the build machine.
         if getenv("SSL_CERT_FILE") == nil,
@@ -20,7 +24,11 @@ enum SputnikNotebookApplication {
 }
 
 final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMenuItemValidation {
-    let model = NotebookModel()
+    let model = NotebookModel(library: NotebookLibrary(
+        defaults: CommandLine.arguments.contains("--smoke-test") || CommandLine.arguments.contains("--showcase-test")
+            ? nil : .standard,
+        recentProjects: CommandLine.arguments.contains("--smoke-test") || CommandLine.arguments.contains("--showcase-test")
+            ? [] : NSDocumentController.shared.recentDocumentURLs))
     private let preferences = NotebookPreferences(defaults:
         CommandLine.arguments.contains("--smoke-test") || CommandLine.arguments.contains("--showcase-test")
             ? nil : UserDefaults.standard)
@@ -33,6 +41,8 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     func applicationDidFinishLaunching(_ notification: Notification) {
         installApplicationIcon()
         preferences.applyAppearance()
+        model.setAppResourcePolicy(preferences.resourcePolicy)
+        preferences.onResourcePolicyChange = { [weak self] policy in self?.model.setAppResourcePolicy(policy) }
         installMenus()
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1240, height: 840),
                           styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -48,6 +58,10 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         model.requestNew = { [weak self] in self?.newProject(nil) }
         model.requestOpen = { [weak self] in self?.openProject(nil) }
         model.requestDependency = { [weak self] in self?.addDependency() }
+        model.requestSettings = { [weak self] tab in
+            self?.preferences.settingsTab = tab
+            self?.showSettings(nil)
+        }
         model.onChange = { [weak self] in self?.refreshWindow() }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -89,7 +103,7 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     private func installMenus() {
         let menu = NSMenu()
         let app = NSMenu()
-        add("About Sputnik Notebook", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), key: "", to: app, target: NSApp)
+        add("About Sputnik Notebook", action: #selector(showAbout(_:)), key: "", to: app)
         app.addItem(.separator())
         add("Settings…", action: #selector(showSettings(_:)), key: ",", to: app)
         app.addItem(.separator())
@@ -125,6 +139,7 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         add("Add Text Block", action: #selector(addText(_:)), key: "t", to: notebook).keyEquivalentModifierMask = [.command, .option]
         notebook.addItem(.separator())
         add("Apply Saved Modules", action: #selector(applyModules(_:)), key: "a", to: notebook).keyEquivalentModifierMask = [.command, .shift]
+        add("Dependencies…", action: #selector(showDependencies(_:)), key: "", to: notebook)
         notebook.addItem(.separator())
         add("Stop Execution", action: #selector(stopExecution(_:)), key: ".", to: notebook)
         attach("Notebook", submenu: notebook, to: menu)
@@ -147,19 +162,26 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
     }
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        if item.action == #selector(showAbout(_:)) { return true }
         if item.action == #selector(showSettings(_:)) { return true }
         if let settingsWindow, item.action == #selector(closeWindow(_:)), NSApp.keyWindow === settingsWindow { return true }
         if item.action == #selector(stopExecution(_:)) { return model.canStop }
         guard !model.busy, !model.boardEditorOpen else { return false }
         switch item.action {
-        case #selector(save(_:)), #selector(saveAll(_:)), #selector(runAll(_:)):
+        case #selector(runAll(_:)):
+            return model.activeTab.map { model.canRun($0) } ?? false
+        case #selector(save(_:)), #selector(saveAll(_:)), #selector(showDependencies(_:)):
             return model.snapshot != nil
         case #selector(runCell(_:)):
-            return model.activeBoard == nil && model.selectedCell?.kind == "code"
+            return model.activeBoard == nil && model.selectedCell?.kind == "code" && (model.activeTab.map { model.canRun($0, cell: model.selectedCell) } ?? false)
         case #selector(addCell(_:)), #selector(addText(_:)), #selector(applyModules(_:)):
             return model.activeBoard == nil && model.activeTab?.kind == "sheet"
         default: return true
         }
+    }
+
+    @objc private func showAbout(_ sender: Any?) {
+        NSApp.orderFrontStandardAboutPanel(options: NotebookBuildInfo.current.aboutPanelOptions)
     }
 
     // Structural operations have already been saved explicitly. Discard here
@@ -228,7 +250,7 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         guard !model.busy, !model.boardEditorOpen else { return }
         let panel = NSOpenPanel()
         panel.title = "Link Package Directory"
-        panel.message = "Choose a folder containing sputnik.toml or sputnik.build.yaml/json. Sources stay in that folder. Apply Modules to load changes."
+        panel.message = "Choose a folder containing sputnik.build.yaml or sputnik.build.yaml/json. Sources stay in that folder. Apply Modules to load changes."
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
@@ -253,17 +275,19 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
 
     @objc private func showSettings(_ sender: Any?) {
         if settingsWindow == nil {
-            let settings = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 548, height: 660),
+            let settings = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 590, height: 650),
                                     styleMask: [.titled, .closable], backing: .buffered, defer: false)
             settings.title = "Settings"
             settings.isReleasedWhenClosed = false
             settings.contentView = NSHostingView(rootView: NotebookAppearanceView(
-                preferences: preferences, content: NotebookSettingsView(preferences: preferences)))
+                preferences: preferences, content: NotebookSettingsView(preferences: preferences, remote: model.remote)))
             settings.center()
             settingsWindow = settings
         }
         settingsWindow?.makeKeyAndOrderFront(sender)
     }
+
+    @objc private func showDependencies(_ sender: Any?) { model.showDependencies = true }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
         if allowClose { return true }

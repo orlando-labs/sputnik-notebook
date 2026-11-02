@@ -1,0 +1,396 @@
+{
+  "retired_releases": 13,
+  "retired_artifacts": 55,
+  "deleted_blobs": 55,
+  "deleted_bytes": 4336003456,
+  "remaining_releases": 12,
+  "remaining_artifacts": 52,
+  "quick_check": "ok",
+  "retired": [
+    {
+      "name": "slowpilot/notebook-ui",
+      "version": "0.1.0",
+      "variant": "bytecode",
+      "sha256": "6fc74e62b976d5ee73897399f8729e81bba97fe35882c409f82576e8940c198f",
+      "size": 28271
+    },
+    {
+      "name": "slowpilot/notebook-ui",
+      "version": "0.1.0",
+      "variant": "mixed",
+      "sha256": "d54ddb021dc3953d83f2c204cbf28b034d442928f0ce860edbfa4668c410418c",
+      "size": 14228
+    },
+    {
+      "name": "slowpilot/notebook-ui",
+      "version": "0.1.0",
+      "variant": "source",
+      "sha256": "d9e5bed70119c2702141921401e064b57be9cadb04e4ac8208aac924c016cb0c",
+      "size": 4227
+    },
+    {
+      "name": "slowpilot/orbit",
+      "version": "1.0.0-rc.1",
+      "variant": "mixed",
+      "sha256": "fd51e1c8b2588ba6306adfb9b47acf76d132a2dfe2bbd4e24431df41fffa7f41",
+      "size": 177442
+    },
+    {
+      "name": "slowpilot/orbit",
+      "version": "1.0.0-rc.1",
+      "variant": "source",
+      "sha256": "e15a445fdeb2adf633555c90a27776ead95a2b7ade12d6f274949f0e18bb8d63",
+      "size": 45947
+    },
+    {
+      "name": "slowpilot/orbit-orm",
+      "version": "1.0.0-rc.1",
+      "variant": "bytecode",
+      "sha256": "9a4d9920f6489ba2dc4e8679de662d63e444ff07568827161a0d38d5ba2ad2fd",
+      "size": 15041
+    },
+    {
+      "name": "slowpilot/orbit-orm",
+      "version": "1.0.0-rc.1",
+      "variant": "source",
+      "sha256": "f8f8a38058a2faac6c912e3cc98cbf9920d5e690467a0f2b99fb7d6bd7d75325",
+      "size": 9045
+    },
+    {
+      "name": "slowpilot/orm",
+      "version": "0.1.0",
+      "variant": "mixed",
+      "sha256": "89236aeca8a264ab44a5cf5a1988c48d56be5eb5e52d3324f71a07ced4bd1a0d",
+      "size": 12199
+    },
+    {
+      "name": "slowpilot/orm",
+      "version": "0.1.0",
+      "variant": "source",
+      "sha256": "03a01a09c72ec768c2409b3791603f07e9c0097535f7d68fa1b30e1e14b391e8",
+      "size": 11281
+    },
+    {
+      "name": "slowpilot/orm-sqlite3",
+      "version": "0.1.0",
+      "variant": "bytecode",
+      "sha256": "8e0f454f8fbf73ac4f639c04d2c201bd9658efc9894661ac8b5a89f632c2115e",
+      "size": 43770
+    },
+    {
+      "name": "slowpilot/orm-sqlite3",
+      "version": "0.1.0",
+      "variant": "mixed",
+      "sha256": "685e95bbe725c3270936e4d7d7b15fe80850aa44cbff5ca007cb90321aaa3a61",
+      "size": 39009
+    },
+    {
+      "name": "slowpilot/orm-sqlite3",
+      "version": "0.1.0",
+      "variant": "source",
+      "sha256": "eb803a71b74e9bc370aa28e9d9a5779bcbdfe5749b0dc478d11921445e6c66df",
+      "size": 8265
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+      "sha256": "c2feefedb339eb03af064dad67db5639a07f82ff3be00e36b569ab4f4381cdb5",
+      "size": 259245
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-prebuilt-source",
+      "sha256": "d408d02df4e393b18e897e640e5f8044716676ba15c58db8d1d20467ed4d61a5",
+      "size": 57331
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-source-bytecode",
+      "sha256": "d7cf29a5e34bd85d14f506862419b6500eff10bcf3fc598cf4b0ef04488b3ae4",
+      "size": 247210
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-source-source",
+      "sha256": "19f1d7dc3ee14256f32cf6f5bc2f288be67f112340e53ab84976528611b628f9",
+      "size": 43785
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-bytecode",
+      "sha256": "e0485b82955e481023d470137e72618e2fb7cc2b2d1f654adc3c4ad83f7f676c",
+      "size": 254814
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-source",
+      "sha256": "7fcdba670ad7dcda28e4af13a3c9f15187952c9d0e0bd78a21f16cea00861b59",
+      "size": 53339
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-bytecode",
+      "sha256": "9959636a483a49abdf0520d02372138e8cacfca27c439a3b1b2856258a7ec295",
+      "size": 247196
+    },
+    {
+      "name": "slowpilot/plot",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-source",
+      "sha256": "22d5c8273d7df09ead48e987bf1510ef5afdba9f104604addb3cca6f6267dfd2",
+      "size": 43773
+    },
+    {
+      "name": "slowpilot/progressbar",
+      "version": "0.1.0",
+      "variant": "bytecode",
+      "sha256": "35fd79ccf712e3da30ed7bc7e6ec53ea171760c81d65f349e75ba619b1026bad",
+      "size": 13737
+    },
+    {
+      "name": "slowpilot/progressbar",
+      "version": "0.1.0",
+      "variant": "source",
+      "sha256": "471c5506a2233f0de8b696cca53a8eb74c5c2125d9ceb3d88f46d2767fb749af",
+      "size": 2761
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+      "sha256": "7d50c0721ee3e210a266da100dfdf5b10a8690167b33b73af912202caa5158a6",
+      "size": 43789
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-prebuilt-source",
+      "sha256": "33c51f2e65293055f8291658888a982a00b77f700d76d3a35fb9926ec89b2079",
+      "size": 31512
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-source-bytecode",
+      "sha256": "ccbfdf90e1fe27aa05094c1fe20a3fcb87daa058417e10e8086c8311376a59c6",
+      "size": 22306
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-source-source",
+      "sha256": "16627144a0587795bcd2eb68ca587195fc9b209b326d09e790e67ccfa3bbc298",
+      "size": 9546
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-bytecode",
+      "sha256": "00ac060f3fd2e3ecc6f7a8672d5c5da790eb95c2e36301ab70dbbb0f01a30ff9",
+      "size": 41756
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-source",
+      "sha256": "aef8176bc267ef67847a50577f5add5cc4ebb39d5f671bb98ac86ed134790218",
+      "size": 29445
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-bytecode",
+      "sha256": "72aa5d101cce75486f58050352386684085b7872cf93929d23de928817ae2972",
+      "size": 22699
+    },
+    {
+      "name": "slowpilot/pycall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-source",
+      "sha256": "92775d306690b785c13c75842365d8d418648832abbc00a4cec0140d8154fb10",
+      "size": 9908
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-prebuilt-bytecode",
+      "sha256": "a8b7be8c34da89f0601c3b84539f3a5acb2302160acb9773762ef78e2bb07180",
+      "size": 69884
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-prebuilt-source",
+      "sha256": "bc5b9dcf9752039dce280dc39ff1d23c4806ae23c154f00fd78a29694c517b15",
+      "size": 57800
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-source-bytecode",
+      "sha256": "e9057f03b90f4e0e228e485a48a742f3ade8cae76739eb1143cb0978eba820b8",
+      "size": 25250
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-source-source",
+      "sha256": "facffc2388ec87a0b3beabb0dfed8038d80bf5aedae760bb7646011932361681",
+      "size": 12313
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-bytecode",
+      "sha256": "1edd040ba1e5c9947d4268715f39bc15f372f29786edfecf76c59a6b8fbcfa5d",
+      "size": 58928
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-source",
+      "sha256": "e7c122d33ad1fa5c504e5770fc245088c00838b286fedd9fb205bd3f32ce17bd",
+      "size": 46929
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-bytecode",
+      "sha256": "efa266680ea3453a73313b9d266f498dc050b537943d3aa7e1cb93468431894f",
+      "size": 25625
+    },
+    {
+      "name": "slowpilot/rbcall",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-source",
+      "sha256": "e7d5c077a8cdf8a0d0f34784cdc704a591940f9ed2b968a7c9f11c253072ead1",
+      "size": 12663
+    },
+    {
+      "name": "slowpilot/sqlite3",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-prebuilt-source",
+      "sha256": "75bd0c864f71171a8c52b835609e8deae3f33b626aacc0e4a176208943172bcd",
+      "size": 869153
+    },
+    {
+      "name": "slowpilot/sqlite3",
+      "version": "0.1.0",
+      "variant": "linux-x86_64-gnu-source-source",
+      "sha256": "82283829986c1405070fb18fbf5e9fc131dc7056d65acfc86f8dd63f11b7fb86",
+      "size": 2623052
+    },
+    {
+      "name": "slowpilot/sqlite3",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-source",
+      "sha256": "aa6fe4105c683cd2a6c829e642a8561a4d6843e9b96ebe1a9a1f532dc3a2a7e5",
+      "size": 793922
+    },
+    {
+      "name": "slowpilot/sqlite3",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-source",
+      "sha256": "39283a340c56941038fd96f5f0c8376dbf993765ce733ddc7c72297a89c93b2e",
+      "size": 2623045
+    },
+    {
+      "name": "slowpilot/system-io",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-bytecode",
+      "sha256": "285526fe6ad1180691bd5aabbff6eb6aaec35d78bd029da0fcf4dda170027122",
+      "size": 1999283
+    },
+    {
+      "name": "slowpilot/system-io",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-mixed",
+      "sha256": "c4878e731d69bf5addc90e71ace75505b922994177f784780a50c8520ef3ef79",
+      "size": 1991557
+    },
+    {
+      "name": "slowpilot/system-io",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-prebuilt-source",
+      "sha256": "ca0a461e1621f5027f142dd61c52daef87b881be4f076d9ec14197f46eeff4df",
+      "size": 1982085
+    },
+    {
+      "name": "slowpilot/system-io",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-bytecode",
+      "sha256": "832150615a5fbaacafb7aa632d0414d2dbb7abce259905ee6f25044d8754a5c3",
+      "size": 26983
+    },
+    {
+      "name": "slowpilot/system-io",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-mixed",
+      "sha256": "90994d40de31e85dee862081e18e46b9eee14c82d2653e47a541badec4b307f8",
+      "size": 18836
+    },
+    {
+      "name": "slowpilot/system-io",
+      "version": "0.1.0",
+      "variant": "macos-aarch64-source-source",
+      "sha256": "9d1945f704d4435efb07e56f3e5c1c515c4fa50b6f38bc1dfff760d78609d503",
+      "size": 9759
+    },
+    {
+      "name": "slowpilot/torch",
+      "version": "0.1.3",
+      "variant": "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+      "sha256": "e57ee53c2a26a09584c547e668e159a2de4c0c19f41d5a459c1ebb2235b8d335",
+      "size": 1977457204
+    },
+    {
+      "name": "slowpilot/torch",
+      "version": "0.1.3",
+      "variant": "linux-x86_64-gnu-rocm643-prebuilt-source-runtime",
+      "sha256": "c99e2897c0e99363492f9430ddb235b031b0f8b8ca4948933927ae14728f6baf",
+      "size": 176356805
+    },
+    {
+      "name": "slowpilot/torch",
+      "version": "0.1.3",
+      "variant": "macos-aarch64-prebuilt-source-runtime",
+      "sha256": "0cc6072e5ae1a370d9e99c26c850feb1ac5306743d5bf69e1f3156e80635cf36",
+      "size": 94707514
+    },
+    {
+      "name": "slowpilot/torch",
+      "version": "0.1.3",
+      "variant": "macos-aarch64-source-source-none",
+      "sha256": "65b5fcbe3598ef4ae12b7164bbfb6ef42c269174a6b66c11a5f0b54bfabe774d",
+      "size": 115000
+    },
+    {
+      "name": "slowpilot/torch",
+      "version": "0.1.2",
+      "variant": "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+      "sha256": "deb1645994782a29677163bb951efd3cfe2bd362b7ed1acce6cfae3ec6778655",
+      "size": 1977456268
+    },
+    {
+      "name": "slowpilot/torch",
+      "version": "0.1.2",
+      "variant": "macos-aarch64-prebuilt-source-runtime",
+      "sha256": "37f0c2899ecf9e714b53a1bd3893f6f30210420ccf87016d45e026267bf99fa6",
+      "size": 94706725
+    },
+    {
+      "name": "slowpilot/torch",
+      "version": "0.1.2",
+      "variant": "macos-aarch64-source-source-none",
+      "sha256": "645c18ffbb76806e0796fb37281604e5d58ef4326cafcafe0da370fbc9aa8ceb",
+      "size": 113996
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+REMOVE_CORE_IMAGE_CACHE_REFERENCE 0rfmssvw3l2kxk9y1mimm2sc3
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+0rfmssvw3l2kxk9y1mimm2sc3               	true 		0B        	33 hours ago
+Total:	0B
+REMOVE_CORE_IMAGE_CACHE_REFERENCE rmstb3qjpduphi9tf7axwq3s3
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+rmstb3qjpduphi9tf7axwq3s3               	true 		409B      	33 hours ago
+Total:	409B
+REMOVE_CORE_IMAGE_CACHE_REFERENCE qcbg5ra67uu0mh496zdzpbei6
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+qcbg5ra67uu0mh496zdzpbei6               	true 		14.52MB   	33 hours ago
+Total:	14.52MB
+REMOVE_CORE_IMAGE_CACHE_REFERENCE wk8emrd9h5cso00ajw1wzt7z9
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+wk8emrd9h5cso00ajw1wzt7z9               	true 		27.51MB   	33 hours ago
+Total:	27.51MB
+REMOVE_CORE_IMAGE_CACHE_REFERENCE 6vqeamio4e90474dol1tku3f6
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+6vqeamio4e90474dol1tku3f6               	true 		93.39MB   	33 hours ago
+Total:	93.39MB
+REMOVE_CORE_IMAGE_CACHE_REFERENCE jx3vx3bq0qgz6os3445fj1pgw
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+jx3vx3bq0qgz6os3445fj1pgw               	true 		4.879MB   	33 hours ago
+Total:	4.879MB
+REMOVE_CORE_IMAGE_CACHE_REFERENCE h3ff58102scz45a971u8s7tgt
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+h3ff58102scz45a971u8s7tgt               	true 		309.1MB   	33 hours ago
+Total:	309.1MB
+REMOVE_CORE_IMAGE_CACHE_REFERENCE 5qynxt8gy25bjmjstl3zkeadq
+ID						RECLAIMABLE	SIZE		LAST ACCESSED
+5qynxt8gy25bjmjstl3zkeadq               	true 		0B        	33 hours ago
+Total:	0B
+PASS_RUNTIME_IMAGE_CONTAINER_AND_PID_UNCHANGED
+Reclaimable:	0B
+Total:		0B

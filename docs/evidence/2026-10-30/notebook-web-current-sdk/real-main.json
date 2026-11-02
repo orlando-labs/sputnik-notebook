@@ -1,0 +1,15 @@
+{
+  "entry": "backend/main.s",
+  "sdk": "b3ed894",
+  "assets": "production",
+  "origin": "https://notebook.example.test",
+  "transport": "loopback HTTP; original Host plus trusted single-hop HTTPS proxy headers",
+  "home_status": 200,
+  "bootstrap": true,
+  "csp": "default-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; form-action 'self'; img-src 'self' data:; media-src blob:",
+  "session_status": 200,
+  "anonymous_account": null,
+  "private_projects_status": 401,
+  "external_oauth_requests": false,
+  "core_connected": false
+}

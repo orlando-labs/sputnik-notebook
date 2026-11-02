@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+compiler=$1
+build=$2
+mode=$3
+shift 3
+# Keep the agent socket below macOS's sockaddr_un path limit.
+root=$(mktemp -d /tmp/spr-native.XXXXXXXX)
+trap 'rm -rf -- "$root"' EXIT
+export SPUTNIK_PKG_HOME="$root/packages"
+options=(--core "$build/sputnik-notebook-remote" --worker "$build/sputnik-notebook-worker"
+  --compiler "$compiler" --root "$root/test" --mode "$mode")
+if [[ "${1:-}" == --vm ]]; then
+  shift
+  "$compiler" run tests/notebook_remote_tests.build.json --grant ffi --grant time.now \
+    --grant fs.read --grant fs.write --grant fs.metadata --grant net.listen \
+    --grant net.connect --grant random.secure --grant process.spawn -- "${options[@]}" "$@"
+else
+  "$build/notebook-remote-tests" "${options[@]}" "$@"
+fi

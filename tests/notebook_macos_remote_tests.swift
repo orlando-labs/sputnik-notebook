@@ -39,6 +39,14 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
         let project = root.appendingPathComponent("Client.sputnikbook"), settings = root.appendingPathComponent("gui-settings")
         var active: NotebookModel?
         do {
+            let domain = "notebook-policy-test-" + UUID().uuidString
+            let store = UserDefaults(suiteName: domain)!
+            defer { store.removePersistentDomain(forName: domain) }
+            let preferences = NotebookPreferences(defaults: store)
+            var appPolicy = preferences.resourcePolicy
+            appPolicy.run_count = 37
+            preferences.resourcePolicy = appPolicy
+            try check(NotebookPreferences(defaults: store).resourcePolicy.run_count == 37, "app policy persists independently from book metadata")
             try FileManager.default.createDirectory(at: project.appendingPathComponent("modules"), withIntermediateDirectories: true)
             try FileManager.default.createDirectory(at: project.appendingPathComponent("assets/deep"), withIntermediateDirectories: true)
             let manifest = #"{"format":"sputnik-notebook","version":2,"title":"Remote GUI","active_sheet":"main","sheets":[{"id":"main","title":"Main","cells":[{"id":"1","kind":"code","mode":"manual","source":"answer()\n"}]},{"id":"other","title":"Other","cells":[{"id":"2","kind":"code","mode":"manual","source":"0\n"}]}],"modules":[{"id":"helpers","path":"modules/helpers.s"}],"auto_imports":["helpers"],"inputs":[],"boards":[{"id":"dashboard","title":"Dashboard","sheet":"main","columns":1,"components":[{"id":"timer","kind":"stopwatch","title":"Remote Stopwatch","stopwatch_id":"remote"}]}],"future":{"integer":9007199254740995}}"#
@@ -49,6 +57,14 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
             active = model; try await open(model, project)
             try check(result(model) == "not evaluated", "opening is inert")
             let ssh = CommandLine.arguments.contains("--ssh-live")
+            if !ssh {
+                appPolicy.run_count = 5
+                model.setAppResourcePolicy(appPolicy)
+                let saved = await withCheckedContinuation { continuation in
+                    model.setBookResourcePolicy(NotebookResourcePolicy(run_count: 9)) { continuation.resume(returning: $0) }
+                }
+                try check(saved, "save raised local book policy before upload")
+            }
             var server = NotebookServer(); server.name = ssh ? "Orlando GPU" : "Test GPU"; server.ssh = ssh
             if !ssh { server.url = option("--url") }
             let secret = ssh ? "" : try String(contentsOfFile: option("--token")).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -62,6 +78,26 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
             try check(!model.busy && model.remote.runtimes.contains { $0["state"] as? String == "idle" }, "remote heap remains idle")
             let originalEpoch = model.remote.runs.last!.epoch
             let remoteProject = model.remote.projectID!
+            if !ssh {
+                let policyObserver = NotebookRemoteClient(executable: core, token: URL(fileURLWithPath: option("--token")))
+                policyObserver.endpoint = option("--url")
+                let policy = try await policyObserver.call(["--command", "resource_policy", "--project", remoteProject])
+                let allowsOverrides = CommandLine.arguments.contains("--allow-book-policy-overrides")
+                try check(model.remote.allowsBookPolicyOverrides == allowsOverrides &&
+                          (policy["effective"] as? [String: Any])?["run_count"] as? Int == (allowsOverrides ? 9 : 5),
+                          "desktop sends raw app defaults and displays the server's selected override mode")
+                model.setAppResourcePolicy(.appDefaults)
+                let saved = await withCheckedContinuation { continuation in
+                    model.setBookResourcePolicy(.init()) { continuation.resume(returning: $0) }
+                }
+                try check(saved, "restore independent defaults after policy transport check")
+            }
+            // Policy editing deliberately saves authored metadata. Subsequent
+            // remote Run/reconnect operations must leave this saved baseline intact.
+            let savedManifest = try String(contentsOf: project.appendingPathComponent("project.json"))
+            let persisted = try JSONSerialization.jsonObject(with: Data(savedManifest.utf8)) as! [String: Any]
+            try check(((persisted["future"] as? [String: Any])?["integer"] as? NSNumber)?.int64Value == 9007199254740995,
+                      "policy editing preserves unrelated metadata and integer precision")
             print("PASS server selection, snapshot upload and native presentation")
             if ssh {
                 try edit(model, "import task\nnotebook.progress(\"ssh\", 1, 2, \"GPU server\", false)\ntask.sleep(6000)\nanswer()\n")
@@ -102,6 +138,7 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
             try await render(model, to: root.appendingPathComponent("stopwatch-sheet.png"))
             let runID = model.remote.runs.last!.id
             try await close(model); active = nil
+            try check(!model.remote.supportsResourcePolicy && !model.remote.allowsBookPolicyOverrides, "disconnect clears the previous server's policy mode")
             let observer = NotebookRemoteClient(executable: core, token: URL(fileURLWithPath: option("--token")))
             observer.endpoint = option("--url")
             let still = try await observer.call(["--command", "status", "--run-id", runID])
@@ -122,7 +159,7 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
                       "remote reconnect retains completed cell and block durations")
             try check(resumed.remote.runs.last?.id == runID && resumed.remote.runs.last?.epoch == originalEpoch,
                       "reconnect restores the same Run and heap, without replay")
-            try check(try String(contentsOf: project.appendingPathComponent("project.json")) == manifest, "saved document stays unchanged")
+            try check(try String(contentsOf: project.appendingPathComponent("project.json")) == savedManifest, "saved document stays unchanged after policy editing")
             print("PASS close/reopen during Run, draft recovery, live progress, same runtime epoch")
 
             // A newer edit made during a Run must survive terminal publication.
@@ -239,7 +276,8 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
             let unreliable = NotebookModel(workerExecutable: worker, remoteExecutable: option("--fault-core"), remoteStorage: settings)
             active = unreliable; try await open(unreliable, replica)
             try await wait("unreliable client connected") { unreliable.remote.connected && !unreliable.remote.busy }
-            let before = unreliable.remote.runs.count
+            let beforeHistory = try await observer.call(["--command", "runs", "--project", remoteProject])
+            let before = (beforeHistory["runs"] as? [Any])?.count ?? 0
             try edit(unreliable, "import task\ntask.sleep(3000)\n46\n")
             let acknowledged = await withCheckedContinuation { continuation in
                 unreliable.perform("run") { continuation.resume(returning: $0) }
@@ -247,7 +285,8 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
             try check(!acknowledged && unreliable.remote.hasPending, "lost reply leaves a durable pending command")
             unreliable.clearError(); unreliable.remote.reconnect()
             try await wait("lost reply recovery") { unreliable.remote.connected && !unreliable.remote.busy && result(unreliable) == "46" }
-            try check(unreliable.remote.runs.count == before + 1 && !unreliable.remote.hasPending, "receipt recovery does not duplicate execution")
+            let recoveredHistory = try await observer.call(["--command", "runs", "--project", remoteProject])
+            try check((recoveredHistory["runs"] as? [Any])?.count == before + 1 && !unreliable.remote.hasPending, "receipt recovery does not duplicate execution")
             print("PASS lost Run acknowledgement and durable receipt recovery")
 
             // A forged sidecar can reference an existing revision, but it
@@ -262,7 +301,7 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
                                            "sheet": "main", "cell": "1", "all": false] as [String: Any]
             bindings[server.id] = targetBinding; forgedState["bindings"] = bindings
             try JSONSerialization.data(withJSONObject: forgedState).write(to: sidecar)
-            let count = unreliable.remote.runs.count
+            let count = (recoveredHistory["runs"] as? [Any])?.count ?? 0
             await close(unreliable); active = nil
             let untrusted = NotebookModel(workerExecutable: worker, remoteExecutable: core, remoteStorage: settings)
             active = untrusted; try await open(untrusted, forged)

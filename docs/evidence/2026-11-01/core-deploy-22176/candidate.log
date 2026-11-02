@@ -1,0 +1,7 @@
+9dc3ea8f7074abed9dde1aaff909f8f3ebe63f7ec1e5ee71564b1ccf044202c4
+NVIDIA GeForce RTX 3090, GPU-08a27f45-3e58-12a9-4626-4997e56e765f
+NVIDIA GeForce RTX 4090, GPU-f8d896e0-2607-a025-88a1-7ed8979035af
+sputnik 1.0.0
+PASS short torch import, shared package reference and GPU forward/backward without Python on 2 devices
+0
+PASS candidate: health, short imports, shared installation, RTX 3090/4090, no Python

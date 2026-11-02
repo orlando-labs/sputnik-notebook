@@ -1,0 +1,42 @@
+{
+  "project": "regexp_upgrade_fe04441b3580",
+  "origin": "http://127.0.0.1:18765",
+  "language_commit": "77650e1e73bae5505d819e1d95f037be7592e19d",
+  "health": {
+    "protocol": 1,
+    "agent_pid": 3546114,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "revision": "ea13263db3c0ba54caad0bbec653e867ec3c1f5e46413243b0a4791d9efb7076",
+  "run_id": "70d52dd21a8d634b114d8880b21152d1",
+  "state": "succeeded",
+  "result": "42",
+  "receipt_replay_same_run": true,
+  "runtime_id": "356652b44ae7841e2b86e29d42522777",
+  "epoch": "cf5fa05c9eed16e73e17f8f28da992e8",
+  "smoke_project_deleted": true
+}

@@ -11,6 +11,18 @@ compiler=$6
 runtime_root=${7:-../sputnik-lang}
 contents="$app/Contents"
 mkdir -p "$contents/MacOS" "$contents/Frameworks" "$contents/Resources"
+# Export the identity embedded in the UI binary; repackaging must not relabel
+# an existing build using today's checkout or a newer compiler beside it.
+build_info=$(mktemp)
+trap 'rm -f -- "$build_info"' EXIT
+"$binary" --build-info > "$build_info"
+[[ "$(plutil -extract schema raw -o - "$build_info")" == sputnik.notebook.build.v1 ]]
+expected_compiler=$(plutil -extract sputnik.compilerSHA256 raw -o - "$build_info")
+actual_compiler=$(shasum -a 256 "$compiler" | awk '{print $1}')
+if [[ "$expected_compiler" != "$actual_compiler" ]]; then
+    echo "Notebook build identity: compiler differs from the one recorded in the UI; rebuild Notebook before packaging" >&2
+    exit 1
+fi
 # Replace Mach-O files by rename, not in-place truncation. An already-running
 # development window must retain its old mapped executable/libraries.
 copy_macho() {
@@ -29,26 +41,32 @@ xcrun install_name_tool -add_rpath @executable_path/../Frameworks "$contents/Mac
 xcrun install_name_tool -add_rpath @executable_path/../Frameworks "$contents/MacOS/sputnik-notebook-remote"
 xcrun install_name_tool -add_rpath @executable_path/../Frameworks "$contents/MacOS/sputnik"
 cp tools/notebook-macos/Info.plist "$contents/Info.plist"
+notebook_version=$(plutil -extract notebook.version raw -o - "$build_info")
+notebook_build=$(plutil -extract notebook.build raw -o - "$build_info")
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $notebook_version" "$contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $notebook_build" "$contents/Info.plist"
+cp "$build_info" "$contents/Resources/build-info.json"
+chmod 644 "$contents/Resources/build-info.json"
 cp tools/notebook-macos/Assets/AppIcon.icns "$contents/Resources/AppIcon.icns"
 
 # Source/native packages compile against this compiler's extension ABI even
 # after the application is moved away from the development checkout.
-python3 - "$runtime_root" "$contents/Resources/sputnik-sdk" <<'PY'
-import pathlib, shutil, sys
-source, destination = map(pathlib.Path, sys.argv[1:])
-for folder in ("runtime", "bytecode", "frontend", "profile", "optimizer", "frozen", "spec", "package", "notebook", "buildsys", "third_party/tomlplusplus"):
-    for path in (source / folder).rglob("*"):
-        if path.is_file() and path.suffix in (".h", ".hpp", ".inc", ".def"):
-            target = destination / path.relative_to(source)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(path, target)
-for name in ("tomlplusplus", "libyaml"):
-    license = source / "third_party" / name / "LICENSE"
-    if license.is_file():
-        target = destination.parent / "licenses" / (name + ".txt")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(license, target)
-PY
+for folder in runtime bytecode frontend profile optimizer frozen spec package notebook buildsys third_party/tomlplusplus; do
+    [[ -d "$runtime_root/$folder" ]] || continue
+    while IFS= read -r -d '' source; do
+        relative=${source#"$runtime_root/"}
+        target="$contents/Resources/sputnik-sdk/$relative"
+        mkdir -p "$(dirname "$target")"
+        cp -p "$source" "$target"
+    done < <(find "$runtime_root/$folder" -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.inc' -o -name '*.def' \) -print0)
+done
+for name in tomlplusplus libyaml; do
+    license="$runtime_root/third_party/$name/LICENSE"
+    if [[ -f "$license" ]]; then
+        mkdir -p "$contents/Resources/licenses"
+        cp -p "$license" "$contents/Resources/licenses/$name.txt"
+    fi
+done
 
 # Follow actual linkage, including optional runtime crypto backends. Leaving a
 # Homebrew dependency of a bundled library unresolved makes the app work only
@@ -70,6 +88,11 @@ while (( index < ${#sources[@]} )); do
         esac
         test -f "$resolved" || { echo "Missing dependency: $dependency" >&2; exit 1; }
         name=${dependency##*/}
+        if [[ "$name" == libpcre2-8*.dylib ]]; then
+            header="$(dirname "$resolved")/../include/pcre2.h"
+            test -f "$header" || { echo "Missing PCRE2 SDK header: $header" >&2; exit 1; }
+            cp "$header" "$contents/Resources/sputnik-sdk/pcre2.h"
+        fi
         destination="$contents/Frameworks/$name"
         found=false
         for (( previous=1; previous<${#outputs[@]}; previous++ )); do
@@ -88,7 +111,7 @@ while (( index < ${#sources[@]} )); do
             sources+=("$resolved")
             outputs+=("$destination")
             # Keep license notices with optional Homebrew dependencies too.
-            for notice in LICENSE.txt COPYING COPYING.LESSERv3; do
+            for notice in LICENSE.txt LICENSE LICENCE.md COPYING COPYING.LESSERv3; do
                 license="$(dirname "$resolved")/../$notice"
                 if test -f "$license"; then
                     cp "$license" "$contents/Resources/$name-$notice"

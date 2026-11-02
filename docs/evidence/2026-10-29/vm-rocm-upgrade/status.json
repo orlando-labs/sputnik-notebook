@@ -1,0 +1,35 @@
+{
+  "language_commit": "3eb0f05da50ba307d5f719e0b194de6317304b29",
+  "torch_commit": "b584478dbafd1cc1272e754accf78ffcd56a3ce4",
+  "torch_tree": "b4c4972c037ec190e0aeaffaf94cb4a20525030d",
+  "git_push": "pending explicit permission after automatic approval review rejection",
+  "local": {
+    "core_worker_tests": "passed",
+    "remote_api": "49/49 passed"
+  },
+  "22176": {
+    "release": "20261029-head-3eb0f05",
+    "head_deployed": true,
+    "api_tests": "47/47 passed",
+    "production_cell": "42",
+    "receipt_replay": true,
+    "metadata_preserved": true,
+    "token_preserved": true
+  },
+  "22015": {
+    "release": "20261029-head-3eb0f05",
+    "head_deployed": true,
+    "api_tests": "47/47 passed",
+    "pcre2": "10.47; real maps checked; Unicode regression passed",
+    "gpu": "3 x gfx906",
+    "rocm": "6.4.3",
+    "libtorch": "2.14.0",
+    "cpp_gpu_probes": "3/3 passed",
+    "torch_vm": "3/3 passed",
+    "torch_full_native": "3/3 passed; zero fallback; no Python runtime loaded",
+    "installed_package_vm_native": "passed; matrix gradients and SGD",
+    "production_torch_worker": "passed; matrix gradients, SGD, receipt replay; smoke project deleted",
+    "default_package_home": "/home/slowpilot/.sputnik/packages",
+    "example": "/home/slowpilot/sputnik-remote-core/examples/torch-rocm-check.s"
+  }
+}

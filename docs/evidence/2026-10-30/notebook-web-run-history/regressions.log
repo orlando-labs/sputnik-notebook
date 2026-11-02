@@ -1,0 +1,46 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/resources.spec.ts test/environments.spec.ts test/inputs.spec.ts test/selection-controls.spec.ts test/board-designer.spec.ts
+
+[WebServer] (node:23478) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 33 tests using 1 worker
+
+(node:23488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/board-designer.spec.ts:36:1 › create a board with inert palette/inspector/preview drafts, explicit save and runnable bindings (3.0s)
+  ✓   2 test/board-designer.spec.ts:79:1 › legacy editing preserves opaque settings and exact metadata through drag, duplication and undo/redo (1.3s)
+  ✓   3 test/board-designer.spec.ts:115:1 › nested panels can be authored, reordered, removed and restored with stable bindings (1.4s)
+  ✓   4 test/board-designer.spec.ts:141:1 › designer enforces viewer/revocation and preserves its committed draft across revision conflicts (3.9s)
+  ✓   5 test/board-designer.spec.ts:165:1 › designer shortcut, lost Save receipt and board duplicate/delete keep explicit lifecycle semantics (1.4s)
+  ✓   6 test/environments.spec.ts:24:1 › operator defaults deny preparation and arbitrary server paths, grants and unknown sheets (886ms)
+  ✓   7 test/environments.spec.ts:37:1 › worker review is inert until confirmation; stale drafts survive and receipts recover a lost response (5.0s)
+  ✓   8 test/environments.spec.ts:55:1 › saved revision, active run and settings CAS reject reset without erasing worker state (3.6s)
+  ✓   9 test/environments.spec.ts:70:1 › owner-only settings preserve private grants and revocation closes drafts (5.6s)
+  ✓  10 test/environments.spec.ts:81:1 › preparation is explicit, saved-only and exposes safe generations with retry and ready binding (8.0s)
+  ✓  11 test/environments.spec.ts:106:1 › storage admission rejects settings and preparation, while temporary copies cannot change runtime privileges (655ms)
+  ✓  12 test/inputs.spec.ts:31:1 › project and local Apply are atomic, exact and inert until a world is initialized; Watch and Manual follow core semantics (2.3s)
+  ✓  13 test/inputs.spec.ts:53:1 › parameter conflicts preserve drafts and invalid/busy/revoked requests leave accepted values unchanged (3.4s)
+  ✓  14 test/inputs.spec.ts:72:1 › input definitions and cell controls are authored as inert drafts and survive save with exact metadata (1.3s)
+  ✓  15 test/inputs.spec.ts:82:1 › input commands recover accepted and unaccepted response loss without duplicate runs or automatic replay (1.0s)
+  ✓  16 test/inputs.spec.ts:100:1 › an active run rejects project and local edits and retains its frozen input version (2.8s)
+  ✓  17 test/inputs.spec.ts:112:1 › typed controls preserve large integers, ranges and configs; rejected config batches keep every draft and accepted value (1.1s)
+  ✓  18 test/inputs.spec.ts:145:1 › parameter drafts guard navigation and layouts fit light/dark desktop and mobile (1.9s)
+  ✓  19 test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits (1.2s)
+  ✓  20 test/resources.spec.ts:46:1 › core stops a real run at its cumulative quota, shows exhaustion and retains history (2.5s)
+  ✓  21 test/resources.spec.ts:56:1 › storage quota rejects Run without accepting work and is visible in resource settings (681ms)
+  ✓  22 test/resources.spec.ts:65:1 › temporary public-limits preview edits only its copy and recovers a lost run reply without replay (2.4s)
+  ✓  23 test/resources.spec.ts:81:1 › public profile cannot lift the 60-second ceiling and preview Stop/ACL/CSRF remain enforced (981ms)
+  ✓  24 test/selection-controls.spec.ts:43:1 › shared selection survives sort/filter, retains exact key/row, reopens and clears without implicit Run (2.5s)
+  ✓  25 test/selection-controls.spec.ts:47:1 › duplicate/null keys and ambiguous column names disable selection and Core rejects forged rows (1.9s)
+  ✓  26 test/selection-controls.spec.ts:52:1 › calendar and zoned UTC drafts reject DST gaps and require an explicit repeated-hour occurrence (944ms)
+  ✓  27 test/selection-controls.spec.ts:56:1 › preset review applies exact values atomically and captured sets save independently from defaults (1.4s)
+  ✓  28 test/selection-controls.spec.ts:60:1 › preset management rejects incompatible imports atomically and Cancel is inert (860ms)
+  ✓  29 test/selection-controls.spec.ts:64:1 › stale parameter reviews preserve drafts and server validates all preset values atomically (5.2s)
+  ✓  30 test/selection-controls.spec.ts:68:1 › board designer authors date modes/zones, preset scope and selection bindings without executing (1.0s)
+  ✓  31 test/selection-controls.spec.ts:72:1 › viewer controls cannot apply dates, presets or selections and revoked access removes saved-set drafts (3.9s)
+  ✓  32 test/selection-controls.spec.ts:76:1 › shared selection filters image and completed audio by encoded asset identity and leaves collections intact (4.9s)
+  ✓  33 test/selection-controls.spec.ts:81:1 › legacy accepted carousel filenames resolve shared asset identity without changing stored collection order (2.7s)
+
+  33 passed (1.4m)

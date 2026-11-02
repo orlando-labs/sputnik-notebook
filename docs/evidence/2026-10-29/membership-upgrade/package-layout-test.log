@@ -1,0 +1,6 @@
+test_dependency_packages_install_remove_receipts_and_worker_imports (__main__.RemoteTests) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.595s
+
+OK

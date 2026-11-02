@@ -604,9 +604,9 @@ struct RichTextEditorRepresentable: NSViewRepresentable {
         textView.isSelectable = true
         textView.allowsUndo = true
         textView.drawsBackground = false
-        textView.insertionPointColor = NotebookPalette.nativeAccent
-        textView.selectedTextAttributes = [.backgroundColor: NotebookPalette.nativeFoxglove.withAlphaComponent(0.35),
-                                           .foregroundColor: NotebookPalette.nativeInk]
+        textView.insertionPointColor = NotebookPalette.nativeCaret
+        textView.selectedTextAttributes = [.backgroundColor: NotebookPalette.nativeTextSelectionBackground,
+                                           .foregroundColor: NotebookPalette.nativeTextSelectionForeground]
         textView.textContainerInset = NSSize(width: 13, height: 11)
         textView.isHorizontallyResizable = false
         textView.isVerticallyResizable = true

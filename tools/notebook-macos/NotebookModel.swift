@@ -2,6 +2,14 @@ import AppKit
 import Combine
 import Foundation
 
+func notebookEnvironmentMessage(_ message: String) -> String {
+    let prefix = "missing bundled module dependency: "
+    guard let range = message.range(of: prefix) else { return message }
+    let module = message[range.upperBound...].prefix { $0.isLetter || $0.isNumber || $0 == "_" || $0 == "." }
+    guard !module.isEmpty else { return "A package module is unavailable. Open Dependencies to check the installed packages." }
+    return "Package module '\(module)' is unavailable in this notebook. Open Dependencies to install its package or check its short import name."
+}
+
 struct NotebookOutput: Decodable {
     let stream: String; let text: String
     var source_file: String? = nil
@@ -191,6 +199,7 @@ struct NotebookDependency: Decodable, Identifiable {
     var id: String { path }
 }
 struct NotebookSnapshot: Decodable {
+    var resource_policy: NotebookResourcePolicy? = nil
     var retain_cell_results: Bool? = nil
     var image_inputs: [NotebookImageInput]? = nil
     var accepted_data: [NotebookAcceptedData]? = nil
@@ -269,6 +278,8 @@ private final class NotebookWorker {
     }
     let queue = DispatchQueue(label: "org.sputniklang.notebook.runtime", qos: .userInitiated)
     private var handle: OpaquePointer?
+    // Serial-owner identity: reject stale work before touching the current handle.
+    private var document: UUID?
     private var paused = false
     private var external = false
 
@@ -281,7 +292,9 @@ private final class NotebookWorker {
         var error: UnsafeMutablePointer<CChar>?
         guard let json = sputnik_notebook_snapshot(handle, &error) else { throw failure(error) }
         defer { sputnik_notebook_string_free(json) }
-        return try JSONDecoder().decode(NotebookSnapshot.self, from: Data(String(cString: json).utf8))
+        let state = try JSONDecoder().decode(NotebookSnapshot.self, from: Data(String(cString: json).utf8))
+        if let message = state.resource_policy?.validationError { throw NotebookFailure(message: message) }
+        return state
     }
 
     private func command(_ action: String, tab: String = "", cell: String = "", text: String = "") throws {
@@ -302,7 +315,7 @@ private final class NotebookWorker {
         completion?()
     }
 
-    func open(path: String, create: Bool, title: String,
+    func open(path: String, create: Bool, title: String, document: UUID,
               completion: @escaping (NotebookSnapshot?, String?) -> Void) {
         queue.async {
             var candidate: OpaquePointer?
@@ -341,6 +354,7 @@ private final class NotebookWorker {
                 }
                 self.retireHost()
                 self.handle = candidate
+                self.document = document
                 candidate = nil
                 self.paused = false
                 self.settingsPath = initial.path
@@ -355,10 +369,13 @@ private final class NotebookWorker {
         }
     }
 
-    func execute(edits: [SourceEdit], action: String, tab: String, cell: String, text: String,
+    func execute(edits: [SourceEdit], document: UUID, action: String, tab: String, cell: String, text: String,
                  trustNative: Bool = false,
                  completion: @escaping (NotebookSnapshot?, String?) -> Void) {
         queue.async {
+            guard self.document == document else {
+                DispatchQueue.main.async { completion(nil, "Notebook document was replaced.") }; return
+            }
             var operationError: String?
             do {
                 if trustNative { try self.command("trust_native", tab: tab) }
@@ -394,8 +411,9 @@ private final class NotebookWorker {
         }
     }
 
-    func setExternal(_ enabled: Bool) {
+    func setExternal(_ enabled: Bool, document: UUID) {
         queue.async {
+            guard self.document == document else { return }
             self.external = enabled
             var error: UnsafeMutablePointer<CChar>?
             _ = sputnik_notebook_external(self.handle, enabled ? 1 : 0, &error)
@@ -403,9 +421,10 @@ private final class NotebookWorker {
         }
     }
 
-    func export(edits: [SourceEdit], completion: @escaping (NotebookRemoteExport?, NotebookSnapshot?, String?) -> Void) {
+    func export(edits: [SourceEdit], document: UUID, completion: @escaping (NotebookRemoteExport?, NotebookSnapshot?, String?) -> Void) {
         queue.async {
             do {
+                guard self.document == document else { throw CancellationError() }
                 for edit in edits {
                     if let formatting = edit.draft.formatting {
                         var value: [String: Any] = ["source": edit.draft.source]
@@ -425,9 +444,10 @@ private final class NotebookWorker {
         }
     }
 
-    func restore(_ exported: String, completion: @escaping (NotebookSnapshot?, String?) -> Void) {
+    func restore(_ exported: String, document: UUID, completion: @escaping (NotebookSnapshot?, String?) -> Void) {
         queue.async {
             do {
+                guard self.document == document else { throw CancellationError() }
                 guard let value = try JSONSerialization.jsonObject(with: Data(exported.utf8)) as? [String: Any],
                       let document = value["document"] as? String, let modules = value["modules"] as? [String: String],
                       let parsed = try JSONSerialization.jsonObject(with: Data(document.utf8)) as? [String: Any] else {
@@ -447,13 +467,14 @@ private final class NotebookWorker {
         }
     }
 
-    func remoteResult(sheet: String, document: String, data: Data, stale: Bool,
+    func remoteResult(sheet: String, source: String, data: Data, stale: Bool, document: UUID,
                       completion: @escaping (NotebookSnapshot?, String?) -> Void) {
         queue.async {
             do {
+                guard self.document == document else { throw CancellationError() }
                 var error: UnsafeMutablePointer<CChar>?
                 let ok = data.withUnsafeBytes { bytes in
-                    sputnik_notebook_remote_result(self.handle, sheet, document, bytes.bindMemory(to: UInt8.self).baseAddress, data.count, stale ? 1 : 0, &error)
+                    sputnik_notebook_remote_result(self.handle, sheet, source, bytes.bindMemory(to: UInt8.self).baseAddress, data.count, stale ? 1 : 0, &error)
                 }
                 guard ok != 0 else { throw self.failure(error) }
                 let state = try self.snapshot()
@@ -475,8 +496,9 @@ private final class NotebookWorker {
         }
     }
 
-    func setPaused(_ value: Bool) {
+    func setPaused(_ value: Bool, document: UUID) {
         queue.async {
+            guard self.document == document else { return }
             self.paused = value
         }
     }
@@ -503,12 +525,53 @@ private final class NotebookWorker {
 }
 
 final class NotebookModel: ObservableObject {
+    let library: NotebookLibrary
     let audioSession = NotebookAudioSession()
     let runHistory = NotebookRunHistory()
+    @Published private(set) var appResourcePolicy = NotebookResourcePolicy.appDefaults
+    let resourceUsage = NotebookResourceUsage()
+    private var resourceStopped = false
+    private var resourceStopReason: String?
+    var bookResourcePolicy: NotebookResourcePolicy { snapshot?.resource_policy ?? .init() }
+    var effectiveResourcePolicy: NotebookResourcePolicy { bookResourcePolicy.applying(to: appResourcePolicy) }
+    func setAppResourcePolicy(_ value: NotebookResourcePolicy) {
+        guard value.validationError == nil else { error = value.validationError; return }
+        appResourcePolicy = value
+        applyResourcePolicy()
+    }
+    func setBookResourcePolicy(_ value: NotebookResourcePolicy, completion: @escaping (Bool) -> Void) {
+        guard value.validationError == nil else { error = value.validationError; completion(false); return }
+        perform("resource_policy", text: value.json) { [weak self] saved in
+            self?.applyResourcePolicy()
+            completion(saved)
+        }
+    }
+    private func applyResourcePolicy() {
+        runHistory.policy = effectiveResourcePolicy
+        remote.resourcePolicy = appResourcePolicy
+        remote.bookResourcePolicy = bookResourcePolicy
+        if remote.connected { remote.updateResourcePolicy() }
+    }
+    private func checkResourceExecution() -> Bool {
+        if let reason = resourceUsage.reason(effectiveResourcePolicy) { error = reason; return false }
+        return true
+    }
+    private func meterResources() {
+        do { try resourceUsage.checkpoint() }
+        catch { self.error = error.localizedDescription; resourceStopped = true; stopExecution(force: true); return }
+        if !resourceStopped, let reason = resourceUsage.reason(effectiveResourcePolicy) {
+            resourceStopped = true; resourceStopReason = reason
+            for key in periodicStates.keys { periodicStates[key]?.pause() }
+            stopExecution(force: true)
+            error = reason
+        }
+    }
     var pendingRunHistory: [String: NotebookRunStart] = [:]
     private let workerExecutable: String?
     let remote: NotebookRemoteController
-    init(workerExecutable: String? = nil, remoteExecutable: String? = nil, remoteStorage: URL? = nil) {
+    init(workerExecutable: String? = nil, remoteExecutable: String? = nil, remoteStorage: URL? = nil,
+         library: NotebookLibrary = NotebookLibrary(defaults: nil)) {
+        self.library = library
         self.workerExecutable = workerExecutable ?? Bundle.main.executableURL?
             .deletingLastPathComponent().appendingPathComponent("sputnik-notebook-worker").path
         self.remote = NotebookRemoteController(executable: remoteExecutable, storage: remoteStorage)
@@ -519,7 +582,7 @@ final class NotebookModel: ObservableObject {
             self.executingCells = [:]
             self.retainedResults = [:]; self.suppressedResults = []; self.observedResetEpochs = []
             self.remoteResultRuns = [:]; self.invalidatedResults = []
-            self.worker.setExternal(enabled)
+            self.worker.setExternal(enabled, document: self.documentIdentity)
         }
         remote.onChange = { [weak self] in self?.remoteChanged() }
         remote.onResultReset = { [weak self] sheet in self?.discardResults(in: "sheet:" + sheet) }
@@ -532,7 +595,7 @@ final class NotebookModel: ObservableObject {
             let identity = self.documentIdentity
             let edits = self.drafts.map { SourceEdit(key: $0.key, draft: $0.value) }
             return try await withCheckedThrowingContinuation { continuation in
-                self.worker.export(edits: edits) { exported, state, error in
+                self.worker.export(edits: edits, document: identity) { exported, state, error in
                     guard self.documentIdentity == identity, !self.closing else { continuation.resume(throwing: CancellationError()); return }
                     if let state { self.accept(state) }
                     if let exported { continuation.resume(returning: exported) }
@@ -544,7 +607,7 @@ final class NotebookModel: ObservableObject {
             guard let self else { throw CancellationError() }
             let identity = self.documentIdentity
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-                self.worker.restore(exported) { state, error in
+                self.worker.restore(exported, document: identity) { state, error in
                     guard self.documentIdentity == identity, !self.closing else { continuation.resume(throwing: CancellationError()); return }
                     if let state { self.accept(state) }
                     if let error { continuation.resume(throwing: NotebookRemoteFailure(status: 0, message: error)) }
@@ -556,7 +619,7 @@ final class NotebookModel: ObservableObject {
             guard let self else { throw CancellationError() }
             let identity = self.documentIdentity
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-                self.worker.remoteResult(sheet: sheet, document: document, data: data, stale: stale) { state, error in
+                self.worker.remoteResult(sheet: sheet, source: document, data: data, stale: stale, document: identity) { state, error in
                     guard self.documentIdentity == identity, !self.closing else { continuation.resume(throwing: CancellationError()); return }
                     if let state {
                         let latest = self.remote.runs.last { $0.sheet == sheet }?.id == run
@@ -576,7 +639,7 @@ final class NotebookModel: ObservableObject {
             if !projectValues.isEmpty {
                 let text = String(decoding: try JSONEncoder().encode(projectValues), as: UTF8.self)
                 try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-                    self.worker.execute(edits: [], action: "restore_inputs", tab: "", cell: "", text: text) { state, failure in
+                    self.worker.execute(edits: [], document: identity, action: "restore_inputs", tab: "", cell: "", text: text) { state, failure in
                         guard self.documentIdentity == identity, self.remote.isSelected else { continuation.resume(throwing: CancellationError()); return }
                         if let state { self.accept(state) }
                         if let failure { continuation.resume(throwing: NotebookRemoteFailure(status: 422, message: failure)) }
@@ -593,7 +656,7 @@ final class NotebookModel: ObservableObject {
                     guard !edits.isEmpty else { continue }
                     let text = String(decoding: try JSONEncoder().encode(edits), as: UTF8.self)
                     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-                        self.worker.execute(edits: [], action: "set_cell_inputs", tab: tab.id, cell: cell.id, text: text) { state, failure in
+                        self.worker.execute(edits: [], document: identity, action: "set_cell_inputs", tab: tab.id, cell: cell.id, text: text) { state, failure in
                             guard self.documentIdentity == identity, self.remote.isSelected else { continuation.resume(throwing: CancellationError()); return }
                             if let state { self.accept(state) }
                             if let failure { continuation.resume(throwing: NotebookRemoteFailure(status: 422, message: failure)) }
@@ -843,7 +906,7 @@ final class NotebookModel: ObservableObject {
     }
     private var currentRemoteRun: NotebookRemoteRun? {
         guard let sheet = remote.focusedSheet?() else { return nil }
-        return remote.runs.last { ($0.sheet == sheet || $0.controller == sheet) && $0.active }
+        return remote.runs.last { $0.board == nil && $0.sheet == sheet && $0.active }
     }
     var executingCurrentWorker: Bool { remote.isSelected ? currentRemoteRun != nil : executingWorker }
     var canStop: Bool {
@@ -885,10 +948,15 @@ final class NotebookModel: ObservableObject {
         executionPhase = worker.phase
     }
     private func trackExecution(_ active: Bool) {
+        let wasActive = executingWorker
         executionTimer?.invalidate(); executionTimer = nil
         if executingWorker && !active { freezeLiveTiming() }
         executingWorker = active; executionPhase = active ? 1 : 0
-        guard active else { executingCells = [:]; worker.finishExecution(); return }
+        guard active else {
+            if wasActive { do { try resourceUsage.checkpoint(finish: true) } catch { self.error = error.localizedDescription } }
+            executingCells = [:]; worker.finishExecution(); return
+        }
+        resourceStopped = false; resourceStopReason = nil; resourceUsage.begin()
         worker.prepareExecution()
         livePollGeneration += 1
         liveCells = [:]
@@ -896,6 +964,7 @@ final class NotebookModel: ObservableObject {
         let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
             guard let self else { return }
             self.executionPhase = self.worker.phase
+            self.meterResources()
             self.pollLive()
         }
         executionTimer = timer
@@ -922,7 +991,7 @@ final class NotebookModel: ObservableObject {
         RunLoop.main.add(timer, forMode: .common)
     }
     private var canPollWatch: Bool {
-        snapshot != nil && !busy && !dependencyOperationActive && !closing && !remote.isSelected &&
+        snapshot != nil && !busy && !dependencyOperationActive && !closing && !remote.isSelected && resourceUsage.reason(effectiveResourcePolicy) == nil &&
             editorFailures.isEmpty && !drafts.values.contains { $0.formatting == nil }
     }
     private func pollWatch() {
@@ -946,6 +1015,18 @@ final class NotebookModel: ObservableObject {
     var requestNew: (() -> Void)?
     var requestOpen: (() -> Void)?
     var requestDependency: (() -> Void)?
+    var requestSettings: ((String) -> Void)?
+    @Published var showDependencies = false
+
+    func canRun(_ tab: NotebookTab, cell: NotebookCell? = nil) -> Bool {
+        guard !busy, !dependencyOperationActive, !boardEditorOpen,
+              cell == nil || cell?.kind == "code" else { return false }
+        if remote.isSelected {
+            return remote.connected && !remote.busy && !remote.conflict && !remote.hasPending &&
+                !executingCurrentWorker && tab.kind == "sheet"
+        }
+        return !executingCurrentWorker && (cell == nil || tab.kind == "module" || !tab.environment_stale)
+    }
     var onChange: (() -> Void)?
     private var drafts: [SourceKey: SourceDraft] = [:]
     private var retainedResults: [SourceKey: NotebookCellResult] = [:]
@@ -1427,7 +1508,7 @@ final class NotebookModel: ObservableObject {
         return left == right || (normalized(left) != nil && normalized(left) == normalized(right))
     }
     private func pauseForCodeDrafts() {
-        worker.setPaused(drafts.values.contains { $0.formatting == nil })
+        worker.setPaused(drafts.values.contains { $0.formatting == nil }, document: documentIdentity)
     }
     func editSource(_ source: String, cell: NotebookCell, tab: NotebookTab) {
         guard canEdit else { return }
@@ -1486,6 +1567,9 @@ final class NotebookModel: ObservableObject {
             if let telemetry = tab.telemetry, telemetry.sampled_ms > 0 { runtimeTelemetry[tab.id] = telemetry; runtimeSampleDates[tab.id] = Date() }
         }
         if !freshResultsFor.isEmpty && !remote.isSelected { workerLastContact = Date() }
+        runHistory.policy = effectiveResourcePolicy
+        remote.resourcePolicy = appResourcePolicy
+        remote.bookResourcePolicy = bookResourcePolicy
         reconcileResults(state, freshTabs: freshResultsFor)
         for tab in state.tabs where freshResultsFor.contains(tab.id) {
             for cell in tab.cells { audioSession.apply(cell.audio_controls ?? [], tab: tab.id) }
@@ -1521,7 +1605,8 @@ final class NotebookModel: ObservableObject {
         for key in periodicStates.keys { periodicStates[key]?.pause() }
         busy = true
         error = nil
-        worker.open(path: url.path, create: create, title: url.deletingPathExtension().lastPathComponent) { [weak self] state, error in
+        let identity = UUID()
+        worker.open(path: url.path, create: create, title: url.deletingPathExtension().lastPathComponent, document: identity) { [weak self] state, error in
             guard let self else { return }
             self.busy = false
             if let state {
@@ -1534,8 +1619,9 @@ final class NotebookModel: ObservableObject {
                 self.remoteResultRuns = [:]; self.invalidatedResults = []
                 self.editorFailures.removeAll()
                 self.audioSession.close()
+                self.resourceUsage.open(project: state.path)
                 self.runHistory.open(project: state.path); self.pendingRunHistory = [:]; self.workerLastContact = nil; self.runtimeTelemetry = [:]; self.runtimeSampleDates = [:]
-                self.documentIdentity = UUID()
+                self.documentIdentity = identity
                 self.selectedBoardID = nil
                 self.periodicStates = [:]
                 self.actionSignatures = [:]; self.componentUpdatedAt = [:]; self.executingTargetID = nil; self.executionStarted = nil
@@ -1543,6 +1629,7 @@ final class NotebookModel: ObservableObject {
                 self.accept(state)
                 self.scheduleWatchPolling()
                 self.remote.open(url)
+                self.library.recordOpened(url)
                 NSDocumentController.shared.noteNewRecentDocumentURL(url)
             }
             self.error = error
@@ -1588,7 +1675,7 @@ final class NotebookModel: ObservableObject {
             if ["run", "run_all", "restart_worker"].contains(action) {
                 guard let target, target.kind == "sheet" else { error = "Remote execution requires a sheet."; completion?(false); return }
                 let sheet = String(target.id.dropFirst(6))
-                if action == "restart_worker" { remote.restart(sheet: sheet); completion?(true) }
+                if action == "restart_worker" { remote.restart(sheet: sheet) { completion?($0) } }
                 else {
                     let id = action == "run_all" ? target.cells.first(where: { $0.kind == "code" })?.id : (commandCellID ?? targetCell?.id)
                     guard let id else { error = "This sheet has no code cell."; completion?(false); return }
@@ -1596,6 +1683,10 @@ final class NotebookModel: ObservableObject {
                     remote.run(sheet: sheet, cell: id, all: action == "run_all") { completion?($0) }
                 }
                 return
+            }
+            if action == "periodic_dispose" {
+                guard let component = commandCellID else { error = "Choose an action or service."; completion?(false); return }
+                remote.restartInvocation(board: text, component: component) { completion?($0) }; return
             }
             if action == "set_cell_inputs" {
                 guard let target, target.kind == "sheet", let targetCell else { error = "Choose a sheet cell."; completion?(false); return }
@@ -1627,6 +1718,7 @@ final class NotebookModel: ObservableObject {
         }
         let explicitExecution = ["run", "run_all", "apply", "action_run", "periodic_run", "periodic_tick", "watch_run"].contains(action)
         let executes = explicitExecution || (isolatedExecution && ["set_input", "set_inputs", "set_cell_inputs"].contains(action))
+        if executes && !remote.isSelected && !checkResourceExecution() { completion?(false); return }
         if explicitExecution && !authorizeExecution() { completion?(false); return }
         let actionComponent = action == "action_run" ? snapshot?.boards?.first { $0.id == text }?.allComponents.first { $0.id == commandCellID } : nil
         let actionSignature = actionComponent.map { component in
@@ -1644,7 +1736,7 @@ final class NotebookModel: ObservableObject {
         }
         liveTab = action == "action_run" || action.hasPrefix("periodic_") ? "" : target?.id ?? ""
         trackExecution(isolatedExecution && executes)
-        worker.execute(edits: edits, action: action, tab: target?.id ?? "",
+        worker.execute(edits: edits, document: documentIdentity, action: action, tab: target?.id ?? "",
                        cell: commandCellID ?? targetCell?.id ?? "", text: text,
                        trustNative: executes && nativeTrusted) { [weak self] state, error in
             guard let self else { return }
@@ -1701,7 +1793,7 @@ final class NotebookModel: ObservableObject {
             if ["add_cell", "add_text", "delete_cell", "move_up", "move_down"].contains(action) {
                 self.selectedCellID = self.activeTab?.selected_cell ?? ""
             }
-            self.error = error
+            self.error = self.resourceStopReason ?? error
             self.pauseForCodeDrafts()
             self.onChange?()
             if self.remote.isSelected { self.remote.edited() }

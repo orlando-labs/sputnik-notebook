@@ -16,9 +16,11 @@ def main():
     parser.add_argument("--core", required=True)
     parser.add_argument("--worker", required=True)
     parser.add_argument("--keep", action="store_true")
+    parser.add_argument("--allow-book-policy-overrides", action="store_true")
     options = parser.parse_args()
     fixture.OPTIONS = SimpleNamespace(core=options.core, worker=options.worker, keep=options.keep, bridges=False, python=shutil.which("python3.14") or sys.executable, ruby=shutil.which("ruby") or "ruby")
     host = fixture.RemoteTests
+    host.agent_extra_args = ['--allow-book-policy-overrides'] if options.allow_book_policy_overrides else []
     host.setUpClass()
     try:
         root = host.directory / "client"
@@ -36,7 +38,7 @@ def main():
         wrapper.chmod(0o700)
         result = subprocess.run([options.test, "--root", str(root), "--core", options.core,
                                  "--worker", options.worker, "--url", "http://127.0.0.1:" + str(host.port),
-                                 "--token", str(host.root / "token"), "--fault-core", str(wrapper)],
+                                 "--token", str(host.root / "token"), "--fault-core", str(wrapper)] + host.agent_extra_args,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=180)
         sys.stdout.write(result.stdout)
         sys.stderr.write(result.stderr)

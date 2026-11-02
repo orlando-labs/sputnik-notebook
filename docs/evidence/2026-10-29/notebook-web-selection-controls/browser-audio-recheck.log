@@ -1,0 +1,15 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/audio.spec.ts --grep file audio plays locally|authored audio owns
+
+[WebServer] (node:3846) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:3855) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/audio.spec.ts:28:1 › file audio plays locally, seeks, changes volume and exports exact bytes without another run (2.8s)
+  ✓  2 test/audio.spec.ts:36:1 › authored audio owns matching automatic channels and board settings retain metadata through Save (1.9s)
+
+  2 passed (6.9s)

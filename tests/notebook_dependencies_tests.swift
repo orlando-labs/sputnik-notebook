@@ -110,7 +110,7 @@ struct NotebookDependencyTests {
             try require(!model.dependencyOperationActive && !controller.busy, "dependency operation releases UI ownership")
             let source = root.appendingPathComponent("package-source")
             try FileManager.default.createDirectory(at: source, withIntermediateDirectories: false)
-            try Data("[package]\nname = \"editor-probe\"\nversion = \"1.0.0\"\nroot = \"editor_probe\"\n[[modules]]\nname = \"editor_probe\"\npath = \"probe.s\"\n".utf8).write(to: source.appendingPathComponent("sputnik.toml"))
+            try Data("name: editor-probe\nversion: \"1.0.0\"\nfiles: [probe.s]\nmodule_names: {probe.s: editor_probe}\n".utf8).write(to: source.appendingPathComponent("sputnik.build.yaml"))
             try Data("package editor_probe\nexport answer\ndef answer(): 42\n".utf8).write(to: source.appendingPathComponent("probe.s"))
             controller.packageSource = source.path
             await controller.installPackage()
@@ -146,8 +146,8 @@ struct NotebookDependencyTests {
             #endif
             for variant in ["cpu-a", "cpu-b"] {
                 let bundle = variant == "cpu-b" ? "runtime" : "none"
-                let manifest = "schema=\"sputnik.package-manifest.v1\"\n[package]\nname=\"editor-native\"\nversion=\"1.0.0\"\nroot=\"editor_native\"\n[artifact]\nvariant=\"\(variant)\"\nbundle=\"\(bundle)\"\n[target]\nos=\"macos\"\narch=\"\(arch)\"\nmin_os=\"14.0\"\ncompute_backend=\"cpu\"\n[[modules]]\nname=\"editor_native\"\nsource=\"main.s\"\n[[native]]\nname=\"answer\"\nkind=\"prebuilt\"\nlibrary=\"answer.dylib\"\nsputnik_ext_abi=1\n"
-                try Data(manifest.utf8).write(to: native.appendingPathComponent("sputnik.toml"))
+                let manifest = "name: editor-native\nversion: \"1.0.0\"\nfiles: [main.s, answer.dylib]\nmodule_names: {main.s: editor_native}\nprofiles: {required: [core.v1, ffi.v1]}\nartifact: {variant: \"\(variant)\", bundle: \"\(bundle)\"}\ntarget: {os: macos, arch: \"\(arch)\", min_os: \"14.0\", compute_backend: cpu}\nnative_extensions: [{name: answer, kind: prebuilt, library: answer.dylib, sputnik_ext_abi: 1}]\n"
+                try Data(manifest.utf8).write(to: native.appendingPathComponent("sputnik.build.yaml"))
                 try command(sdk, ["pkg", "build", native.path, "--out", root.appendingPathComponent(variant + ".sputnikpkg").path])
             }
             controller.packageSource = root.appendingPathComponent("cpu-a.sputnikpkg").path
@@ -178,7 +178,7 @@ struct NotebookDependencyTests {
             await controller.prepare()
             try require(controller.error == nil, controller.error ?? "prepare both Python and Ruby through editor")
             let pycall = build.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("pycall")
-            if FileManager.default.fileExists(atPath: pycall.appendingPathComponent("sputnik.toml").path) {
+            if FileManager.default.fileExists(atPath: pycall.appendingPathComponent("sputnik.build.yaml").path) {
                 controller.packageSource = pycall.path
                 await controller.installPackage()
                 try require(controller.error == nil, controller.error ?? "install native bridge through editor")

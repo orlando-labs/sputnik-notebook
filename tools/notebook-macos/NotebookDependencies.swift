@@ -4,9 +4,11 @@ import Foundation
 
 struct NotebookInstalledPackage: Decodable, Identifiable {
     let name: String, version: String
+    var display_name: String? = nil
     let variant: String?
     let digest: String?
     var id: String { name + "@" + version + (variant.map { "/" + $0 } ?? "") }
+    var displayName: String { display_name ?? name.split(separator: "/").last.map(String.init) ?? name }
 }
 struct NotebookDependencyEnvironment: Decodable, Identifiable {
     let id: String, state: String, directory: String
@@ -33,6 +35,7 @@ struct NotebookPackageRelease: Decodable, Identifiable {
 }
 struct NotebookPackageVersions: Decodable {
     let package_ref: String
+    var displayName: String { package_ref.split(separator: "/").last.map(String.init) ?? package_ref }
     let versions: [NotebookPackageRelease]
     var available: [NotebookPackageRelease] { versions.filter { !$0.yanked } }
     var latest: String? { available.first(where: \.stable)?.version ?? available.first?.version }
@@ -122,7 +125,11 @@ final class NotebookDependencyController: ObservableObject {
     @Published var packageVersion = "" {
         didSet { if packageVersion != oldValue { packageBuilds = nil; registryVariant = "" } }
     }
-    @Published var registryVariant = ""
+    @Published var registryVariant = "" {
+        didSet {
+            if registryVariant != oldValue { packageAllowNative = false; packageAllowNativeLarge = false; packageBuildFromSource = false }
+        }
+    }
     @Published var packageVariant = ""
     @Published var packageBackend = "cpu"
     @Published var packageBundle = "none"
@@ -143,6 +150,7 @@ final class NotebookDependencyController: ObservableObject {
     private var catalogGeneration = UUID()
     private var catalogName = ""
     var isRemote: Bool { execution != nil }
+    var executionTab: NotebookTab? { model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab }
     var current: Bool { model.documentIdentity == document && model.remote.selected == execution }
     var canChange: Bool { current && !busy && !catalogBusy && !model.busy && !model.executingWorker && !model.remote.busy && !model.remote.active && !inventory.jobs.contains(where: \.active) }
     var manifestChanged: Bool { requirements != files?.text(requirementFile) || gemfile != files?.text("Gemfile") }
@@ -199,6 +207,7 @@ final class NotebookDependencyController: ObservableObject {
     private func clearPackageCatalog() {
         catalogGeneration = UUID(); catalogName = ""; packageCatalog = nil; packageBuilds = nil
         packageVersion = ""; registryVariant = ""; catalogError = nil
+        packageAllowNative = false; packageAllowNativeLarge = false; packageBuildFromSource = false
     }
     func findPackageVersions() async {
         guard current, !busy, !catalogBusy else { return }
@@ -247,10 +256,25 @@ final class NotebookDependencyController: ObservableObject {
         guard !selection.allow_native || packageAllowNative else { error = "Allow native code to install this build."; return }
         guard !selection.build_from_source || packageBuildFromSource else { error = "Allow building native code from source to install this build."; return }
         guard (build.size ?? 0) <= 67_108_864 || packageAllowNativeLarge else { error = "Allow packages up to 2 GiB to install this build."; return }
-        await change(action: "install_sputnik", source: catalog.package_ref, version: packageVersion,
+        await change(action: "install_sputnik", source: catalogName, version: packageVersion,
             options: ["variant": build.variant, "backend": selection.backend, "bundle": selection.bundle,
                 "allow_native": packageAllowNative, "build_from_source": selection.build_from_source && packageBuildFromSource,
                 "allow_native_large": packageAllowNativeLarge])
+    }
+    func grantNativeExecution() async {
+        guard let tab = executionTab, tab.kind == "sheet", canChange else { return }
+        busy = true; error = nil
+        defer { busy = false }
+        do {
+            let settings = try await model.workerSettings(for: tab)
+            guard current else { return }
+            var grants = settings.grants
+            for grant in ["ffi.call", "ffi.load", "fs.read"] {
+                if !grants.contains(grant) && !grants.contains(grant + "=*") { grants.append(grant) }
+            }
+            try await model.configureWorker(tab, text: grants.joined(separator: "\n"), settings: settings)
+            message = "Native execution allowed for this sheet. Run cells when ready."
+        } catch { if current { self.error = error.localizedDescription } }
     }
     func chooseLocalPackage(_ path: String) {
         packageSource = path; packageVariant = ""; packageBackend = "cpu"; packageBundle = "none"

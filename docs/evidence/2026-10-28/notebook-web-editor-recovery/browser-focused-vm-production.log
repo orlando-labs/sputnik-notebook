@@ -1,0 +1,32 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/editor-recovery.spec.ts test/sources-transfer.spec.ts
+
+[WebServer] (node:3281) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 16 tests using 1 worker
+
+(node:3291) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/editor-recovery.spec.ts:25:1 › sheet duplicate/reorder/delete preserves metadata, fresh identities and board controllers without execution (1.3s)
+  ✓   2 test/editor-recovery.spec.ts:39:1 › module rename and binary resource move commit atomically and reject path/case collisions (1.4s)
+  ✓   3 test/editor-recovery.spec.ts:49:1 › independent concurrent edits combine explicitly and a second server race still uses CAS (1.4s)
+  ✓   4 test/editor-recovery.spec.ts:59:1 › source and file conflicts require choices, cancel keeps the draft and review fits mobile (1.8s)
+  ✓   5 test/editor-recovery.spec.ts:71:1 › local recovery restores full source and binary drafts after reload and resolves a changed base explicitly (1.3s)
+  ✓   6 test/editor-recovery.spec.ts:79:1 › uncertain save survives reload with the original command, preserves newer edits and adds no duplicate revision (1.1s)
+  ✓   7 test/editor-recovery.spec.ts:86:1 › separate tabs keep independent journals and other projects cannot see their recovery copies (1.6s)
+  ✓   8 test/editor-recovery.spec.ts:92:1 › recovery respects account/ACL and unavailable local storage does not block explicit Save (1.7s)
+  ✓   9 test/editor-recovery.spec.ts:102:1 › restoring checks current edit access after a role downgrade and keeps the recovery copy (1.4s)
+  ✓  10 test/sources-transfer.spec.ts:24:1 › module and binary file changes save atomically, preserve hidden resources and execute imported helper (2.2s)
+  ✓  11 test/sources-transfer.spec.ts:40:1 › file conflicts keep the complete draft; export historical revision and recover draft bundle (1.1s)
+
+  ✓  12 test/sources-transfer.spec.ts:52:1 › ZIP and folder imports retain full document, int64 metadata, files and idempotent receipts without running (1.1s)
+
+  ✓  13 test/sources-transfer.spec.ts:73:1 › imports reject unsafe archives and unauthorized file/dependency operations (1.2s)
+  ✓  14 test/sources-transfer.spec.ts:85:1 › registry packages install, recover an accepted response loss, and remove through owner UI (2.1s)
+
+  ✓  15 test/sources-transfer.spec.ts:99:1 › import resumes the same command across reload and accepted response loss (1.1s)
+  ✓  16 test/sources-transfer.spec.ts:116:1 › file save retries retain command identity and source layout fits desktop and mobile themes (1.6s)
+
+  16 passed (26.1s)

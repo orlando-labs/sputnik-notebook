@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+set -euo pipefail
+unset -f cd 2>/dev/null || true
+profile=$1
+mode=${2:-plan}
+[[ "$mode" == plan || "$mode" == apply ]]
+expected_image=sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4
+case "$profile:$(hostname)" in
+  22015:dev-ai-amd)
+    roots=(/home/slowpilot/sputnik-remote-core /home/slowpilot/sputnik-releases
+      /home/slowpilot/.sputnik/packages /home/slowpilot/.cache/sputnik
+      /tmp/sputnik-rocm-prebuilt-verify.json /tmp/sputnik-registry-pull-probe.log
+      /tmp/sputnik-bare-baseline-data-loader.log)
+    ;;
+  22176:ai-stt.orlando-labs.com)
+    roots=(/home/slowpilot/sputnik-remote-core /ssd1Tb/sputnik-remote-core-releases
+      /ssd1Tb/sputnik-package-home
+      /home/slowpilot/.sputnik/packages /home/slowpilot/.sputnik/packages.empty-before-ssd-20261030
+      /home/slowpilot/.cache/sputnik)
+    ;;
+  22136:dev-nxt.orlando-labs.com)
+    roots=(/home/slowpilot/sputnik-core-builds
+      /home/slowpilot/sputnik-releases/20261101-notebook-core-publication
+      /tmp/sputnik-transfer-status)
+    ;;
+  *) printf 'Unexpected cleanup host/profile\n' >&2; exit 1 ;;
+esac
+
+# Protect the literal and physical source of every mount of every running app.
+keeps=()
+while IFS= read -r path; do
+  [[ -n "$path" ]] || continue
+  keeps+=("${path%/}")
+  if resolved=$(realpath -e -- "$path" 2>/dev/null); then keeps+=("${resolved%/}"); fi
+done < <(for cid in $(docker ps -q); do docker inspect --format '{{range .Mounts}}{{println .Source}}{{end}}' "$cid"; done)
+while IFS= read -r mount; do
+  for root in "${roots[@]}"; do
+    if [[ "$mount" == "$root" || "$mount" == "$root/"* ]]; then keeps+=("$mount"); fi
+  done
+done < <(findmnt -rn -o TARGET)
+
+assert_container_processes() {
+  local pid group comm outside=0 checked=0
+  while IFS= read -r pid; do
+    [[ -d /proc/$pid ]] || continue
+    if ! group=$(cat "/proc/$pid/cgroup" 2>/dev/null); then
+      [[ -d /proc/$pid ]] || continue
+      printf 'Unreadable process cgroup: %s\n' "$pid" >&2; return 1
+    fi
+    comm=$(cat "/proc/$pid/comm" 2>/dev/null || true)
+    if [[ "$group" =~ /docker[-/] ]]; then
+      printf 'DOCKER_PROCESS pid=%s comm=%s\n' "$pid" "$comm"
+      checked=$((checked+1))
+    else
+      printf 'BARE_HOST_PROCESS pid=%s comm=%s\n' "$pid" "$comm" >&2
+      outside=$((outside+1))
+    fi
+  done < <(ps -eo pid=,ppid=,comm=,args= | awk '$3 != "awk" && $3 != "grep" && ($3 ~ /^sputnik/ || $0 ~ /\/home\/slowpilot\/sputnik-remote-core\/|\/home\/slowpilot\/sputnik-releases\/|\/ssd1Tb\/sputnik-remote-core-releases\//) {print $1}')
+  [[ "$outside" == 0 ]]
+  printf 'PASS_NO_BARE_HOST_NOTEBOOK_PROCESSES checked=%s\n' "$checked"
+}
+assert_container_processes
+
+mount_signature() {
+  docker inspect --format '{{range .Mounts}}{{println .Type .Source .Destination .RW}}{{end}}' sputnik-remote-core | sort
+}
+core_id= core_pid= core_mounts= token_before=
+if [[ "$profile" != 22136 ]]; then
+  core_id=$(docker inspect --format '{{.Id}}' sputnik-remote-core)
+  core_pid=$(docker inspect --format '{{.State.Pid}}' sputnik-remote-core)
+  core_mounts=$(mount_signature)
+  [[ $(docker inspect --format '{{.Image}}' sputnik-remote-core) == "$expected_image" ]]
+  [[ $(docker inspect --format '{{.State.Health.Status}}' sputnik-remote-core) == healthy ]]
+  token_before=$(sha256sum /home/slowpilot/sputnik-remote-core/state/token | cut -d' ' -f1)
+fi
+
+prune_path() {
+  local path=$1 keep child ancestor=false
+  [[ -e "$path" || -L "$path" ]] || return 0
+  for keep in "${keeps[@]}"; do
+    if [[ "$path" == "$keep" || "$path" == "$keep/"* ]]; then
+      printf 'KEEP_MOUNT %s\n' "$path"; return 0
+    fi
+    if [[ "$keep" == "$path/"* ]]; then ancestor=true; fi
+  done
+  if "$ancestor"; then
+    [[ -d "$path" && ! -L "$path" ]] || { printf 'Unexpected mount ancestor: %s\n' "$path" >&2; return 1; }
+    while IFS= read -r -d '' child; do prune_path "$child"; done < <(find "$path" -mindepth 1 -maxdepth 1 -print0)
+    return 0
+  fi
+  printf 'REMOVE_PATH %s\n' "$path"
+  if [[ "$mode" == apply ]]; then rm -rf --one-file-system -- "$path"; fi
+}
+for root in "${roots[@]}"; do prune_path "$root"; done
+
+# This wrapper was installed for the retired host release, not the container.
+wrapper=/home/slowpilot/.local/bin/sputnik
+if [[ "$profile" != 22136 && -f "$wrapper" ]] && grep -qE 'sputnik-remote-core/current|sputnik-remote-core-releases|sputnik-releases' "$wrapper"; then
+  prune_path "$wrapper"
+fi
+if [[ "$mode" == apply && "$profile" != 22136 ]]; then rmdir /home/slowpilot/.sputnik 2>/dev/null || true; fi
+
+# Remove only stopped notebook predecessors/candidates; unrelated apps stay intact.
+removable_containers=()
+for cid in $(docker ps -aq); do
+  name=$(docker inspect --format '{{.Name}}' "$cid")
+  case "${name#/}" in
+    sputnik-core-before-*|sputnik-core-candidate-*|sputnik-remote-core-stage)
+      [[ "$cid" != "${core_id:0:12}" ]]
+      [[ $(docker inspect --format '{{.State.Running}}' "$cid") == false ]] || { printf 'Unexpected running notebook artifact: %s\n' "$name" >&2; exit 1; }
+      printf 'REMOVE_CONTAINER %s\n' "$name"
+      removable_containers+=("$cid")
+      if [[ "$mode" == apply ]]; then docker rm -v "$cid"; fi
+      ;;
+  esac
+done
+
+# Inspect entrypoints and core-only tags, never prune unrelated Docker images.
+for image in $(docker image ls -q --no-trunc | sort -u); do
+  if ! config=$(docker image inspect --format '{{json .Config.Entrypoint}} {{json .Config.Cmd}} {{json .RepoTags}}' "$image" 2>/dev/null); then continue; fi
+  case "$config" in
+    *sputnik-notebook-remote*|*sputnik-core-build:*|*sputnik-core-sdk:*) ;;
+    *) continue ;;
+  esac
+  used=false
+  for cid in $(docker ps -aq); do
+    if [[ " ${removable_containers[*]} " == *" $cid "* ]]; then continue; fi
+    if [[ $(docker inspect --format '{{.Image}}' "$cid") == "$image" ]]; then used=true; break; fi
+  done
+  if "$used"; then printf 'KEEP_USED_IMAGE %s\n' "$image"; continue; fi
+  printf 'REMOVE_IMAGE %s\n' "$image"
+  if [[ "$mode" == apply ]]; then
+    while IFS= read -r tag; do
+      [[ -n "$tag" ]] || continue
+      docker image rm "$tag"
+    done < <(docker image inspect --format '{{range .RepoTags}}{{println .}}{{end}}' "$image")
+    if docker image inspect "$image" >/dev/null 2>&1; then docker image rm "$image"; fi
+  fi
+done
+
+if [[ "$profile" != 22136 ]]; then
+  [[ $(docker inspect --format '{{.Id}}' sputnik-remote-core) == "$core_id" ]]
+  [[ $(docker inspect --format '{{.State.Pid}}' sputnik-remote-core) == "$core_pid" ]]
+  [[ $(mount_signature) == "$core_mounts" ]]
+  [[ $(docker inspect --format '{{.State.Health.Status}}' sputnik-remote-core) == healthy ]]
+  [[ $(sha256sum /home/slowpilot/sputnik-remote-core/state/token | cut -d' ' -f1) == "$token_before" ]]
+  printf 'PASS_CORE_CONTAINER_MOUNTS_PID_AND_TOKEN_UNCHANGED\n'
+fi
+assert_container_processes
+printf 'PASS_CLEANUP_%s profile=%s\n' "$mode" "$profile"

@@ -1,5 +1,5 @@
 #include "notebook/project.h"
-#include "tools/notebook-macos/NotebookBridge.h"
+#include "notebook/core/notebook.h"
 #include <chrono>
 #include <filesystem>
 #include <fstream>

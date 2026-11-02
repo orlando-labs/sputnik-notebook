@@ -1,0 +1,12 @@
+{
+  "url": "http://127.0.0.1:3010",
+  "web_pid": 83595,
+  "http": 200,
+  "assets": 200,
+  "independent_agent_pid": 76524,
+  "browser_login": "Bob",
+  "catalog_projects": 1,
+  "js_errors": 0,
+  "current_manifest": true,
+  "raster_csp": true
+}

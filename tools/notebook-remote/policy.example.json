@@ -1,0 +1,27 @@
+{
+  "core": {
+    "run_count": 100,
+    "run_age_seconds": 2592000,
+    "revision_count": 50,
+    "project_bytes": 2147483648,
+    "total_bytes": 10737418240,
+    "minimum_free_bytes": 536870912,
+    "max_run_bytes": 134217728,
+    "receipt_age_seconds": 2592000,
+    "event_count": 10000,
+    "gc_interval_seconds": 60
+  },
+  "users": {},
+  "projects": {},
+  "profiles": {
+    "public": {
+      "persistence": "session",
+      "total_run_seconds": 60,
+      "run_seconds": 60,
+      "lease_seconds": 15,
+      "session_seconds": 900,
+      "project_bytes": 67108864,
+      "max_run_bytes": 8388608
+    }
+  }
+}

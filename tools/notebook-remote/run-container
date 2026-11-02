@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -euo pipefail
+image=docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0
+name=sputnik-remote-core
+backend=cpu
+state= packages= cache=
+root=/var/lib/sputnik-notebook
+bind=127.0.0.1
+port=18765
+gpu_devices=all
+rocm_root=/opt/rocm
+tensile=
+task_threads=${SPUTNIK_TASK_MAX_THREADS:-$(getconf _NPROCESSORS_ONLN)}
+ffi_threads=${SPUTNIK_FFI_MAX_THREADS:-32}
+foreground=false
+usage() {
+  cat <<'USAGE'
+Usage: run-container --state DIR --packages DIR --cache DIR [options]
+  --backend cpu|rocm|cuda     GPU runtime (default: cpu)
+  --image IMAGE              Published core image
+  --name NAME                Container name (default: sputnik-remote-core)
+  --root PATH                State path inside the container
+  --bind ADDRESS --port PORT  Host HTTP endpoint (127.0.0.1:18765)
+  --gpu-devices UUID1,UUID2   CUDA devices, or all
+  --rocm-root DIR            Host ROCm userspace (/opt/rocm)
+  --tensile DIR              Optional rocBLAS GPU architecture data
+  --task-threads N            Task pool limit, also SPUTNIK_TASK_MAX_THREADS
+  --ffi-threads N             FFI pool limit, also SPUTNIK_FFI_MAX_THREADS
+  --foreground               Keep Docker attached
+USAGE
+}
+while (($#)); do
+  case "$1" in
+    --help|-h) usage; exit 0 ;;
+    --foreground) foreground=true; shift; continue ;;
+    --image|--name|--backend|--state|--packages|--cache|--root|--bind|--port|--gpu-devices|--rocm-root|--tensile|--task-threads|--ffi-threads)
+      (($# >= 2)) || { printf 'Missing value for %s\n' "$1" >&2; exit 2; } ;;
+    *) printf 'Unknown option: %s\n' "$1" >&2; exit 2 ;;
+  esac
+  case "$1" in
+    --image) image=$2;; --name) name=$2;; --backend) backend=$2;;
+    --state) state=$2;; --packages) packages=$2;; --cache) cache=$2;;
+    --root) root=$2;; --bind) bind=$2;; --port) port=$2;;
+    --gpu-devices) gpu_devices=$2;; --rocm-root) rocm_root=$2;; --tensile) tensile=$2;;
+    --task-threads) task_threads=$2;; --ffi-threads) ffi_threads=$2;;
+  esac
+  shift 2
+done
+[[ -n "$state" && -n "$packages" && -n "$cache" ]] || { usage >&2; exit 2; }
+[[ "$backend" == cpu || "$backend" == rocm || "$backend" == cuda ]] || { printf 'Invalid backend\n' >&2; exit 2; }
+for value in "$task_threads" "$ffi_threads" "$port"; do
+  [[ "$value" =~ ^[1-9][0-9]*$ ]] || { printf 'Pool limits and port must be positive integers\n' >&2; exit 2; }
+done
+mkdir -p -- "$state" "$packages" "$cache/home"
+state=$(cd -- "$state" && pwd -P)
+packages=$(cd -- "$packages" && pwd -P)
+cache=$(cd -- "$cache" && pwd -P)
+args=(run --name "$name" --restart unless-stopped --stop-timeout 30 --user "$(id -u):$(id -g)"
+  --security-opt no-new-privileges:true --security-opt label=disable --cap-drop ALL
+  --log-opt max-size=10m --log-opt max-file=5 -p "$bind:$port:18765")
+if ! "$foreground"; then args+=(-d); fi
+args+=(--mount "type=bind,src=$state,dst=$root"
+  --mount "type=bind,src=$packages,dst=/var/lib/sputnik-packages"
+  --mount "type=bind,src=$cache,dst=/var/cache/sputnik"
+  -e HOME=/var/cache/sputnik/home -e "SPUTNIK_REMOTE_ROOT=$root"
+  -e "SPUTNIK_TASK_MAX_THREADS=$task_threads" -e "SPUTNIK_FFI_MAX_THREADS=$ffi_threads")
+if [[ "$backend" == cuda ]]; then
+  selection=all
+  if [[ "$gpu_devices" != all ]]; then selection="\"device=$gpu_devices\""; fi
+  args+=(--gpus "$selection" -e NVIDIA_DRIVER_CAPABILITIES=compute,utility)
+elif [[ "$backend" == rocm ]]; then
+  rocm_root=$(cd -- "$rocm_root" && pwd -P)
+  args+=(-e LD_LIBRARY_PATH=/opt/pcre2/lib:/opt/rocm/lib:/opt/rocm/lib64 --device /dev/kfd --device /dev/dri
+    --mount "type=bind,src=$rocm_root,dst=/opt/rocm,readonly")
+  for group in render video; do
+    gid=$(getent group "$group" | cut -d: -f3 || true)
+    if [[ -n "$gid" ]]; then args+=(--group-add "$gid"); fi
+  done
+  if [[ -n "$tensile" ]]; then
+    tensile=$(cd -- "$tensile" && pwd -P)
+    args+=(--mount "type=bind,src=$tensile,dst=/opt/rocm-tensile,readonly" -e ROCBLAS_TENSILE_LIBPATH=/opt/rocm-tensile)
+  fi
+fi
+exec docker "${args[@]}" "$image" --mode serve --host 0.0.0.0 --port 18765 \
+  --root "$root" --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik

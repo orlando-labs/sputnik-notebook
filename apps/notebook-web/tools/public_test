@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+case $(uname -s) in Darwin) public_tmp=/private/tmp;; *) public_tmp=/tmp;; esac
+public_root=$(mktemp -d "$public_tmp/nbpublic-XXXXXX")
+public_agent=
+cleanup() {
+  if [ -n "$public_agent" ]; then kill -TERM "$public_agent" 2>/dev/null || :; wait "$public_agent" 2>/dev/null || :; fi
+  rm -rf "$public_root"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM HUP
+../../build/sputnik-notebook-remote --mode agent --allow-book-policy-overrides --root "$public_root/core" --worker "$PWD/../../build/sputnik-notebook-worker" --sputnik "$PWD/../../../sputnik-lang/build/sputnik" > build/public-adapter-core.log 2>&1 &
+public_agent=$!
+SPUTNIK_VM_CACHE="$PWD/build/public-adapter-cache" ../../../sputnik-lang/build/sputnik run test/public_sessions_test.s --grant ffi --grant fs.read --grant fs.write --grant fs.metadata --grant time.now --grant random.secure --grant net.connect -- --database "$public_root/catalog.sqlite" --core-root "$public_root/core"

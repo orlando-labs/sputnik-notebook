@@ -1,0 +1,25 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/public.spec.ts test/resources.spec.ts
+
+[WebServer] (node:923) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/public.spec.ts:21:1 › guest opens the pinned public template inertly, edits/runs explicitly and discards its private copy (2.7s)
+  ✓   2 test/public.spec.ts:45:1 › two anonymous visitors are isolated; CSRF, forged authority and private APIs remain rejected (590ms)
+  ✓   3 test/public.spec.ts:69:1 › lost opening/run replies recover the same commands only on explicit retry or receipt check (1.7s)
+  ✓   4 test/public.spec.ts:92:1 › tighter book quota stops work; fresh copies keep charged visitor time and the public/storage ceilings (2.4s)
+  ✓   5 test/public.spec.ts:112:1 › lease expiry and hidden/disconnected views discard public copies without replay (15.5s)
+  ✓   6 test/public.spec.ts:124:1 › admission serializes concurrent opens and bounds repeated copies for the same anonymous visitor (694ms)
+  ✓   7 test/public.spec.ts:133:1 › actual 60-second aggregate ceiling survives a fresh copy (1.0m)
+  ✓   8 test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits (1.5s)
+  ✓   9 test/resources.spec.ts:46:1 › core stops a real run at its cumulative quota, shows exhaustion and retains history (2.1s)
+  ✓  10 test/resources.spec.ts:56:1 › storage quota rejects Run without accepting work and is visible in resource settings (790ms)
+  ✓  11 test/resources.spec.ts:65:1 › temporary public-limits preview edits only its copy and recovers a lost run reply without replay (2.6s)
+  ✓  12 test/resources.spec.ts:81:1 › public profile cannot lift the 60-second ceiling and preview Stop/ACL/CSRF remain enforced (1.3s)
+
+  12 passed (1.6m)

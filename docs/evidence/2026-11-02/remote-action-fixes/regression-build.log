@@ -1,0 +1,133 @@
+/Library/Developer/CommandLineTools/usr/bin/make -C ../sputnik-lang BUILD_DIR="build" runtime
+make[1]: Nothing to be done for `runtime'.
+/Library/Developer/CommandLineTools/usr/bin/make -C ../sputnik-lang BUILD_DIR="build" "build/sputnik"
+make[1]: `build/sputnik' is up to date.
+bash tools/notebook-macos/generate-build-info.sh "../sputnik-lang" "/Users/slowpilot/workspace/sputnik/sputnik-lang/build/sputnik" tools/notebook-macos/Info.plist "build/notebook-macos" "development" ""
+xcrun swiftc -swift-version 5 -Onone -target arm64-apple-macosx14.0 -module-cache-path build/notebook-macos/swift-cache -import-objc-header packages/notebook-core/include/notebook/core/notebook.h tests/notebook_macos_remote_actions_tests.swift tools/notebook-macos/CodeEditor.swift tools/notebook-macos/NotebookAnnotationNumberField.swift tools/notebook-macos/NotebookAnnotationSettingsView.swift tools/notebook-macos/NotebookAudio.swift tools/notebook-macos/NotebookAudioAnnotations.swift tools/notebook-macos/NotebookAudioAnnotatorView.swift tools/notebook-macos/NotebookAudioClassesView.swift tools/notebook-macos/NotebookAudioInputView.swift tools/notebook-macos/NotebookAudioView.swift tools/notebook-macos/NotebookBoard.swift tools/notebook-macos/NotebookBoardDrag.swift tools/notebook-macos/NotebookBoardEditor.swift tools/notebook-macos/NotebookBoardLayout.swift tools/notebook-macos/NotebookBoardTabsView.swift tools/notebook-macos/NotebookBoardView.swift tools/notebook-macos/NotebookBookSettingsView.swift tools/notebook-macos/NotebookBuildInfo.swift tools/notebook-macos/NotebookCellComponents.swift tools/notebook-macos/NotebookCellIDEditor.swift tools/notebook-macos/NotebookComponentView.swift tools/notebook-macos/NotebookConfigEditor.swift tools/notebook-macos/NotebookDependencies.swift tools/notebook-macos/NotebookDependenciesView.swift tools/notebook-macos/NotebookExecutionControlsView.swift tools/notebook-macos/NotebookFigure.swift tools/notebook-macos/NotebookFigureView.swift tools/notebook-macos/NotebookFileViews.swift tools/notebook-macos/NotebookImageAnnotatorView.swift tools/notebook-macos/NotebookImageView.swift tools/notebook-macos/NotebookInputControlEditor.swift tools/notebook-macos/NotebookInputView.swift tools/notebook-macos/NotebookLibrary.swift tools/notebook-macos/NotebookLiveChartView.swift tools/notebook-macos/NotebookMediaAssets.swift tools/notebook-macos/NotebookMediaAssetsView.swift tools/notebook-macos/NotebookModel.swift tools/notebook-macos/NotebookMultiSeriesView.swift tools/notebook-macos/NotebookObjectMenu.swift tools/notebook-macos/NotebookP1DisplayViews.swift tools/notebook-macos/NotebookP1Inspector.swift tools/notebook-macos/NotebookP1Model.swift tools/notebook-macos/NotebookP1Settings.swift tools/notebook-macos/NotebookPageBadge.swift tools/notebook-macos/NotebookPalette.swift tools/notebook-macos/NotebookPeriodicWork.swift tools/notebook-macos/NotebookPeriodicWorkView.swift tools/notebook-macos/NotebookPlasma.swift tools/notebook-macos/NotebookPlotScene.swift tools/notebook-macos/NotebookPlotView.swift tools/notebook-macos/NotebookPreferences.swift tools/notebook-macos/NotebookPresetView.swift tools/notebook-macos/NotebookProgressView.swift tools/notebook-macos/NotebookProjectInputPicker.swift tools/notebook-macos/NotebookProjectInputsView.swift tools/notebook-macos/NotebookRangeDateView.swift tools/notebook-macos/NotebookRemote.swift tools/notebook-macos/NotebookResourcePolicy.swift tools/notebook-macos/NotebookResultView.swift tools/notebook-macos/NotebookRunHistory.swift tools/notebook-macos/NotebookRunHistoryView.swift tools/notebook-macos/NotebookRuntimeTelemetry.swift tools/notebook-macos/NotebookSelection.swift tools/notebook-macos/NotebookServerView.swift tools/notebook-macos/NotebookSplitView.swift tools/notebook-macos/NotebookStopwatchView.swift tools/notebook-macos/NotebookTableView.swift tools/notebook-macos/NotebookTaskMonitorView.swift tools/notebook-macos/NotebookTextVariable.swift tools/notebook-macos/NotebookView.swift tools/notebook-macos/NotebookWelcomeView.swift tools/notebook-macos/NotebookWorkerSettingsView.swift tools/notebook-macos/RichTextEditing.swift tools/notebook-macos/RichTextEditor.swift tools/notebook-macos/RichTextInterpolation.swift tools/notebook-macos/RichTextStructure.swift tools/notebook-macos/SputnikGreekLetters.swift tools/notebook-macos/SputnikSyntax.swift build/notebook-macos/NotebookBuildMetadata.swift build/core/libNotebookCore.a -framework AppKit -framework SwiftUI -lc++ /Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a  -L/opt/homebrew/Cellar/openssl@3/3.6.2/lib -lssl -lcrypto -L/opt/homebrew/Cellar/pcre2/10.47_1/lib -lpcre2-8 -L/opt/homebrew/opt/libyaml/lib -lyaml -L/opt/homebrew/opt/libarchive/lib -larchive -lz -L/opt/homebrew/Cellar/nettle/4.0/lib -lhogweed -lnettle -L/opt/homebrew/Cellar/gmp/6.3.0/lib -lgmp -o build/notebook_macos_remote_actions_tests
+tools/notebook-macos/NotebookDependencies.swift:254:82: warning: immutable value 'catalog' was never used; consider replacing with '_' or removing it [#no-usage]
+252 |     }
+253 |     func installRegistryPackage() async {
+254 |         guard canInstallRegistryPackage, let build = selectedPackageVariant, let catalog = packageCatalog else { return }
+    |                                                                                  `- warning: immutable value 'catalog' was never used; consider replacing with '_' or removing it [#no-usage]
+255 |         let selection = build.host_selection
+256 |         guard !selection.allow_native || packageAllowNative else { error = "Allow native code to install this build."; return }
+tools/notebook-macos/NotebookAudioView.swift:60:10: warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+58 |         .onAppear { load() }
+59 |         .onDisappear { controller.pause() }
+60 |         .onChange(of: panel) { _ in load() }
+   |          `- warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+61 |         .onChange(of: stream) { _ in load() }
+62 |         .onChange(of: showWaveform) { _ in load() }
+
+tools/notebook-macos/NotebookAudioView.swift:61:10: warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+59 |         .onDisappear { controller.pause() }
+60 |         .onChange(of: panel) { _ in load() }
+61 |         .onChange(of: stream) { _ in load() }
+   |          `- warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+62 |         .onChange(of: showWaveform) { _ in load() }
+63 |         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in controller.tick() }
+
+tools/notebook-macos/NotebookAudioView.swift:62:10: warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+60 |         .onChange(of: panel) { _ in load() }
+61 |         .onChange(of: stream) { _ in load() }
+62 |         .onChange(of: showWaveform) { _ in load() }
+   |          `- warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+63 |         .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in controller.tick() }
+64 |     }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+tools/notebook-macos/NotebookAudioInputView.swift:201:10: warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+199 |         .onAppear { recorder.refreshDevices() }
+200 |         .onDisappear { recorder.discard(); preview.close() }
+201 |         .onChange(of: recorder.captured) { if let value = $0 { draft = value; error = nil } }
+    |          `- warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead. [#DeprecatedDeclaration]
+202 |         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+203 |             guard !disabled, !recorder.recording, let provider = providers.first else { return false }
+
+tools/notebook-macos/NotebookAudioInputView.swift:55:81: warning: forming 'UnsafeMutableRawPointer' to a variable of type 'CFString'; this is likely incorrect because 'CFString' may contain an object reference.
+ 53 |             var nameAddress = AudioObjectPropertyAddress(mSelector: kAudioObjectPropertyName, mScope: kAudioObjectPropertyScopeGlobal, mElement: kAudioObjectPropertyElementMain)
+ 54 |             var nameSize = UInt32(MemoryLayout<CFString>.size)
+ 55 |             _ = AudioObjectGetPropertyData(id, &nameAddress, 0, nil, &nameSize, &name)
+    |                                                                                 `- warning: forming 'UnsafeMutableRawPointer' to a variable of type 'CFString'; this is likely incorrect because 'CFString' may contain an object reference.
+ 56 |             return Device(id: id, name: name as String)
+ 57 |         }
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[2](build.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[3](emitter.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[4](format.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[5](graph_linker.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[6](expr.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[7](binder.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[8](checker.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[9](hir.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[10](lexer.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[11](token.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[12](parser.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[13](pattern.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[17](package.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[18](capabilities.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[19](data.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[20](effects.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[21](modern.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[22](replay.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[23](wasm_accel.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[24](concurrency.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[25](context.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[26](digest.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[27](errors.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[29](heap.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[30](http_codec.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[31](io.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[32](macro_expander.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[33](module_loader.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[35](net_http.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[36](net_http_server.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[37](net_http_transport.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[38](numeric.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[39](objects.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[40](reactor.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[41](sputnik_ext.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[42](stdlib_argparser.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[43](stdlib_benchmark.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[44](stdlib_bool.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[45](stdlib_codecs.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[46](stdlib_digest.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[47](stdlib_fs.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[48](stdlib_io.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[49](stdlib_json.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[50](stdlib_math.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[51](stdlib_net.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[52](stdlib_net_http.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[53](stdlib_regexp.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[54](stdlib_registry.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[55](stdlib_secure_random.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[56](stdlib_signature.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[57](stdlib_task.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[58](stdlib_time.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[59](stdlib_url.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[60](stdlib_uuid.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[61](stdlib_yaml.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[62](system.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[63](text.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[64](tls.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[65](value.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[66](value_display.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[67](vm.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[68](watch.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[69](world.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[70](store.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[71](distribution.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[72](stdlib_notebook_ui.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[73](registry.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[74](config_document.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[75](selection.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: object file (/Users/slowpilot/workspace/sputnik/sputnik-lang/build/libsputnik.a[78](entry.o)) was built for newer 'macOS' version (26.0) than being linked (14.0)
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/openssl@3/lib/libssl.3.dylib' which was built for newer version 26.0
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/openssl@3/lib/libcrypto.3.dylib' which was built for newer version 26.0
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/pcre2/lib/libpcre2-8.0.dylib' which was built for newer version 26.0
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/libyaml/lib/libyaml-0.2.dylib' which was built for newer version 26.0
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/libarchive/lib/libarchive.13.dylib' which was built for newer version 26.0
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/nettle/lib/libhogweed.7.dylib' which was built for newer version 26.0
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/nettle/lib/libnettle.9.dylib' which was built for newer version 26.0
+ld: warning: building for macOS-14.0, but linking with dylib '/opt/homebrew/opt/gmp/lib/libgmp.10.dylib' which was built for newer version 26.0

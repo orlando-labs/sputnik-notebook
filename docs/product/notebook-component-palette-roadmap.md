@@ -151,7 +151,7 @@ P00/P0/P1 выполнены. По [ревью 20 октября](notebook-compo
 - [Общий каталог компонентов](../../tools/notebook-macos/NotebookBoard.swift): `NotebookComponentTool.all`; [палитра и инспектор](../../tools/notebook-macos/NotebookBoardEditor.swift): `palette`, `bindingInspector`.
 - [Рендеринг компонентов](../../tools/notebook-macos/NotebookBoardView.swift), [редактор inputs и Parameter Form](../../tools/notebook-macos/NotebookInputView.swift).
 - [Модели inputs, компонентов и вложенных сеток](../../tools/notebook-macos/NotebookBoard.swift).
-- [Inputs и выполнение в isolated worker](../../tools/notebook-macos/NotebookExecution.cpp): `NotebookExecution::run`, `inputs_changed`.
+- [Inputs и выполнение в isolated worker](../../packages/notebook-core/native/execution.cpp): `NotebookExecution::run`, `inputs_changed`.
 - [Прогресс, состояния исполнения и Stop](../../tools/notebook-macos/NotebookModel.swift), [прогресс UI](../../tools/notebook-macos/NotebookProgressView.swift).
 - [Доски и execution contract](../engineering/notebook-boards-v1.md).
 - [Periodic Work](../engineering/notebook-periodic-work.md).

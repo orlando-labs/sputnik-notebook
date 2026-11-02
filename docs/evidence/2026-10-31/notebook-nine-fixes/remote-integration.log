@@ -1,0 +1,18 @@
+worker channel closed
+worker channel closed
+worker channel closed
+worker channel closed
+worker channel closed
+PASS package catalog: authentication, versions, compatibility, CLI, no installation or worker retirement
+PASS snapshots: opaque data, modules, conflicts, traversal, receipts, presentation, reconnect and restart
+PASS execution: function references, membership, Unicode, command argv, live heap and explicit restart
+PASS cancellation: stale epoch, cooperative stop, force stop and owner retirement
+PASS dependencies: registry install, receipts, isolated worker import, removal and runtime retirement
+PASS worker settings: deny, scoped grant, stale version and durable settings
+PASS inputs and watch: atomic batches, int64, receipts, manual scope, durability and idle pump
+PASS board actions and periodic work: isolated world, inputs, receipts, gateway restart, pause, retention and agent restart
+PASS durable restart: SQLite failure preserves heap, retry and receipt protect newer world
+PASS agent failure: interrupted durable run, no replay and preserved receipt
+PASS native Sputnik remote integration
+0
+worker channel is unusable

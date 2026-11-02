@@ -1,0 +1,53 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/workspace.spec.ts test/run-history.spec.ts test/environments.spec.ts test/selection-controls.spec.ts test/resources.spec.ts
+
+[WebServer] (node:17359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 40 tests using 1 worker
+
+(node:17382) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/environments.spec.ts:24:1 › operator defaults deny preparation and arbitrary server paths, grants and unknown sheets (2.2s)
+  ✓   2 test/environments.spec.ts:37:1 › worker review is inert until confirmation; stale drafts survive and receipts recover a lost response (5.4s)
+  ✓   3 test/environments.spec.ts:55:1 › saved revision, active run and settings CAS reject reset without erasing worker state (3.8s)
+  ✓   4 test/environments.spec.ts:70:1 › owner-only settings preserve private grants and revocation closes drafts (6.0s)
+  ✓   5 test/environments.spec.ts:81:1 › preparation is explicit, saved-only and exposes safe generations with retry and ready binding (8.1s)
+  ✓   6 test/environments.spec.ts:106:1 › storage admission rejects settings and preparation, while temporary copies cannot change runtime privileges (895ms)
+  ✓   7 test/resources.spec.ts:23:1 › resource settings edit the portable book draft, inherit defaults and preserve saved limits (1.4s)
+  ✓   8 test/resources.spec.ts:46:1 › core stops a real run at its cumulative quota, shows exhaustion and retains history (2.3s)
+  ✓   9 test/resources.spec.ts:56:1 › storage quota rejects Run without accepting work and is visible in resource settings (784ms)
+  ✓  10 test/resources.spec.ts:65:1 › temporary public-limits preview edits only its copy and recovers a lost run reply without replay (2.8s)
+  ✓  11 test/resources.spec.ts:81:1 › public profile cannot lift the 60-second ceiling and preview Stop/ACL/CSRF remain enforced (1.3s)
+  ✓  12 test/run-history.spec.ts:43:1 › immutable snapshot retains exact project/local values, sources and private-free environment provenance (3.3s)
+  ✓  13 test/run-history.spec.ts:56:1 › comparison keeps Int64 delta exact and exports CSV through the board entry (1.1s)
+  ✓  14 test/run-history.spec.ts:65:1 › Pin and Rename use metadata CAS, lost responses recover, protected delete is explicit and usage survives deletion (3.9s)
+  ✓  15 test/run-history.spec.ts:78:1 › restore reviews exact scalar scopes, excludes file inputs, preserves defaults and detects a stale review (5.1s)
+  ✓  16 test/run-history.spec.ts:87:1 › restoring a project scope triggers Watch only after explicit Apply (3.5s)
+  ✓  17 test/run-history.spec.ts:94:1 › pinned snapshots survive retention, labels obey storage, current presentation and foreign projects stay protected (1.3s)
+  ✓  18 test/run-history.spec.ts:105:1 › viewer can inspect and export but cannot mutate or restore; revocation removes snapshot contents (6.1s)
+  ✓  19 test/run-history.spec.ts:112:1 › pin limit is enforced by Core and active snapshots are never presented as immutable (1.5s)
+  ✓  20 test/run-history.spec.ts:125:1 › removed sheets keep immutable snapshots available through All retained sheets (1.3s)
+  ✓  21 test/selection-controls.spec.ts:43:1 › shared selection survives sort/filter, retains exact key/row, reopens and clears without implicit Run (3.0s)
+  ✓  22 test/selection-controls.spec.ts:47:1 › duplicate/null keys and ambiguous column names disable selection and Core rejects forged rows (2.3s)
+  ✓  23 test/selection-controls.spec.ts:52:1 › calendar and zoned UTC drafts reject DST gaps and require an explicit repeated-hour occurrence (1.2s)
+  ✓  24 test/selection-controls.spec.ts:56:1 › preset review applies exact values atomically and captured sets save independently from defaults (1.7s)
+  ✓  25 test/selection-controls.spec.ts:60:1 › preset management rejects incompatible imports atomically and Cancel is inert (963ms)
+  ✓  26 test/selection-controls.spec.ts:64:1 › stale parameter reviews preserve drafts and server validates all preset values atomically (5.0s)
+  ✓  27 test/selection-controls.spec.ts:68:1 › board designer authors date modes/zones, preset scope and selection bindings without executing (1.3s)
+  ✓  28 test/selection-controls.spec.ts:72:1 › viewer controls cannot apply dates, presets or selections and revoked access removes saved-set drafts (4.6s)
+  ✓  29 test/selection-controls.spec.ts:76:1 › shared selection filters image and completed audio by encoded asset identity and leaves collections intact (4.8s)
+  ✓  30 test/selection-controls.spec.ts:81:1 › legacy accepted carousel filenames resolve shared asset identity without changing stored collection order (2.6s)
+  ✓  31 test/workspace.spec.ts:25:1 › anonymous shell, SSR assets, negotiation, CSRF and private API (377ms)
+  ✓  32 test/workspace.spec.ts:54:1 › GitHub account, project UI, persistent identity and logout 204 (1.9s)
+  ✓  33 test/workspace.spec.ts:91:1 › two accounts: private projects, viewer/editor ACL, owner controls and revocation (1.5s)
+  ✓  34 test/workspace.spec.ts:128:1 › failed authorization and invalid callback leave no authenticated account (607ms)
+  ✓  35 test/workspace.spec.ts:141:1 › library search, details, sort, last opened, collapse and refresh (1.6s)
+  ✓  36 test/workspace.spec.ts:184:1 › new notebook dialog handles keyboard, validation and recoverable failures (942ms)
+  ✓  37 test/workspace.spec.ts:210:1 › owner sharing UI, read-only metadata and account-scoped library preferences (2.4s)
+  ✓  38 test/workspace.spec.ts:259:3 › welcome and project layout: light, desktop and mobile (1.5s)
+  ✓  39 test/workspace.spec.ts:259:3 › welcome and project layout: dark, desktop and mobile (1.4s)
+  ✓  40 test/workspace.spec.ts:301:1 › library works when browser storage is unavailable (953ms)
+
+  40 passed (1.7m)

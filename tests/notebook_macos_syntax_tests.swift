@@ -13,7 +13,9 @@ private enum NotebookMacOSSyntaxTests {
         try sequencingAndScopedExitKeywords()
         try commentsDoNotEatCode()
         try stringsWinOverKeywordsAndComments()
+        try relativeImportStrings()
         try templateLoopControls()
+        try regexpTagsAndSymmetricOperator()
         try macroSplicesUseSputnikHashRules()
         try applyingColorPreservesText()
         try editorCoordinatorPreservesSelectionUndoAndIME()
@@ -22,13 +24,31 @@ private enum NotebookMacOSSyntaxTests {
         print("notebook macOS syntax tests passed")
     }
 
+    private static func regexpTagsAndSymmetricOperator() throws {
+        for source in [#"r"\d+#{"я"}"mi ~= text"#, #"text ~= r'#{'я'}\d+'im"#,
+                       #"rx'#{'я'}\d+'im ~= text"#] {
+            let tokens = SputnikSyntax.tokens(in: source)
+            _ = try token("~=", in: tokens, category: .operator)
+            require(tokens.filter { $0.category == .string }.count == 1,
+                    "regexp interpolation quotes and modifiers belong to the tagged string")
+            require(!tokens.contains { $0.category == .comment },
+                    "regexp interpolation is not a comment")
+        }
+        for spelling in ["=~", "!~"] {
+            require(!SputnikSyntax.tokens(in: "text " + spelling + " pattern").contains {
+                $0.category == .operator && $0.text == spelling
+            }, "removed regexp operators must not be recognized")
+        }
+    }
+
     private static func templateLoopControls() throws {
         let source = "html\"\"\"\n  %for item with_index i in items:\n    #{item}\n  %# omitted\n  %%for literal\n  \"\"\""
         let tokens = SputnikSyntax.tokens(in: source)
         _ = try token("for", in: tokens, category: .keyword)
         _ = try token("in", in: tokens, category: .keyword)
         _ = try token("%# omitted", in: tokens, category: .comment)
-        _ = try token("@template", in: SputnikSyntax.tokens(in: "@template(\"./page.html.sv\")"), category: .keyword)
+        _ = try token("template", in: SputnikSyntax.tokens(in: "template \"./page.html.sv\""), category: .identifier)
+        _ = try token("@template", in: SputnikSyntax.tokens(in: "@template(\"value\")"), category: .variable)
         for plain in ["\"\"\"\n  %for item in items:\n  \"\"\"",
                       "r\"\"\"\n  %for item in items:\n  \"\"\""] {
             require(!SputnikSyntax.tokens(in: plain).contains { $0.category == .keyword },
@@ -152,6 +172,13 @@ private enum NotebookMacOSSyntaxTests {
         let outside = try token("#{outside_macro}", in: tokens, category: .comment)
         require(outside.text == "#{outside_macro}",
                 "outside a macro body #{ keeps its comment reading")
+    }
+
+    private static func relativeImportStrings() throws {
+        let tokens = SputnikSyntax.tokens(in: "import \"../backend/models\" as models\nfrom \"./helpers.s\" import Item\n")
+        _ = try token("import", in: tokens, category: .keyword)
+        _ = try token("\"../backend/models\"", in: tokens, category: .string)
+        _ = try token("\"./helpers.s\"", in: tokens, category: .string)
     }
 
     private static func applyingColorPreservesText() throws {

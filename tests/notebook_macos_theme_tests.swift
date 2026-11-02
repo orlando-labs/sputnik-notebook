@@ -13,7 +13,7 @@ private enum NotebookMacOSThemeTests {
         let preferences = NotebookPreferences(defaults: defaults)
         require(preferences.theme == .light, "The initial theme should stay light")
         require(preferences.colorPreset == .sputnik, "Existing users must keep the original Sputnik palette")
-        require(NotebookColorPreset.allCases.count == 14, "Include the default and all thirteen reference palettes")
+        require(NotebookColorPreset.allCases.count == 15, "Include System, the default and all thirteen reference palettes")
         require(preferences.substituteGreekLetters, "Greek letter replacement should be enabled by default")
         preferences.substituteGreekLetters = false
         require(!NotebookPreferences(defaults: defaults).substituteGreekLetters,
@@ -50,11 +50,13 @@ private enum NotebookMacOSThemeTests {
                     require(contrast(resolved(color, in: theme.appearance), surface) >= 4.5,
                             "Existing \(token.category.rawValue) text should be readable in \(preset.title), \(theme.title)")
                 }
-                // The original palette is preserved as supplied; the new
+                // System uses AppKit's exact semantic colors; generated
                 // palettes additionally guarantee contrast on every surface.
-                let backgrounds = preset == .sputnik ? [] : [NotebookPalette.nativeCanvas,
+                let generated = preset != .sputnik && preset != .system
+                let backgrounds = generated ? [NotebookPalette.nativeCanvas,
                     NotebookPalette.nativeSidebar, NotebookPalette.nativeSurface, NotebookPalette.nativeEditor]
-                if preset != .sputnik {
+                    : []
+                if generated {
                     let sidebar = resolved(NotebookPalette.nativeSidebar, in: theme.appearance)
                     require(contrast(sidebar, resolved(NotebookPalette.nativeCanvas, in: theme.appearance)) >= 1.2,
                             "Sidebar must remain distinct from the workspace in \(preset.title), \(theme.title)")
@@ -73,11 +75,14 @@ private enum NotebookMacOSThemeTests {
                                 "UI text should be readable in \(preset.title), \(theme.title)")
                     }
                 }
-                let expected = NotebookPalette.native(preset.swatches[1])
+                let expected = preset == .system
+                    ? resolved(.selectedTextBackgroundColor, in: theme.appearance).withAlphaComponent(1)
+                    : NotebookPalette.native(preset.swatches[1])
                 require(resolved(selectionColor, in: theme.appearance).withAlphaComponent(1) == expected,
                         "An existing selection color must follow the preset without replacing text storage")
             }
         }
+        verifySystemColors(preferences, storage: storage, source: source)
         preferences.colorPreset = .sputnik
         require(resolved(NotebookPalette.nativeCanvas, in: NotebookTheme.light.appearance)
                     == NotebookPalette.native(0xe2e2da), "Default light canvas must remain unchanged")
@@ -109,19 +114,74 @@ private enum NotebookMacOSThemeTests {
         print("notebook macOS theme tests passed")
     }
 
+    private static func verifySystemColors(_ preferences: NotebookPreferences, storage: NSTextStorage, source: String) {
+        preferences.colorPreset = .system
+        let colors: [(NSColor, NSColor)] = [
+            (NotebookPalette.nativeCanvas, .windowBackgroundColor),
+            (NotebookPalette.nativeSidebar, .windowBackgroundColor),
+            (NotebookPalette.nativeSurface, .controlBackgroundColor),
+            (NotebookPalette.nativeEditor, .textBackgroundColor),
+            (NotebookPalette.nativeRule, .separatorColor),
+            (NotebookPalette.nativeInk, .labelColor),
+            (NotebookPalette.nativeSlate, .secondaryLabelColor),
+            (NotebookPalette.nativeMuted, .secondaryLabelColor),
+            (NotebookPalette.nativeAccent, .controlAccentColor),
+            (NotebookPalette.nativeCaret, .textColor),
+            (NotebookPalette.nativeTextSelectionBackground, .selectedTextBackgroundColor),
+            (NotebookPalette.nativeTextSelectionForeground, .selectedTextColor),
+            (NSColor(NotebookPalette.topBar), .windowBackgroundColor),
+            (NSColor(NotebookPalette.card), .controlBackgroundColor),
+            (NSColor(NotebookPalette.sidebarSelection), .unemphasizedSelectedContentBackgroundColor),
+            (NSColor(NotebookPalette.error), .systemRed),
+            (NSColor(NotebookPalette.success), .systemGreen)
+        ]
+        for name: NSAppearance.Name in [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua] {
+            let appearance = NSAppearance(named: name)!
+            for (actual, expected) in colors {
+                require(resolved(actual, in: appearance) == resolved(expected, in: appearance),
+                        "System must use AppKit's exact \(expected) in \(name)")
+            }
+            let editor = resolved(NotebookPalette.nativeEditor, in: appearance)
+            for token in SputnikSyntax.tokens(in: source) {
+                let color = storage.attribute(.foregroundColor, at: token.range.location, effectiveRange: nil) as! NSColor
+                require(contrast(resolved(color, in: appearance), editor) >= 4.5,
+                        "System syntax must remain readable in \(name)")
+            }
+            for (actual, expected) in zip(NotebookColorPreset.system.previewColors,
+                                          [NSColor.labelColor, .controlAccentColor, .windowBackgroundColor]) {
+                require(resolved(actual, in: appearance) == resolved(expected, in: appearance),
+                        "System preview must follow the current system colors")
+            }
+        }
+        // These objects are already installed on native editors. Switching
+        // away from System must restore the existing palette's selection.
+        let background = NotebookPalette.nativeTextSelectionBackground
+        let foreground = NotebookPalette.nativeTextSelectionForeground
+        preferences.colorPreset = .sputnik
+        for theme in NotebookTheme.allCases {
+            require(resolved(background, in: theme.appearance)
+                        == resolved(NotebookPalette.nativeFoxglove.withAlphaComponent(0.35), in: theme.appearance),
+                    "Existing palettes must retain their text selection background")
+            require(resolved(foreground, in: theme.appearance) == resolved(NotebookPalette.nativeInk, in: theme.appearance),
+                    "Existing palettes must retain their text selection foreground")
+        }
+    }
+
     private static func renderSettings(_ preferences: NotebookPreferences) {
         let view = NSHostingView(rootView: NotebookAppearanceView(
-            preferences: preferences, content: NotebookSettingsView(preferences: preferences)))
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 548, height: 660),
+            preferences: preferences, content: NotebookSettingsView(preferences: preferences, remote: NotebookModel().remote)))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 590, height: 650),
                               styleMask: [.titled], backing: .buffered, defer: false)
         window.contentView = view
         window.orderFront(nil)
         let previews = [NotebookTheme.light, .dark].flatMap { theme in
-            NotebookColorPreset.allCases.map { ($0, theme) }
+            NotebookColorPreset.allCases.map { ($0, theme, "appearance") }
+                + [(.sputnik, theme, "resources"), (.sputnik, theme, "servers")]
         }
-        for (preset, theme) in previews {
+        for (preset, theme, tab) in previews {
             preferences.colorPreset = preset
             preferences.theme = theme
+            preferences.settingsTab = tab
             RunLoop.current.run(until: Date().addingTimeInterval(0.1))
             view.layoutSubtreeIfNeeded()
             require(view.fittingSize.height <= view.bounds.height + 1, "Settings must fit without clipping")
@@ -132,7 +192,8 @@ private enum NotebookMacOSThemeTests {
             if let index = CommandLine.arguments.firstIndex(of: "--output"), CommandLine.arguments.count > index + 1 {
                 let folder = URL(fileURLWithPath: CommandLine.arguments[index + 1])
                 try! FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-                let url = folder.appendingPathComponent("settings-\(preset.rawValue)-\(theme.rawValue).png")
+                let suffix = tab == "appearance" ? "" : "-" + tab
+                let url = folder.appendingPathComponent("settings-\(preset.rawValue)-\(theme.rawValue)\(suffix).png")
                 try! bitmap.representation(using: .png, properties: [:])!.write(to: url)
             }
         }

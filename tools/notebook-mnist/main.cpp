@@ -1,8 +1,8 @@
 #include "notebook/project.h"
 #include "frontend/lexer/token.h"
 #include "tools/isputnik/dependencies.h"
-#include "tools/notebook-worker/process.h"
-#include "tools/notebook-worker/presentation.h"
+#include "notebook/core/worker/process.h"
+#include "notebook/core/worker/presentation.h"
 #include <fstream>
 #include <algorithm>
 #include <iostream>

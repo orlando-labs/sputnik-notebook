@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-01",
+  "target": "lab.orlando-labs.com:22176",
+  "image": {
+    "tag": "docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0",
+    "id": "sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4",
+    "manifest_digest": "sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c",
+    "source": "Existing published image copy on builder 22136",
+    "transport": "docker save by immutable image ID, gzip, SSH, docker load",
+    "published_config_matches_running_image": true
+  },
+  "deployment": {
+    "state": "complete",
+    "container": "sputnik-remote-core",
+    "container_id": "e9e703defb069beccaa9a53caea6065a25c1381ea0d506276999b6657457884a",
+    "health": "healthy",
+    "restarts": 0,
+    "user": "1002:1003",
+    "restart_policy": "unless-stopped",
+    "launcher_image_id": "sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4",
+    "backup": "/ssd1Tb/sputnik-remote-core-releases/20261101-notebook-core/backups/before-core-20261101T180857Z",
+    "previous_container": "sputnik-core-before-20261101T180857Z",
+    "previous_container_running": false,
+    "previous_restart_policy": "no",
+    "state_path": "/home/slowpilot/sputnik-remote-core/state",
+    "package_store": "/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-packages",
+    "cache": "/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-cache",
+    "pool_limits": {
+      "task": 56,
+      "ffi": 32
+    }
+  },
+  "cuda": {
+    "driver": "580.105.08",
+    "selected_gpus": [
+      {
+        "name": "RTX 3090",
+        "uuid": "GPU-08a27f45-3e58-12a9-4626-4997e56e765f",
+        "compute_capability": "8.6"
+      },
+      {
+        "name": "RTX 4090",
+        "uuid": "GPU-f8d896e0-2607-a025-88a1-7ed8979035af",
+        "compute_capability": "8.9"
+      }
+    ],
+    "other_gpu": {
+      "name": "GTX 1080 Ti",
+      "uuid": "GPU-00d87f5e-0928-5f40-9355-a4e845909b50",
+      "compute_capability": "6.1",
+      "selected": false,
+      "reason": "Outside declared targets of the existing cu130 Torch artifact"
+    },
+    "torch": {
+      "name": "slowpilot/torch",
+      "version": "0.1.4",
+      "variant": "linux-x86_64-gnu-cu130-prebuilt-source-runtime",
+      "sha256": "sha256:aa74c897a9a662ececa7b14d0c02b6d35ac2900cd81ed49797845a8c3ffb2e81"
+    }
+  },
+  "checks": {
+    "candidate_health_gpu_uuid_and_forward_backward": "passed",
+    "production_health_gpu_uuid_and_forward_backward": "passed",
+    "short_torch_imports": "passed",
+    "shared_package_reference_and_exact_digest": "passed",
+    "python_required": false,
+    "authenticated_api_health": "passed",
+    "state_metadata_snapshot_comparison": "passed",
+    "project_records_preserved": 6,
+    "historical_runs_preserved": 4,
+    "token_hash_preserved": true,
+    "main_sheet_grants_and_environment_preserved": true,
+    "ncae_packages_remain_empty": true,
+    "ncae_grants": [],
+    "launcher_shell_syntax": "passed"
+  },
+  "registry": {
+    "credentials_copied": false,
+    "target_registry_login_configured": false,
+    "future_fresh_pull_requires_login": true
+  },
+  "evidence_sha256": {
+    "candidate.log": "934011e0663d72281cafc9c87419b0e3b271e2d503e149cb6e240be484ec819c",
+    "deploy.log": "0f8d7878c33afd7ad0068ed692c3479096edbac2cba709e6289de634814000ed",
+    "final-verify.log": "886b5f6ddcef7f9278243e08da094664736730e241e49e57b87abab28129e27d",
+    "image-verify.log": "9d9349026b3c17dc5bae7600718143d5963f41a21e5f4411eadc6aea4901045c",
+    "state-before.json": "f8ccda655fc7e5ed27dc5c21a78eb0939b832f4dbbfdd7df925356491f67f52d",
+    "state-after.json": "f8ccda655fc7e5ed27dc5c21a78eb0939b832f4dbbfdd7df925356491f67f52d",
+    "container-check.s": "848bd85ec6800ac44437e87621fde83cbf12827d1d569a36a999f69a6419cf15",
+    "candidate-22176": "a7a8b71bf9441caa2546690d1dddeb57817b80268b47200cb3209a7d22a27f5a",
+    "deploy-22176": "700b92b5ec1b849066d0e5ff585310960785834223a309d4ac2d72212332a1bb"
+  },
+  "post_deployment_cleanup": {
+    "completed_date": "2026-11-02",
+    "state": "complete",
+    "explicitly_requested_by_user": true,
+    "backup_retained": false,
+    "previous_container_retained": false,
+    "host_launcher_retained": false,
+    "bare_host_notebook_processes": 0,
+    "container_restarted_during_cleanup": false,
+    "data_mounts_and_token_preserved": true,
+    "evidence": "../core-server-cleanup/"
+  }
+}

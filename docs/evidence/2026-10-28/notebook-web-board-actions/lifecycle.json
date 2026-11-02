@@ -1,0 +1,22 @@
+{
+  "web_restart": {
+    "same_run": true,
+    "same_epoch": true,
+    "replayed_requests": 0,
+    "result": "42"
+  },
+  "worker_crash": {
+    "state": "interrupted",
+    "requires_explicit_restart": true,
+    "new_epoch": true,
+    "result": "84"
+  },
+  "service": {
+    "continued_without_gateway": true,
+    "reconnect_mutations": 0,
+    "agent_restart_paused": true,
+    "retained_history": true,
+    "old_start_receipt_inert": true,
+    "explicit_resume": true
+  }
+}

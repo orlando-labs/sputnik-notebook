@@ -29,6 +29,8 @@ private struct NotebookModelRegressionTests {
             try writeProject(second, title: "Second Project", cellIDs: ["901"])
 
             try testTextVariables()
+            let legacyImportError = notebookEnvironmentMessage("missing bundled module dependency: torch (searched /home/private/server/packages, /var/lib/sputnik-packages)")
+            try require(legacyImportError.contains("torch") && legacyImportError.contains("Open Dependencies") && !legacyImportError.contains("/home/") && !legacyImportError.contains("/var/"), "legacy remote import diagnostics expose the module and recovery action without server paths")
             try testProgressSourceSelection()
             try testFigurePanels()
             try testNumericChartSampling()
@@ -48,6 +50,9 @@ private struct NotebookModelRegressionTests {
             try await testDefaultModuleAndWatch(url: root.appendingPathComponent("unified.sputnikbook"))
             try await testWorkerGrants(root: root)
             try await testCellIDs(root: root)
+            try await testResourcePolicies(root: root)
+            try await testRemoteCallbacksCannotEditAnotherDocument(root: root)
+            try await testRemoteAmbiguousRepliesAndTerminalFailures(root: root)
 
             await shutdown(model)
             // Completion must mean the old borrowed-fd source has been
@@ -67,6 +72,199 @@ private struct NotebookModelRegressionTests {
     }
 
     @MainActor
+    private static func testResourcePolicies(root: URL) async throws {
+        let first = root.appendingPathComponent("policy-first.sputnikbook")
+        let second = root.appendingPathComponent("policy-second.sputnikbook")
+        try writeProject(first, title: "Policy First", cellIDs: ["1"])
+        try writeProject(second, title: "Policy Second", cellIDs: ["1"])
+        let model = NotebookModel()
+        var app = NotebookResourcePolicy.appDefaults
+        app.run_count = 5
+        model.setAppResourcePolicy(app)
+        let opened = await open(model, url: first)
+        try require(opened, "open policy book")
+        var book = NotebookResourcePolicy()
+        book.run_count = 2
+        let saved = await withCheckedContinuation { continuation in model.setBookResourcePolicy(book) { continuation.resume(returning: $0) } }
+        try require(saved && model.effectiveResourcePolicy.run_count == 2, "book override applies")
+        let raw = try JSONSerialization.jsonObject(with: Data(contentsOf: first.appendingPathComponent("project.json"))) as! [String: Any]
+        try require((raw["resource_policy"] as? [String: Int])?["run_count"] == 2, "book policy is in project document")
+        let other = await open(model, url: second)
+        try require(other && model.bookResourcePolicy.run_count == nil && model.effectiveResourcePolicy.run_count == 5, "another book inherits app without previous book overrides")
+        let reopened = await open(model, url: first)
+        try require(reopened && model.bookResourcePolicy.run_count == 2, "book policy survives reopen")
+        for _ in 0..<4 {
+            let start = NotebookRunStart(tab: model.activeTab!.id, cell: nil, action: "run", backend: "Local", sources: [], inputs: [:], cellInputs: [:], assets: [:], dependencies: [])
+            model.runHistory.record(start, state: model.snapshot!)
+        }
+        try require(model.runHistory.runs.count == 2, "local history obeys book count")
+        let pinned = model.runHistory.runs[0].id
+        model.runHistory.pin(pinned)
+        for _ in 0..<3 {
+            let start = NotebookRunStart(tab: model.activeTab!.id, cell: nil, action: "run", backend: "Local", sources: [], inputs: [:], cellInputs: [:], assets: [:], dependencies: [])
+            model.runHistory.record(start, state: model.snapshot!)
+        }
+        try require(model.runHistory.runs.count == 2 && model.runHistory.runs.contains { $0.id == pinned }, "retention protects pinned snapshots")
+        book.run_count = 9
+        book.minimum_free_bytes = 256 * 1024 * 1024
+        try require(book.applying(to: app).run_count == 9 && book.applying(to: app).minimum_free_bytes == book.minimum_free_bytes, "local book replaces app defaults in either direction")
+        try require(book.applying(to: app, restrictive: true).run_count == 5 && book.applying(to: app, restrictive: true).minimum_free_bytes == app.minimum_free_bytes, "remote without opt-in remains restrictive")
+        book.run_seconds = 5
+        let increased = await withCheckedContinuation { continuation in model.setBookResourcePolicy(book) { continuation.resume(returning: $0) } }
+        try require(increased && model.effectiveResourcePolicy.run_count == 9 && model.appResourcePolicy.run_count == 5, "saved book can raise app default independently")
+        var limited = app
+        limited.run_seconds = 1
+        model.setAppResourcePolicy(limited)
+        let shortTab = model.activeTab!, shortCell = shortTab.cells[0]
+        model.editSource("import task\ntask.sleep(1200)\n42\n", cell: shortCell, tab: shortTab)
+        let extended = await perform(model, "run")
+        try require(extended && model.activeTab!.cells[0].ok, "local book time budget can exceed app default")
+        book.run_seconds = nil
+        let inherited = await withCheckedContinuation { continuation in model.setBookResourcePolicy(book) { continuation.resume(returning: $0) } }
+        try require(inherited && model.effectiveResourcePolicy.run_seconds == 1, "unchecked time budget inherits app")
+        let tab = model.activeTab!, cell = tab.cells[0]
+        model.editSource("import task\ntask.sleep(60000)\n42\n", cell: cell, tab: tab)
+        let started = ProcessInfo.processInfo.systemUptime
+        _ = await perform(model, "run")
+        try require(ProcessInfo.processInfo.systemUptime - started < 5, "local run stops at configured time")
+        try require(model.error?.contains("time limit") == true, "budget stop has an actionable reason")
+        try require(model.resourceUsage.current >= 1, "local usage was charged")
+        await shutdown(model)
+        let again = await open(model, url: first)
+        try require(again && model.resourceUsage.current >= 1 && model.effectiveResourcePolicy.run_count == 9, "usage and raised book policy survive reopen")
+        await shutdown(model)
+    }
+
+    @MainActor
+    private static func testRemoteCallbacksCannotEditAnotherDocument(root: URL) async throws {
+        let model = NotebookModel(remoteStorage: root.appendingPathComponent("identity-settings"))
+        let first = root.appendingPathComponent("identity-first.sputnikbook")
+        let second = root.appendingPathComponent("identity-second.sputnikbook")
+        try writeProject(first, title: "First", cellIDs: ["1"])
+        try writeProject(second, title: "Second", cellIDs: ["1"])
+        let firstOpened = await open(model, url: first)
+        try require(firstOpened, "open identity fixture")
+        model.editSource("999\n", cell: model.activeTab!.cells[0], tab: model.activeTab!)
+        var opened: Bool?
+        // Force the old remote callback to enqueue after replacement, before
+        // open's main-thread completion has advanced the model identity.
+        model.open(url: second) { opened = $0 }
+        do { _ = try await model.remote.exportSnapshot!(); throw ModelTestFailure(description: "stale export accepted") }
+        catch is ModelTestFailure { throw ModelTestFailure(description: "stale export accepted") }
+        catch {}
+        for _ in 0..<200 where opened == nil { try await Task.sleep(nanoseconds: 10_000_000) }
+        try require(opened == true, "replacement opens")
+        let expected = model.activeTab!.cells[0].source
+        let saved = await perform(model, "save_all")
+        try require(saved, "save replacement")
+        let reopened = await open(model, url: second)
+        try require(reopened, "reopen replacement")
+        try require(model.activeTab!.cells[0].source == expected && expected != "999\n",
+                    "a rejected remote callback must not mutate the new native document")
+
+        // Failed open keeps the old owner usable, including its unsaved edits.
+        model.editSource("777\n", cell: model.activeTab!.cells[0], tab: model.activeTab!)
+        var failed: Bool?
+        model.open(url: root.appendingPathComponent("does-not-exist.sputnikbook")) { failed = $0 }
+        _ = try await model.remote.exportSnapshot!()
+        try require(failed == false && model.activeTab!.cells[0].source == "777\n", "failed open preserves the old document owner")
+        // Reopening the same pathname is still a new native handle/generation.
+        model.editSource("888\n", cell: model.activeTab!.cells[0], tab: model.activeTab!)
+        opened = nil; model.open(url: second) { opened = $0 }
+        do { _ = try await model.remote.exportSnapshot!(); throw ModelTestFailure(description: "same-path stale export accepted") }
+        catch is ModelTestFailure { throw ModelTestFailure(description: "same-path stale export accepted") }
+        catch {}
+        let samePathSaved = await perform(model, "save_all")
+        try require(samePathSaved, "save same-path replacement")
+        try require(model.activeTab!.cells[0].source == expected, "same-path replacement rejects old drafts")
+        await shutdown(model)
+    }
+
+    @MainActor
+    private static func testRemoteAmbiguousRepliesAndTerminalFailures(root: URL) async throws {
+        let directory = root.appendingPathComponent("remote-recovery")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let book = directory.appendingPathComponent("Remote.sputnikbook")
+        try writeProject(book, title: "Recovery", cellIDs: ["1"])
+        let helper = directory.appendingPathComponent("fixture-cli")
+        let registryFile = directory.appendingPathComponent("registry.json"), faultFile = directory.appendingPathComponent("fault")
+        let commandsFile = directory.appendingPathComponent("commands.json")
+        let program = #"""
+        #!/usr/bin/python3
+        import json,pathlib,sys
+        root=pathlib.Path(__file__).parent;args=sys.argv;command=args[args.index('--command')+1]
+        fault=root/'fault';armed=fault.read_text() if fault.exists() else ''
+        commands=json.loads((root/'commands.json').read_text()) if (root/'commands.json').exists() else []
+        if command=='health': result={'protocol':1,'capabilities':['gui_reconnect','compact_registry','board_actions','server_periodic','project_inputs','cell_inputs']}
+        elif command=='registry': result=json.loads((root/'registry.json').read_text())
+        elif command=='projects': result={'projects':[{'id':'p','head':'r','state':'active'}]}
+        elif command=='status':
+            run=next(x for x in json.loads((root/'registry.json').read_text())['runs'] if x['id']==args[args.index('--run-id')+1])
+            result={'result':{'cells':[{'result':'42','error':''}]} if run['state']=='succeeded' else None,'error':run.get('error','')}
+        elif command=='prepare': result={}
+        elif command=='upload_prepared': result={'revision':'r'}
+        elif command=='receipt': result={'response':{'run_id':'accepted'}}
+        elif command in ['run','invoke','configure_service','set_inputs','set_cell_inputs']:
+            identity=args[args.index('--command-id')+1] if command=='run' else json.loads(pathlib.Path(args[args.index('--request-file')+1]).read_text())['command_id']
+            commands.append(identity);(root/'commands.json').write_text(json.dumps(commands));result={'run_id':'accepted'}
+        else: raise RuntimeError(command)
+        if armed.startswith(command+':'):
+            fault.unlink();result={'remote_error':{'status':int(armed.split(':')[1]),'message':'injected ambiguous reply'}}
+        print(json.dumps(result))
+        """#
+        try Data(program.utf8).write(to: helper)
+        try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: helper.path)
+        let remote = NotebookRemoteController(executable: helper.path, storage: directory.appendingPathComponent("settings"))
+        var server = NotebookServer(); server.ssh = false; server.url = "http://127.0.0.1:1"
+        try remote.addServer(server, token: "test-token")
+        var binding = NotebookRemoteBinding(project: "p", revision: "r"); binding.exported = "snapshot"; binding.saved = "disk"
+        try NotebookRemoteController.write(try JSONEncoder().encode(NotebookRemoteDocument(selected: server.id, bindings: [server.id: binding])), to: book.appendingPathComponent(".sputnik/remote.json"))
+        remote.exportSnapshot = { NotebookRemoteExport(current: "snapshot", disk: "disk") }
+        func registry(_ runs: [[String: Any]]) throws {
+            try JSONSerialization.data(withJSONObject: ["project": ["id": "p", "head": "r", "state": "active"], "runs": runs, "runtimes": [], "reset_epochs": []]).write(to: registryFile, options: .atomic)
+        }
+        func count() throws -> Int { (try JSONSerialization.jsonObject(with: Data(contentsOf: commandsFile)) as! [String]).count }
+        func waitFor(_ predicate: () -> Bool) async throws {
+            for _ in 0..<400 { if predicate() { return }; try await Task.sleep(nanoseconds: 10_000_000) }
+            throw ModelTestFailure(description: "remote recovery fixture timed out: \(remote.status)")
+        }
+        try registry([]); remote.open(book)
+        try await waitFor { remote.connected && !remote.busy }
+        for (command, status) in [("run", 503), ("invoke", 502), ("configure_service", 504), ("set_inputs", 503), ("set_cell_inputs", 502)] {
+            try Data("\(command):\(status)".utf8).write(to: faultFile)
+            let succeeded: Bool
+            if command == "set_inputs" || command == "set_cell_inputs" {
+                succeeded = await withCheckedContinuation { c in remote.setCellInputs(sheet: "main", cell: command == "set_inputs" ? "project" : "1", values: ["gain": "2"]) { c.resume(returning: $0) } }
+            } else {
+                succeeded = await withCheckedContinuation { c in remote.run(sheet: "main", cell: "1", all: false, action: command == "run" ? nil : command == "configure_service" ? "periodic_run" : "action_run", board: command == "run" ? nil : "board", component: command == "run" ? nil : "act", operation: command == "configure_service" ? "once" : nil) { c.resume(returning: $0) } }
+            }
+            try require(!succeeded && remote.hasPending && !remote.connected, "\(command) keeps its ticket after \(status)")
+            let accepted = try count()
+            let blocked = await withCheckedContinuation { c in remote.run(sheet: "main", cell: "1", all: false) { c.resume(returning: $0) } }
+            let afterBlocked = try count()
+            try require(!blocked && afterBlocked == accepted, "unresolved command blocks another Run")
+            try Data("receipt:503".utf8).write(to: faultFile); remote.reconnect()
+            try await waitFor { !remote.busy }
+            try require(remote.hasPending && !remote.connected, "ambiguous receipt lookup retains the original ticket")
+            remote.reconnect(); try await waitFor { remote.connected && !remote.busy }
+            let afterRecovery = try count()
+            try require(!remote.hasPending && afterRecovery == accepted, "receipt recovers \(command) without resubmission")
+        }
+        try Data("run:422".utf8).write(to: faultFile)
+        let rejected = await withCheckedContinuation { c in remote.run(sheet: "main", cell: "1", all: false) { c.resume(returning: $0) } }
+        try require(!rejected && !remote.hasPending && remote.connected, "definitive validation rejection clears its ticket without disconnecting")
+
+        let success: [String: Any] = ["id": "success", "revision": "r", "sheet_id": "owner", "epoch": "e", "state": "succeeded", "board": "board", "component": "act", "controller": "main", "action": "action_run", "has_presentation": true]
+        try registry([success]); try await waitFor { remote.invocationResults["board:act"]?.ok == true }
+        for state in ["interrupted", "force-stopped", "failed"] {
+            var failure = success; failure["id"] = state; failure["state"] = state; failure["has_presentation"] = false; failure["error"] = "failure: " + state
+            try registry([success, failure]); try await waitFor { remote.invocationResults["board:act"]?.error == "failure: " + state }
+            try require(remote.invocationResults["board:act"]?.ok == false && remote.invocationResults["board:act"]?.result == "", "latest terminal failure supersedes old success without an artifact")
+        }
+        remote.detach()
+    }
+
+    @MainActor
     private static func testNumberedStructures(_ model: NotebookModel, url: URL) async throws {
         let opened = await open(model, url: url, create: true)
         try require(opened && model.activeTab?.title == "Sheet 1" && model.nextSheetTitle == "Sheet 2", "new notebook sheet names")
@@ -81,6 +279,9 @@ private struct NotebookModelRegressionTests {
         try require(saved, model.error ?? "save numbered board")
         let created = await perform(model, "new_sheet", text: model.nextSheetIdentifier)
         try require(created && model.activeTab?.title == "Sheet 2" && model.activeTab?.id == "sheet:sheet_2", "suggested sheet identifier and numbered title")
+        let renamed = await perform(model, "rename_sheet", text: "Обучение")
+        try require(renamed && model.activeTab?.title == "Обучение" && model.activeTab?.id == "sheet:sheet_2", "sheet rename changes its display name without changing identity")
+        _ = await perform(model, "rename_sheet", text: "Sheet 2")
         let reopened = await open(model, url: url)
         try require(reopened && model.nextSheetTitle == "Sheet 3" && model.nextSheetIdentifier == "sheet_3", "sheet numbering survives reopening")
         try require(NotebookBoard.empty(sheet: "sheet_2", existing: model.snapshot?.boards ?? []).title == "Board 8", "board numbering spans controller sheets and skips existing numbered titles")
@@ -1046,9 +1247,12 @@ private struct NotebookModelRegressionTests {
 
         // A replacement project that cannot be created must leave the live
         // handle, pending editor buffer, and recent project untouched.
+        let libraryBeforeFailedOpen = model.library.projects
         let overwroteProject = await open(model, url: first, create: true)
         try require(!overwroteProject,
                     "creating over the existing project should fail")
+        try require(model.library.projects == libraryBeforeFailedOpen,
+                    "a failed open must not change library membership or recency")
         try require(model.snapshot?.path == snapshot.path &&
                     model.snapshot?.selected_tab == snapshot.selected_tab,
                     "failed open must keep the old host and snapshot: \(model.snapshot?.path ?? "nil") vs \(snapshot.path)")
@@ -1067,6 +1271,9 @@ private struct NotebookModelRegressionTests {
         for project in [second, first, second, first] {
             let replacementOpened = await open(model, url: project)
             try require(replacementOpened, "replacing a project should succeed")
+            try require(model.library.sortedProjects.first?.path == project.standardizedFileURL.resolvingSymlinksInPath().path &&
+                        model.library.sortedProjects.first?.lastOpened != nil,
+                        "successful opens must update library recency")
             let reported = model.snapshot.map {
                 URL(fileURLWithPath: $0.path, isDirectory: true).resolvingSymlinksInPath().standardizedFileURL
             }

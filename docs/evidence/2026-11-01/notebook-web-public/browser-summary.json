@@ -1,0 +1,35 @@
+{
+  "runs": [
+    {
+      "log": "browser-vm-development.log",
+      "passed": 6,
+      "skipped": 1
+    },
+    {
+      "log": "browser-vm-production.log",
+      "passed": 12,
+      "skipped": 0
+    },
+    {
+      "log": "browser-vm-workspace.log",
+      "passed": 10,
+      "skipped": 0
+    },
+    {
+      "log": "browser-native-development.log",
+      "passed": 6,
+      "skipped": 1
+    },
+    {
+      "log": "browser-native-production.log",
+      "passed": 29,
+      "skipped": 0
+    }
+  ],
+  "total_passed": 63,
+  "total_skipped": 2,
+  "full_duration_acceptance": [
+    "VM/production",
+    "native/production"
+  ]
+}

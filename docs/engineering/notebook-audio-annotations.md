@@ -85,3 +85,19 @@ Both native suites open the actual designer class/attribute editor, edit its fie
 Image and audio coordinate fields share strict whole-value parsing, accept both decimal separators, and display up to nine fractional digits. Invalid/non-finite text is highlighted and blocks Apply. Formatting an existing draft never rounds the stored coordinates or frequencies.
 
 Verified on 20 October 2026: backend validation and native integration tests pass, including actual image/audio sheet reopening after Run. The audio integration uses the worker bundled in the finished app. Packaged application launch, theme switching, both example manifests and strict deep code-signature verification pass. Native sheet tests require a logged-in macOS desktop with access to the system view bridge; a restricted process sandbox can block sheet presentation.
+
+## Web implementation (29 October 2026)
+
+Stage 4g.2.3 adds a web Audio Annotator with the same schemas, transcript policies,
+source frame/Hz geometry and explicit draft/Apply contract. Core supplies bounded
+PCM at the original sample rate and validates file/input/completed-cell source
+identity during Apply. The browser computes waveform and plasma STFT in a module
+Worker, supports exact fields, sample zoom/pan, temporal preview, Undo/Redo and
+JSON export. Opening the editor stops its underlying file preview; closing or
+revoking access releases the preview AudioContext and analysis worker.
+
+This web path uses Core local RPC; it does not enable the native client's
+previously disabled remote annotation sheets or add a generic remote HTTP write
+API. See [managed-media contract](notebook-remote-media-inputs.md),
+[web plan](notebook-web-implementation.md) and
+[verification](../evidence/2026-10-29/notebook-web-audio-annotations/README.md).

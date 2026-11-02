@@ -1,0 +1,15 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test board-actions.spec.ts -g fixed rate|invocation stop
+
+[WebServer] (node:50361) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:50395) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/board-actions.spec.ts:66:1 › fixed rate skips overlaps and service/module edits pause future calls while failures obey retention (3.5s)
+  ✓  2 test/board-actions.spec.ts:83:1 › invocation stop, force stop and restart address their own worker and preserve the controller (3.2s)
+
+  2 passed (9.8s)

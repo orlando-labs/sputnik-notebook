@@ -14,6 +14,7 @@ struct NotebookDependenciesView: View {
     @State private var showLog = false
     @State private var workerSettingsTarget: NotebookTab?
     @State private var showNativeOptions = false
+    @State private var confirmNativeExecution = false
 
     init(model: NotebookModel, initialEcosystem: String = "Sputnik", controller: NotebookDependencyController? = nil) {
         self.model = model; remote = model.remote
@@ -84,7 +85,7 @@ struct NotebookDependenciesView: View {
                 ForEach(controller.inventory.packages) { package in
                     HStack {
                         VStack(alignment: .leading, spacing: 3) {
-                            Label(package.name, systemImage: "shippingbox")
+                            Label(package.displayName, systemImage: "shippingbox").help(package.name)
                             if let variant = package.variant {
                                 Text(variant).font(.caption.monospaced()).foregroundStyle(.secondary)
                                     .help(package.digest ?? variant).textSelection(.enabled)
@@ -107,10 +108,18 @@ struct NotebookDependenciesView: View {
             HStack {
                 Text("Native packages require native trust or ffi.call and ffi.load worker grants.").font(.caption).foregroundStyle(.secondary)
                 Spacer()
+                Button("Grant Native Execution…") { confirmNativeExecution = true }
+                    .disabled(!controller.canChange || controller.executionTab?.kind != "sheet")
                 Button("Worker Settings…") {
-                    workerSettingsTarget = model.activeTab.flatMap { !controller.isRemote || $0.kind == "sheet" ? $0 : nil }
+                    workerSettingsTarget = controller.executionTab.flatMap { !controller.isRemote || $0.kind == "sheet" ? $0 : nil }
                         ?? model.snapshot?.tabs.first { $0.kind == "sheet" }
                 }.disabled(!controller.canChange)
+            }
+            .confirmationDialog("Allow native execution in this sheet?", isPresented: $confirmNativeExecution, titleVisibility: .visible) {
+                Button("Grant Native Execution") { Task { await controller.grantNativeExecution() } }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Grants ffi.call, ffi.load and fs.read to the current sheet. Native libraries execute with the worker's access. The idle worker will restart; cells run only when you choose Run.")
             }
             if !(model.snapshot?.dependencies ?? []).isEmpty {
                 Text("Linked source directories").font(.headline)
@@ -153,7 +162,7 @@ struct NotebookDependenciesView: View {
                             Text(release.version + (release.version == catalog.latest ? " (Latest)" : "")).tag(release.version)
                         }
                     }.frame(width: 260).accessibilityIdentifier("dependency-package-version")
-                    Text(catalog.package_ref).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                    Text(catalog.displayName).font(.caption).foregroundStyle(.secondary).help(catalog.package_ref).textSelection(.enabled)
                     Spacer()
                 }.disabled(controller.busy || controller.catalogBusy)
             }
@@ -168,6 +177,10 @@ struct NotebookDependenciesView: View {
                 }.disabled(!controller.canChange).accessibilityIdentifier("dependency-package-variant")
                 if let build = controller.selectedPackageVariant {
                     Text(build.detail).font(.callout).foregroundStyle(.secondary).textSelection(.enabled)
+                    if build.host_selection.allow_native || (build.size ?? 0) > 67_108_864 {
+                        Text("This package requires explicit permissions below before installation. Native execution also requires a separate grant for this sheet.")
+                            .font(.callout).foregroundStyle(NotebookPalette.sputnik)
+                    }
                     if build.host_selection.allow_native {
                         Toggle("Allow native code", isOn: $controller.packageAllowNative)
                     }

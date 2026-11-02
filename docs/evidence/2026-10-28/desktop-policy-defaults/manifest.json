@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-28",
+  "platform": "macOS arm64",
+  "scope": "current working tree; pre-existing work preserved",
+  "linux_executed": false,
+  "sha256": {
+    "tools/notebook-macos/NotebookResourcePolicy.swift": "7efa681cfbac83f7274b2472cfcb15cbc7b5456286e4d71d43750fd6df5a86ce",
+    "tools/notebook-macos/NotebookPreferences.swift": "940fba4f3c8cd0a1a5637d279dc607a61b756899d1fd4f97cf63b1f8fd895cfa",
+    "tools/notebook-macos/NotebookBookSettingsView.swift": "2b8fb94276c7ed4363a1583e85e434b71a143347e62cedc5e1e61ab31a3ceadf",
+    "tools/notebook-macos/NotebookModel.swift": "d7b99d90e704d65af4375b37709ca192cd467eba75d99a85d74f9c1fba2d5936",
+    "tools/notebook-macos/NotebookRemote.swift": "5d439868f53a3378d3c59bd7f08afda2c17e291753171b885dd50de2e3fe9266",
+    "packages/notebook-core/src/notebook/core/policy.s": "92e7deea75b0d1822295bdb2aee8826d2eeedda717ffe1c4f1f757bb4f21453f",
+    "packages/notebook-core/src/notebook/core.s": "9ad1c2e0c979a2420f235e32076fd03ac5a3a930b3f38790dde388febafa32ce",
+    "tools/notebook-remote/main.s": "6670cc0e6f35b23488bcafce0b09deab182051ed646c26e1f699bc5ecac87aa5",
+    "tools/notebook-remote/server.s": "5ba867c19028b8de3c1bede94355d95f14eaaccf0876aee25a429f559255d952",
+    "tests/notebook_core_api_tests.s": "34db7f4a8365bafad69c176fc95bab3cf1dfe4aa890d90b191c988f02911967c",
+    "tests/notebook_policy_tests.py": "8e44d8dbd88eaadc566da48fb641fac4e9a7b34bb3d5ed87de137913f00887fa",
+    "tests/notebook_macos_model_tests.swift": "7001e3c90bbde4cad84e41ed806739203099edcc1c68043ef62a37855076a07d",
+    "tests/notebook_macos_remote_tests.swift": "8104d793764bf4a83324072283c2a63a1c909aff22ad55ce5709c1dfb4a88a33",
+    "tests/notebook_remote_tests.py": "44bb335becab22a4a333358e4bd1c1239b44f550ca084811045ac0ee67377380",
+    "tests/notebook_remote_ui_tests.py": "d8088594849aca82b4a06222e478ca2d758d8f208965555bf57375c4d076fce8",
+    "docs/engineering/notebook-resource-policies.md": "173225a5826a47c531f4ab10b4ec7d2d047dccc4ea958d9551b6f9770fb124a5",
+    "packages/notebook-core/README.md": "d717de248e3963a8bbed515e855925ddedbd69b017df407bb74cf6af05bc6c60"
+  }
+}

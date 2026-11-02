@@ -1,0 +1,37 @@
+clang++  -I. -I/opt/homebrew/Cellar/openssl@3/3.6.2/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/opt/homebrew/Cellar/openssl@3/3.6.2/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/opt/homebrew/Cellar/openssl@3/3.6.2/lib"' -I/opt/homebrew/Cellar/pcre2/10.47_1/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/homebrew/Cellar/pcre2/10.47_1/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/homebrew/Cellar/pcre2/10.47_1/lib"' -I/opt/homebrew/opt/libyaml/include '-DSPUTNIK_YAML_INCLUDE_DIR="/opt/homebrew/opt/libyaml/include"' '-DSPUTNIK_YAML_LIB_DIR="/opt/homebrew/opt/libyaml/lib"' -I/opt/homebrew/opt/libarchive/include -I/opt/homebrew/Cellar/nettle/4.0/include -I/opt/homebrew/Cellar/gmp/6.3.0/include -DSPUTNIK_HAVE_NETTLE_GOST '-DSPUTNIK_NETTLE_INCLUDE_DIR="/opt/homebrew/Cellar/nettle/4.0/include"' '-DSPUTNIK_NETTLE_LIB_DIR="/opt/homebrew/Cellar/nettle/4.0/lib"' '-DSPUTNIK_GMP_INCLUDE_DIR="/opt/homebrew/Cellar/gmp/6.3.0/include"' '-DSPUTNIK_GMP_LIB_DIR="/opt/homebrew/Cellar/gmp/6.3.0/lib"' -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c tools/sputnik/main.cpp -o /tmp/sputnik-lazy-pools-build/obj/tools/sputnik/main.o
+clang++ -std=c++17 -Wall -Wextra -Wpedantic -O2 /tmp/sputnik-lazy-pools-build/obj/tools/sputnik/main.o /tmp/sputnik-lazy-pools-build/libsputnik.a  -L/opt/homebrew/Cellar/openssl@3/3.6.2/lib -lssl -lcrypto -L/opt/homebrew/Cellar/pcre2/10.47_1/lib -lpcre2-8 -L/opt/homebrew/opt/libyaml/lib -lyaml -L/opt/homebrew/opt/libarchive/lib -larchive -lz -L/opt/homebrew/Cellar/nettle/4.0/lib -lhogweed -lnettle -L/opt/homebrew/Cellar/gmp/6.3.0/lib -lgmp -Wl,-export_dynamic  -o /tmp/sputnik-lazy-pools-build/sputnik
+mkdir -p /tmp/sputnik-lazy-pools-build/native_blocking/progress
+/tmp/sputnik-lazy-pools-build/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case native > /tmp/sputnik-lazy-pools-build/native_blocking/progress/vm-native.out
+/tmp/sputnik-lazy-pools-build/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case callback > /tmp/sputnik-lazy-pools-build/native_blocking/progress/vm-callback.out
+/tmp/sputnik-lazy-pools-build/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case ffi-producer > /tmp/sputnik-lazy-pools-build/native_blocking/progress/vm-ffi-producer.out
+/tmp/sputnik-lazy-pools-build/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case ffi-overload > /tmp/sputnik-lazy-pools-build/native_blocking/progress/vm-ffi-overload.out
+SPUTNIK_FFI_MAX_THREADS=1 /tmp/sputnik-lazy-pools-build/sputnik run tests/fixtures/native_blocking/progress.build.json --grant ffi -- --case ffi-sequential > /tmp/sputnik-lazy-pools-build/native_blocking/progress/vm-ffi-sequential.out
+/tmp/sputnik-lazy-pools-build/sputnik build tests/fixtures/native_blocking/progress.build.json --target native --require-full-native --out-dir /tmp/sputnik-lazy-pools-build/native_blocking/progress > /tmp/sputnik-lazy-pools-build/native_blocking/progress/build.json
+/tmp/sputnik-lazy-pools-build/native_blocking/progress/test.blocking.progress --case native
+PASS blocking 0 progress with 2 waits
+0
+/tmp/sputnik-lazy-pools-build/native_blocking/progress/test.blocking.progress --case callback
+PASS blocking 1 progress with 2 waits
+0
+/tmp/sputnik-lazy-pools-build/native_blocking/progress/test.blocking.progress --case ffi-producer
+PASS blocking 2 progress with 3 waits
+0
+/tmp/sputnik-lazy-pools-build/native_blocking/progress/test.blocking.progress --case ffi-overload
+PASS blocking 3 progress with 4 waits
+0
+SPUTNIK_FFI_MAX_THREADS=1 /tmp/sputnik-lazy-pools-build/native_blocking/progress/test.blocking.progress --case ffi-sequential
+PASS sequential FFI calls at a one-thread limit
+0
+/tmp/sputnik-lazy-pools-build/blocking_ffi_tests
+blocking_ffi_tests: ok
+mkdir -p /tmp/sputnik-lazy-pools-build/native_blocking
+/tmp/sputnik-lazy-pools-build/sputnik run tests/fixtures/native_blocking/sputnik.build.json --grant ffi > /tmp/sputnik-lazy-pools-build/native_blocking/vm.out
+grep -q '^PASS source blocking native dispatch$' /tmp/sputnik-lazy-pools-build/native_blocking/vm.out
+/tmp/sputnik-lazy-pools-build/sputnik run tests/fixtures/native_blocking/vm_control.build.json --grant ffi > /tmp/sputnik-lazy-pools-build/native_blocking/vm-control.out
+grep -q '^PASS blocking callback throw$' /tmp/sputnik-lazy-pools-build/native_blocking/vm-control.out
+/tmp/sputnik-lazy-pools-build/sputnik build tests/fixtures/native_blocking/sputnik.build.json --target native --require-full-native --out-dir /tmp/sputnik-lazy-pools-build/native_blocking/native > /tmp/sputnik-lazy-pools-build/native_blocking/build.json
+/tmp/sputnik-lazy-pools-build/native_blocking/native/test.blocking > /tmp/sputnik-lazy-pools-build/native_blocking/native.out
+grep -q '^PASS source blocking native dispatch$' /tmp/sputnik-lazy-pools-build/native_blocking/native.out
+/tmp/sputnik-lazy-pools-build/sputnik build tests/fixtures/native_blocking/vm_control.build.json --target native --require-full-native --out-dir /tmp/sputnik-lazy-pools-build/native_blocking/control > /tmp/sputnik-lazy-pools-build/native_blocking/control-build.json
+/tmp/sputnik-lazy-pools-build/native_blocking/control/test.blocking.vm_control > /tmp/sputnik-lazy-pools-build/native_blocking/control-native.out
+cmp /tmp/sputnik-lazy-pools-build/native_blocking/vm-control.out /tmp/sputnik-lazy-pools-build/native_blocking/control-native.out

@@ -1,0 +1,252 @@
+[
+  {
+    "path": "AGENTS.md",
+    "bytes": 593,
+    "sha256": "5bc0e572759dabba6e620f056fbf7bbff768a437e2da709bef47a2e08c4a57f1"
+  },
+  {
+    "path": "packages/notebook-core/src/notebook/core.s",
+    "bytes": 72787,
+    "sha256": "aa0a24d069469504892fe7a18c811c13943bef36975479ae7490c2d1a531e494"
+  },
+  {
+    "path": "packages/notebook-core/src/notebook/core/policy.s",
+    "bytes": 15035,
+    "sha256": "d03233cf6898cf84adaa15a33f7b5348d1ee40461e0253a30a7088aadaa9e72e"
+  },
+  {
+    "path": "tools/notebook-remote/sputnik.lock",
+    "bytes": 480,
+    "sha256": "5d3c6038ca267babf0bdcfc3b0bcb68c5c0c01c1ea1c88dd5ee2acb8f72b8b1c"
+  },
+  {
+    "path": "tools/notebook-remote/sputnik.build.json",
+    "bytes": 176,
+    "sha256": "27c8ae8b0f79e9f8b1f34da11ac47c153bf32798abe9443262fae3e42e816497"
+  },
+  {
+    "path": "apps/notebook-web/sputnik.lock",
+    "bytes": 2021,
+    "sha256": "20ea3e2ca9295676b5f8909e780993475761c8e7fa7519cc4ba78ccb801852cc"
+  },
+  {
+    "path": "apps/notebook-web/sputnik.build.json",
+    "bytes": 652,
+    "sha256": "d7b431f2e72465820d567d8e39ed743f5d072283c2aa06b7d0e8fbc8781252bb"
+  },
+  {
+    "path": "apps/notebook-web/backend/app.s",
+    "bytes": 30471,
+    "sha256": "96f1b16f0869d73fda079c09da25f3b6cb1faf80c8bf18d14a4b3f99758cd1aa"
+  },
+  {
+    "path": "apps/notebook-web/backend/main.s",
+    "bytes": 2619,
+    "sha256": "4dd6df441a187906675a80462943bc5341d1b359f55a0efc2640c7e4d02e56cf"
+  },
+  {
+    "path": "apps/notebook-web/backend/public_sessions.s",
+    "bytes": 6294,
+    "sha256": "83a4676c3dcca7c1e4d8afce9327edee303776c431670a76f88cd59e0085e840"
+  },
+  {
+    "path": "apps/notebook-web/backend/oauth_transport.s",
+    "bytes": 598,
+    "sha256": "e73c80565b8b27e83080a9c8ce762fcbe8e35ab362f4fc9d83cf909e7acccd98"
+  },
+  {
+    "path": "apps/notebook-web/backend/preview.s",
+    "bytes": 5699,
+    "sha256": "c3fc3da94aed6e259c2b47b5612ee45413ea09c7d6894944353ca5217488d94e"
+  },
+  {
+    "path": "apps/notebook-web/backend/resources.s",
+    "bytes": 1802,
+    "sha256": "2f02b9c8c4feea7c937fb0cebb1b3fd9a531cc638603129988bf5232a1740bac"
+  },
+  {
+    "path": "apps/notebook-web/db/migrations/004_public_sessions.sql",
+    "bytes": 499,
+    "sha256": "164efe003960b6ce5386278dd2f3cdff0b9b488d2a41bbb7a08853d6aca3ba5a"
+  },
+  {
+    "path": "apps/notebook-web/frontend/src/api.ts",
+    "bytes": 3725,
+    "sha256": "5d41700f3c9097680ef651924c7bccf46f115d23c18844f77ec26e84194b238e"
+  },
+  {
+    "path": "apps/notebook-web/frontend/src/App.vue",
+    "bytes": 13996,
+    "sha256": "d4daf1bc5e64a43da2c120bb5a444f0ebda17a08b0c6868273c901e9a9deee70"
+  },
+  {
+    "path": "apps/notebook-web/frontend/src/NotebookPreview.vue",
+    "bytes": 14623,
+    "sha256": "a6480f3d25658b90ecc122120bfd17e87355c1e5ca8ed98ad61001a0349164b8"
+  },
+  {
+    "path": "apps/notebook-web/frontend/test/public.spec.ts",
+    "bytes": 13420,
+    "sha256": "a473d9d9383919334431138d1b88a4a0bcd0c1399669234d17979d3c31b6432c"
+  },
+  {
+    "path": "apps/notebook-web/frontend/playwright.config.ts",
+    "bytes": 1299,
+    "sha256": "a63fcf0e5187849da03098e5337338fa92219c54bfc275386f756fd2e90cc86e"
+  },
+  {
+    "path": "apps/notebook-web/frontend/package.json",
+    "bytes": 510,
+    "sha256": "9ad79ae6ea3c3015adf176df75239678b065224a4afe149480620830048ab981"
+  },
+  {
+    "path": "apps/notebook-web/frontend/package-lock.json",
+    "bytes": 43137,
+    "sha256": "4c256a4616d4463db4d6a39ee2f9319f16a60299d55fe9fa2dd1331d3ab1afa5"
+  },
+  {
+    "path": "apps/notebook-web/tools/common.mjs",
+    "bytes": 3162,
+    "sha256": "f117694b06de6c20b936ed17714edbf1544f04dbda8f2c01d3f8ab347ff76d64"
+  },
+  {
+    "path": "apps/notebook-web/tools/smoke_server.mjs",
+    "bytes": 7240,
+    "sha256": "e5b7124c4cd04704df0e668aa929d5ef6b50bd036831ff8656cff27e41ec218b"
+  },
+  {
+    "path": "apps/notebook-web/tools/production_probe.mjs",
+    "bytes": 14401,
+    "sha256": "fd333a5f1b045bb836cd0be87ef8b4948b4f856ce4fb905530e6adbc6e5e6db6"
+  },
+  {
+    "path": "apps/notebook-web/tools/process_cleanup_test.mjs",
+    "bytes": 5256,
+    "sha256": "3e0d808f2738e35d12ab77c4ad9d9818317e6b77299c6f5ba58faf9c2d5181f6"
+  },
+  {
+    "path": "apps/notebook-web/tools/public_template.s",
+    "bytes": 1004,
+    "sha256": "248e9468ff16bf579e6c0ed4214d9194570996fbcb374edb4de5798980f4948e"
+  },
+  {
+    "path": "apps/notebook-web/tools/public_test",
+    "bytes": 917,
+    "sha256": "632a8e47ddf8b45119266d5f0b6131992aabe11b49bcdc5a4b103606169c6163"
+  },
+  {
+    "path": "apps/notebook-web/test/public_sessions_test.s",
+    "bytes": 6462,
+    "sha256": "9519a05b8645b0fc8e82200ee698a493422d736aaaae804ea3338bb5a49dcba6"
+  },
+  {
+    "path": "apps/notebook-web/test/public_fixture.s",
+    "bytes": 1458,
+    "sha256": "2da5da0878817edc0c16981429a547a412416aa01ab489db8d7079587b625629"
+  },
+  {
+    "path": "apps/notebook-web/test/app_fixture.s",
+    "bytes": 2064,
+    "sha256": "ec834318957ece3275140395971fb2b7125d7d1cfb446099f2bdb53798950390"
+  },
+  {
+    "path": "apps/notebook-web/README.md",
+    "bytes": 60315,
+    "sha256": "c255766c2d363e25b0c617ab799d5b2347b7e5d9803e4ec46918aa9dd934fc58"
+  },
+  {
+    "path": "apps/notebook-web/deploy/README.md",
+    "bytes": 9332,
+    "sha256": "a9fc551b19479b0982c4175aae1d0f139db2970cf26e39c9ed1da8606aac385b"
+  },
+  {
+    "path": "docs/engineering/notebook-web-implementation.md",
+    "bytes": 51002,
+    "sha256": "21fd7a2535b619e412508d443ea129beb951a6eea8a59c93260cec2931df7c7b"
+  },
+  {
+    "path": "docs/engineering/notebook-web-gap-review-2026-10-27.md",
+    "bytes": 31226,
+    "sha256": "fbc2067bfcc216a9de04450ecd783bb5bf385285d26b9d9f49d6d04abf7b3138"
+  },
+  {
+    "path": "docs/engineering/notebook-web-parity-audit-2026-10-31.md",
+    "bytes": 11333,
+    "sha256": "16ec083c7c3fe53bdc2c6b60d8f10b6c4188a27e0ee2673fec1589884291820b"
+  },
+  {
+    "path": "docs/evidence/2026-11-01/notebook-web-public/README.md",
+    "bytes": 7824,
+    "sha256": "367f9e2607e15ad2aa3880c95bae233f71c65d7b3b112044e684c0dd9a131076"
+  },
+  {
+    "path": "../sputnik-lang/build/sputnik",
+    "bytes": 11009816,
+    "sha256": "a1f80381fef46658d2d15afcc6142c75c1f991ce0519ee6c94b219490844d60e"
+  },
+  {
+    "path": "../sputnik-lang/runtime/net_http_client.h",
+    "bytes": 12370,
+    "sha256": "0802a15f0240d002e7c62e3a7c6bafc14e69d1a5a816cfa014db3e95110b77f9"
+  },
+  {
+    "path": "../sputnik-lang/runtime/net_http_server.h",
+    "bytes": 16274,
+    "sha256": "becf549fca9b99cda05f19a679737687314425ef37ccddd3af97b40edc7663ca"
+  },
+  {
+    "path": "../orbit/packages/orbit-oauth/src/orbit/oauth/_protocol.s",
+    "bytes": 13220,
+    "sha256": "69febda1afe2855004c993d69fe5b56a61bc85a944cc90bf64df3a4890bca878"
+  },
+  {
+    "path": "../orbit/packages/orbit-oauth-github/src/orbit/oauth/github.s",
+    "bytes": 2819,
+    "sha256": "fde3c27d0c62c9ed82d0826c6c9bc7383fe6e6b9ba38f55acc1bd3bdef94d475"
+  },
+  {
+    "path": "apps/notebook-web/build/native/notebook-web",
+    "bytes": 32105536,
+    "sha256": "c42df00d6ebf175f06d72c351bcd6fe6288bbc59ec90ea7b510b55ac10cb0562"
+  },
+  {
+    "path": "apps/notebook-web/build/fixture-native/fixture",
+    "bytes": 32072536,
+    "sha256": "fe56d044f91ba13d49f0a0c9cf831c8d8b69e0e87e8a526f4e6ad0aa4f0f725a"
+  },
+  {
+    "path": "build/sputnik-notebook-remote",
+    "bytes": 21180872,
+    "sha256": "cb8aae0d016d529ab1e21b7204d7a54165b0ee73a3e97709b1e8465b54cd8db3"
+  },
+  {
+    "path": "build/sputnik-notebook-worker",
+    "bytes": 10678328,
+    "sha256": "3db49d132fd0e0bc8cb2847b57e9825a4f9e8344e244cb3a8860a6e5f8d97c58"
+  },
+  {
+    "path": "apps/notebook-web/frontend/dist/.vite/manifest.json",
+    "bytes": 449,
+    "sha256": "1aa8df53f891509c62e4bc6e0f1da9f95e500795df94515c6739ac1ddf803738"
+  },
+  {
+    "path": "apps/notebook-web/frontend/dist/assets/audio-analysis-worker-CWS9AGch.js",
+    "bytes": 5025,
+    "sha256": "0bce843f96e0db6a078074fba902bc5afd67681295b1f46c82723602c5f500a7"
+  },
+  {
+    "path": "apps/notebook-web/frontend/dist/assets/audio-recorder-worklet-kCbMyL7d.js",
+    "bytes": 2102,
+    "sha256": "224632596aac2104b74a5c3a8a14465f51dabf60557bf80a0544e4d591aa0428"
+  },
+  {
+    "path": "apps/notebook-web/frontend/dist/assets/main-CRwVGKw1.css",
+    "bytes": 68924,
+    "sha256": "05b2a13f6ca3825a9414e0cb710b44c8f8aedf6adbf2605d7d006a4b1156e555"
+  },
+  {
+    "path": "apps/notebook-web/frontend/dist/assets/main-ItN7MdOj.js",
+    "bytes": 642557,
+    "sha256": "9bb380b346608589c00e5b92146917882d3c4310fe729925fd2b868ae137cc6d"
+  }
+]

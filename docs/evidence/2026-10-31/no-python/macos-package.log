@@ -1,0 +1,48 @@
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libssl.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libcrypto.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libpcre2-8.0.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libyaml-0.2.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libnettle.9.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libgmp.10.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libssl.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libssl.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libcrypto.3.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libpcre2-8.0.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libyaml-0.2.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/liblzma.5.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libzstd.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/liblz4.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libb2.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libarchive.13.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libhogweed.7.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libnettle.9.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libgmp.10.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/liblzma.5.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libzstd.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/liblz4.1.dylib
+/Library/Developer/CommandLineTools/usr/bin/install_name_tool: warning: changes being made to the file will invalidate the code signature in: /tmp/Sputnik-No-Python.app/Contents/Frameworks/libb2.1.dylib
+/tmp/Sputnik-No-Python.app/Contents/MacOS/sputnik-notebook-worker: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/MacOS/sputnik-notebook-remote: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/MacOS/sputnik: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libssl.3.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libcrypto.3.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libpcre2-8.0.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libyaml-0.2.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libarchive.13.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libhogweed.7.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libnettle.9.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libgmp.10.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/liblzma.5.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libzstd.1.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/liblz4.1.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app/Contents/Frameworks/libb2.1.dylib: replacing existing signature
+/tmp/Sputnik-No-Python.app: replacing existing signature
+Built /tmp/Sputnik-No-Python.app (minimum macOS 26.0, including bundled dependencies)

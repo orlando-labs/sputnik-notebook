@@ -19,6 +19,18 @@ extension NotebookModel {
     func targetKey(board: NotebookBoard, component: NotebookBoardComponent, tab: NotebookTab) -> String {
         ["service", "action"].contains(component.settings.target_kind ?? "") ? board.id + ":" + (component.settings.target_component ?? "") : tab.id
     }
+    func targetRun(board: NotebookBoard, component: NotebookBoardComponent, tab: NotebookTab) -> NotebookRemoteRun? {
+        let kind = component.settings.target_kind ?? (component.cell == nil ? "sheet" : "cell")
+        if ["action", "service"].contains(kind) {
+            return remote.runs.last { $0.board == board.id && $0.component == component.settings.target_component }
+        }
+        return remote.runs.last { $0.board == nil && "sheet:" + $0.sheet == tab.id }
+    }
+    func stopTarget(board: NotebookBoard, component: NotebookBoardComponent, tab: NotebookTab, force: Bool = false) {
+        if remote.isSelected {
+            if let run = targetRun(board: board, component: component, tab: tab), run.active { remote.stop(run: run, force: force) }
+        } else { stopExecution(force: force) }
+    }
     func targetStatus(board: NotebookBoard, component: NotebookBoardComponent, tab: NotebookTab) -> NotebookTargetStatus {
         let kind = component.settings.target_kind ?? (component.cell == nil ? "sheet" : "cell")
         if kind == "runtime" {
@@ -37,7 +49,10 @@ extension NotebookModel {
             return .init(title: isolatedExecution ? executionLabel : "Local host", detail: "Local execution\n" + when + "\nEnvironment generation: " + String(snapshot?.environment_generation ?? 0) + "\n" + resourceSummary(in: tab), symbol: executingWorker ? "hourglass" : "desktopcomputer")
         }
         let key = targetKey(board: board, component: component, tab: tab)
-        if executingTargetID == key || (remote.isSelected && ["sheet", "cell"].contains(kind) && executingCurrentWorker) {
+        if remote.isSelected, let run = targetRun(board: board, component: component, tab: tab), run.active {
+            return .init(title: run.label, detail: "Run: " + run.id, symbol: "hourglass")
+        }
+        if !remote.isSelected && executingTargetID == key {
             return NotebookTargetStatus(title: isolatedExecution ? executionLabel : "Running", detail: executionStarted.map { "Started \($0.formatted(date: .omitted, time: .standard))" } ?? "", symbol: "hourglass")
         }
         if kind == "service" {

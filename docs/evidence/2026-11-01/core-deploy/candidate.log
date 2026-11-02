@@ -1,0 +1,5 @@
+d8b2037860ede2aa4bfb3683b63e977d14829b3da44db88cc36f52973ec8620e
+sputnik 1.0.0
+PASS short torch import, shared package reference and GPU forward/backward without Python on 3 devices
+0
+PASS candidate: health, short imports, shared installation, 3xMI50, no Python

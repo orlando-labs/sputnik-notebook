@@ -1,0 +1,18 @@
+schema = "sputnik.packages.lock.v1"
+sputnik_version = "1.0.0"
+
+[[packages]]
+name = "notebook-core"
+version = "0.1.0"
+variant = "source"
+digest = "sha256:d37a4f441cadee77196723b3dc9e11067114a8be795e8d46b3fc18f092337472"
+source_kind = "path"
+source = "../../packages/notebook-core"
+
+[[packages]]
+name = "sqlite3"
+version = "0.1.0"
+variant = "source"
+digest = "sha256:6b36f2cb5f3291c861914b16e577de3af7805c116a13495be1134a3e555c5c08"
+source_kind = "path"
+source = "../../../sqlite3"

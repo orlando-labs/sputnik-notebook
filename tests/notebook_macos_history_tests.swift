@@ -120,6 +120,8 @@ private struct HistoryFailure: Error { let message: String }
             model.stopExecution(); _ = await run.value
             try check(model.runHistory.runs.first?.status == "cancelled", "Stop is distinct from success and error")
             let saved = try model.runHistory.load(first.id)
+            // Keep this retention fixture independent of configurable app defaults.
+            model.runHistory.policy.run_count = 20
             for _ in 0..<25 {
                 var object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(saved)) as! [String: Any]
                 object["id"] = UUID().uuidString.lowercased(); object["pinned"] = false; object["started"] = Date().timeIntervalSinceReferenceDate

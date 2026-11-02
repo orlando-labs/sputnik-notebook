@@ -1,0 +1,50 @@
+[
+  {
+    "source": "backend/main.s",
+    "status": "ok",
+    "target": "native",
+    "require_full_native": true,
+    "native_code_count": 2696,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0,
+    "binary_size": 22979984,
+    "binary_sha256": "e01342ad96767051caa8936a2bed3f37c867087e74c6484206e3ce3e0851bb7f",
+    "compile": {
+      "schema": "sputnik.native.compile.v1",
+      "mode": "serial",
+      "optimization": "O2",
+      "cxx": "clang++",
+      "jobs": 1,
+      "partitions": 1,
+      "compile_link_ms": 169603
+    }
+  },
+  {
+    "source": "test/app_fixture.s",
+    "status": "ok",
+    "target": "native",
+    "require_full_native": true,
+    "native_code_count": 2696,
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_runtime_bridge": false,
+    "vm_fallback_code_count": 0,
+    "native_fallback_code_count": 0,
+    "binary_size": 22880904,
+    "binary_sha256": "cd1cb665e5ea2fd1cdbc20ca61b851601a14801995b3aff34e74dd4c274769bc",
+    "compile": {
+      "schema": "sputnik.native.compile.v1",
+      "mode": "serial",
+      "optimization": "O2",
+      "cxx": "clang++",
+      "jobs": 1,
+      "partitions": 1,
+      "compile_link_ms": 169320
+    }
+  }
+]

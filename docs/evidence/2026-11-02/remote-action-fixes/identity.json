@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-02",
+  "notebook_head": "314ff6c1dd2dd54a19c72744651ef421053d6e91",
+  "language_head": "c17d12b2e25c2dd2cb0b9e41835b0a8e33925573",
+  "working_tree": "Pre-existing modifications in both repositories; source hashes identify these fixes.",
+  "exit_codes": {
+    "actions": 0,
+    "integration": 0,
+    "legacy_ui": 0,
+    "legacy_work": 0,
+    "local_history": 0,
+    "app_build": 0
+  },
+  "new_remote_groups": 6,
+  "native_integration_groups": 11,
+  "source_sha256": {
+    "Makefile": "c0851b64a683e871a8ebbfcf2e55aa0f6891f0b45eb7ec2ea5c0b2db70d7afd2",
+    "packages/notebook-core/include/notebook/core/notebook.h": "64ed346f393155a07b713af096f6cde93c464bbb11e5a638d0eacbcdd7a1c484",
+    "packages/notebook-core/native/notebook.cpp": "1a657dab82ad4e3cd83eb50ffc2380dc4ac0ac01d58d66161d0d2fb71d5e3f7e",
+    "packages/notebook-core/src/notebook/core.s": "aa0a24d069469504892fe7a18c811c13943bef36975479ae7490c2d1a531e494",
+    "tools/notebook-remote/client.s": "c48d10951ff96a548f39ec52a86e4b62c63892fb8110f67723e141e72dd95f6a",
+    "tools/notebook-remote/server.s": "7b1b036c51ab6ab3a273f065f8415e568f86b69b049511c04dee4bf8d003913e",
+    "tools/notebook-macos/NotebookRemote.swift": "3b766eb3dcdd21a8f2a2ebee54dbe2726d1823e99d719319797413f076d395ed",
+    "tools/notebook-macos/NotebookModel.swift": "c8cc4b69b9db57178ec9258734895f3924a8b6eb821b966d5ce0fbb5da79158d",
+    "tools/notebook-macos/NotebookP1Model.swift": "f6a27ea04daea52ed5816f6ecae6069a0c2328b66f3c31d82cd66b8d9c8cd996",
+    "tools/notebook-macos/NotebookExecutionControlsView.swift": "4b615d4b3af8a79873577913b7b06e3a2d270623298a3d8d84b31023c38f74f4",
+    "tools/notebook-macos/NotebookRangeDateView.swift": "5e7b4e672d5eb3ec747c78d7604a54bbd235d3532b45017bbdcafeeccae697ef",
+    "tools/notebook-macos/NotebookRunHistory.swift": "601d2e5ae5f69e586c146fc946ff8e00c183089e9b0169a8a51665b68529dedd",
+    "tools/notebook-macos/NotebookRunHistoryView.swift": "71e76da5837b85c8a3c5d406ab80fe6959963bab0b5a8bdaca2e4a9de5992efc",
+    "tests/notebook_remote_tests.s": "bcd9495c6b8cc8d4309ba0824947c30840231c4aaa017bb5302165192ef2cd0c",
+    "tests/notebook_remote_desktop_tests.s": "b85b60dbce9bc4b301b08b4e9112476def9cbbae5252515f5b9ebd2c6fa49aab",
+    "tests/notebook_macos_remote_actions_tests.swift": "07bc222e852a5c3f7e6f39f3aa62a4eb40c842c27906efaba3cec3b61fa11683",
+    "tests/notebook_macos_history_tests.swift": "6c9dd3b4162df97dd8f2673a866ff35a5878fef24476185e67bf8a4d413706a9"
+  },
+  "binary_sha256": {
+    "build/sputnik-notebook-remote": "06d39685432e65c546145dc3eb78187674bcd7e98d177f624432e63b9db91ac0",
+    "build/sputnik-notebook-worker": "3db49d132fd0e0bc8cb2847b57e9825a4f9e8344e244cb3a8860a6e5f8d97c58",
+    "build/notebook-remote-tests": "640d247ce8e501777991478bb03ff5ffdbcb016d8569f8f4cfeaa8dce79a4d4a",
+    "build/notebook_macos_remote_actions_tests": "d5e00fa4ef0e60c467e95e8da67f7e36eb8a279d25d03b0a3c76725bfdb2b8dd",
+    "build/notebook-macos/SputnikNotebook": "80f3fc03be2fffba2befd1ac3f32c6b2a8cfb743ca57aa2b6edf6b34f4920137",
+    "build/Sputnik Notebook.app/Contents/MacOS/SputnikNotebook": "61d59b1f87b73e7668d30083928a051ce45658adc82c711dad8404d1c2c9790f",
+    "build/Sputnik Notebook.app/Contents/MacOS/sputnik-notebook-remote": "bdbe590d78418b3eb22e853471910355c0936460bab49f5ab78a2bff64182af3"
+  },
+  "log_sha256": {
+    "actions.log": "5f1dfee37308ca80f552ff0ee7a21bd42af74bb5df343110735ee033e8bef11d",
+    "integration.log": "fe584a234dda6c76c17682ba2dd29901193f1457bc5414cd7b365b3b6f4a447a",
+    "legacy-ui.log": "dcd501b7a4ec28fb095c5f3e16fe36bf0efd34ae0a6b44ba38e8da904bf28b15",
+    "legacy-work.log": "0ccd6e6e03cafeed4bb740386d1bbf2b41d8f875bfed7acc2c824d30fea5bf17",
+    "local-history.log": "c90468346731cee913b3e16280e2e9ad25a8343400e44b1668d04f39d7c5c8d8",
+    "app-build.log": "c8d0e5217bf179593d86b3a11c8796fa929ad627cf3dc4d813a50f33e39f0cc5",
+    "regression-build.log": "9bf564e883a78d907a6891b765891ba56fa2ae4209e517973ba9fdca31a792f3"
+  },
+  "build_info": {
+    "schema": "sputnik.notebook.build.v1",
+    "channel": "development",
+    "buildID": "",
+    "notebook": {
+      "version": "0.1.0",
+      "build": "1",
+      "revision": "314ff6c1dd2dd54a19c72744651ef421053d6e91",
+      "dirty": true
+    },
+    "sputnik": {
+      "version": "1.0.0",
+      "revision": "c17d12b2e25c2dd2cb0b9e41835b0a8e33925573",
+      "dirty": true,
+      "compilerSHA256": "a1f80381fef46658d2d15afcc6142c75c1f991ce0519ee6c94b219490844d60e"
+    }
+  }
+}

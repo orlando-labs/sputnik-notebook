@@ -1,0 +1,29 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test
+
+[WebServer] (node:76109) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 16 tests using 1 worker
+
+(node:76119) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 test/notebook.spec.ts:59:1 › legacy project initialization is explicit, idempotent, and saving is inert (1.2s)
+  ✓   2 test/notebook.spec.ts:93:1 › stale editor keeps its draft on conflict and reload requires explicit discard (1.0s)
+  ✓   3 test/notebook.spec.ts:121:1 › a lost save response retries the same durable command (712ms)
+  ✓   4 test/notebook.spec.ts:151:1 › document API enforces ACL, CSRF, validation and private identifiers (1.2s)
+  ✓   5 test/notebook.spec.ts:191:1 › web edits preserve bundled files, formatting and unknown metadata without execution (634ms)
+  ✓   6 test/notebook.spec.ts:218:1 › editor layout, navigation guard and offline loading recovery (1.8s)
+  ✓   7 test/workspace.spec.ts:25:1 › anonymous shell, SSR assets, negotiation, CSRF and private API (230ms)
+  ✓   8 test/workspace.spec.ts:54:1 › GitHub account, project UI, persistent identity and logout 204 (1.2s)
+  ✓   9 test/workspace.spec.ts:91:1 › two accounts: private projects, viewer/editor ACL, owner controls and revocation (1.1s)
+  ✓  10 test/workspace.spec.ts:128:1 › failed authorization and invalid callback leave no authenticated account (441ms)
+  ✓  11 test/workspace.spec.ts:141:1 › library search, details, sort, last opened, collapse and refresh (1.1s)
+  ✓  12 test/workspace.spec.ts:184:1 › new notebook dialog handles keyboard, validation and recoverable failures (710ms)
+  ✓  13 test/workspace.spec.ts:210:1 › owner sharing UI, read-only metadata and account-scoped library preferences (1.9s)
+  ✓  14 test/workspace.spec.ts:259:3 › welcome and project layout: light, desktop and mobile (1.1s)
+  ✓  15 test/workspace.spec.ts:259:3 › welcome and project layout: dark, desktop and mobile (1.1s)
+  ✓  16 test/workspace.spec.ts:301:1 › library works when browser storage is unavailable (752ms)
+
+  16 passed (17.8s)

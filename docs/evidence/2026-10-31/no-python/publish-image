@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+build=/home/slowpilot/sputnik-core-builds/20261031-no-python
+transfer=/home/slowpilot/sputnik-core-builds/transfer-no-python
+image=docker.orlando-labs.com/sputnik-remote-core:20261031-1.0.0-no-python
+current=docker.orlando-labs.com/sputnik-remote-core:20261031-1.0.0
+ready=false
+for ((i=0;i<120;i++)); do
+  if docker image inspect "$image" >/dev/null 2>&1; then ready=true; break; fi
+  sleep 5
+done
+"$ready" || { printf 'Image build did not finish\n' >&2; exit 1; }
+docker run --rm --entrypoint /bin/sh "$image" -c '
+  if command -v python3 || command -v python; then exit 1; fi
+  if dpkg-query -W -f="\${Package}\n" | grep -E "^(python|libpython)"; then exit 1; fi
+'
+docker push "$image" > "$build/publish.log" 2>&1
+docker tag "$image" "$current"
+docker push "$current" >> "$build/publish.log" 2>&1
+docker image inspect "$image" --format '{{.Id}} {{json .RepoDigests}}'
+docker save "$image" "$current" | gzip -1 > "$transfer/core-image.tar.gz"
+sha256sum "$transfer/core-image.tar.gz"
+docker run --rm -d --name sputnik-image-transfer --read-only \
+  --tmpfs /tmp:rw,nosuid,nodev --cap-drop ALL --security-opt no-new-privileges:true \
+  -e SPUTNIK_PKG_HOME=/tmp/packages -p 192.168.1.136:47831:8000 \
+  --mount "type=bind,src=$transfer,dst=/transfer,readonly" \
+  --entrypoint /src/sputnik-lang/build/sputnik "$image" \
+  run /transfer/server.s --grant net.listen --grant fs.read -- --archive /transfer/core-image.tar.gz

@@ -1,6 +1,6 @@
 #include "notebook/project.h"
 #include "tools/isputnik/tabs.h"
-#include "tools/notebook-macos/NotebookBridge.h"
+#include "notebook/core/notebook.h"
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>

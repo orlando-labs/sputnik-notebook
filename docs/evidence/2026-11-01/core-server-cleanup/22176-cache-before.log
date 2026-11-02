@@ -1,0 +1,44 @@
+ID:		rw68j9rplc3hp62zteydh2yq6
+Created at:	2026-10-30 06:20:20.09443612 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		165.4MB
+Description:	mount / from exec /bin/sh -c cd /src/sputnik-lang && SPUTNIK_NATIVE_RT_CACHE=/src/sputnik-registry/.build/native-runtime     python3 tests/native_parallel_test.py build/sputnik build/native-parallel-test
+Usage count:	1
+Last used:	2 days ago
+Type:		regular
+
+ID:		p5hurkl22o63352286pojc9ei
+Created at:	2026-10-30 06:09:25.666428136 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		165.4MB
+Description:	mount / from exec /bin/sh -c cd /src/sputnik-lang && SPUTNIK_NATIVE_RT_CACHE=/src/sputnik-registry/.build/native-runtime     python3 tests/native_parallel_test.py build/sputnik build/native-parallel-test
+Usage count:	1
+Last used:	2 days ago
+Type:		regular
+
+ID:		m8sgd5s77w6g7ncpl0x2bdyw4
+Created at:	2026-10-30 05:42:50.27463626 +0000 UTC
+Mutable:	false
+Reclaimable:	true
+Shared:		false
+Size:		165.4MB
+Description:	mount / from exec /bin/sh -c cd /src/sputnik-lang && SPUTNIK_NATIVE_RT_CACHE=/src/sputnik-registry/.build/native-runtime     python3 tests/native_parallel_test.py build/sputnik build/native-parallel-test
+Usage count:	1
+Last used:	2 days ago
+Type:		regular
+
+ID:		6a1hjx2n6vgufkdt2ulwhpgzo
+Created at:	2026-10-29 20:51:32.216462011 +0000 UTC
+Mutable:	true
+Reclaimable:	true
+Shared:		false
+Size:		57.35MB
+Description:	cached mount /src/sputnik-registry/.build/native-runtime from exec /bin/sh -c cd sputnik-registry && (./tools/build ||     { cat .build/compiler.stderr.log .build/build-result.json 2>/dev/null; exit 1; })
+Usage count:	12
+Last used:	11 minutes ago
+Type:		exec.cachemount
+

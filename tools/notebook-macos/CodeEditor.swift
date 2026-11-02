@@ -39,9 +39,9 @@ struct CodeEditor: NSViewRepresentable {
         textView.allowsUndo = true
         textView.drawsBackground = false
         textView.textColor = NotebookPalette.nativeInk
-        textView.insertionPointColor = NotebookPalette.nativeAccent
-        textView.selectedTextAttributes = [.backgroundColor: NotebookPalette.nativeFoxglove.withAlphaComponent(0.35),
-                                           .foregroundColor: NotebookPalette.nativeInk]
+        textView.insertionPointColor = NotebookPalette.nativeCaret
+        textView.selectedTextAttributes = [.backgroundColor: NotebookPalette.nativeTextSelectionBackground,
+                                           .foregroundColor: NotebookPalette.nativeTextSelectionForeground]
         textView.font = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
         textView.textContainerInset = NSSize(width: 16, height: 14)
         textView.isHorizontallyResizable = false

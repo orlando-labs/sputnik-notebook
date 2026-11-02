@@ -1,0 +1,1 @@
+PASS CPU/MPS LibTorch 2.14.0 forward=14 gradient=[2,4,6] bytes=OK generator=OK scoped-error=OK

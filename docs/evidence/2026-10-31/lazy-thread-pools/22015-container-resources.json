@@ -1,0 +1,49 @@
+{
+  "time": "2026-10-31T15:24:23.664671+00:00",
+  "image": "sha256:1d7b96cff6c0b12253f102e9d9618cec65aa3244aa6a4c3b7eabb0da74a2f5d1",
+  "health": "healthy",
+  "processes": [
+    {
+      "pid": 269961,
+      "mode": "tini",
+      "threads": 1,
+      "virt_kib": 2480,
+      "rss_kib": 896,
+      "pss_kib": 432
+    },
+    {
+      "pid": 270106,
+      "mode": "serve",
+      "threads": 2,
+      "virt_kib": 155516,
+      "rss_kib": 14784,
+      "pss_kib": 6814
+    },
+    {
+      "pid": 270108,
+      "mode": "agent",
+      "threads": 5,
+      "virt_kib": 205848,
+      "rss_kib": 27180,
+      "pss_kib": 22553
+    },
+    {
+      "pid": 270118,
+      "mode": "gateway",
+      "threads": 3,
+      "virt_kib": 155512,
+      "rss_kib": 14336,
+      "pss_kib": 6812
+    }
+  ],
+  "totals": {
+    "threads": 11,
+    "virt_kib": 519356,
+    "rss_kib": 57196,
+    "pss_kib": 36611
+  },
+  "pool_limits": {
+    "SPUTNIK_TASK_MAX_THREADS": "56",
+    "SPUTNIK_FFI_MAX_THREADS": "32"
+  }
+}

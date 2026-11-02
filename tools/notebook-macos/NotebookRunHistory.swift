@@ -31,6 +31,11 @@ struct NotebookRunRecord: Codable, Identifiable {
     var remoteDocument: String? = nil
     var provenanceNote: String? = nil
     var pinned = false
+    var remoteRunID: String? = nil
+    var remoteProjectID: String? = nil
+    var remoteServerID: String? = nil
+    var metadataVersion: String? = nil
+    var assetInputs: [String]? = nil
 }
 struct NotebookRunSummary: Identifiable {
     let id: String, title: String, started: Date, status: String, tab: String, backend: String
@@ -46,12 +51,63 @@ struct NotebookRunStart {
     var cancelled = false
 }
 
+struct NotebookRemoteHistorySnapshot: Decodable {
+    let title: String
+    let cells: [NotebookCell]
+    let sources: [NotebookRunSource]
+    let inputs: [String: String]
+    let cell_inputs: [String: [String: String]]
+    let asset_inputs: [String]
+
+    static func decode(sheet: String, document: String, data: Data) async throws -> Self {
+        try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    var error: UnsafeMutablePointer<CChar>?
+                    let value = data.withUnsafeBytes { buffer in
+                        sputnik_notebook_remote_history(sheet, document, buffer.bindMemory(to: UInt8.self).baseAddress, data.count, &error)
+                    }
+                    defer { sputnik_notebook_string_free(value); sputnik_notebook_string_free(error) }
+                    guard let value else { throw NotebookRemoteFailure(status: 0, message: error.map { String(cString: $0) } ?? "Invalid historical presentation.") }
+                    continuation.resume(returning: try JSONDecoder().decode(Self.self, from: Data(String(cString: value).utf8)))
+                } catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+    func record(run: NotebookRemoteRun, server: String, project: String, backend: String, document: String, failure: String? = nil) -> NotebookRunRecord {
+        let outputs = cells.filter { $0.kind == "code" }.map { cell -> NotebookRunOutput in
+            var displays = cell.displays ?? []
+            displays += (cell.images ?? []).flatMap(\.images)
+            for stream in cell.audio ?? [] where stream.replace && stream.valid {
+                displays.append(.init(mime: NotebookAudioPayload.mime, caption: stream.caption, width: 0, height: 0,
+                    data: NotebookAudioPayload.encode(stream.wav(), format: "wav"), id: stream.id))
+            }
+            let metrics = Dictionary(uniqueKeysWithValues: cell.locals.filter { $0.initialized && $0.role == "module_cell" && Double($0.text_value ?? $0.value)?.isFinite == true }.map { ($0.name, $0.text_value ?? $0.value) })
+            return .init(id: cell.id, result: cell.result, error: cell.error, pretty: cell.result_format?.pretty,
+                table: cell.result_format?.table_json, ok: cell.ok, stale: cell.dirty, elapsed: cell.elapsed_ms,
+                log: String(cell.output.map { "[\($0.stream)] \($0.text)" }.joined().prefix(262144)), metrics: metrics, displays: displays)
+        }
+        let sourceBytes = (try? JSONEncoder().encode(sources)) ?? Data()
+        let date = Date(timeIntervalSince1970: run.created)
+        var result = NotebookRunRecord(id: run.id, title: run.historyTitle, started: date, ended: date,
+            tab: "sheet:" + (run.controller ?? run.sheet), cell: nil, action: run.action, backend: backend,
+            epoch: run.epoch, revision: run.revision, status: run.state, failure: failure, sources: sources,
+            sourceHash: SHA256.hash(data: sourceBytes).map { String(format: "%02x", $0) }.joined(),
+            inputs: inputs, cellInputs: cell_inputs, assets: [:], dependencies: [], outputs: outputs, omitted: !run.presentation)
+        result.remoteDocument = document; result.pinned = run.metadata.pinned
+        result.remoteRunID = run.id; result.remoteServerID = server; result.remoteProjectID = project
+        result.metadataVersion = run.metadata.version; result.assetInputs = asset_inputs
+        return result
+    }
+}
+
 /// Run snapshots are separate from authored defaults and current runtime state.
 /// Hidden project storage avoids recursively uploading history with remote revisions.
 final class NotebookRunHistory: ObservableObject {
     @Published private(set) var runs: [NotebookRunSummary] = []
     @Published var error: String?
     private var directory: URL?
+    var policy = NotebookResourcePolicy.appDefaults
     static let maxRecord = 32 * 1024 * 1024
     static let maxTotal = 256 * 1024 * 1024
     static let maxUnpinned = 20
@@ -77,7 +133,7 @@ final class NotebookRunHistory: ObservableObject {
     }
     func load(_ id: String) throws -> NotebookRunRecord {
         let url = try file(id), size = try url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
-        guard size.isRegularFile == true, let count = size.fileSize, count <= Self.maxRecord else { throw failure("Invalid or oversized run snapshot.") }
+        guard size.isRegularFile == true, let count = size.fileSize, count <= 128 * 1024 * 1024 else { throw failure("Invalid or oversized run snapshot.") }
         let record = try decoder.decode(NotebookRunRecord.self, from: Data(contentsOf: url))
         guard record.version == 1, record.id == id else { throw failure("Unsupported run snapshot.") }
         return record
@@ -86,7 +142,7 @@ final class NotebookRunHistory: ObservableObject {
         guard let directory, FileManager.default.fileExists(atPath: directory.path) else { runs = []; return }
         do {
             let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.fileSizeKey]).filter { $0.pathExtension == "json" }
-            guard files.count <= 256 else { throw failure("History contains too many files.") }
+            guard files.count <= 1100 else { throw failure("History contains too many files.") }
             var entries: [NotebookRunSummary] = []
             for url in files {
                 let id = url.deletingPathExtension().lastPathComponent
@@ -108,23 +164,26 @@ final class NotebookRunHistory: ObservableObject {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
         }
         let data = try encoder.encode(record)
-        guard data.count <= Self.maxRecord else { throw failure("Run snapshot exceeds 32 MiB.") }
+        guard data.count <= 128 * 1024 * 1024 else { throw failure("Run snapshot exceeds 32 MiB.") }
         let existing = runs.first { $0.id == record.id }
         if record.pinned && existing?.pinned != true && runs.filter(\.pinned).count >= Self.maxPinned {
             throw failure("At most ten runs can be pinned. Unpin a saved run first.")
         }
         let pinnedBytes = runs.filter { $0.pinned && $0.id != record.id }.reduce(0) { $0 + $1.bytes }
-        guard pinnedBytes + data.count <= Self.maxTotal else { throw failure("Pinned runs leave insufficient history space.") }
+        guard pinnedBytes + data.count <= (policy.project_bytes ?? Self.maxTotal) else { throw failure("Pinned runs leave insufficient history space.") }
+        let pins = runs.filter { $0.pinned && $0.id != record.id }.count
+        guard record.pinned || pins < (policy.run_count ?? 1000) else { throw failure("Pinned runs occupy this notebook's saved-run limit.") }
         try data.write(to: file(record.id), options: .atomic)
         try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file(record.id).path)
         refresh(); try enforceRetention()
     }
     private func enforceRetention() throws {
         var total = runs.reduce(0) { $0 + $1.bytes }
-        var unpinned = runs.filter { !$0.pinned }.count
+        var count = runs.count
         for run in runs.reversed() where !run.pinned {
-            if unpinned <= Self.maxUnpinned && total <= Self.maxTotal { break }
-            try FileManager.default.removeItem(at: file(run.id)); unpinned -= 1; total -= run.bytes
+            let expired = policy.run_age_seconds.map { Date().timeIntervalSince(run.started) > Double($0) } ?? false
+            if !expired && count <= (policy.run_count ?? 1000) && total <= (policy.project_bytes ?? Self.maxTotal) { continue }
+            try FileManager.default.removeItem(at: file(run.id)); count -= 1; total -= run.bytes
         }
         refresh()
     }
@@ -255,11 +314,24 @@ extension NotebookModel {
         start.cancelled = start.cancelled || ["cancelled", "force-stopped", "interrupted"].contains(remoteRun?.state ?? "")
         runHistory.record(start, state: state, failure: failure ?? (remoteRun?.state == "failed" ? "Remote run failed" : nil), epoch: remoteRun?.epoch, revision: remoteRun?.revision, remoteDocument: remoteDocument, provenanceNote: remoteID != nil && !remote.frozenRunDocuments.contains(remoteID!) ? "This server does not provide frozen run inputs. Parameter provenance is incomplete; update the remote core." : nil)
     }
-    func restoreRunParameters(_ record: NotebookRunRecord) {
-        guard !busy, !remote.active, !remote.isSelected else { error = "Select local execution to restore saved scalar parameters."; return }
+    func restoreRunParameters(_ record: NotebookRunRecord, scope: String = "project", expectedVersion: String? = nil, completion: @escaping (Bool) -> Void = { _ in }) {
+        guard !busy, !remote.active else { completion(false); return }
+        if remote.isSelected {
+            guard record.remoteServerID == remote.selected, record.remoteProjectID == remote.projectID, let expectedVersion else {
+                error = "Reload a snapshot from this server before restoring its parameters."; completion(false); return
+            }
+            if scope == "project" {
+                let assets = Set(record.assetInputs ?? []).union((snapshot?.boards ?? []).flatMap(\.allComponents).filter { $0.kind == "file_input" }.compactMap(\.input))
+                let values = record.inputs.filter { !assets.contains($0.key) }
+                remote.setCellInputs(sheet: "", cell: "project", values: values, expectedVersion: expectedVersion, completion: completion)
+            } else if let values = record.cellInputs[scope], let owner = snapshot?.tabs.first(where: { $0.cells.contains { $0.id == scope } }) {
+                remote.setCellInputs(sheet: String(owner.id.dropFirst(6)), cell: scope, values: values, expectedVersion: expectedVersion, completion: completion)
+            } else { error = "This cell no longer has a restorable parameter scope."; completion(false) }
+            return
+        }
         var values = Dictionary(uniqueKeysWithValues: record.inputs.map { ("project:" + $0.key, $0.value) })
         for (cell, inputs) in record.cellInputs { for (key, value) in inputs { values["cell:" + cell + ":" + key] = value } }
-        do { perform("restore_inputs", text: String(decoding: try JSONEncoder().encode(values), as: UTF8.self)) }
-        catch { self.error = error.localizedDescription }
+        do { perform("restore_inputs", text: String(decoding: try JSONEncoder().encode(values), as: UTF8.self), completion: completion) }
+        catch { self.error = error.localizedDescription; completion(false) }
     }
 }

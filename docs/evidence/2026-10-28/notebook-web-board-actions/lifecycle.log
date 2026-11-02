@@ -1,0 +1,2 @@
+PASS: independent web restart reattaches to one physical run; worker crash requires explicit restart into a new epoch.
+PASS: server service survives gateway shutdown; agent restart retains history, pauses scheduling and requires a new explicit Start.

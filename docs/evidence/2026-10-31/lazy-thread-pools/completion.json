@@ -1,0 +1,25 @@
+{
+  "sputnik_version": "1.0.0",
+  "language_commit": "c17d12b2e25c2dd2cb0b9e41835b0a8e33925573",
+  "core_tests": {
+    "serve_lifecycle": 4,
+    "remote_api": 50,
+    "status": "passed"
+  },
+  "public_packages": {
+    "references": 12,
+    "artifacts": 52,
+    "hashes": "verified",
+    "old_releases_removed": 13,
+    "old_artifacts_removed": 55
+  },
+  "deployed_servers": [
+    22015,
+    22176
+  ],
+  "production_api_gpu": {
+    "22015": 3,
+    "22176": 2
+  },
+  "mps_public_vm": "passed"
+}

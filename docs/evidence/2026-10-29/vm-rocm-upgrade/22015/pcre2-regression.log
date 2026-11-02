@@ -1,0 +1,6 @@
+test_unicode_regexp_flags_interpolation_and_condition_result (__main__.RemoteTests.test_unicode_regexp_flags_interpolation_and_condition_result) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.698s
+
+OK

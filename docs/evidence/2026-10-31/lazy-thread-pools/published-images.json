@@ -1,0 +1,15 @@
+{
+  "remote_core": {
+    "reference": "docker.orlando-labs.com/sputnik-remote-core:20261031-1.0.0",
+    "digest": "sha256:db154a325179e6e231578dbba20d2fe40bd43746236f095e726fc9569cd30535",
+    "image_id": "sha256:98f862174b559490b410294835c3566ff40a40460c4c6bb743b71b7e6ccc042d",
+    "python_dependency": false,
+    "correction_report": "../no-python/README.md",
+    "previous_digest": "sha256:7f630ec4f403a05dfad1ff4cf429738e6e34bc0f649c6eb39158b884d98703d7",
+    "previous_image_id": "sha256:1d7b96cff6c0b12253f102e9d9618cec65aa3244aa6a4c3b7eabb0da74a2f5d1"
+  },
+  "registry": {
+    "reference": "docker.orlando-labs.com/sputnik-registry:20261031-1.0.0",
+    "digest": "sha256:c691db1040a9138f272422f836cb19fc5bb634cf0a9875d1520addbb9778c20a"
+  }
+}

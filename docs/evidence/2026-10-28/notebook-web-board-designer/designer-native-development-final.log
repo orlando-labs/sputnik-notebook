@@ -1,0 +1,18 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test board-designer.spec.ts
+
+[WebServer] (node:39666) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:39676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/board-designer.spec.ts:36:1 › create a board with inert palette/inspector/preview drafts, explicit save and runnable bindings (2.9s)
+  ✓  2 test/board-designer.spec.ts:79:1 › legacy editing preserves opaque settings and exact metadata through drag, duplication and undo/redo (1.5s)
+  ✓  3 test/board-designer.spec.ts:115:1 › nested panels can be authored, reordered, removed and restored with stable bindings (1.7s)
+  ✓  4 test/board-designer.spec.ts:141:1 › designer enforces viewer/revocation and preserves its committed draft across revision conflicts (4.4s)
+  ✓  5 test/board-designer.spec.ts:165:1 › designer shortcut, lost Save receipt and board duplicate/delete keep explicit lifecycle semantics (1.7s)
+
+  5 passed (14.2s)

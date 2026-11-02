@@ -1,0 +1,106 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/media-inputs.spec.ts test/audio.spec.ts
+
+[WebServer] (node:3345) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 23 tests using 1 worker
+
+(node:3359) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 test/audio.spec.ts:28:1 › file audio plays locally, seeks, changes volume and exports exact bytes without another run (30.1s)
+(node:3398) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 test/audio.spec.ts:36:1 › authored audio owns matching automatic channels and board settings retain metadata through Save (5.5s)
+(node:3422) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 test/audio.spec.ts:42:1 › PCM stream grows live, reconnects without replay, exports retained frames and resets its token (4.7s)
+  ✓   4 test/audio.spec.ts:48:1 › browser conversion handles encoded WAV and corrupted media keeps scalar results and original export (1.2s)
+  ✓   5 test/audio.spec.ts:53:1 › ordered runtime controls target the source cell once and never autoplay a reconnected view (5.2s)
+  ✓   6 test/audio.spec.ts:58:1 › stale source, board navigation and role revocation stop playback and release local media (4.8s)
+  ✓   7 test/audio.spec.ts:63:1 › audio projection limits retain scalar/chart data and bound tracks across cells (1.7s)
+  ✓   8 test/audio.spec.ts:67:1 › temporary preview uses shared audio while its 60-second budget and template remain intact (2.1s)
+  ✓   9 test/audio.spec.ts:72:1 › the aggregate audio byte budget preserves other results when several large tracks are published (3.5s)
+  ✓  10 test/media-inputs.spec.ts:36:1 › file draft is inert; Apply preserves exact bytes, accepts a usable input and replaces it in the same worker (2.6s)
+  ✓  11 test/media-inputs.spec.ts:46:1 › accepted audio reaches AudioTrack.from_input; preview and reload never autoplay or run (1.5s)
+  ✓  12 test/media-inputs.spec.ts:51:1 › image collection applies, appends and clears through the shared runtime image reader (2.5s)
+  ✓  13 test/media-inputs.spec.ts:55:1 › idempotent receipt and CAS reject changed payloads, obsolete source and accepted parameter versions (687ms)
+  ✓  14 test/media-inputs.spec.ts:59:1 › invalid encodings, extension policy, corrupt audio and disabled image acceptance leave the head intact (721ms)
+  ✓  15 test/media-inputs.spec.ts:65:1 › uncertain accepted media is recovered after reload without repeating Apply (903ms)
+  ✓  16 test/media-inputs.spec.ts:69:1 › viewer can read accepted media, but cannot accept; revoked membership denies bytes and receipts (3.7s)
+  ✓  17 test/media-inputs.spec.ts:73:1 › storage quota rejects asset acceptance before publication and no computation is charged (693ms)
+  ✓  18 test/media-inputs.spec.ts:77:1 › active execution freezes its asset version and rejects replacement until it finishes (2.8s)
+  ✓  19 test/media-inputs.spec.ts:81:1 › multiple media drafts stay separate and require explicit discard before applying one (862ms)
+  ✓  20 test/media-inputs.spec.ts:85:1 › a managed file grants reads only inside the private input namespace (978ms)
+  ✓  21 test/media-inputs.spec.ts:90:1 › designer authors File/Audio Input and image permissions through the normal draft and Save (1.2s)
+  ✓  22 test/media-inputs.spec.ts:95:1 › unavailable media recovery storage leaves existing scalar parameter controls usable (702ms)
+  ✓  23 test/media-inputs.spec.ts:100:1 › editable image inputs retain their shared renderer for published runtime images (821ms)
+
+
+  1) test/audio.spec.ts:28:1 › file audio plays locally, seeks, changes volume and exports exact bytes without another run 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="audio-player"][data-channel="tone"]').getByRole('button', { name: 'Pause', exact: true })
+
+
+      29 |  await login(page);const p=await book(page,init+`notebook.player(${track()}, id: "tone", caption: "440 Hz <script>literal</script>", volume: 0.25, autoplay: true)\n42\n`);const result=await run(page,p.id);expect(result.state,result.cells?.map((cell:any)=>cell.error).join('\n') || result.environment_error).toBe('succeeded');expect(result.rich_error).toBe('');expect(result.cells[0].rich_unsupported).toBe(false);expect(result.cells[0].audio[0]).toMatchObject({id:'tone',kind:'file',format:'wav',volume:.25});expect(Buffer.from(result.cells[0].audio[0].data,'base64')).toEqual(wave)
+      30 |  const audio=player(page);await expect(audio).toHaveCount(1);await expect(audio).toHaveAttribute('data-playing','false');await expect(audio.getByRole('img',{name:'Audio waveform'})).toBeVisible();await expect(audio).toContainText('440 Hz <script>literal</script>');expect(await audio.locator('script').count()).toBe(0)
+    > 31 |  const posts:string[]=[];page.on('request',r=>{if(['POST','PUT'].includes(r.method()))posts.push(r.url())});await audio.getByRole('button',{name:'Play',exact:true}).click();await expect(audio).toHaveAttribute('data-playing','true');await expect.poll(async()=>Number(await audio.getByRole('slider',{name:'Playback position'}).inputValue())).toBeGreaterThan(.1);await audio.getByRole('button',{name:'Pause',exact:true}).click();await expect(audio).toHaveAttribute('data-playing','false')
+         |                                                                                                                                                                                                                                                                                                                                                                                                                                   ^
+      32 |  await audio.getByRole('slider',{name:'Playback position'}).fill('1');await audio.getByRole('slider',{name:'Audio volume'}).fill('0.4');expect(await audio.locator('audio').evaluate((element:HTMLAudioElement)=>element.volume)).toBeCloseTo(.4);await audio.getByRole('button',{name:'Stop',exact:true}).click();await expect(audio.getByRole('slider',{name:'Playback position'})).toHaveValue('0');expect(await downloaded(page,'Save original…')).toEqual(wave);expect(await downloaded(page,'Export WAV…')).toEqual(wave);expect(posts).toEqual([]);expect((await registry(page,p.id)).runs).toHaveLength(1)
+      33 |  for(const colorScheme of ['light','dark']as const)for(const width of [1280,375,320]){await page.emulateMedia({colorScheme});await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);if(width!==320)await page.screenshot({path:`../build/audio-player-${colorScheme}-${width}.png`,fullPage:true})}
+      34 | })
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/audio.spec.ts:31:419
+
+    Error Context: test-results/production-native/audio-file-audio-plays-loc-acc03-t-bytes-without-another-run/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/audio-file-audio-plays-loc-acc03-t-bytes-without-another-run/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/audio-file-audio-plays-loc-acc03-t-bytes-without-another-run/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) test/audio.spec.ts:36:1 › authored audio owns matching automatic channels and board settings retain metadata through Save 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('account-name')
+    Expected: "Alice"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" getByTestId('account-name') with timeout 5000ms
+      - waiting for getByTestId('account-name')
+
+
+      3 | import { readFile } from 'node:fs/promises'
+      4 | const created = new WeakMap<Page,string[]>()
+    > 5 | async function login(page:Page,user='Alice') { await page.goto('/'); await page.getByRole('button',{name:'Continue with GitHub'}).click(); await page.getByRole('button',{name:`Sign in as ${user}`}).click(); await expect(page.getByTestId('account-name')).toHaveText(user) }
+        |                                                                                                                                                                                                                                                               ^
+      6 | async function request(page:Page,path:string,method='GET',data?:unknown) { const token=(await page.context().cookies()).find(cookie=>cookie.name==='orbit-csrf')?.value; return page.request.fetch(path,{method,data,headers:{Accept:'application/json',Origin:new URL(page.url()).origin,...(token?{'X-CSRF-Token':decodeURIComponent(token)}:{})}}) }
+      7 | const base=(id:string)=>`/api/projects/${id}`, endpoint=(id:string)=>base(id)+'/notebook'
+      8 | async function registry(page:Page,id:string) { return (await (await request(page,base(id)+'/execution')).json()) }
+        at login (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/audio.spec.ts:5:255)
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/audio.spec.ts:37:2
+
+    Error Context: test-results/production-native/audio-authored-audio-owns--05a12-etain-metadata-through-Save/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-native/audio-authored-audio-owns--05a12-etain-metadata-through-Save/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-native/audio-authored-audio-owns--05a12-etain-metadata-through-Save/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    test/audio.spec.ts:28:1 › file audio plays locally, seeks, changes volume and exports exact bytes without another run 
+    test/audio.spec.ts:36:1 › authored audio owns matching automatic channels and board settings retain metadata through Save 
+  21 passed (1.4m)

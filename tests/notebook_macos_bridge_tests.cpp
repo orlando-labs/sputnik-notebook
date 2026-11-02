@@ -1,5 +1,5 @@
 #include "notebook/project.h"
-#include "tools/notebook-macos/NotebookBridge.h"
+#include "notebook/core/notebook.h"
 
 #include <cstdlib>
 #include <filesystem>
@@ -267,10 +267,12 @@ void test_bundled_module_save_auto_import_and_apply() {
          "editing a different tab should preserve the current selection");
   command(notebook, "save_all");
   command(notebook, "auto_import", "module:triple", nullptr, "on");
+  std::filesystem::create_directory(path / "packages");
+  std::ofstream(path / "packages/imports.index") << "test/triple\ttriple\ttest.triple\n";
   command(notebook, "apply", "sheet:main");
   state = snapshot(notebook);
   expect(state.find("\"result\":\"42\"") != std::string::npos,
-         "Apply should load and evaluate the explicitly auto-imported module");
+         "Apply should prefer the notebook module over an installed package short name");
   expect(state.find("\"selected_tab\":\"module:triple\"") !=
              std::string::npos,
          "Apply should restore the tab selection after targeting a sheet");
@@ -474,9 +476,14 @@ void test_external_directory_link_import_and_unlink() {
   const auto project = temporary.path / "Linked.sputnikbook";
   const auto package = temporary.path / "Package with spaces";
   std::filesystem::create_directory(package);
-  std::ofstream(package / "sputnik.toml") <<
-      "[package]\nname = \"maths\"\nversion = \"1.0.0\"\nroot = \"maths\"\n"
-      "[[modules]]\nname = \"maths\"\npath = \"maths.s\"\n";
+  std::ofstream(package / "sputnik.build.yaml") <<
+      R"yaml(schema: "sputnik.build.v1"
+name: "maths"
+version: "1.0.0"
+source_root: "."
+files:
+  - "maths.s"
+)yaml";
   std::ofstream(package / "maths.s") << "package maths\nexport answer\ndef answer(): 42\n";
   auto *notebook = open_new(project);
   const auto id = first_cell_id(snapshot(notebook), "sheet:main");
@@ -507,6 +514,12 @@ void test_numbered_sheets_and_project_input_deletion() {
   auto document = sputnik::notebook::load_project(path).document;
   expect(document.sheets.back().id == "analysis" && document.sheets.back().title == "Sheet 2",
          "new sheets receive numbered display titles and keep their stable identifiers");
+  command(notebook, "rename_sheet", "sheet:analysis", nullptr, "Training results");
+  document = sputnik::notebook::load_project(path).document;
+  expect(document.sheets.back().id == "analysis" && document.sheets.back().title == "Training results",
+         "renaming persists the display title and preserves the stable sheet identifier");
+  expect(command_fails(notebook, "rename_sheet", "sheet:analysis", nullptr, "   "), "blank sheet names are rejected");
+  command(notebook, "rename_sheet", "sheet:analysis", nullptr, "Sheet 2");
   command(notebook, "new_input", nullptr, nullptr,
           R"({"id":"count","title":"Count","type":"integer","default":9223372036854775807})");
   command(notebook, "new_input", nullptr, nullptr,

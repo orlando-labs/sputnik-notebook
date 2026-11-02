@@ -1,0 +1,64 @@
+{
+  "release": "/home/slowpilot/sputnik-releases/20261029-head-3eb0f05",
+  "language_commit": "3eb0f05da50ba307d5f719e0b194de6317304b29",
+  "torch_commit": "b584478dbafd1cc1272e754accf78ffcd56a3ce4",
+  "health": {
+    "protocol": 1,
+    "agent_pid": 202561,
+    "implementation": "sputnik",
+    "capabilities": [
+      "sheet_run",
+      "bundled_modules",
+      "project_revisions",
+      "reattach",
+      "stop",
+      "force_stop",
+      "gui_reconnect",
+      "live_presentation",
+      "revision_document",
+      "compact_registry",
+      "worker_grants",
+      "worker_environment",
+      "managed_environments",
+      "orphan_gc",
+      "dependency_management",
+      "package_catalog",
+      "cell_inputs",
+      "run_document",
+      "project_inputs",
+      "idle_watch",
+      "board_actions",
+      "server_periodic"
+    ]
+  },
+  "processes": {
+    "agent": {
+      "pid": 202561,
+      "executable": "/home/slowpilot/sputnik-releases/20261029-head-3eb0f05/sputnik-notebook-remote",
+      "pcre2_libraries": [
+        "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib/libpcre2-8.so.0.15.0"
+      ]
+    },
+    "gateway": {
+      "pid": 202562,
+      "executable": "/home/slowpilot/sputnik-releases/20261029-head-3eb0f05/sputnik-notebook-remote",
+      "pcre2_libraries": [
+        "/home/slowpilot/sputnik-remote-core/deps/pcre2-10.47/lib/libpcre2-8.so.0.15.0"
+      ]
+    }
+  },
+  "gateway_ready": true,
+  "first_start_token_race_fixed": true,
+  "initial_processes": {
+    "agent": {
+      "pid": 200999,
+      "executable": "/home/slowpilot/sputnik-releases/20261029-head-3eb0f05/sputnik-notebook-remote"
+    },
+    "gateway": {
+      "pid": 201000,
+      "executable": "/home/slowpilot/sputnik-releases/20261029-head-3eb0f05/sputnik-notebook-remote"
+    }
+  },
+  "pcre2_rpath_fix": "rpath-fix.json",
+  "torch_remote_verified": true
+}

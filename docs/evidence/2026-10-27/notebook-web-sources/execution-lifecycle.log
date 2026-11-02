@@ -1,0 +1,1 @@
+PASS: independent web restart reattaches to one physical run; worker crash requires explicit restart into a new epoch.

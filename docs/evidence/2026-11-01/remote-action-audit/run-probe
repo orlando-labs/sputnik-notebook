@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Run from the repository root after building remote-core and the audit probe.
+# This creates only a disposable local service, never an SSH/production project.
+repository=$PWD
+evidence="$repository/docs/evidence/2026-11-01/remote-action-audit"
+audit_root=$(mktemp -d /tmp/spra.XXXXXXXX)
+audit_port=${AUDIT_PORT:-$((20000 + $$ % 20000))}
+audit_pid=''
+cleanup() {
+  if [[ -n "$audit_pid" ]]; then
+    kill "$audit_pid" 2>/dev/null || true
+    wait "$audit_pid" 2>/dev/null || true
+  fi
+  rm -rf -- "$audit_root"
+}
+trap cleanup EXIT
+export SPUTNIK_PKG_HOME="$audit_root/packages"
+export SPUTNIK_PKG_CREDENTIALS=''
+"$repository/build/sputnik-notebook-remote" --mode serve --root "$audit_root/state" \
+  --worker "$repository/build/sputnik-notebook-worker" --python /__audit_no_python__ \
+  --sputnik "$repository/../sputnik-lang/build/sputnik" --port "$audit_port" \
+  > "$audit_root/service.log" 2>&1 &
+audit_pid=$!
+ready=0
+for ((attempt=0; attempt<200; attempt++)); do
+  if ! kill -0 "$audit_pid" 2>/dev/null; then cat "$audit_root/service.log"; exit 1; fi
+  if [[ -f "$audit_root/state/token" ]] && \
+     "$repository/build/sputnik-notebook-remote" --mode cli --url "http://127.0.0.1:$audit_port" \
+       --token-file "$audit_root/state/token" --command health > /dev/null 2>&1; then ready=1; break; fi
+  sleep 0.1
+done
+if [[ "$ready" != 1 ]]; then cat "$audit_root/service.log"; exit 1; fi
+set +e
+"$repository/.build/remote-action-audit-probe" --root "$audit_root/client" \
+  --core "$repository/build/sputnik-notebook-remote" --worker "$repository/build/sputnik-notebook-worker" \
+  --url "http://127.0.0.1:$audit_port" --token "$audit_root/state/token" > "$evidence/probe.log" 2>&1
+audit_status=$?
+set -e
+cat "$evidence/probe.log"
+if [[ -f "$audit_root/client/observations.json" ]]; then cp "$audit_root/client/observations.json" "$evidence/observations.json"; fi
+exit "$audit_status"

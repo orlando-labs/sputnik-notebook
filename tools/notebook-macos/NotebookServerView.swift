@@ -4,7 +4,6 @@ import SwiftUI
 struct NotebookServerBar: View {
     @ObservedObject var model: NotebookModel
     @ObservedObject var remote: NotebookRemoteController
-    @State private var editServer = false
     @State private var browse = false
     @State private var publish = false
     @State private var workerSettings: NotebookTab?
@@ -32,7 +31,6 @@ struct NotebookServerBar: View {
         .background(NotebookPalette.topBar)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Worker toolbar")
-        .sheet(isPresented: $editServer) { NotebookServerEditor(remote: remote) }
         .sheet(isPresented: $bookSettings) { NotebookBookSettingsView(model: model) }
         .sheet(isPresented: $browse) { NotebookRemoteProjects(remote: remote) }
         .sheet(item: $workerSettings) { tab in
@@ -55,8 +53,10 @@ struct NotebookServerBar: View {
 
     private func workerToolbar(compact: Bool) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: remote.isSelected ? "server.rack" : "laptopcomputer")
-                .foregroundStyle(NotebookPalette.muted)
+            Button { model.requestSettings?("servers") } label: {
+                Image(systemName: remote.isSelected ? "server.rack" : "laptopcomputer")
+                    .foregroundStyle(NotebookPalette.muted)
+            }.buttonStyle(.plain).help("Server settings").accessibilityLabel("Server settings")
             Picker("Execution", selection: Binding(get: { remote.selected ?? "local" }, set: { remote.choose($0 == "local" ? nil : $0) })) {
                 Text("This Mac").tag("local")
                 if let id = remote.selected, !remote.servers.contains(where: { $0.id == id }) {
@@ -92,11 +92,11 @@ struct NotebookServerBar: View {
             }
             Spacer(minLength: 8)
 
-            Button { editServer = true } label: {
-                toolbarLabel("Servers…", systemImage: "server.rack", compact: compact)
+            Button { model.showDependencies = true } label: {
+                toolbarLabel("Dependencies…", systemImage: "shippingbox", compact: compact)
             }
             .disabled(model.busy || remote.busy)
-            .help("Servers…").accessibilityLabel("Servers…")
+            .help("Dependencies…").accessibilityLabel("Dependencies…")
             Button { workerSettings = workerTab } label: {
                 toolbarLabel("Worker Settings…", systemImage: "slider.horizontal.3", compact: compact)
             }
@@ -156,16 +156,24 @@ struct NotebookServerBar: View {
     }
 }
 
-private struct NotebookServerEditor: View {
+struct NotebookServerEditor: View {
     @ObservedObject var remote: NotebookRemoteController
+    var embedded = false
     @Environment(\.dismiss) private var dismiss
     @State private var server = NotebookServer()
     @State private var token = ""
     @State private var configuration = "new"
     @State private var message: String?
     var body: some View {
+        if embedded {
+            editor
+        } else {
+            editor.padding(24).frame(width: 570)
+        }
+    }
+    private var editor: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Notebook servers").font(.title2)
+            Text("Notebook servers").font(embedded ? .headline : .title2)
             if !remote.servers.isEmpty {
                 Picker("Configuration", selection: Binding(get: { configuration }, set: { value in
                     configuration = value; server = remote.servers.first { $0.id == value } ?? NotebookServer(); token = ""
@@ -192,17 +200,21 @@ private struct NotebookServerEditor: View {
                     Text("Leave the token empty to retain an existing credential. Credentials are kept in private local files, outside notebook documents.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-            }.textFieldStyle(.roundedBorder)
+            }.formStyle(.columns).textFieldStyle(.roundedBorder)
             if let message { Text(message).foregroundStyle(.red).font(.caption) }
             HStack {
                 Spacer()
-                Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)
-                Button("Save and Connect") {
-                    do { let id = try remote.addServer(server, token: token); remote.choose(id); dismiss() }
+                if !embedded { Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction) }
+                Button(embedded ? "Save Server" : "Save and Connect") {
+                    do {
+                        let id = try remote.addServer(server, token: token)
+                        configuration = id; token = ""; message = nil
+                        if !embedded { remote.choose(id); dismiss() }
+                    }
                     catch { message = error.localizedDescription }
                 }.keyboardShortcut(.defaultAction)
             }
-        }.padding(24).frame(width: 570)
+        }
     }
 }
 

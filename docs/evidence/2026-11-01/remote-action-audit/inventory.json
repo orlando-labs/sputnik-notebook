@@ -1,0 +1,513 @@
+{
+  "date": "2026-11-01",
+  "scope": "macOS desktop with Remote Core; web comparison is separate",
+  "evidence": "Static source inventory; runtime observations are in observations.json and probe.log",
+  "action_count": 44,
+  "palette_tool_count": 35,
+  "persisted_kind_count": 33,
+  "actions": [
+    {
+      "action": "action_run",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 794
+    },
+    {
+      "action": "add_cell",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1081
+    },
+    {
+      "action": "add_dependency",
+      "status": "unsupported",
+      "note": "Directory dependency bundles rejected on remote Run; Apply requires explicit restart instead.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 810
+    },
+    {
+      "action": "add_text",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1081
+    },
+    {
+      "action": "apply",
+      "status": "unsupported",
+      "note": "Directory dependency bundles rejected on remote Run; Apply requires explicit restart instead.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 792
+    },
+    {
+      "action": "audio_edit",
+      "status": "local-media-then-sync",
+      "note": "Writes desktop bundle, then uploads full revision; no media.accept route in desktop transport.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 963
+    },
+    {
+      "action": "auto_import",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1224
+    },
+    {
+      "action": "component_data_edit",
+      "status": "disabled-in-remote-ui",
+      "note": "Remote desktop disables scalar restore and shared selection/annotation editing.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 957
+    },
+    {
+      "action": "delete_cell",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1113
+    },
+    {
+      "action": "delete_input",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 982
+    },
+    {
+      "action": "image_edit",
+      "status": "local-media-then-sync",
+      "note": "Writes desktop bundle, then uploads full revision; no media.accept route in desktop transport.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 966
+    },
+    {
+      "action": "image_select",
+      "status": "broken-local-only",
+      "note": "Local success without server invocation restart or selected-image update.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 970
+    },
+    {
+      "action": "move_down",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1114
+    },
+    {
+      "action": "move_up",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1113
+    },
+    {
+      "action": "new_input",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 978
+    },
+    {
+      "action": "new_module",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1002
+    },
+    {
+      "action": "new_sheet",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 987
+    },
+    {
+      "action": "periodic_dispose",
+      "status": "broken-local-only",
+      "note": "Local success without server invocation restart or selected-image update.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 864
+    },
+    {
+      "action": "periodic_run",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 794
+    },
+    {
+      "action": "periodic_tick",
+      "status": "server-owned-automatic",
+      "note": "Desktop local operation blocked; corresponding work is owned by the Core agent.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 794
+    },
+    {
+      "action": "remove_dependency",
+      "status": "unsupported",
+      "note": "Directory dependency bundles rejected on remote Run; Apply requires explicit restart instead.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 810
+    },
+    {
+      "action": "rename_sheet",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1025
+    },
+    {
+      "action": "resource_policy",
+      "status": "policy-and-revision",
+      "note": "Authored policy plus separate desktop policy RPC.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 797
+    },
+    {
+      "action": "restart_worker",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 793
+    },
+    {
+      "action": "restore_inputs",
+      "status": "disabled-in-remote-ui",
+      "note": "Remote desktop disables scalar restore and shared selection/annotation editing.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 960
+    },
+    {
+      "action": "retain_cell_results",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 804
+    },
+    {
+      "action": "rich_source",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1112
+    },
+    {
+      "action": "run",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 792
+    },
+    {
+      "action": "run_all",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 792
+    },
+    {
+      "action": "save",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1216
+    },
+    {
+      "action": "save_all",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1006
+    },
+    {
+      "action": "save_board",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 842
+    },
+    {
+      "action": "save_cell_ui",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 824
+    },
+    {
+      "action": "select",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1070
+    },
+    {
+      "action": "set_cell_id",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1031
+    },
+    {
+      "action": "set_cell_inputs",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 824
+    },
+    {
+      "action": "set_input",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 793
+    },
+    {
+      "action": "set_inputs",
+      "status": "remote-command",
+      "note": "Explicit desktop transport to Core; see audit for target/acknowledgement limits.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 793
+    },
+    {
+      "action": "source",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1112
+    },
+    {
+      "action": "trust_native",
+      "status": "internal-client-policy",
+      "note": "Internal host consent flag; no matching desktop remote command.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1055
+    },
+    {
+      "action": "watch",
+      "status": "authored-and-synchronized",
+      "note": "Local inert editing; full revision published by Remote.synchronize.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 1112
+    },
+    {
+      "action": "watch_run",
+      "status": "server-owned-automatic",
+      "note": "Desktop local operation blocked; corresponding work is owned by the Core agent.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 792
+    },
+    {
+      "action": "worker_environment",
+      "status": "alternate-remote-api",
+      "note": "Worker settings use NotebookModel.configureWorker / Remote.configureWorker.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 793
+    },
+    {
+      "action": "worker_grants",
+      "status": "alternate-remote-api",
+      "note": "Worker settings use NotebookModel.configureWorker / Remote.configureWorker.",
+      "path": "packages/notebook-core/native/notebook.cpp",
+      "line": 793
+    }
+  ],
+  "palette": [
+    {
+      "id": "tabs",
+      "title": "Tabs",
+      "kind": "tabs"
+    },
+    {
+      "id": "split",
+      "title": "Split View",
+      "kind": "split"
+    },
+    {
+      "id": "group",
+      "title": "Group / Accordion",
+      "kind": "group"
+    },
+    {
+      "id": "input",
+      "title": "Input",
+      "kind": "input"
+    },
+    {
+      "id": "config_editor",
+      "title": "Config Editor",
+      "kind": "input"
+    },
+    {
+      "id": "parameter_form",
+      "title": "Parameter Form",
+      "kind": "parameter_form"
+    },
+    {
+      "id": "parameter_presets",
+      "title": "Parameter Presets",
+      "kind": "parameter_presets"
+    },
+    {
+      "id": "range_input",
+      "title": "Range Input",
+      "kind": "range_input"
+    },
+    {
+      "id": "date_input",
+      "title": "Date / Time Input",
+      "kind": "date_input"
+    },
+    {
+      "id": "audio_input",
+      "title": "Audio Input / Recorder",
+      "kind": "audio_input"
+    },
+    {
+      "id": "file_input",
+      "title": "File / Dataset Input",
+      "kind": "file_input"
+    },
+    {
+      "id": "action",
+      "title": "Action Button",
+      "kind": "action"
+    },
+    {
+      "id": "execution_controls",
+      "title": "Execution Controls",
+      "kind": "execution_controls"
+    },
+    {
+      "id": "rich_text",
+      "title": "Text Cell",
+      "kind": "rich_text"
+    },
+    {
+      "id": "text",
+      "title": "Text / Value",
+      "kind": "text"
+    },
+    {
+      "id": "metric",
+      "title": "Metric / KPI",
+      "kind": "metric"
+    },
+    {
+      "id": "status",
+      "title": "Status / Alert",
+      "kind": "status"
+    },
+    {
+      "id": "log",
+      "title": "Log Viewer",
+      "kind": "log"
+    },
+    {
+      "id": "artifacts",
+      "title": "Artifact Browser",
+      "kind": "artifacts"
+    },
+    {
+      "id": "result",
+      "title": "Result Inspector",
+      "kind": "result"
+    },
+    {
+      "id": "table",
+      "title": "Data Table",
+      "kind": "table"
+    },
+    {
+      "id": "task_monitor",
+      "title": "Task Monitor",
+      "kind": "task_monitor"
+    },
+    {
+      "id": "run_history",
+      "title": "Run History",
+      "kind": "run_history"
+    },
+    {
+      "id": "experiment_compare",
+      "title": "Experiment Compare",
+      "kind": "experiment_compare"
+    },
+    {
+      "id": "image_annotator",
+      "title": "Image Annotator",
+      "kind": "image"
+    },
+    {
+      "id": "audio_annotator",
+      "title": "Audio Annotator",
+      "kind": "audio_annotator"
+    },
+    {
+      "id": "audio",
+      "title": "Audio Player",
+      "kind": "audio"
+    },
+    {
+      "id": "progress",
+      "title": "Progress",
+      "kind": "progress"
+    },
+    {
+      "id": "stopwatch",
+      "title": "Stopwatch",
+      "kind": "stopwatch"
+    },
+    {
+      "id": "plot",
+      "title": "Figure",
+      "kind": "plot"
+    },
+    {
+      "id": "live_chart",
+      "title": "Live Chart",
+      "kind": "live_chart"
+    },
+    {
+      "id": "image",
+      "title": "Image",
+      "kind": "image"
+    },
+    {
+      "id": "image_carousel",
+      "title": "Image Carousel",
+      "kind": "image_carousel"
+    },
+    {
+      "id": "run",
+      "title": "Run Button",
+      "kind": "run"
+    },
+    {
+      "id": "periodic_work",
+      "title": "Periodic Work",
+      "kind": "periodic_work"
+    }
+  ],
+  "sha256": {
+    "packages/notebook-core/native/notebook.cpp": "6bbc6dd875efce52b2d33b115db3d5082f0ce84bda08a18cb5a6d783d8f439c9",
+    "tools/notebook-macos/NotebookBoard.swift": "74e21ae1e96310d2acc81ebbb689acca313d3f274ae527b4254bbc4829d9ec30",
+    "tools/notebook-macos/NotebookModel.swift": "24d0c0efd8fdb589ca6f615123e1bc14323eedd9dfbc3bf8bcf5dd14d224eba3",
+    "tools/notebook-macos/NotebookRemote.swift": "5d439868f53a3378d3c59bd7f08afda2c17e291753171b885dd50de2e3fe9266",
+    "tools/notebook-macos/NotebookExecutionControlsView.swift": "5eaf7b27da59f706a1b41328aa7e8b27f909d22031bb824ee0e3d783e2a526c5",
+    "tools/notebook-macos/NotebookBoardView.swift": "74ad874ec5b67796d95bd662db3e462c10ae2930b27f4aeaed34df53e21caad7",
+    "tools/notebook-macos/NotebookSelection.swift": "0c5e61d8abefd59902b2021ed32d212819bce3595c9bf60d732ddc8fb7933bd6",
+    "tools/notebook-macos/NotebookRangeDateView.swift": "4e4b10c9b403aac0ca83fab76801cd1d49dc309e30905c8c5dd4f151b9569638",
+    "tools/notebook-macos/NotebookRunHistory.swift": "dcbad89d37f1df856c057b67e6fa5296443b1d70670f5fda080058096fc589fa",
+    "tools/notebook-macos/NotebookRunHistoryView.swift": "b05f681da3ed18fdf6a803ea0f4d76da01d5d9614d45f9c5c3ec46e97ca7026f",
+    "tools/notebook-macos/NotebookAudioAnnotatorView.swift": "eb699b8015ff1f43d6c91cb0c482aea76af68eef044b0d142ce52f9ff27cb803",
+    "tools/notebook-remote/server.s": "2c1c1e5d6de6429dd8eb40f647f6c76ff61811dc792b6c5ae9c422afba5ffe40",
+    "tools/notebook-remote/client.s": "45c7c577966dc7c5bc8f86f15f1876ca5ffb7c6fa9066a15d6978cd1772d642c",
+    "packages/notebook-core/src/notebook/core.s": "ed2e965a22ff708306f9e195828916b979536834c5d1fe3237742687b54a94d7",
+    "packages/notebook-core/src/notebook/core/services.s": "e3fc2cd0406b9f3c7d4e6d5e21054a31d2d25d33b89c2d2031c427232fdafbdd",
+    "../sputnik-lang/tools/isputnik/tabs.cpp": "81d186f3e61833d1cb3089330d096b54d252c8bdeaa728c40b0f8028c88d53ce"
+  }
+}

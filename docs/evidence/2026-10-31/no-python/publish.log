@@ -1,0 +1,42 @@
+The push refers to repository [docker.orlando-labs.com/sputnik-remote-core]
+0510efe12146: Preparing
+1550b812ba8e: Preparing
+ade55a3eaa1c: Preparing
+d6179490e6d5: Preparing
+2b47532e0f9c: Preparing
+54fc404370f2: Preparing
+54e9a2bcf745: Preparing
+44a87794b739: Preparing
+54fc404370f2: Waiting
+44a87794b739: Waiting
+54e9a2bcf745: Waiting
+1550b812ba8e: Pushed
+ade55a3eaa1c: Pushed
+0510efe12146: Pushed
+44a87794b739: Layer already exists
+d6179490e6d5: Pushed
+54fc404370f2: Pushed
+2b47532e0f9c: Pushed
+54e9a2bcf745: Pushed
+20261031-1.0.0-no-python: digest: sha256:db154a325179e6e231578dbba20d2fe40bd43746236f095e726fc9569cd30535 size: 2001
+The push refers to repository [docker.orlando-labs.com/sputnik-remote-core]
+0510efe12146: Preparing
+1550b812ba8e: Preparing
+ade55a3eaa1c: Preparing
+d6179490e6d5: Preparing
+2b47532e0f9c: Preparing
+54fc404370f2: Preparing
+54e9a2bcf745: Preparing
+44a87794b739: Preparing
+54e9a2bcf745: Waiting
+54fc404370f2: Waiting
+44a87794b739: Waiting
+1550b812ba8e: Layer already exists
+2b47532e0f9c: Layer already exists
+ade55a3eaa1c: Layer already exists
+0510efe12146: Layer already exists
+d6179490e6d5: Layer already exists
+44a87794b739: Layer already exists
+54fc404370f2: Layer already exists
+54e9a2bcf745: Layer already exists
+20261031-1.0.0: digest: sha256:db154a325179e6e231578dbba20d2fe40bd43746236f095e726fc9569cd30535 size: 2001

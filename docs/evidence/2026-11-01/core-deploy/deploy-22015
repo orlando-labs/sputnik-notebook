@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release=/home/slowpilot/sputnik-releases/20261101-notebook-core
+root=/home/slowpilot/sputnik-remote-core
+state=$root/state
+packages=/home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-packages
+cache=/home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-cache
+image=$1
+container=sputnik-remote-core
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+backup=$root/backups/before-core-$stamp
+previous=sputnik-core-before-$stamp
+mkdir -p "$backup"
+chmod 700 "$backup"
+cp -p "$root/start-current.sh" "$backup/start-current.sh"
+docker inspect --format '{{.Image}}' "$container" > "$backup/previous-image.txt"
+token_before=$(sha256sum "$state/token" | cut -d' ' -f1)
+gateway=$(docker top "$container" -eo pid,args | awk '/--mode gateway/ {print $1}')
+[[ "$gateway" =~ ^[0-9]+$ ]] || { printf 'Could not identify one gateway\n' >&2; exit 1; }
+rollback=true
+stopped=false
+renamed=false
+backed_up=false
+cleanup() {
+  result=$?
+  if "$rollback"; then
+    if "$stopped"; then
+      if "$renamed"; then
+        docker rm -f "$container" >/dev/null 2>&1 || true
+        docker rename "$previous" "$container"
+      fi
+      if "$backed_up"; then
+        mv "$state" "$backup/failed-state"
+        cp -a --reflink=auto "$backup/state" "$state"
+      fi
+      cp -p "$backup/start-current.sh" "$root/start-current.sh"
+      docker update --restart unless-stopped "$container" >/dev/null
+      docker start "$container" >/dev/null
+      printf 'ROLLED BACK to previous container; backup=%s\n' "$backup" >&2
+    else
+      kill -CONT "$gateway" 2>/dev/null || true
+      docker update --restart unless-stopped "$container" >/dev/null
+    fi
+  fi
+  exit "$result"
+}
+trap cleanup EXIT
+check() {
+  docker exec -e SPUTNIK_PKG_HOME=/tmp/maintenance-packages "$container" sputnik run /tmp/container-check.s \
+    --grant fs.read --grant fs.write --grant fs.metadata --grant net.connect --grant random.secure -- \
+    --root "$state" "$@"
+}
+docker cp "$release/container-check.s" "$container:/tmp/container-check.s"
+docker update --restart=no "$container" >/dev/null
+# Freeze admission; the independent execution agent remains available to audit.
+kill -STOP "$gateway"
+check --mode retire --output /tmp/state-before.json
+docker cp "$container:/tmp/state-before.json" "$backup/state-before.json"
+kill -TERM "$gateway"
+kill -CONT "$gateway"
+docker stop "$container" >/dev/null
+stopped=true
+cp -a --reflink=auto "$state" "$backup/state"
+backed_up=true
+docker rename "$container" "$previous"
+renamed=true
+args=(--image "$image" --backend rocm --state "$state" --root "$state"
+  --packages "$packages" --cache "$cache" --rocm-root /opt/rocm-6.4.3
+  --tensile "$root/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/rocblas/library"
+  --task-threads 56 --ffi-threads 32)
+"$release/run-container" "${args[@]}"
+for ((i=0;i<90;i++)); do
+  if [[ $(docker inspect --format '{{.State.Health.Status}}' "$container") == healthy ]]; then break; fi
+  sleep 1
+done
+[[ $(docker inspect --format '{{.State.Health.Status}}' "$container") == healthy ]]
+docker exec "$container" sh -c 'if command -v python3 || command -v python; then exit 1; fi; if dpkg-query -W -f="\${Package}\n" | grep -E "^(python|libpython)"; then exit 1; fi'
+docker cp "$release/container-check.s" "$container:/tmp/container-check.s"
+check --mode audit --output /tmp/state-after.json
+docker cp "$container:/tmp/state-after.json" "$backup/state-after.json"
+cmp "$backup/state-before.json" "$backup/state-after.json"
+[[ $(sha256sum "$state/token" | cut -d' ' -f1) == "$token_before" ]]
+check --mode repair --project 98b96636-d021-484d-ba2e-b62d902f7855
+check --mode gpu --gpus 3
+{
+  printf '#!/usr/bin/env bash\nset -euo pipefail\nif docker container inspect sputnik-remote-core >/dev/null 2>&1; then\n  exec docker start sputnik-remote-core\nfi\nexec %q' "$release/run-container"
+  printf ' %q' "${args[@]}"
+  printf '\n'
+} > "$root/start-current.sh.new"
+chmod 755 "$root/start-current.sh.new"
+mv "$root/start-current.sh.new" "$root/start-current.sh"
+rollback=false
+printf 'PASS 22015: healthy updated core, short torch import, all 3 GPUs, no Python, state/token preserved; image=%s backup=%s previous=%s\n' "$image" "$backup" "$previous"

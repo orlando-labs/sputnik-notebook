@@ -14,7 +14,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 DEFINES = ["SQLITE_THREADSAFE=1", "SQLITE_ENABLE_COLUMN_METADATA=1", "SQLITE_ENABLE_FTS5=1",
            "SQLITE_ENABLE_JSON1=1", "SQLITE_DQS=0", "SQLITE_OMIT_LOAD_EXTENSION=1"]
-SHIM = b'#include "runtime/sputnik_ext.h"\nuint32_t sputnik_ext_abi_version(void) { return SPUTNIK_EXT_ABI_VERSION; }\n'
+SHIM = b'#include "runtime/sputnik_ext.h"\nconst char *sputnik_language_version(void) { return SPUTNIK_VERSION; }\n'
 
 
 def digest(data):
@@ -32,8 +32,10 @@ def prepare(package, language):
     sources = {name: (package / name).read_bytes() for name in
                ["src/sqlite3.s", "native/sqlite3_ext.c", "native/sqlite3.c", "native/sqlite3.h"]}
     sources["include/runtime/sputnik_ext.h"] = (language / "runtime/sputnik_ext.h").read_bytes()
+    sources["include/runtime/version.h"] = (language / "runtime/version.h").read_bytes()
     sources["abi.c"] = SHIM
     manifest = {"schema": "sputnik.build.v1", "name": "sqlite3", "root": "sqlite3",
+                "requires": {"sputnik": ">=1.0.0 <2.0.0"},
                 "profiles": {"required": ["core.v1", "ffi.v1", "macro.v1"]},
                 "modules": [{"name": "sqlite3", "path": "src/sqlite3.s"}],
                 "native_extensions": [{"name": "sqlite3", "language": "c",

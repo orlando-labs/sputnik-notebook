@@ -1,0 +1,14 @@
+
+> sputnik-notebook-web@0.1.0 build
+> vue-tsc --noEmit && vite build --emptyOutDir false
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 77 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/.vite/manifest.json         0.18 kB │ gzip:  0.14 kB
+dist/assets/main-BflSAUPQ.css   49.74 kB │ gzip:  9.70 kB
+dist/assets/main-57-icZ-4.js   276.83 kB │ gzip: 88.99 kB
+
+✓ built in 209ms

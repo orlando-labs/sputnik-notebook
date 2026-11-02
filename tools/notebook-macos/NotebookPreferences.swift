@@ -11,7 +11,16 @@ enum NotebookTheme: String, CaseIterable, Identifiable {
 }
 
 final class NotebookPreferences: ObservableObject {
+    @Published var settingsTab = "appearance"
     private let defaults: UserDefaults?
+    static let resourcePolicyKey = "NotebookResourcePolicy"
+    var onResourcePolicyChange: ((NotebookResourcePolicy) -> Void)?
+    @Published var resourcePolicy: NotebookResourcePolicy {
+        didSet {
+            if let data = try? JSONEncoder().encode(resourcePolicy) { defaults?.set(data, forKey: Self.resourcePolicyKey) }
+            onResourcePolicyChange?(resourcePolicy)
+        }
+    }
     static let themeKey = "NotebookTheme"
     static let colorPresetKey = "NotebookColorPreset"
     static let greekLetterSubstitutionKey = "NotebookGreekLetterSubstitution"
@@ -37,6 +46,7 @@ final class NotebookPreferences: ObservableObject {
     // A nil store is used by GUI smoke tests to leave user preferences alone.
     init(defaults: UserDefaults? = .standard) {
         self.defaults = defaults
+        resourcePolicy = defaults?.data(forKey: Self.resourcePolicyKey).flatMap { try? JSONDecoder().decode(NotebookResourcePolicy.self, from: $0) } ?? .appDefaults
         theme = defaults?.string(forKey: Self.themeKey).flatMap(NotebookTheme.init(rawValue:)) ?? .light
         colorPreset = defaults?.string(forKey: Self.colorPresetKey)
             .flatMap(NotebookColorPreset.init(rawValue:)) ?? .sputnik
@@ -72,8 +82,22 @@ struct NotebookAppearanceView<Content: View>: View {
 
 struct NotebookSettingsView: View {
     @ObservedObject var preferences: NotebookPreferences
+    @ObservedObject var remote: NotebookRemoteController
 
     var body: some View {
+        TabView(selection: $preferences.settingsTab) {
+            NotebookSettingsPane { appearance }
+                .tabItem { Text("Appearance") }.tag("appearance")
+            NotebookSettingsPane { NotebookAppResourceSettings(preferences: preferences) }
+                .tabItem { Text("Resources") }.tag("resources")
+            NotebookSettingsPane { NotebookServerEditor(remote: remote, embedded: true) }
+                .tabItem { Text("Servers") }.tag("servers")
+        }
+        .frame(width: 590, height: 650)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    private var appearance: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Appearance").font(.headline)
             Picker("Theme", selection: $preferences.theme) {
@@ -95,19 +119,14 @@ struct NotebookSettingsView: View {
             .frame(height: 340)
             .accessibilityIdentifier("notebook-color-preset-picker")
             Text("Applies immediately to all notebooks. Your choice is saved automatically.")
-                .font(.caption).foregroundStyle(NotebookPalette.muted)
+                .font(.caption).foregroundStyle(.secondary)
             Divider()
             Text("Code Editing").font(.headline)
             Toggle("Replace Greek letter names with symbols", isOn: $preferences.substituteGreekLetters)
                 .accessibilityIdentifier("notebook-greek-letter-substitution")
             Text("Type alpha → α or Delta → Δ, then Space, Enter, Tab or punctuation. Applies to complete code identifiers; strings and comments are preserved.")
-                .font(.caption).foregroundStyle(NotebookPalette.muted)
+                .font(.caption).foregroundStyle(.secondary)
         }
-        .padding(24).frame(width: 548)
-        .foregroundStyle(NotebookPalette.ink)
-        .background(NotebookPalette.canvas)
-        .tint(NotebookPalette.sputnik)
-        .accentColor(NotebookPalette.sputnik)
     }
 
     private func presetButton(_ preset: NotebookColorPreset) -> some View {
@@ -117,8 +136,8 @@ struct NotebookSettingsView: View {
         } label: {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 0) {
-                    ForEach(Array(preset.swatches.enumerated()), id: \.offset) { _, hex in
-                        Color(nsColor: NotebookPalette.native(hex))
+                    ForEach(Array(preset.previewColors.enumerated()), id: \.offset) { _, color in
+                        Color(nsColor: color)
                     }
                 }
                 .frame(height: 20)
@@ -128,14 +147,14 @@ struct NotebookSettingsView: View {
                         .lineLimit(1).minimumScaleFactor(0.85)
                     Spacer(minLength: 0)
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(NotebookPalette.sputnik).opacity(selected ? 1 : 0)
+                        .foregroundStyle(Color.accentColor).opacity(selected ? 1 : 0)
                 }
             }
             .padding(9)
-            .background(selected ? NotebookPalette.sputnik.opacity(0.10) : NotebookPalette.topBar,
+            .background(selected ? Color.accentColor.opacity(0.10) : Color(nsColor: .controlBackgroundColor),
                         in: RoundedRectangle(cornerRadius: 8))
             .overlay(RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(selected ? NotebookPalette.sputnik : NotebookPalette.rule.opacity(0.5),
+                .strokeBorder(selected ? Color.accentColor : Color(nsColor: .separatorColor),
                               lineWidth: selected ? 2 : 1))
             .contentShape(RoundedRectangle(cornerRadius: 8))
         }
@@ -144,6 +163,47 @@ struct NotebookSettingsView: View {
         .accessibilityValue(selected ? "Selected" : "")
         .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityIdentifier("notebook-color-preset-\(preset.rawValue)")
-        .help(preset.swatches.map { String(format: "#%06X", $0) }.joined(separator: " · "))
+        .help(preset == .system ? "Uses macOS system colors and your system accent in Light and Dark."
+              : preset.swatches.map { String(format: "#%06X", $0) }.joined(separator: " · "))
+    }
+}
+
+private struct NotebookSettingsPane<Content: View>: View {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) { self.content = content() }
+
+    var body: some View {
+        ScrollView {
+            content.frame(maxWidth: .infinity, alignment: .topLeading).padding(24)
+        }
+        .scrollContentBackground(.hidden)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .foregroundStyle(.primary)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+private struct NotebookAppResourceSettings: View {
+    @ObservedObject var preferences: NotebookPreferences
+    @State private var draft: NotebookResourcePolicy
+    init(preferences: NotebookPreferences) {
+        self.preferences = preferences
+        _draft = State(initialValue: preferences.resourcePolicy)
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+                Text("App Resource Defaults").font(.headline)
+                Text("Notebooks inherit these settings unless overridden in Notebook Settings. Each local notebook can use higher or lower values. Remote execution also follows the server's policy.").foregroundStyle(.secondary)
+                NotebookResourcePolicyForm(policy: $draft)
+                Text("History is trimmed when a run is saved. Pinned runs are protected. Execution time is cumulative per notebook.").font(.caption).foregroundStyle(.secondary)
+                HStack {
+                    Button("Restore Defaults") { draft = .appDefaults }
+                    Spacer()
+                    Button("Save App Defaults") { preferences.resourcePolicy = draft }
+                        .disabled(draft.validationError != nil).accessibilityIdentifier("save-app-resource-policy")
+                }
+        }
+        .onAppear { draft = preferences.resourcePolicy }
     }
 }

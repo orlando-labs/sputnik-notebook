@@ -1,0 +1,50 @@
+{
+  "fixture": {
+    "status": "ok",
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_code_count": 2585,
+    "native_extension_code_count": 62,
+    "bytecode_code_count": 2585,
+    "native_fallback_code_count": 0,
+    "vm_fallback_code_count": 0,
+    "bytecode_fallback": false
+  },
+  "main": {
+    "status": "ok",
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_code_count": 2612,
+    "native_extension_code_count": 62,
+    "bytecode_code_count": 2612,
+    "native_fallback_code_count": 0,
+    "vm_fallback_code_count": 0,
+    "bytecode_fallback": false
+  },
+  "models": {
+    "status": "ok",
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_code_count": 1342,
+    "native_extension_code_count": 62,
+    "bytecode_code_count": 1342,
+    "native_fallback_code_count": 0,
+    "vm_fallback_code_count": 0,
+    "bytecode_fallback": false
+  },
+  "language_regression": {
+    "status": "ok",
+    "native_full_coverage": true,
+    "native_body_coverage_full": true,
+    "native_vm_independent": true,
+    "native_code_count": 9,
+    "native_extension_code_count": 0,
+    "bytecode_code_count": 9,
+    "native_fallback_code_count": 0,
+    "vm_fallback_code_count": 0,
+    "bytecode_fallback": false
+  }
+}

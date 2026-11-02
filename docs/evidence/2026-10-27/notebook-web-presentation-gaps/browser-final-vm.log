@@ -1,0 +1,18 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test --grep real plot scene|live progress, stopwatch|Stop preserves partial|large chart exports|project and local Apply
+
+[WebServer] (node:5488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:5499) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/inputs.spec.ts:31:1 › project and local Apply are atomic, exact and inert until a world is initialized; Watch and Manual follow core semantics (3.0s)
+  ✓  2 test/rich-results.spec.ts:204:1 › real plot scene supports zoom, pan, reset and PNG export in responsive themes (2.2s)
+  ✓  3 test/rich-results.spec.ts:320:1 › live progress, stopwatch and chart survive reload, preserve zoom and retain run history (8.9s)
+  ✓  4 test/rich-results.spec.ts:381:1 › Stop preserves partial progress and never completes an unfinished bar (2.4s)
+  ✓  5 test/rich-results.spec.ts:404:1 › large chart exports every retained sample and is readable only through the current ACL (3.7s)
+
+  5 passed (23.7s)

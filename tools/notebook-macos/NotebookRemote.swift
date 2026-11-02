@@ -17,6 +17,8 @@ struct NotebookRemoteFailure: LocalizedError {
     let status: Int
     let message: String
     var errorDescription: String? { message }
+    // A gateway timeout/5xx can arrive after the agent committed the command.
+    var definitivelyRejected: Bool { (400..<500).contains(status) && ![401, 408, 425, 429].contains(status) }
 }
 struct NotebookRemotePendingRun: Codable, Equatable {
     let command: String, revision: String, sheet: String, cell: String
@@ -30,6 +32,9 @@ struct NotebookRemotePendingInputs: Codable, Equatable {
     let command: String, revision: String, version: String, cell: String
     let values: [String: String]
 }
+struct NotebookRemotePendingCommand: Codable, Equatable {
+    let command: String, kind: String, run: String, request: String
+}
 struct NotebookRemoteBinding: Codable {
     var project = UUID().uuidString.lowercased()
     var revision: String?
@@ -40,11 +45,18 @@ struct NotebookRemoteBinding: Codable {
     var pendingSaved: String?
     var pendingRun: NotebookRemotePendingRun?
     var pendingInputs: NotebookRemotePendingInputs?
+    var pendingCommand: NotebookRemotePendingCommand?
 }
 struct NotebookRemoteExport { let current: String, disk: String }
 struct NotebookRemoteDocument: Codable {
     var selected: String?
     var bindings: [String: NotebookRemoteBinding] = [:]
+}
+struct NotebookRemoteRunMetadata {
+    let title: String, pinned: Bool, version: String
+    init(_ value: [String: Any] = [:]) {
+        title = value["title"] as? String ?? ""; pinned = value["pinned"] as? Bool ?? false; version = value["version"] as? String ?? "0"
+    }
 }
 struct NotebookRemoteRun: Identifiable {
     let id: String, revision: String, sheet: String, epoch: String, state: String
@@ -53,7 +65,12 @@ struct NotebookRemoteRun: Identifiable {
     let inputVersion: String?
     let presentation: Bool, live: Bool
     let executingCell: String?
+    let created: Double
+    var metadata: NotebookRemoteRunMetadata
+    var historyTitle: String { metadata.title.isEmpty ? (component ?? sheet) + " · " + String(id.prefix(8)) : metadata.title }
+    var historySummary: NotebookRunSummary { .init(id: id, title: historyTitle, started: Date(timeIntervalSince1970: created), status: state, tab: "sheet:" + (controller ?? sheet), backend: "Remote", bytes: 0, pinned: metadata.pinned) }
     var active: Bool { !["succeeded", "failed", "cancelled", "force-stopped", "interrupted"].contains(state) }
+    var label: String { ["preparing": "Preparing worker", "running": "Running", "draining": "Waiting for child tasks", "stopping": "Stopping…", "terminating": "Terminating worker…"][state] ?? state }
     init(_ value: [String: Any]) throws {
         func field(_ key: String) throws -> String {
             guard let text = value[key] as? String else { throw NotebookRemoteFailure(status: 0, message: "Invalid remote run: \(key)") }
@@ -62,6 +79,8 @@ struct NotebookRemoteRun: Identifiable {
         action = value["action"] as? String ?? "run"
         board = value["board"] as? String; component = value["component"] as? String; controller = value["controller"] as? String
         inputVersion = value["input_version"] as? String
+        created = (value["created"] as? NSNumber)?.doubleValue ?? 0
+        metadata = .init(value["metadata"] as? [String: Any] ?? [:])
         id = try field("id"); revision = try field("revision"); sheet = try field("sheet_id")
         epoch = try field("epoch"); state = try field("state")
         presentation = value["presentation"] is String || value["has_presentation"] as? Bool == true
@@ -156,6 +175,16 @@ final class NotebookRemoteController: ObservableObject {
     @Published private(set) var supportsRunDocument = false
     @Published private(set) var supportsDependencyManagement = false
     @Published private(set) var supportsPackageCatalog = false
+    @Published private(set) var supportsTargetedRestart = false
+    @Published private(set) var supportsHistory = false
+    @Published private(set) var historyRuns: [NotebookRemoteRun] = []
+    @Published private(set) var historyBusy = false
+    @Published private(set) var historyLoaded = false
+    @Published private(set) var historyError: String?
+    private var historyNext: String?
+    private var historyRecords: [String: NotebookRunRecord] = [:]
+    var historyHasMore: Bool { historyNext != nil }
+    var acceptedInputVersion: String { cellInputVersion }
     var dependencyOperationActive = false
     private(set) var frozenRunDocuments: Set<String> = []
     private var cellInputVersion = "0"
@@ -163,7 +192,8 @@ final class NotebookRemoteController: ObservableObject {
     var active: Bool { runs.contains { $0.active } }
     var serverName: String { servers.first { $0.id == selected }?.name ?? "Remote" }
     var projectID: String? { selected.flatMap { document.bindings[$0]?.project } }
-    var hasPending: Bool { selected.flatMap { document.bindings[$0] }.map { $0.pendingUpload != nil || $0.pendingRun != nil || $0.pendingInputs != nil } ?? false }
+    var hasPending: Bool { selected.flatMap { document.bindings[$0] }.map { $0.pendingUpload != nil || $0.pendingRun != nil || $0.pendingInputs != nil || $0.pendingCommand != nil } ?? false }
+    var canApplyProjectInputs: Bool { connected && !busy && !hasPending && !conflict && !active && supportsProjectInputs }
     var onChange: (() -> Void)?
     var onError: ((String) -> Void)?
     var onExternal: ((Bool) -> Void)?
@@ -190,6 +220,13 @@ final class NotebookRemoteController: ObservableObject {
     private var remoteHead: String?
     private var revisionDocuments: [String: String] = [:]
     private var recoveryConflict = false
+    // Send raw app defaults. The Core reads book overrides from its current
+    // revision and decides whether they may replace defaults or only tighten.
+    var resourcePolicy: NotebookResourcePolicy?
+    var bookResourcePolicy = NotebookResourcePolicy()
+    private var appliedResourcePolicy: NotebookResourcePolicy?
+    @Published private(set) var supportsResourcePolicy = false
+    @Published private(set) var allowsBookPolicyOverrides = false
     private var registryCommand = "runs"
     init(executable: String? = nil, storage: URL? = nil) {
         self.executable = executable ?? Bundle.main.executableURL!.deletingLastPathComponent().appendingPathComponent("sputnik-notebook-remote").path
@@ -234,7 +271,7 @@ final class NotebookRemoteController: ObservableObject {
         return directory.appendingPathComponent(suffix)
     }
     private func cleanCommand(_ command: String) {
-        for suffix in [".snapshot.json", ".request.json", ".run.json", ".inputs.json", ".input-request.json", ".invocation.json"] {
+        for suffix in [".snapshot.json", ".request.json", ".run.json", ".inputs.json", ".input-request.json", ".invocation.json", ".command.json", ".command-request.json"] {
             if let path = try? cache(command + suffix) { try? FileManager.default.removeItem(at: path) }
         }
     }
@@ -268,6 +305,7 @@ final class NotebookRemoteController: ObservableObject {
     }
     func open(_ url: URL) {
         detach(); local = url; selected = nil
+        appliedResourcePolicy = nil
         let metadata = url.appendingPathComponent(".sputnik/remote.json")
         if FileManager.default.fileExists(atPath: metadata.path) {
             do {
@@ -313,6 +351,9 @@ final class NotebookRemoteController: ObservableObject {
         generation += 1; timer?.invalidate(); timer = nil; syncTimer?.invalidate(); syncTimer = nil
         if tunnel?.isRunning == true { tunnel?.terminate() }; tunnel = nil
         client = nil; connected = false; busy = false; polling = false; pendingEdits = false
+        supportsResourcePolicy = false; allowsBookPolicyOverrides = false
+        supportsTargetedRestart = false; supportsHistory = false
+        historyRuns = []; historyRecords = [:]; historyNext = nil; historyLoaded = false; historyBusy = false; historyError = nil
         supportsWorkerGrants = false; supportsCellInputs = false; supportsRunDocument = false; supportsDependencyManagement = false; supportsPackageCatalog = false; frozenRunDocuments = []; cellInputVersion = "0"
         runs = []; runtimes = []; resetEpochs = []; services = []; invocationResults = [:]; invocationStale = [:]; projects = []; completed = []; revisionDocuments = [:]; remoteHead = nil; conflict = false
         status = isSelected ? "Disconnected · server work continues" : "Local"
@@ -320,10 +361,11 @@ final class NotebookRemoteController: ObservableObject {
     }
     func discardPending() {
         guard !busy, let selected else { return }
-        let commands = [document.bindings[selected]?.pendingRun?.command, document.bindings[selected]?.pendingUpload, document.bindings[selected]?.pendingInputs?.command].compactMap { $0 }
+        let commands = [document.bindings[selected]?.pendingRun?.command, document.bindings[selected]?.pendingUpload, document.bindings[selected]?.pendingInputs?.command, document.bindings[selected]?.pendingCommand?.command].compactMap { $0 }
         document.bindings[selected]?.pendingRun = nil; document.bindings[selected]?.pendingUpload = nil
         document.bindings[selected]?.pendingExport = nil; document.bindings[selected]?.pendingSaved = nil
         document.bindings[selected]?.pendingInputs = nil
+        document.bindings[selected]?.pendingCommand = nil
         do { try save(); commands.forEach { cleanCommand($0) }; reconnect() } catch { onError?(error.localizedDescription) }
     }
     private func check(_ stamp: Int) throws { if stamp != generation { throw CancellationError() } }
@@ -377,6 +419,9 @@ final class NotebookRemoteController: ObservableObject {
                             throw NotebookRemoteFailure(status: 422, message: "Update the remote core to enable notebook interface connections.")
                         }
                         registryCommand = (health["capabilities"] as? [String])?.contains("compact_registry") == true ? "registry" : "runs"
+                        supportsResourcePolicy = (health["capabilities"] as? [String])?.contains("desktop_policy") == true
+                        allowsBookPolicyOverrides = health["allow_book_policy_overrides"] as? Bool == true
+                        appliedResourcePolicy = nil
                         supportsWorkerGrants = (health["capabilities"] as? [String])?.contains("worker_grants") == true
                         supportsProjectInputs = (health["capabilities"] as? [String])?.contains("project_inputs") == true
                         supportsBoardActions = (health["capabilities"] as? [String])?.contains("board_actions") == true
@@ -385,6 +430,8 @@ final class NotebookRemoteController: ObservableObject {
                         supportsRunDocument = (health["capabilities"] as? [String])?.contains("run_document") == true
                         supportsDependencyManagement = (health["capabilities"] as? [String])?.contains("dependency_management") == true
                         supportsPackageCatalog = (health["capabilities"] as? [String])?.contains("package_catalog") == true
+                        supportsTargetedRestart = (health["capabilities"] as? [String])?.contains("targeted_restart") == true
+                        supportsHistory = (health["capabilities"] as? [String])?.contains("desktop_history") == true
                         ready = true; break
                     } catch {
                         if let error = error as? NotebookRemoteFailure, error.status != 0 { throw error }
@@ -403,6 +450,7 @@ final class NotebookRemoteController: ObservableObject {
                 } else if !conflict, document.bindings[server.id]?.exported != nil {
                     try await synchronize(stamp, force: false)
                 }
+                try await applyResourcePolicy(stamp)
                 try check(stamp); busy = false; status = conflict ? "Server revision changed" : "Connected to \(server.name)"
                 startTimer(stamp); onChange?()
             } catch { fail(error, stamp) }
@@ -411,7 +459,7 @@ final class NotebookRemoteController: ObservableObject {
     private func fail(_ error: Error, _ stamp: Int) {
         guard stamp == generation, !(error is CancellationError) else { return }
         busy = false
-        if let failure = error as? NotebookRemoteFailure, failure.status > 0 && failure.status != 401 {
+        if let failure = error as? NotebookRemoteFailure, failure.status > 0 && failure.status < 500 && ![401, 408, 425, 429].contains(failure.status) {
             if failure.status == 409 && (failure.message.contains("revision") || failure.message.contains("project deleted")) { conflict = true }
             status = failure.message
         }
@@ -444,7 +492,7 @@ final class NotebookRemoteController: ObservableObject {
                 catch let failure as NotebookRemoteFailure where failure.status == 404 { _ = try await submitInputs(pending, project: binding.project) }
             } catch {
                 try check(stamp)
-                if let failure = error as? NotebookRemoteFailure, failure.status > 0 {
+                if let failure = error as? NotebookRemoteFailure, failure.definitivelyRejected {
                     binding.pendingInputs = nil; document.bindings[selected] = binding; try save(); cleanCommand(pending.command)
                 }
                 throw error
@@ -464,7 +512,7 @@ final class NotebookRemoteController: ObservableObject {
                 catch let error as NotebookRemoteFailure where error.status == 404 { _ = try await submit(pending, project: binding.project) }
             } catch {
                 try check(stamp)
-                if let failure = error as? NotebookRemoteFailure, failure.status > 0 {
+                if let failure = error as? NotebookRemoteFailure, failure.definitivelyRejected {
                     binding.pendingRun = nil; document.bindings[selected] = binding; try save()
                     cleanCommand(pending.command)
                 }
@@ -472,6 +520,23 @@ final class NotebookRemoteController: ObservableObject {
             }
             try check(stamp); binding.pendingRun = nil; document.bindings[selected] = binding; try save()
             cleanCommand(pending.command)
+        }
+        if let pending = binding.pendingCommand {
+            guard ["restart_invocation", "change_run"].contains(pending.kind),
+                  (try? JSONDecoder().decode(NotebookRemotePendingCommand.self, from: Data(contentsOf: cache(pending.command + ".command.json")))) == pending else {
+                throw NotebookRemoteFailure(status: 0, message: "Untrusted pending server command. Discard it and repeat the action explicitly.")
+            }
+            do {
+                do { _ = try await client.call(["--command", "receipt", "--project", binding.project, "--command-id", pending.command]) }
+                catch let failure as NotebookRemoteFailure where failure.status == 404 { _ = try await submitCommand(pending, project: binding.project) }
+            } catch {
+                try check(stamp)
+                if let failure = error as? NotebookRemoteFailure, failure.definitivelyRejected {
+                    binding.pendingCommand = nil; document.bindings[selected] = binding; try save(); cleanCommand(pending.command)
+                }
+                throw error
+            }
+            try check(stamp); binding.pendingCommand = nil; document.bindings[selected] = binding; try save(); cleanCommand(pending.command)
         }
     }
     @MainActor private func submit(_ pending: NotebookRemotePendingRun, project: String) async throws -> [String: Any] {
@@ -494,7 +559,8 @@ final class NotebookRemoteController: ObservableObject {
         try Self.write(try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys]), to: request)
         return try await client.call(["--command", pending.cell == "project" ? "set_inputs" : "set_cell_inputs", "--project", project, "--request-file", request.path])
     }
-    func setCellInputs(sheet: String, cell: String, values: [String: String], completion: @escaping (Bool) -> Void) {
+    func setCellInputs(sheet: String, cell: String, values: [String: String], expectedVersion: String? = nil, completion: @escaping (Bool) -> Void) {
+        guard !hasPending else { onError?("Reconnect to resolve the pending command before applying more inputs."); completion(false); return }
         guard connected, !busy, !conflict, (cell == "project" ? supportsProjectInputs : supportsCellInputs) else {
             onError?(!supportsCellInputs && connected ? "Update the remote core and worker to apply cell parameters." : "Reconnect and finish synchronization before applying cell parameters.")
             completion(false); return
@@ -504,6 +570,9 @@ final class NotebookRemoteController: ObservableObject {
             do {
                 try await synchronize(stamp, force: false)
                 try await refresh(stamp); try check(stamp)
+                if let expectedVersion, expectedVersion != cellInputVersion {
+                    throw NotebookRemoteFailure(status: 409, message: "Accepted parameters changed. Reload the history snapshot before restoring.")
+                }
                 guard let selected, let binding = document.bindings[selected], let revision = binding.revision else { throw CancellationError() }
                 let pending = NotebookRemotePendingInputs(command: UUID().uuidString.lowercased(), revision: revision,
                     version: cellInputVersion, cell: cell, values: values)
@@ -514,7 +583,7 @@ final class NotebookRemoteController: ObservableObject {
                 try await refresh(stamp); try check(stamp)
                 busy = false; status = "Parameters applied on \(serverName)"; onChange?(); completion(true)
             } catch {
-                if stamp == generation, let failure = error as? NotebookRemoteFailure, failure.status > 0, let selected {
+                if stamp == generation, let failure = error as? NotebookRemoteFailure, failure.definitivelyRejected, let selected {
                     let command = document.bindings[selected]?.pendingInputs?.command
                     document.bindings[selected]?.pendingInputs = nil; try? save()
                     if let command { cleanCommand(command) }
@@ -574,6 +643,24 @@ final class NotebookRemoteController: ObservableObject {
             } catch { fail(error, stamp) }
         }
     }
+    @MainActor private func applyResourcePolicy(_ stamp: Int) async throws {
+        guard supportsResourcePolicy, let resourcePolicy, resourcePolicy != appliedResourcePolicy,
+              let client, let projectID, document.bindings[selected ?? ""]?.revision != nil else { return }
+        let path = try cache(UUID().uuidString.lowercased() + ".resource-policy.json")
+        defer { try? FileManager.default.removeItem(at: path) }
+        let limits = try JSONSerialization.jsonObject(with: Data(resourcePolicy.json.utf8))
+        try Self.write(try JSONSerialization.data(withJSONObject: ["command_id": UUID().uuidString.lowercased(), "limits": limits]), to: path)
+        _ = try await client.call(["--command", "set_resource_policy", "--project", projectID, "--request-file", path.path]); try check(stamp)
+        appliedResourcePolicy = resourcePolicy
+    }
+    func updateResourcePolicy() {
+        guard connected, !busy else { return }
+        let stamp = generation
+        Task { @MainActor in
+            do { try await applyResourcePolicy(stamp) }
+            catch { fail(error, stamp) }
+        }
+    }
     func edited() {
         dirty += 1; pendingEdits = true; syncTimer?.invalidate()
         guard connected, !conflict else { return }
@@ -592,11 +679,17 @@ final class NotebookRemoteController: ObservableObject {
         }
     }
     func run(sheet: String, cell: String, all: Bool, action: String? = nil, board: String? = nil, component: String? = nil, operation: String? = nil, completion: @escaping (Bool) -> Void) {
+        if connected && !supportsResourcePolicy,
+           (resourcePolicy != nil && resourcePolicy != .appDefaults || bookResourcePolicy != .init()) {
+            onError?("Update the remote core to apply this notebook's resource limits before running."); completion(false); return
+        }
+        guard !hasPending else { onError?("Reconnect to resolve the pending command before running again."); completion(false); return }
         guard connected, !busy else { onError?(connected ? "Wait for synchronization to finish before running." : "Reconnect to the selected server before running."); completion(false); return }
         let stamp = generation; busy = true; onChange?()
         Task { @MainActor in
             do {
                 try await synchronize(stamp, force: true)
+                try await applyResourcePolicy(stamp)
                 guard let selected, var binding = document.bindings[selected], let revision = binding.revision else { throw CancellationError() }
                 let pending = NotebookRemotePendingRun(command: UUID().uuidString.lowercased(), revision: revision, sheet: sheet, cell: cell, all: all, action: action, board: board, component: component, operation: operation)
                 try Self.write(try JSONEncoder().encode(pending), to: try cache(pending.command + ".run.json"))
@@ -606,7 +699,7 @@ final class NotebookRemoteController: ObservableObject {
                 cleanCommand(pending.command)
                 try await refresh(stamp); try check(stamp); busy = false; status = "Connected to \(serverName)"; onChange?(); completion(true)
             } catch {
-                if stamp == generation, let failure = error as? NotebookRemoteFailure, failure.status > 0, let selected {
+                if stamp == generation, let failure = error as? NotebookRemoteFailure, failure.definitivelyRejected, let selected {
                     let command = document.bindings[selected]?.pendingRun?.command
                     document.bindings[selected]?.pendingRun = nil; try? save()
                     if let command { cleanCommand(command) }
@@ -623,7 +716,11 @@ final class NotebookRemoteController: ObservableObject {
             board: board, component: component, operation: operation, completion: completion)
     }
     func stop(sheet: String, force: Bool) {
-        guard connected, let client, let run = runs.last(where: { ($0.sheet == sheet || $0.controller == sheet) && $0.active }) else { return }
+        guard let run = runs.last(where: { $0.board == nil && $0.sheet == sheet && $0.active }) else { return }
+        stop(run: run, force: force)
+    }
+    func stop(run: NotebookRemoteRun, force: Bool) {
+        guard connected, let client, runs.contains(where: { $0.id == run.id && $0.epoch == run.epoch && $0.active }) else { return }
         let stamp = generation
         Task { @MainActor in
             do {
@@ -634,8 +731,8 @@ final class NotebookRemoteController: ObservableObject {
             catch { fail(error, stamp) }
         }
     }
-    func restart(sheet: String) {
-        guard connected, !busy, let client, let projectID else { return }
+    func restart(sheet: String, completion: @escaping (Bool) -> Void = { _ in }) {
+        guard connected, !busy, !hasPending, let client, let projectID else { completion(false); return }
         let stamp = generation; busy = true
         Task { @MainActor in
             do {
@@ -644,9 +741,118 @@ final class NotebookRemoteController: ObservableObject {
                 _ = try await client.call(["--command", "restart", "--project", projectID, "--sheet", sheet])
                 try check(stamp); onResultReset?(sheet)
                 try await refresh(stamp); try check(stamp); busy = false; status = "Connected to \(serverName)"; onChange?()
+                completion(true)
             }
-            catch { fail(error, stamp) }
+            catch { fail(error, stamp); completion(false) }
         }
+    }
+    func restartInvocation(board: String, component: String, completion: @escaping (Bool) -> Void) {
+        guard supportsTargetedRestart else { onError?("Update the remote core to restart action and service workers."); completion(false); return }
+        guard let run = runs.last(where: { $0.board == board && $0.component == component }) else {
+            onError?("Run the action or service before restarting its worker."); completion(false); return
+        }
+        serverCommand("restart_invocation", run: run.id, body: ["run_id": run.id, "runtime_epoch": run.epoch]) { [weak self] success in
+            if success { self?.invocationResults.removeValue(forKey: board + ":" + component) }
+            completion(success)
+        }
+    }
+    @MainActor private func submitCommand(_ pending: NotebookRemotePendingCommand, project: String) async throws -> [String: Any] {
+        guard let client else { throw CancellationError() }
+        let request = try cache(pending.command + ".command-request.json")
+        try Self.write(Data(pending.request.utf8), to: request)
+        return try await client.call(["--command", pending.kind, "--project", project, "--run-id", pending.run, "--request-file", request.path])
+    }
+    private func serverCommand(_ kind: String, run: String, body: [String: Any], completion: @escaping (Bool) -> Void) {
+        guard connected, !busy, !historyBusy, !hasPending, let selected, let projectID else {
+            onError?("Reconnect and wait for pending commands before changing server state."); completion(false); return
+        }
+        let stamp = generation; busy = true; onChange?()
+        Task { @MainActor in
+            do {
+                while polling { try await Task.sleep(nanoseconds: 20_000_000); try check(stamp) }
+                let command = UUID().uuidString.lowercased()
+                let request = try JSONSerialization.data(withJSONObject: body.merging(["command_id": command]) { _, new in new }, options: [.sortedKeys])
+                let pending = NotebookRemotePendingCommand(command: command, kind: kind, run: run, request: String(decoding: request, as: UTF8.self))
+                try Self.write(try JSONEncoder().encode(pending), to: cache(command + ".command.json"))
+                document.bindings[selected]?.pendingCommand = pending; try save()
+                let response = try await submitCommand(pending, project: projectID); try check(stamp)
+                if kind == "change_run" {
+                    if response["operation"] as? String == "deleted" {
+                        historyRuns.removeAll { $0.id == run }; historyRecords.removeValue(forKey: run)
+                    } else if let metadata = response["metadata"] as? [String: Any], let index = historyRuns.firstIndex(where: { $0.id == run }) {
+                        historyRuns[index].metadata = .init(metadata)
+                        updateHistoryRecord(historyRuns[index])
+                    }
+                }
+                document.bindings[selected]?.pendingCommand = nil; try save(); cleanCommand(command)
+                try await refresh(stamp); try check(stamp); busy = false; status = "Connected to \(serverName)"; onChange?(); completion(true)
+            } catch {
+                if stamp == generation, let failure = error as? NotebookRemoteFailure, failure.definitivelyRejected {
+                    let command = document.bindings[selected]?.pendingCommand?.command
+                    document.bindings[selected]?.pendingCommand = nil; try? save()
+                    if let command { cleanCommand(command) }
+                }
+                fail(error, stamp); completion(false)
+            }
+        }
+    }
+    private func updateHistoryRecord(_ run: NotebookRemoteRun) {
+        if var record = historyRecords[run.id] {
+            record.title = run.historyTitle; record.pinned = run.metadata.pinned; record.metadataVersion = run.metadata.version
+            historyRecords[run.id] = record
+        }
+    }
+    func loadHistory(older: Bool = false, completion: @escaping (Bool) -> Void = { _ in }) {
+        guard connected, supportsHistory, !busy, !historyBusy, let client, let projectID else { completion(false); return }
+        guard !older || historyNext != nil else { completion(true); return }
+        let stamp = generation; historyBusy = true; historyError = nil; onChange?()
+        let before = older ? historyNext : nil
+        Task { @MainActor in
+            do {
+                let response = try await client.call(["--command", "runs", "--project", projectID, "--limit", "50"] + (before.map { ["--before", $0] } ?? [])); try check(stamp)
+                let page = try (response["runs"] as? [[String: Any]] ?? []).map(NotebookRemoteRun.init).reversed().filter { !$0.active }
+                let ids = Set(page.map(\.id))
+                historyRuns = older ? historyRuns.filter { !ids.contains($0.id) } + page : Array(page)
+                historyNext = (response["next"] as? NSNumber)?.stringValue
+                historyLoaded = true
+                let visible = Set(historyRuns.map(\.id)); historyRecords = historyRecords.filter { visible.contains($0.key) }
+                historyRuns.forEach(updateHistoryRecord)
+                historyBusy = false; onChange?(); completion(true)
+            } catch {
+                if stamp == generation { historyBusy = false; historyError = error.localizedDescription; onChange?() }
+                completion(false)
+            }
+        }
+    }
+    @MainActor func historyRecord(_ id: String) async throws -> NotebookRunRecord {
+        guard connected, supportsHistory, let client, let projectID, let selected,
+              let run = historyRuns.first(where: { $0.id == id }) else { throw NotebookRemoteFailure(status: 404, message: "Reload server history to inspect this run.") }
+        if let record = historyRecords[id], record.metadataVersion == run.metadata.version { return record }
+        let stamp = generation
+        let raw = try await client.call(["--command", "status", "--run-id", id]); try check(stamp)
+        guard raw["project"] as? String == projectID, let document = raw["execution_document"] as? String else {
+            throw NotebookRemoteFailure(status: 410, message: "This run has no retained execution snapshot.")
+        }
+        guard !run.active else { throw NotebookRemoteFailure(status: 409, message: "Wait for the run to finish before inspecting it.") }
+        let output = try cache(id + "." + UUID().uuidString.lowercased() + ".history.bin")
+        defer { try? FileManager.default.removeItem(at: output) }
+        var data = Data()
+        if run.presentation {
+            _ = try await client.call(["--command", "presentation", "--run-id", id, "--output", output.path]); try check(stamp)
+            data = try Data(contentsOf: output)
+        }
+        let snapshot = try await NotebookRemoteHistorySnapshot.decode(sheet: run.sheet, document: document, data: data); try check(stamp)
+        var current = run; current.metadata = .init(raw["metadata"] as? [String: Any] ?? [:])
+        let record = snapshot.record(run: current, server: selected, project: projectID, backend: serverName, document: document, failure: raw["error"] as? String)
+        historyRecords[id] = record; return record
+    }
+    func changeHistory(_ record: NotebookRunRecord, title: String? = nil, pinned: Bool? = nil, remove: Bool = false, completion: @escaping (Bool) -> Void) {
+        guard supportsHistory, record.remoteProjectID == projectID, record.remoteServerID == selected,
+              let id = record.remoteRunID, let version = record.metadataVersion else {
+            onError?("Reload the run from this server before changing its history."); completion(false); return
+        }
+        serverCommand("change_run", run: id, body: ["operation": remove ? "delete" : "update", "base_version": version,
+            "title": title ?? record.title, "pinned": pinned ?? record.pinned], completion: completion)
     }
     @MainActor func workerSettings(sheet: String) async throws -> NotebookWorkerSettings {
         guard connected, !busy, let client, let projectID else {
@@ -724,6 +930,7 @@ final class NotebookRemoteController: ObservableObject {
         defer { if stamp == generation { polling = false } }
         guard let client, let selected, let binding = document.bindings[selected] else { return }
         do {
+            try await applyResourcePolicy(stamp)
             let registry = try await client.call(["--command", registryCommand, "--project", binding.project]); try check(stamp)
             lastContact = Date()
             remoteHead = (registry["project"] as? [String: Any])?["head"] as? String
@@ -737,15 +944,24 @@ final class NotebookRemoteController: ObservableObject {
             services = registry["services"] as? [[String: Any]] ?? []
             let values = registry["runs"] as? [[String: Any]] ?? []
             runs = try values.map(NotebookRemoteRun.init); runtimes = registry["runtimes"] as? [[String: Any]] ?? []
+            let visibleRunIDs = Set(runs.map(\.id)), visibleRevisions = Set(runs.map(\.revision))
+            completed.formIntersection(visibleRunIDs); frozenRunDocuments.formIntersection(visibleRunIDs)
+            revisionDocuments = revisionDocuments.filter { visibleRevisions.contains($0.key) }
             resetEpochs = Set(registry["reset_epochs"] as? [String] ?? [])
             var artifacts: [String: NotebookRemoteRun] = [:]
-            for run in runs where !run.active && run.presentation && !resetEpochs.contains(run.epoch) { artifacts[run.sheet] = run }
+            var invocations: [String: NotebookRemoteRun] = [:]
+            for run in runs where !resetEpochs.contains(run.epoch) {
+                if let board = run.board, let component = run.component { invocations[board + ":" + component] = run }
+                else if !run.active && run.presentation { artifacts[run.sheet] = run }
+            }
+            invocationResults = invocationResults.filter { invocations[$0.key] != nil }
+            invocationStale = invocationStale.filter { invocations[$0.key] != nil }
             onChange?()
-            let restore = artifacts.values.sorted(by: { $0.sheet < $1.sheet }) + runs.filter { $0.active }
+            let restore = artifacts.values.sorted(by: { $0.sheet < $1.sheet }) + invocations.values.sorted(by: { $0.sheet < $1.sheet }) + runs.filter { $0.active && $0.board == nil }
             for run in restore {
                 try check(stamp)
                 if let board = run.board, let component = run.component {
-                    invocationStale[board + ":" + component] = run.revision != binding.revision || (run.inputVersion ?? "0") != cellInputVersion
+                    invocationStale[board + ":" + component] = run.active || run.revision != binding.revision || (run.inputVersion ?? "0") != cellInputVersion
                     if !run.active && !completed.contains(run.id) {
                         let record = try await client.call(["--command", "status", "--run-id", run.id]); try check(stamp)
                         let summary = record["result"] as? [String: Any]

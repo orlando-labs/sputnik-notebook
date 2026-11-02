@@ -1,0 +1,52 @@
+schema: "sputnik.build.v1"
+name: "notebook-core"
+version: "0.1.0"
+source_root: "src"
+profiles:
+  required:
+    - "core.v1"
+    - "ffi.v1"
+files:
+  - "src/notebook/core.s"
+  - "src/notebook/core/common.s"
+  - "src/notebook/core/host.s"
+  - "src/notebook/core/environments.s"
+  - "src/notebook/core/dependencies.s"
+  - "src/notebook/core/services.s"
+  - "src/notebook/core/client.s"
+  - "src/notebook/core/storage.s"
+  - "src/notebook/core/policy.s"
+  - "native/host.cpp"
+  - "native/process.cpp"
+  - "native/protocol.cpp"
+  - "native/presentation.cpp"
+  - "native/bundle.cpp"
+  - "include/notebook/core/worker/process.h"
+  - "include/notebook/core/worker/protocol.h"
+  - "include/notebook/core/worker/presentation.h"
+  - "include/notebook/core/worker/environment.h"
+  - "include/notebook/core/worker/grants.h"
+  - "README.md"
+dependencies:
+  sqlite3:
+    path: "../../../sqlite3"
+native_extensions:
+  -
+      name: "notebook_core_host"
+      language: "c++"
+      include_dirs:
+        - "include"
+      link_libraries:
+        - "archive"
+      sources:
+        - "native/host.cpp"
+        - "native/process.cpp"
+        - "native/protocol.cpp"
+        - "native/presentation.cpp"
+        - "native/bundle.cpp"
+      headers:
+        - "include/notebook/core/worker/process.h"
+        - "include/notebook/core/worker/protocol.h"
+        - "include/notebook/core/worker/presentation.h"
+        - "include/notebook/core/worker/environment.h"
+        - "include/notebook/core/worker/grants.h"

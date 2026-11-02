@@ -1,0 +1,4 @@
+NoMethodError: selector `Target` is not implemented in current runtime baseline
+NoMethodError: selector `Target` is not implemented in current runtime baseline
+  at c733:23 (/Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/test/github_fixture.s:87:3)
+  at c752:5

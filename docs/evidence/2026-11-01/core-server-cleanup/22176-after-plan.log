@@ -1,0 +1,16 @@
+DOCKER_PROCESS pid=2906385 comm=tini
+DOCKER_PROCESS pid=2906444 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906446 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906470 comm=sputnik-noteboo
+PASS_NO_BARE_HOST_NOTEBOOK_PROCESSES checked=4
+KEEP_MOUNT /home/slowpilot/sputnik-remote-core/state
+KEEP_MOUNT /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-packages
+KEEP_MOUNT /ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-cache
+KEEP_USED_IMAGE sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4
+PASS_CORE_CONTAINER_MOUNTS_PID_AND_TOKEN_UNCHANGED
+DOCKER_PROCESS pid=2906385 comm=tini
+DOCKER_PROCESS pid=2906444 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906446 comm=sputnik-noteboo
+DOCKER_PROCESS pid=2906470 comm=sputnik-noteboo
+PASS_NO_BARE_HOST_NOTEBOOK_PROCESSES checked=4
+PASS_CLEANUP_plan profile=22176

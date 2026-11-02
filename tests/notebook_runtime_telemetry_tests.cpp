@@ -1,6 +1,6 @@
 #include "runtime/context.h"
 #include "runtime/text.h"
-#include "tools/notebook-worker/presentation.h"
+#include "notebook/core/worker/presentation.h"
 #include <iostream>
 #include <stdexcept>
 using namespace sputnik::runtime;

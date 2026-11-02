@@ -1,7 +1,7 @@
 package notebook.remote.local_dependencies
 
-from notebook.remote.common import decode, fail
-from notebook.remote.core import Core
+from notebook.core.common import decode, fail
+from notebook.core import Core
 
 export local_dependencies
 

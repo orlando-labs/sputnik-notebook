@@ -1,0 +1,12 @@
+{
+  "apps/notebook-web/frontend/src/board-editor.ts": "786312bcde22020289243384de43887b31c9213a53f446c1161ca4047140a5a4",
+  "apps/notebook-web/frontend/src/NotebookBoardDesigner.vue": "97f154e0b23c5f627ddaf6fa6c76c8f8348e1c96eb1bac4efbf2eb9f316a73b5",
+  "apps/notebook-web/frontend/src/NotebookBoardInspector.vue": "33b1cfa6b7d00a621232fa7d7ee3bf5d6ec1ba492b4bfa05dadd64916f58ddff",
+  "apps/notebook-web/frontend/src/NotebookBoardView.vue": "22899997d6c7b00f526d709b94c4fcb016a8cf241923ebd0b6919c60af58d363",
+  "apps/notebook-web/frontend/src/NotebookWorkspace.vue": "f8265076f53da7b7e24cd5106942ac8a9884f92cf8abd069fe2ee71e3d88fb56",
+  "apps/notebook-web/frontend/src/NotebookDisplaySettings.vue": "0a84bc53dac89d798b3ecc48cbeb2fda30bbe5c3002d6da046fc2e992adbe2ef",
+  "apps/notebook-web/frontend/src/style.css": "d3baafafc45b31c84b00ca52deec3045c0c7313fa6905dd491e99b3454a0d512",
+  "apps/notebook-web/frontend/test/board-designer.spec.ts": "0142a2c81c47ebc4b85b87d8173b21b149bdcb6c14f03bb9776f12b4f2be9f87",
+  "apps/notebook-web/tools/board_editor_test.mjs": "c5b9a4035e31ee6703b7b6a3fa152063269c2595eb5e8575c948b53f08af70a0",
+  "apps/notebook-web/frontend/dist/.vite/manifest.json": "6dcb15d8559f99a90158a04c238db7044ef9c1fb7b7d4edb735a82ee1c94a7cb"
+}

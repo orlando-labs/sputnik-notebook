@@ -1,0 +1,22 @@
+{
+  "entry": "backend/main.s",
+  "backend": "full native",
+  "core": "independent full-native agent",
+  "origin": "https://notebook.example.test",
+  "transport": "loopback HTTP with original Host and one-hop HTTPS proxy contract",
+  "oauth_provider_contacted": false,
+  "authentication": "disposable locally seeded signed session; actual production authentication/session middleware",
+  "nginx_executed": false,
+  "tls_handshake_tested": false,
+  "checks": [
+    "production SSR, private API, origin/Host and overwritten forwarded headers",
+    "seeded signed session, CSRF, real Core save and upload larger than 1 MiB, exact download",
+    "hashed production assets; Vite manifest, source, migrations and test helpers denied",
+    "accepted work survives real main restart; identical command returns same run; cumulative quota retained",
+    "Core outage is sanitized; independent restart retains results and charged time"
+  ],
+  "upload_sha256": "08a8c25cee92110e8643876f13cc97baa13780f70fd81aa4bb7ff497bf412a8c",
+  "run_count": 1,
+  "quota_seconds": 60,
+  "project_storage_bytes": "67108864"
+}

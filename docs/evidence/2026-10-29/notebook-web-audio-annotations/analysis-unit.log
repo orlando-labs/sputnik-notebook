@@ -1,0 +1,1 @@
+PASS FFT 256–4096 tone/DC/Nyquist and -6 dBFS normalization; plasma LUT; bounded STFT and peak waveform; stereo mix; reverse frame/Hz selection; transcript/schema/Int64/geometry limits

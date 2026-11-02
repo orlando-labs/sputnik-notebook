@@ -1,0 +1,62 @@
+{
+  "language_commit": "7f2665b8d1538bf6b4667920cafe752d676d8782",
+  "language_branch": "main",
+  "pushed_to": "origin/main",
+  "clean_language_snapshot_tests": "VM/full-native passed",
+  "local_core_tests": "passed",
+  "local_remote_feature_test": "passed",
+  "local_native_graph": {
+    "core-api": {
+      "status": "ok",
+      "native_graph_module_count": 10,
+      "native_graph_code_count": 1301,
+      "native_graph_native_code_count": 1301,
+      "native_graph_vm_fallback_code_count": 0,
+      "native_graph_fallback_code_count": 0,
+      "native_graph_body_coverage_full": true,
+      "native_graph_full_coverage": true,
+      "native_graph_runtime_bridge": false,
+      "native_graph_runtime_bridge_kind": "",
+      "native_graph_vm_independent": true
+    },
+    "remote": {
+      "status": "ok",
+      "native_graph_module_count": 15,
+      "native_graph_code_count": 1347,
+      "native_graph_native_code_count": 1347,
+      "native_graph_vm_fallback_code_count": 0,
+      "native_graph_fallback_code_count": 0,
+      "native_graph_body_coverage_full": true,
+      "native_graph_full_coverage": true,
+      "native_graph_runtime_bridge": false,
+      "native_graph_runtime_bridge_kind": "",
+      "native_graph_vm_independent": true
+    }
+  },
+  "binaries": {
+    "build/core/libNotebookCore.a": {
+      "sha256": "c8b4e33ff2d018ab8f92b4f0ed288af97841967393d74778fb9469e994d1d451"
+    },
+    "build/sputnik-notebook-worker": {
+      "sha256": "0e892279d317e498627f8582ac360411dcccc46fd6560554bdb1886e0e8b54d1"
+    },
+    "build/sputnik-notebook-remote": {
+      "sha256": "92bdbda6bcb7ccf0f382022cf2907380604bbf858598d2bad02250dd316ad24f"
+    },
+    "../sputnik-lang/build/sputnik": {
+      "sha256": "152c2137d59322021543f90a006c893e825f4110cea24a4aec75d28ee78291b7"
+    }
+  },
+  "remote_deployed": false,
+  "local_remote_api_tests": {
+    "full_run": {
+      "total": 49,
+      "passed": 48,
+      "failed": 1,
+      "failure": "legacy modules.index path assertion"
+    },
+    "corrected_package_layout_test": "passed; installation, worker import, removal and runtime retirement checked",
+    "membership_test": "passed; methods, nested patterns, block capture and receipt replay"
+  },
+  "remote_status": "Explicitly authorized by user; isolated Linux build in progress."
+}

@@ -1,0 +1,15 @@
+{
+  "apps/notebook-web/frontend/src/rich-text.ts": "9519b8f2dd04d1cdb3682e0c91e4f7d16356acf8b86eb010dc70d387e87fbd21",
+  "apps/notebook-web/frontend/src/NotebookTextEditor.vue": "ff5042a68b6a1f4489cbe67709283bc9fc00f3c780653a1d5695257e9f0ae6e5",
+  "apps/notebook-web/frontend/src/NotebookTextPreview.vue": "d050e3944679972f016eeb9768765e8596c13bbe7c1640876b131ca48cda04f6",
+  "apps/notebook-web/frontend/src/board-editor.ts": "e0d43f88cd2dd8906ebb86ab616a83264d3c79d24c88adfc2cd23597096f3432",
+  "apps/notebook-web/frontend/src/NotebookBoardCard.vue": "848918902f397119c739c7fe68e39776b60c04e168c5d0ac66d97cef081fab8a",
+  "apps/notebook-web/frontend/src/NotebookBoardInspector.vue": "640e90dbdf56043e7e0c0dea8758c7eba21a63c2be0ae1302ef3e23b202e7735",
+  "apps/notebook-web/frontend/src/NotebookWorkspace.vue": "3e651d0305df405c03f12098d1f0956be9a8234fa19fcf2448b94efc33738f14",
+  "apps/notebook-web/frontend/src/style.css": "96e760eaa97431498bfa8f634fa233341828e5544fa13fa7d431b4a0b61cc3da",
+  "apps/notebook-web/frontend/test/rich-text.spec.ts": "56066cf7cfca157cc2e6e6815291e709cc8a2a9da74f7ad6b47052a5e2255e6f",
+  "apps/notebook-web/frontend/test/notebook.spec.ts": "e06ffac4393c4eda843d23d10022550eff2b3e5ca3e9c9e0aa41040e76bd59c9",
+  "apps/notebook-web/tools/rich_text_test.mjs": "9c2b87db0fd64a4bfa9ad665fb2ff432303d1cc780f2c0da206cc51a30aa08cd",
+  "apps/notebook-web/tools/board_editor_test.mjs": "586e5ce602835f379be2dfb479b1a37f6857512d34c1bad6f766f5c088d80ed5",
+  "apps/notebook-web/frontend/dist/.vite/manifest.json": "4a6264ab0a9d615a1cbbdce21693d598925d3b388d1224d31a071d9844686801"
+}

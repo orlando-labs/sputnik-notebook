@@ -1,0 +1,35 @@
+# In the http context. Exclude query strings: OAuth callbacks contain codes.
+log_format notebook '$remote_addr [$time_local] "$request_method $uri $server_protocol" $status $body_bytes_sent';
+
+server {
+    listen 443 ssl;
+    server_name notebook.example.com;
+    ssl_certificate /etc/ssl/notebook/fullchain.pem;
+    ssl_certificate_key /etc/ssl/notebook/privkey.pem;
+    root /srv/sputnik-notebook/apps/notebook-web/frontend/dist;
+    access_log /var/log/nginx/notebook-access.log notebook;
+
+    # Matches backend/main's 117440512-byte envelope (base64 imports included).
+    client_max_body_size 112m;
+
+    location /assets/ {
+        try_files $uri =404;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Content-Type-Options nosniff;
+    }
+    # The Vite manifest and other build metadata are not public assets.
+    location ~ ^/(\.vite|\.sputnik|build|db|backend|test|deploy)(/|$) { return 404; }
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        # Orbit validates the original Host before forwarded provenance.
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # Replace client-supplied provenance: exactly one trusted loopback hop.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_read_timeout 60s;
+    }
+}

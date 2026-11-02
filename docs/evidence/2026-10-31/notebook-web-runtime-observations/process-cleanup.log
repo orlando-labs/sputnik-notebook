@@ -1,0 +1,4 @@
+PASS VM/development SIGTERM: 6 owned processes → 0 (including active worker)
+PASS VM/development SIGKILL: 6 owned processes → 0 (including active worker)
+PASS native/production SIGTERM: 5 owned processes → 0 (including active worker)
+PASS native/production SIGKILL: 5 owned processes → 0 (including active worker)

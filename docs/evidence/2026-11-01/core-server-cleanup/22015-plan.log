@@ -1,0 +1,104 @@
+DOCKER_PROCESS pid=341443 comm=tini
+DOCKER_PROCESS pid=341588 comm=sputnik-noteboo
+DOCKER_PROCESS pid=341590 comm=sputnik-noteboo
+DOCKER_PROCESS pid=341612 comm=sputnik-noteboo
+PASS_NO_BARE_HOST_NOTEBOOK_PROCESSES checked=4
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/transfer
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/pcre2-build-10.47
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/pcre2-10.47
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/rocblas-4.3.0.60304-76.el9.x86_64.rpm
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/librocblas.so.4
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/librocblas.so.4.3.60304
+KEEP_MOUNT /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/rocblas/library
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/opt/rocm-6.3.4/share
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/usr
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/verification.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/origin.txt
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/gfx906-sha256.txt
+KEEP_MOUNT /home/slowpilot/sputnik-remote-core/state
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/start-current.sh
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/current
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/agent.pid
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/agent-20261029-head-3eb0f05.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/gateway.pid
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/gateway-20261029-head-3eb0f05.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/backups
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/examples
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/agent-20261029-bare-d86d41e.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/gateway-20261029-bare-d86d41e.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/agent-20261030-head-c4b56bc.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/gateway-20261030-head-c4b56bc.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/agent-20261030-auto-5d291d7.log
+REMOVE_PATH /home/slowpilot/sputnik-remote-core/gateway-20261030-auto-5d291d7.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261029-head-3eb0f05
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261029-bare-805bea6
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261029-bare-d86d41e
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261030-head-c4b56bc
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261030-auto-5d291d7
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-lazy-thread-pools
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/language-source.tar.gz
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/build-current-remote.sh
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/launcher.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/build.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/src
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/cxx
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/test-bin
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/env.sh
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/stdlib_task_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/blocking_ffi_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/vm_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/sputnik_ext_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/binder_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/emitter_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/hir_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/package_selection_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/language_version_tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/native-blocking.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/native-ext-cache
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/native-rt-cache
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/language-version.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/verify-remote.py
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/before-resources.json
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/sputnik-notebook-worker
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/sputnik-notebook-remote
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/remote-api-tests.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/deploy-current-remote.py
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/torch-source.tar.gz
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/gloo-source.tar.gz
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/packages
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/rocm-package.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/registry-rocm-014
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/public-index-before.json
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/torch-source-clean.tar.gz
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/run-container
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/docker-core-release.py
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/core-image.tar.gz
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-stage.log
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-stage-state
+KEEP_MOUNT /home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-packages
+KEEP_MOUNT /home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-cache
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-stage-result.json
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-deploy-result.json
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/env-before-container-packages.sh
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-check.s
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/redeploy-container
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261031-current-c17d12b/core-no-python.tar.gz
+REMOVE_PATH /home/slowpilot/sputnik-releases/20261101-notebook-core
+REMOVE_PATH /home/slowpilot/.sputnik/packages
+REMOVE_PATH /tmp/sputnik-rocm-prebuilt-verify.json
+REMOVE_PATH /tmp/sputnik-registry-pull-probe.log
+REMOVE_PATH /tmp/sputnik-bare-baseline-data-loader.log
+REMOVE_PATH /home/slowpilot/.local/bin/sputnik
+REMOVE_CONTAINER /sputnik-core-before-20261101T062507Z
+REMOVE_CONTAINER /sputnik-core-before-no-python-20261031T175915Z
+REMOVE_IMAGE sha256:1b3d3c648eed1436cf8cefbc1c9779528f3c6de37b3abd3bb209ba331127c789
+REMOVE_IMAGE sha256:1d7b96cff6c0b12253f102e9d9618cec65aa3244aa6a4c3b7eabb0da74a2f5d1
+KEEP_USED_IMAGE sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4
+REMOVE_IMAGE sha256:98f862174b559490b410294835c3566ff40a40460c4c6bb743b71b7e6ccc042d
+PASS_CORE_CONTAINER_MOUNTS_PID_AND_TOKEN_UNCHANGED
+DOCKER_PROCESS pid=341443 comm=tini
+DOCKER_PROCESS pid=341588 comm=sputnik-noteboo
+DOCKER_PROCESS pid=341590 comm=sputnik-noteboo
+DOCKER_PROCESS pid=341612 comm=sputnik-noteboo
+PASS_NO_BARE_HOST_NOTEBOOK_PROCESSES checked=4
+PASS_CLEANUP_plan profile=22015

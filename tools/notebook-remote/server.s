@@ -2,13 +2,15 @@ package notebook.remote.server
 
 from net.http import Server, ServerResponse
 from notebook.remote.common import APIError, fail, decode, rpc
-from notebook.remote.core import Core
+from notebook.core import Core
 
 export agent, gateway
 
-def agent(root, worker, python, ruby, gc_interval, gc_age, compiler):
+def agent(root, worker, python, ruby, gc_interval, gc_age, compiler, storage_policy, allow_book_policy_overrides):
   fail(400, "GC interval and age must be nonnegative") if gc_interval < 0 or gc_age < 0
-  core = Core(root, worker, python: python, ruby: ruby, compiler: compiler)
+  core = Core(root, worker, python: python, ruby: ruby, compiler: compiler, storage_policy: storage_policy, allow_book_policy_overrides: allow_book_policy_overrides)
+  unless fs.exists?(root + "/token"):
+    fs.atomic_write_text(root + "/token", SecureRandom.hex(32) + "\n")
   core.schedule_work()
   core.schedule_gc(gc_interval, gc_age)
   path = root + "/agent.sock"
@@ -30,7 +32,7 @@ def serve_connection(core, socket, active):
     try:
       response = null
       try:
-        text = socket.read_line!(limit: 100663296, timeout: 30.0)
+        text = socket.read_line!(limit: 134217728, timeout: 30.0)
         fail(400, "invalid agent request") unless text
         request = decode(text.to_str)
         params = request[?:params] or {}
@@ -62,6 +64,7 @@ def dispatch(root, token, request):
   method = null
   download = null
   if route == ["v1", "maintenance", "orphans"] and verb == "POST": method = "environments.gc"
+  elif route == ["v1", "maintenance", "storage"] and verb == "POST": method = "storage.collect"
   elif route == ["v1", "health"] and verb == "GET": method = "health"
   elif route == ["v1", "projects"] and verb == "GET": method = "project.list"
   elif route.count >= 3 and route[0] == "v1" and route[1] == "projects":
@@ -73,6 +76,8 @@ def dispatch(root, token, request):
       elif route[3] == "package-catalog" and verb == "POST": method = "dependency.catalog"
       elif route[3] == "environments": method = {GET: "environment.list", POST: "environment.prepare"}[?verb]
       elif route[3] == "runs": method = {GET: "run.list", POST: "run.start"}[?verb]
+      elif route[3] == "storage" and verb == "GET": method = "storage.status"
+      elif route[3] == "resource-policy": method = {GET: "policy.get", PUT: "policy.desktop"}[?verb]
       elif route[3] == "inputs": method = {GET: "project.inputs", PUT: "project.inputs.set"}[?verb]
       elif route[3] == "services": method = {GET: "service.list", POST: "service.configure"}[?verb]
       elif route[3] == "cell-inputs": method = {GET: "cell.inputs", PUT: "cell.inputs.set"}[?verb]
@@ -83,6 +88,14 @@ def dispatch(root, token, request):
         query = request.query or ""
         fail(400, "invalid event cursor") unless query == "" or query.starts_with?("after=")
         params[:after] = if query == "" then 0 else query.slice(6...query.length).to_int()
+    elif route.count == 7 and verb == "GET" and route[3] == "services" and route[6] == "history":
+      method = "service.history"
+      params[:board_id] = route[4]
+      params[:component_id] = route[5]
+    elif route.count == 6 and verb == "POST" and route[3] == "runs" and route[5] == "metadata":
+      fail(400, "unknown history operation") unless ["update", "delete"].include?(params[?:operation])
+      method = if params[:operation] == "delete" then "run.delete" else "run.annotate"
+      params[:run_id] = route[4]
     elif route.count == 5 and verb == "GET":
       if route[3] == "dependencies":
         method = "dependency.get"
@@ -114,6 +127,15 @@ def dispatch(root, token, request):
         method = "run.get"
         download = route[3]
   fail(404, "unknown endpoint") unless method
+  if ["run.list", "service.history"].include?(method):
+    query = request.query or ""
+    unless query == "":
+      seen = []
+      query.split("&").each |part|:
+        pair = part.split("=")
+        fail(400, "invalid history query") unless pair.count == 2 and ["before", "limit"].include?(pair[0]) and not seen.include?(pair[0]) and pair[1].length > 0 and pair[1].length <= 19 and pair[1].chars.all? |c|: "0123456789".contains?(c)
+        seen.push!(pair[0])
+        params[pair[0]] = pair[1].to_int()
   response = rpc(root, method, params: params)
   return reply(response[:status], {error: response[:error]}) unless response[:status] == 200
   if download:
@@ -123,9 +145,9 @@ def dispatch(root, token, request):
     ServerResponse(body: fs.read_bytes(path, limit: 134217728), headers: {"content-type": "application/vnd.sputnik.notebook-presentation"})
   else: reply(200, response[:data])
 
-def gateway(root, port):
+def gateway(root, port, host: "127.0.0.1"):
   token = fs.read_text(root + "/token").trim
-  server = Server(host: "127.0.0.1", port: port, workers: 4, max_concurrent_per_worker: 4,
+  server = Server(host: host, port: port, workers: 4, max_concurrent_per_worker: 4,
     max_header_bytes: 32768, max_body_bytes: 100663296, read_timeout: 30.0, write_timeout: 30.0)
   server.serve |request|:
     try: dispatch(root, token, request)

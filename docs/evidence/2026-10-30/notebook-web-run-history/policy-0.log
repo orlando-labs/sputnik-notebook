@@ -1,0 +1,6 @@
+test_collection_preserves_failure_and_previous_result_and_expires_receipts (__main__.PolicyTests) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.617s
+
+OK

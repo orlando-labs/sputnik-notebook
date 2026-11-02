@@ -1,0 +1,22 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/text-features.spec.ts
+
+[WebServer] (node:99890) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:99905) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/text-features.spec.ts:50:1 › text uses declared preceding module values, exact integers, literal strings and explicit stale states (1.5s)
+  ✓  2 test/text-features.spec.ts:65:1 › later uninitialized providers shadow earlier values and failures stale preceding text values (1.0s)
+  ✓  3 test/text-features.spec.ts:75:1 › Markdown board renders structure before literal values and never fetches authored media or HTML (1.0s)
+  ✓  4 test/text-features.spec.ts:88:1 › Markdown authoring and the variable picker stage normal drafts and preserve formatting/metadata (1.3s)
+  ✓  5 test/text-features.spec.ts:98:1 › Sputnik source keeps lexical colors, selection, Unicode diagnostics and stale-range protection (1.1s)
+  ✓  6 test/text-features.spec.ts:108:1 › code editor composition, tab, Undo, scroll and module styling preserve explicit save semantics (1.4s)
+  ✓  7 test/text-features.spec.ts:117:1 › reader text/Markdown access follows ACL and new authored names cannot read old run locals (3.9s)
+  ✓  8 test/text-features.spec.ts:123:1 › variable and syntax work limits stay visible while complete authored source survives Save (2.1s)
+  ✓  9 test/text-features.spec.ts:133:1 › temporary preview shares code styling and literal text bindings without changing its template (2.2s)
+
+  9 passed (18.0s)

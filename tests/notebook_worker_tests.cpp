@@ -1,5 +1,5 @@
-#include "tools/notebook-worker/process.h"
-#include "tools/notebook-worker/presentation.h"
+#include "notebook/core/worker/process.h"
+#include "notebook/core/worker/presentation.h"
 #include "notebook/project.h"
 #include "runtime/context.h"
 #include <chrono>
@@ -554,6 +554,55 @@ static void process_tests(const std::string &worker, const std::string &fixture)
   process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
   require(finish(process).cells.at(0).result == "42", "clean runtime uses host-saved source");
   process.request_force_stop(process.generation()); exited(process);
+  process.start(worker); reply(process, Kind::Ready);
+  const auto externally_reaped = process.pid();
+  require(::kill(externally_reaped, SIGKILL) == 0, "terminate externally reaped fixture");
+  int external_status;
+  require(::waitpid(externally_reaped, &external_status, 0) == externally_reaped, "simulate host-wide SIGCHLD reaping");
+  rejects([&] { process.request_force_stop(process.generation()); }, "never signal a session after losing child ownership");
+  rejects([&] { process.poll_exit(); }, "lost ownership is not a successful termination confirmation");
+  require(!process.request_force_stop(process.generation()), "relinquished PID is invalidated");
+  fs::remove_all(root);
+}
+static void external_process_cleanup_tests(const std::string &worker) {
+  char pattern[] = "/tmp/sputnik-worker-children-XXXXXX";
+  const auto directory = mkdtemp(pattern); require(directory, "temporary external-process fixture");
+  const fs::path root(directory);
+  for (const auto mode : {"force", "crash", "destroy"}) {
+    const auto started = root / (std::string(mode) + ".started");
+    const auto leaked = root / (std::string(mode) + ".leaked");
+    auto document = make_project_document("External process cleanup");
+    document.sheets[0].cells.resize(1);
+    // The command's separate process group contains a shell and sleep child.
+    document.sheets[0].cells[0].source =
+      "system.command(\"/bin/sh\", \"-c\", \"echo ready > " + started.string() +
+      "; sleep 1; echo leaked > " + leaked.string() + "\").capture(timeout: 30.0)\n42\n";
+    const auto project = create_project(root / (std::string(mode) + ".sputnikbook"), document);
+    {
+      Process process;
+      process.start(worker, {}, {"process.spawn=/bin/sh"}); reply(process, Kind::Ready);
+      require(::getsid(process.pid()) == process.pid(), "worker owns a private session");
+      require(::getsid(::getpid()) != process.pid(), "host remains outside worker session");
+      process.send(Kind::Load, {project.directory.string(), ""}); finish(process);
+      process.send(Kind::Run, {std::to_string(document.sheets[0].cells[0].id), "1"});
+      reply(process, Kind::Started);
+      const auto deadline = std::chrono::steady_clock::now() + 5s;
+      while (!fs::exists(started) && std::chrono::steady_clock::now() < deadline) std::this_thread::sleep_for(5ms);
+      require(fs::exists(started), "external command started before cleanup");
+      if (std::string(mode) == "crash") {
+        require(::kill(process.pid(), SIGKILL) == 0, "simulate worker crash");
+        const int status = exited(process);
+        require(WIFSIGNALED(status), "crashed worker cleanup is confirmed");
+      } else if (std::string(mode) == "force") {
+        require(process.request_force_stop(process.generation()), "force-stop private session");
+        const int status = exited(process);
+        require(WIFSIGNALED(status), "forced worker cleanup is confirmed");
+      }
+      // Destroy also cleans all command groups without waiting for their timeout.
+    }
+    std::this_thread::sleep_for(1200ms);
+    require(!fs::exists(leaked), std::string(mode) + " must not leave external effects after cleanup");
+  }
   fs::remove_all(root);
 }
 static void foreign_environment_process_tests(const std::string &worker) {
@@ -656,6 +705,11 @@ static void input_process_tests(const std::string &worker) {
   const auto changed = finish(process);
   require(changed.cells[0].result == "[4, 3]" && changed.cells[1].result == "[3, 2]",
           "input wave cannot replay synchronized keys consumed by an earlier Run");
+  for (int i = 0; i < 3; ++i) {
+    process.send(Kind::Poll);
+    require(reply(process, Kind::Result).fields == std::vector<std::string>{"0"},
+            "completed input wave cannot create a phantom Watch run");
+  }
   process.send(Kind::Shutdown); reply(process, Kind::Result); exited(process);
   fs::remove_all(root);
 }
@@ -743,6 +797,7 @@ int main(int argc, char **argv) {
   chart_presentation_tests();
   output_capture_tests();
   process_tests(fs::absolute(argv[1]), fs::absolute(argv[0]));
+  external_process_cleanup_tests(fs::absolute(argv[1]));
   environment_process_tests(fs::absolute(argv[1]));
   foreign_environment_process_tests(fs::absolute(argv[1]));
   input_process_tests(fs::absolute(argv[1]));

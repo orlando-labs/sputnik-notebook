@@ -1,0 +1,22 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/audio-annotations.spec.ts
+
+[WebServer] (node:62487) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:62523) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/audio-annotations.spec.ts:50:1 › owned audio drafts preserve exact frames, frequencies, transcripts, classes and Int64 through Apply and Run (5.6s)
+  ✓  2 test/audio-annotations.spec.ts:54:1 › spectrogram real reverse drag, FFT/channel/range changes, sample zoom and responsive themes (3.4s)
+  ✓  3 test/audio-annotations.spec.ts:58:1 › required transcripts and malformed frame/frequency/attribute values block Apply; Discard leaves accepted state intact (2.4s)
+  ✓  4 test/audio-annotations.spec.ts:62:1 › input and completed cell source bindings decode original frames and accept without executing code (4.4s)
+  ✓  5 test/audio-annotations.spec.ts:66:1 › Core independently rejects audio identity, schema, transcript, bounds and source mismatches with receipt CAS (1.9s)
+  ✓  6 test/audio-annotations.spec.ts:70:1 › designer configures native source/transcript/schema policies, with no implicit capture or run (1.8s)
+  ✓  7 test/audio-annotations.spec.ts:74:1 › saved source conflict preserves exportable audio draft; replacement invalidates accepted labels (3.4s)
+  ✓  8 test/audio-annotations.spec.ts:78:1 › viewer writes are denied and revocation closes the audio editor and its playback context (5.4s)
+  ✓  9 test/audio-annotations.spec.ts:84:1 › completed image publications annotate and reopen through the same frozen-source acceptance path (3.1s)
+
+  9 passed (33.4s)

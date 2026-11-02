@@ -1,0 +1,8 @@
+PASS quiescent state snapshot
+0
+0e2fa5814b768d8e63e1900f04c2ca1b069978d528dfe740bd83ffa20b9c65b3
+PASS quiescent state snapshot
+0
+PASS notebook GPU forward/backward without Python on 2 devices
+0
+PASS replaced cuda core: no Python, state and token preserved; backup=/home/slowpilot/sputnik-remote-core/backups/before-no-python-20261031T180013Z

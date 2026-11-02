@@ -1,0 +1,29 @@
+[
+  {
+    "source": "backend/main.s",
+    "native_bodies": 3328,
+    "total_bodies": 3328,
+    "vm_fallback": 0,
+    "full_body_coverage": true,
+    "vm_independent": true,
+    "native_hash": "c42df00d6ebf175f06d72c351bcd6fe6288bbc59ec90ea7b510b55ac10cb0562"
+  },
+  {
+    "source": "test/app_fixture.s",
+    "native_bodies": 3334,
+    "total_bodies": 3334,
+    "vm_fallback": 0,
+    "full_body_coverage": true,
+    "vm_independent": true,
+    "native_hash": "fe56d044f91ba13d49f0a0c9cf831c8d8b69e0e87e8a526f4e6ad0aa4f0f725a"
+  },
+  {
+    "source": "notebook.remote.main",
+    "native_bodies": 1440,
+    "total_bodies": 1440,
+    "vm_fallback": 0,
+    "full_body_coverage": true,
+    "vm_independent": true,
+    "native_hash": "cb8aae0d016d529ab1e21b7204d7a54165b0ee73a3e97709b1e8465b54cd8db3"
+  }
+]

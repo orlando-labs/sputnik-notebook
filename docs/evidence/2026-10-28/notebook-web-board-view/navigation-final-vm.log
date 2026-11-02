@@ -1,0 +1,14 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test boards.spec.ts --grep existing boards open inertly
+
+[WebServer] (node:26750) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:26760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/boards.spec.ts:48:1 › existing boards open inertly with legacy/row layouts, nested panels and explicit unavailable components (1.6s)
+
+  1 passed (3.5s)

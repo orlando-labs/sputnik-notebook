@@ -21,6 +21,8 @@
 
 Синхронизация документа не подменяет исходники внутри выполняющегося вызова. Изменение документа и применение новой версии к runtime — разные операции.
 
+Общее исполнение выделено в [notebook-core](notebook-core.md); remote API и Swift UI используют его через отдельные адаптеры.
+
 ## 2. Существующая база проекта
 
 Архитектура продолжает уже существующее разделение:
@@ -28,11 +30,11 @@
 - `.sputnikbook` хранит документ, модули и ссылки на зависимости; heap и результаты не являются частью формата документа.
 - Каждый лист имеет собственный runtime. Доска описывает интерфейс и связывается с листом; отдельная VM для обычной доски не нужна.
 - `NotebookExecution` владеет постоянными процессами листов; `Process` обеспечивает запуск, IPC, Stop, Force Stop и подтверждение завершения процесса.
-- Текущий внутренний worker protocol имеет версию 10, generation/request, команды Load/Sync/Source/Run/Apply и переносимые presentation snapshots. По IPC не передаются heap Values.
+- Текущий внутренний worker protocol имеет версию 17, generation/request, команды Load/Sync/Source/Run/Apply и переносимые presentation snapshots. По IPC не передаются heap Values.
 - В `main.cpp` потеря родительского data channel завершает воркер. В удалённой схеме этим родителем должен быть серверный агент, а не сетевой клиент.
 - Worker preview ещё явно ограничивает isolated module Run. Обычные project inputs и атомарный Apply реализованы в [P0](notebook-p0-components.md). Периодическое выполнение планируется локальным Swift Timer. Полная семантика удалённого режима требует закрыть оставшиеся разрывы.
 
-Источники: [worker protocol](../../tools/notebook-worker/protocol.h), [worker lifecycle](../../tools/notebook-worker/main.cpp), [host execution](../../tools/notebook-macos/NotebookExecution.cpp), [periodic scheduling](../../tools/notebook-macos/NotebookModel.swift), [формат проекта](../../../sputnik-lang/docs/engineering/notebook-project-v1.md), [зависимости](../../../sputnik-lang/docs/engineering/notebook-dependencies-v1.md).
+Источники: [worker protocol](../../packages/notebook-core/include/notebook/core/worker/protocol.h), [worker lifecycle](../../packages/notebook-core/native/worker.cpp), [host execution](../../packages/notebook-core/native/execution.cpp), [periodic scheduling](../../tools/notebook-macos/NotebookModel.swift), [формат проекта](../../../sputnik-lang/docs/engineering/notebook-project-v1.md), [зависимости](../../../sputnik-lang/docs/engineering/notebook-dependencies-v1.md).
 
 ## 3. Компоненты и границы отказа
 

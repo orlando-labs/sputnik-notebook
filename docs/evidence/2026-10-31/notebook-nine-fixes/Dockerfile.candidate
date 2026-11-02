@@ -1,0 +1,17 @@
+FROM docker.orlando-labs.com/sputnik-remote-core:20261031-1.0.0 AS build
+USER root
+COPY sputnik-notebook/ /src/sputnik-notebook/
+COPY sqlite3/ /src/sqlite3/
+COPY orm/ /src/orm/
+COPY orbit/ /src/orbit/
+COPY plot/ /src/plot/
+COPY sputnik-lang/tools/isputnik/ /src/sputnik-lang/tools/isputnik/
+ENV CXX=g++ SPUTNIK_NATIVE_CXX=g++ SPUTNIK_NATIVE_JOBS=6 SPUTNIK_NATIVE_RT_JOBS=6
+RUN make -C /src/sputnik-notebook -j6 remote-core
+RUN make -C /src/sputnik-notebook test-notebook-remote test-notebook-remote-serve
+FROM docker.orlando-labs.com/sputnik-remote-core:20261031-1.0.0
+USER root
+COPY --from=build /src/sputnik-notebook/build/sputnik-notebook-remote /usr/local/bin/sputnik-notebook-remote
+COPY --from=build /src/sputnik-notebook/build/sputnik-notebook-worker /usr/local/bin/sputnik-notebook-worker
+COPY --from=build /src/sputnik-lang/tools/isputnik/ /src/sputnik-lang/tools/isputnik/
+USER sputnik:sputnik

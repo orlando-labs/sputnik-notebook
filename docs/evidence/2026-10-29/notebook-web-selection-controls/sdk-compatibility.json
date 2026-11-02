@@ -1,0 +1,8 @@
+{
+  "current_sdk_commit": "d86d41e98ea3639a2777a58b72e64026c7a6d339",
+  "current_sdk_source_clean": true,
+  "verified_web_sdk_commit": "3eb0f05da50ba307d5f719e0b194de6317304b29",
+  "verified_web_compiler_sha256": "57f271d5231b478411ddca6df0ce7d79d1606fdd0d17941a10202079b4933bc3",
+  "current_compiler_sha256": "69496e73925f77657289b77e2ee59e0f9afd287d9f96e5cf16287fbe46f48724",
+  "core": "Current workspace Core/worker, built with the current SDK; local RPC and worker selection contracts pass."
+}

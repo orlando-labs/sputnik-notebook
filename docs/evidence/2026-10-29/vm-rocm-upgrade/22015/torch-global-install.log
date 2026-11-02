@@ -1,0 +1,4 @@
+Installed torch@0.1.3-rocm-local in /home/slowpilot/.sputnik/packages/torch/0.1.3-rocm-local/source
+Locked 1 packages in /home/slowpilot/sputnik-remote-core/examples/sputnik.lock
+PASS ROCm LibTorch 2.14.0 forward=14 gradient=[2,4,6] matmul=OK trained_weight=2.999999761581421
+"PASS ROCm LibTorch 2.14.0 forward=14 gradient=[2,4,6] matmul=OK trained_weight=2.999999761581421"

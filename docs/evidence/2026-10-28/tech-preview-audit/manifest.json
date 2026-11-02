@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-28",
+  "notebook_head": "082c8eb2c26aa0ca724fa3be4226755b48977024",
+  "language_head": "77650e1e73bae5505d819e1d95f037be7592e19d",
+  "scope": "current dirty working tree, including untracked notebook-core",
+  "files": {
+    "tools/notebook-macos/NotebookModel.swift": "be945fb285daa22ffc8252c1a9145ce073a264c73795b216d4a1ca7c5121f1f0",
+    "tools/notebook-macos/NotebookRemote.swift": "39327386f1b06518c4b62239b1886c15c5be78e3c1021a28a5782ddc557011b0",
+    "tools/notebook-macos/package-app.sh": "7850f71e93f9b9392c8fad9a630d5fdea186faaaed179659ff49f676e63fb344",
+    "packages/notebook-core/native/process.cpp": "88de73dbbf9885a1aee77128a5c1ebf4644d80497a646f14384bfb0ae98849a3",
+    "packages/notebook-core/src/notebook/core.s": "410a165b2ea43d61e315565764003285e3495ab169574877627a5302f12084e3",
+    "packages/notebook-core/src/notebook/core/services.s": "405f0fa17e0aaf50a701f2b7dc163adb9a14262076d2ebdceb2d860578a1b645",
+    "tools/notebook-remote/server.s": "761548917543e9d5fc7e26179776577bcaba11dbbdf6eb3133647a9c3fbb715b"
+  }
+}

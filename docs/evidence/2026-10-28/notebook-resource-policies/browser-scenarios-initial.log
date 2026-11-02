@@ -1,0 +1,99 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/execution.spec.ts test/board-actions.spec.ts test/boards.spec.ts
+
+[WebServer] (node:78072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 20 tests using 1 worker
+
+(node:78093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 test/board-actions.spec.ts:33:1 › actions freeze exact arguments, keep isolated state, expose history and leave controller results intact (2.9s)
+(node:78137) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   2 test/board-actions.spec.ts:48:1 › server schedules survive a closed board, pause explicitly, retain tail history and clear without resetting counters (2.2s)
+  ✓   3 test/board-actions.spec.ts:66:1 › fixed rate skips overlaps and service/module edits pause future calls while failures obey retention (1.4s)
+  ✓   4 test/board-actions.spec.ts:83:1 › invocation stop, force stop and restart address their own worker and preserve the controller (1.4s)
+  ✓   5 test/board-actions.spec.ts:98:1 › lost accepted and unaccepted board commands recover exact receipts without automatic replay (2.4s)
+  ✓   6 test/board-actions.spec.ts:123:1 › actions and services enforce ACL, CSRF, ownership and revoke open runtime data (7.9s)
+  ✓   7 test/board-actions.spec.ts:144:1 › designer authors actions, service schedules and execution targets as inert drafts (1.4s)
+  ✓   8 test/boards.spec.ts:48:1 › existing boards open inertly with legacy/row layouts, nested panels and explicit unavailable components (1.5s)
+  ✘   9 test/boards.spec.ts:106:1 › board parameters use explicit Apply, remain cold until Run and protect hidden/navigation drafts (2.0s)
+(node:78270) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  10 test/boards.spec.ts:129:1 › board live channels, progress and stopwatch reconnect to the controller without replay (5.3s)
+  ✓  11 test/boards.spec.ts:156:1 › boards isolate controller sheets and keep immutable historical metric bindings (1.3s)
+  ✓  12 test/boards.spec.ts:181:1 › board readers inspect results and exports while ACL revocation clears the runtime view (3.7s)
+  ✓  13 test/boards.spec.ts:202:1 › isolated action worlds never replace controller board results or cell controls (1.3s)
+  ✓  14 test/execution.spec.ts:60:1 › Run All, single-cell run, output, failure, provenance and history (1.9s)
+  ✓  15 test/execution.spec.ts:108:1 › live output and accepted work survive reload and closing the page without replay (7.0s)
+  ✓  16 test/execution.spec.ts:135:1 › cooperative Stop, Force Stop, explicit restart and stale epoch protection (4.4s)
+  ✓  17 test/execution.spec.ts:170:1 › lost accepted Run response is recovered by receipt after reload with one physical run (789ms)
+  ✓  18 test/execution.spec.ts:197:1 › an unaccepted request retries only on explicit action with its original ID and revision (1.0s)
+  ✓  19 test/execution.spec.ts:228:1 › execution enforces project/run ownership, role changes, receipts, CSRF and safe DTOs (3.1s)
+  ✓  20 test/execution.spec.ts:284:1 › Stop during preparation is cancellation; an unobserved child error fails the run (1.7s)
+
+
+  1) test/board-actions.spec.ts:33:1 › actions freeze exact arguments, keep isolated state, expose history and leave controller results intact 
+
+    Error: expect(received).toHaveLength(expected)
+
+    Expected length: 2
+    Received length: 1
+    Received array:  [{"action": "action_run", "board_id": "dash", "cell_id": "2", "component_id": "act", "executing_cell": "", "id": "83cae03f01621516c7b5aa5b2d5ee78b", "input_version": "b45aa3121af1b6c2b7176c2bdef4df9b", "revision": "9e65480dde7b4a7e10696ad477eeff114f3f99d201949a628258645e08fc8204", "runtime_epoch": "544a9577f51db8bd0c00c13024a72015", "sheet_id": "main", "state": "succeeded"}]
+
+      40 |     await expect(page.getByLabel('Controller score value', { exact: true })).toHaveText('7')
+      41 |     expect(await stored(page, project.id)).toEqual(notebook)
+    > 42 |     const state = await registry(page, project.id); expect(state.runs.filter((run: any) => run.action === 'action_run')).toHaveLength(2); expect(state.runtimes.map((runtime: any) => runtime.sheet_id)).toEqual(['main']); expect(JSON.stringify(state)).not.toMatch(/core_project_id|runtime_id|service_[a-f0-9]{64}|worker_pid|\/private\//)
+         |                                                                                                                          ^
+      43 |     await page.reload(); await page.getByRole('navigation', { name: 'Boards', exact: true }).getByRole('button', { name: 'Dashboard', exact: true }).click(); await card(page, 'act').getByRole('button', { name: 'View output', exact: true }).click(); await expect(output(page).getByLabel('Cell result', { exact: true })).toContainText('[2,')
+      44 |     for (const colorScheme of ['light', 'dark'] as const) { await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' }); for (const width of [1280, 375, 320]) { await page.setViewportSize({ width, height: 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); if (width !== 320) await page.screenshot({ path: `../build/board-commands-${colorScheme}-${width}.png`, fullPage: true }) } }
+      45 |   } finally { await release(page, project.id) }
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/board-actions.spec.ts:42:122
+
+    Error Context: test-results/production-vm/board-actions-actions-free-a0820-e-controller-results-intact/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-vm/board-actions-actions-free-a0820-e-controller-results-intact/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-vm/board-actions-actions-free-a0820-e-controller-results-intact/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) test/boards.spec.ts:106:1 › board parameters use explicit Apply, remain cold until Run and protect hidden/navigation drafts 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+      Array [
+    -   "run_all",
+        "inputs",
+      ]
+
+      122 |     await input.fill('6'); await control.getByRole('button', { name: 'Apply', exact: true }).click(); await expect(control.getByRole('button', { name: 'Apply', exact: true })).toBeDisabled()
+      123 |     await card(page, 'tabs').getByRole('tab', { name: 'Value', exact: true }).click(); await expect(page.getByLabel('Computed score value', { exact: true })).toHaveText('12')
+    > 124 |     expect((await registry(page, project.id)).runs.map((item: any) => item.action)).toEqual(['run_all', 'inputs'])
+          |                                                                                     ^
+      125 |     expect(await stored(page, project.id)).toEqual(notebook)
+      126 |   } finally { await release(page, project.id) }
+      127 | })
+        at /Users/slowpilot/workspace/sputnik/sputnik-notebook/apps/notebook-web/frontend/test/boards.spec.ts:124:85
+
+    Error Context: test-results/production-vm/boards-board-parameters-us-20f74-ct-hidden-navigation-drafts/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/production-vm/boards-board-parameters-us-20f74-ct-hidden-navigation-drafts/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/production-vm/boards-board-parameters-us-20f74-ct-hidden-navigation-drafts/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    test/board-actions.spec.ts:33:1 › actions freeze exact arguments, keep isolated state, expose history and leave controller results intact 
+    test/boards.spec.ts:106:1 › board parameters use explicit Apply, remain cold until Run and protect hidden/navigation drafts 
+  18 passed (1.0m)

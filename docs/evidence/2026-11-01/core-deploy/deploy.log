@@ -1,0 +1,10 @@
+PASS quiescent state snapshot
+0
+d038ddbe7e633f086b5413c489cb80e86cfd763d5100da312747776868990c61
+PASS quiescent state snapshot
+0
+PASS existing ncae Torch reattached from shared cache; revision and worker permissions preserved
+0
+PASS short torch import, shared package reference and GPU forward/backward without Python on 3 devices
+0
+PASS 22015: healthy updated core, short torch import, all 3 GPUs, no Python, state/token preserved; image=sha256:40591db1f39677f5fce9260534e2deed7b89c88d597c36a72772a9fbe01482f4 backup=/home/slowpilot/sputnik-remote-core/backups/before-core-20261101T062507Z previous=sputnik-core-before-20261101T062507Z
