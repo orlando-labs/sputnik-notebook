@@ -1,0 +1,10 @@
+PASS quiescent state snapshot
+0
+aaaa7acc66b617dba530943b1649369d9f8acd746bdc50b97f5d3a72126d43d3
+PASS quiescent state snapshot
+0
+PASS short torch import, shared package reference and GPU forward/backward without Python on 2 devices
+0
+sputnik 1.0.0
+Image=sha256:e21143e3e635f26ce166dcacc2b1ce1f6ebd923f6f40774c82037841f00b2c1f Health=healthy Restarts=0 RestartPolicy=unless-stopped Mounts=[{"Type":"bind","Source":"/home/slowpilot/sputnik-remote-core/state","Destination":"/home/slowpilot/sputnik-remote-core/state","Mode":"","RW":true,"Propagation":"rprivate"},{"Type":"bind","Source":"/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-packages","Destination":"/var/lib/sputnik-packages","Mode":"","RW":true,"Propagation":"rprivate"},{"Type":"bind","Source":"/ssd1Tb/sputnik-remote-core-releases/20261031-packages-1.0.0/container-cache","Destination":"/var/cache/sputnik","Mode":"","RW":true,"Propagation":"rprivate"},{"Type":"volume","Name":"d610526ab7a15f7e77eff0cff95130569ba210344a112374838968a41ff8392c","Source":"/var/lib/docker/volumes/d610526ab7a15f7e77eff0cff95130569ba210344a112374838968a41ff8392c/_data","Destination":"/var/lib/sputnik-notebook","Driver":"local","Mode":"","RW":true,"Propagation":""}] GPUs=[{"Driver":"","Count":0,"DeviceIDs":["GPU-08a27f45-3e58-12a9-4626-4997e56e765f","GPU-f8d896e0-2607-a025-88a1-7ed8979035af",""],"Capabilities":[["gpu"]],"Options":{}}]
+PASS deployed cuda: all historical runs/metadata, project heads, sheet grants, state/token and GPU configuration preserved; backup=/ssd1Tb/sputnik-remote-core-releases/20261102-remote-actions/backups/before-core-20261102T191001Z previous=sputnik-core-before-20261102T191001Z

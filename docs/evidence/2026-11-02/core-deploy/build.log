@@ -1,0 +1,1115 @@
+context.tar.gz: OK
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 4.08kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:bookworm-slim
+#2 DONE 3.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [sdk 1/6] FROM docker.io/library/debian:bookworm-slim@sha256:99c0b25c46d0214d5a2091092e7908907dcaecd6a962cde0ac700acee222b6f3
+#4 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 43.57MB 0.5s done
+#5 DONE 0.5s
+
+#6 [sdk 3/6] RUN curl --fail --location --retry 3     https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.47/pcre2-10.47.tar.bz2     --output /tmp/pcre2.tar.bz2     && echo '47fe8c99461250d42f89e6e8fdaeba9da057855d06eb7fc08d9ca03fd08d7bc7  /tmp/pcre2.tar.bz2' | sha256sum -c -     && cd /tmp && tar -xjf pcre2.tar.bz2 && cd pcre2-10.47     && ./configure --prefix=/opt/pcre2 --enable-unicode --enable-jit --disable-pcre2grep --disable-pcre2test     && make -j12 && make install
+#6 CACHED
+
+#7 [sdk 2/6] RUN apt-get update && apt-get install -y --no-install-recommends     build-essential clang-19 llvm-19 lld-19 pkg-config libssl-dev libarchive-dev     libyaml-dev zlib1g-dev bzip2 ca-certificates curl     && rm -rf /var/lib/apt/lists/*     && ! command -v python3 && ! command -v python
+#7 CACHED
+
+#8 [sdk 4/6] WORKDIR /src
+#8 CACHED
+
+#9 [runtime 2/8] RUN apt-get update && apt-get install -y --no-install-recommends     ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev     zlib1g-dev libnuma1 libelf1 libdrm2 libdrm-amdgpu1 libpciaccess0     && rm -rf /var/lib/apt/lists/*     && groupadd --gid 1000 sputnik && useradd --uid 1000 --gid 1000 --create-home sputnik     && ! command -v python3 && ! command -v python
+#9 0.478 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+#9 0.558 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+#9 0.585 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
+#9 0.623 Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8790 kB]
+#9 1.025 Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+#9 1.025 Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [360 kB]
+#9 2.074 Fetched 9398 kB in 2s (5669 kB/s)
+#9 2.074 Reading package lists...
+#9 ...
+
+#10 [sdk 5/6] COPY sputnik-lang/ sputnik-lang/
+#10 DONE 2.7s
+
+#9 [runtime 2/8] RUN apt-get update && apt-get install -y --no-install-recommends     ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev     zlib1g-dev libnuma1 libelf1 libdrm2 libdrm-amdgpu1 libpciaccess0     && rm -rf /var/lib/apt/lists/*     && groupadd --gid 1000 sputnik && useradd --uid 1000 --gid 1000 --create-home sputnik     && ! command -v python3 && ! command -v python
+#9 2.074 Reading package lists...
+#9 3.282 Reading package lists...
+#9 3.899 Building dependency tree...
+#9 4.035 Reading state information...
+#9 4.165 The following additional packages will be installed:
+#9 4.165   binutils binutils-common binutils-x86-64-linux-gnu cpp cpp-12 g++-12 gcc
+#9 4.165   gcc-12 libarchive13 libasan8 libatomic1 libbinutils libbrotli1 libc-dev-bin
+#9 4.165   libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libcurl4 libdrm-common
+#9 4.165   libgcc-12-dev libgomp1 libgprofng0 libgssapi-krb5-2 libicu72 libisl23
+#9 4.165   libitm1 libjansson4 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0
+#9 4.165   libldap-2.5-0 liblsan0 libmpc3 libmpfr6 libnghttp2-14 libnsl-dev libnsl2
+#9 4.165   libpkgconf3 libpsl5 libquadmath0 librtmp1 libsasl2-2 libsasl2-modules-db
+#9 4.165   libssh2-1 libssl3 libstdc++-12-dev libtirpc-common libtirpc-dev libtirpc3
+#9 4.165   libtsan2 libubsan1 libxml2 libyaml-0-2 linux-libc-dev openssl pkgconf
+#9 4.165   pkgconf-bin rpcsvc-proto
+#9 4.166 Suggested packages:
+#9 4.166   binutils-doc cpp-doc gcc-12-locales cpp-12-doc g++-multilib g++-12-multilib
+#9 4.166   gcc-12-doc gcc-multilib make manpages-dev autoconf automake libtool flex
+#9 4.166   bison gdb gcc-doc gcc-12-multilib lrzip glibc-doc krb5-doc krb5-user
+#9 4.166   pciutils libssl-doc libstdc++-12-doc libyaml-doc
+#9 4.166 Recommended packages:
+#9 4.166   manpages manpages-dev libc-devtools krb5-locales libldap-common publicsuffix
+#9 4.166   libsasl2-modules
+#9 4.523 The following NEW packages will be installed:
+#9 4.523   binutils binutils-common binutils-x86-64-linux-gnu ca-certificates cpp
+#9 4.523   cpp-12 curl g++ g++-12 gcc gcc-12 libarchive-dev libarchive13 libasan8
+#9 4.523   libatomic1 libbinutils libbrotli1 libc-dev-bin libc6-dev libcc1-0
+#9 4.523   libcrypt-dev libctf-nobfd0 libctf0 libcurl4 libdrm-amdgpu1 libdrm-common
+#9 4.523   libdrm2 libelf1 libgcc-12-dev libgomp1 libgprofng0 libgssapi-krb5-2 libicu72
+#9 4.523   libisl23 libitm1 libjansson4 libk5crypto3 libkeyutils1 libkrb5-3
+#9 4.523   libkrb5support0 libldap-2.5-0 liblsan0 libmpc3 libmpfr6 libnghttp2-14
+#9 4.523   libnsl-dev libnsl2 libnuma1 libpciaccess0 libpkgconf3 libpsl5 libquadmath0
+#9 4.524   librtmp1 libsasl2-2 libsasl2-modules-db libssh2-1 libssl-dev libssl3
+#9 4.524   libstdc++-12-dev libtirpc-common libtirpc-dev libtirpc3 libtsan2 libubsan1
+#9 4.524   libxml2 libyaml-0-2 libyaml-dev linux-libc-dev openssl pkg-config pkgconf
+#9 4.524   pkgconf-bin rpcsvc-proto tini zlib1g-dev
+#9 4.591 0 upgraded, 75 newly installed, 0 to remove and 1 not upgraded.
+#9 4.591 Need to get 84.6 MB of archives.
+#9 4.591 After this operation, 333 MB of additional disk space will be used.
+#9 4.591 Get:1 http://deb.debian.org/debian-security bookworm-security/main amd64 libssl3 amd64 3.0.22-1~deb12u2 [2040 kB]
+#9 4.751 Get:2 http://deb.debian.org/debian-security bookworm-security/main amd64 openssl amd64 3.0.22-1~deb12u2 [1442 kB]
+#9 4.789 Get:3 http://deb.debian.org/debian-security bookworm-security/main amd64 ca-certificates all 20250419~deb12u2 [161 kB]
+#9 4.816 Get:4 http://deb.debian.org/debian bookworm/main amd64 binutils-common amd64 2.40-2 [2487 kB]
+#9 4.860 Get:5 http://deb.debian.org/debian bookworm/main amd64 libbinutils amd64 2.40-2 [572 kB]
+#9 4.864 Get:6 http://deb.debian.org/debian bookworm/main amd64 libctf-nobfd0 amd64 2.40-2 [153 kB]
+#9 4.865 Get:7 http://deb.debian.org/debian bookworm/main amd64 libctf0 amd64 2.40-2 [89.8 kB]
+#9 4.865 Get:8 http://deb.debian.org/debian bookworm/main amd64 libgprofng0 amd64 2.40-2 [812 kB]
+#9 4.870 Get:9 http://deb.debian.org/debian bookworm/main amd64 libjansson4 amd64 2.14-2 [40.8 kB]
+#9 4.871 Get:10 http://deb.debian.org/debian bookworm/main amd64 binutils-x86-64-linux-gnu amd64 2.40-2 [2246 kB]
+#9 4.902 Get:11 http://deb.debian.org/debian bookworm/main amd64 binutils amd64 2.40-2 [65.0 kB]
+#9 4.902 Get:12 http://deb.debian.org/debian bookworm/main amd64 libisl23 amd64 0.25-1.1 [683 kB]
+#9 4.909 Get:13 http://deb.debian.org/debian bookworm/main amd64 libmpfr6 amd64 4.2.0-1 [701 kB]
+#9 4.915 Get:14 http://deb.debian.org/debian bookworm/main amd64 libmpc3 amd64 1.3.1-1 [51.5 kB]
+#9 4.916 Get:15 http://deb.debian.org/debian bookworm/main amd64 cpp-12 amd64 12.2.0-14+deb12u1 [9768 kB]
+#9 5.011 Get:16 http://deb.debian.org/debian bookworm/main amd64 cpp amd64 4:12.2.0-3 [6836 B]
+#9 5.011 Get:17 http://deb.debian.org/debian-security bookworm-security/main amd64 libbrotli1 amd64 1.0.9-2+deb12u1 [275 kB]
+#9 5.013 Get:18 http://deb.debian.org/debian bookworm/main amd64 libkrb5support0 amd64 1.20.1-2+deb12u5 [33.2 kB]
+#9 5.014 Get:19 http://deb.debian.org/debian bookworm/main amd64 libk5crypto3 amd64 1.20.1-2+deb12u5 [79.7 kB]
+#9 5.015 Get:20 http://deb.debian.org/debian bookworm/main amd64 libkeyutils1 amd64 1.6.3-2 [8808 B]
+#9 5.015 Get:21 http://deb.debian.org/debian bookworm/main amd64 libkrb5-3 amd64 1.20.1-2+deb12u5 [332 kB]
+#9 5.046 Get:22 http://deb.debian.org/debian bookworm/main amd64 libgssapi-krb5-2 amd64 1.20.1-2+deb12u5 [135 kB]
+#9 5.048 Get:23 http://deb.debian.org/debian-security bookworm-security/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg-10+deb12u1 [20.5 kB]
+#9 5.048 Get:24 http://deb.debian.org/debian-security bookworm-security/main amd64 libsasl2-2 amd64 2.1.28+dfsg-10+deb12u1 [59.9 kB]
+#9 5.049 Get:25 http://deb.debian.org/debian bookworm/main amd64 libldap-2.5-0 amd64 2.5.13+dfsg-5 [183 kB]
+#9 5.063 Get:26 http://deb.debian.org/debian bookworm/main amd64 libnghttp2-14 amd64 1.52.0-1+deb12u3 [72.4 kB]
+#9 5.065 Get:27 http://deb.debian.org/debian bookworm/main amd64 libpsl5 amd64 0.21.2-1 [58.7 kB]
+#9 5.066 Get:28 http://deb.debian.org/debian bookworm/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2+b2 [60.8 kB]
+#9 5.067 Get:29 http://deb.debian.org/debian-security bookworm-security/main amd64 libssh2-1 amd64 1.10.0-3+deb12u1 [176 kB]
+#9 5.095 Get:30 http://deb.debian.org/debian bookworm/main amd64 libcurl4 amd64 7.88.1-10+deb12u15 [392 kB]
+#9 5.099 Get:31 http://deb.debian.org/debian bookworm/main amd64 curl amd64 7.88.1-10+deb12u15 [316 kB]
+#9 5.101 Get:32 http://deb.debian.org/debian bookworm/main amd64 libcc1-0 amd64 12.2.0-14+deb12u1 [41.7 kB]
+#9 5.102 Get:33 http://deb.debian.org/debian bookworm/main amd64 libgomp1 amd64 12.2.0-14+deb12u1 [116 kB]
+#9 5.103 Get:34 http://deb.debian.org/debian bookworm/main amd64 libitm1 amd64 12.2.0-14+deb12u1 [26.1 kB]
+#9 5.103 Get:35 http://deb.debian.org/debian bookworm/main amd64 libatomic1 amd64 12.2.0-14+deb12u1 [9376 B]
+#9 5.128 Get:36 http://deb.debian.org/debian bookworm/main amd64 libasan8 amd64 12.2.0-14+deb12u1 [2193 kB]
+#9 5.196 Get:37 http://deb.debian.org/debian bookworm/main amd64 liblsan0 amd64 12.2.0-14+deb12u1 [969 kB]
+#9 5.202 Get:38 http://deb.debian.org/debian bookworm/main amd64 libtsan2 amd64 12.2.0-14+deb12u1 [2197 kB]
+#9 5.282 Get:39 http://deb.debian.org/debian bookworm/main amd64 libubsan1 amd64 12.2.0-14+deb12u1 [883 kB]
+#9 5.317 Get:40 http://deb.debian.org/debian bookworm/main amd64 libquadmath0 amd64 12.2.0-14+deb12u1 [145 kB]
+#9 5.344 Get:41 http://deb.debian.org/debian bookworm/main amd64 libgcc-12-dev amd64 12.2.0-14+deb12u1 [2437 kB]
+#9 5.384 Get:42 http://deb.debian.org/debian bookworm/main amd64 gcc-12 amd64 12.2.0-14+deb12u1 [19.3 MB]
+#9 6.110 Get:43 http://deb.debian.org/debian bookworm/main amd64 gcc amd64 4:12.2.0-3 [5216 B]
+#9 6.110 Get:44 http://deb.debian.org/debian bookworm/main amd64 libc-dev-bin amd64 2.36-9+deb12u14 [48.1 kB]
+#9 6.114 Get:45 http://deb.debian.org/debian-security bookworm-security/main amd64 linux-libc-dev amd64 6.1.190-1 [2409 kB]
+#9 6.240 Get:46 http://deb.debian.org/debian bookworm/main amd64 libcrypt-dev amd64 1:4.4.33-2 [118 kB]
+#9 6.246 Get:47 http://deb.debian.org/debian bookworm/main amd64 libtirpc-common all 1.3.3+ds-1 [14.0 kB]
+#9 6.247 Get:48 http://deb.debian.org/debian bookworm/main amd64 libtirpc3 amd64 1.3.3+ds-1 [85.2 kB]
+#9 6.251 Get:49 http://deb.debian.org/debian bookworm/main amd64 libnsl2 amd64 1.3.0-2 [39.5 kB]
+#9 6.252 Get:50 http://deb.debian.org/debian bookworm/main amd64 libtirpc-dev amd64 1.3.3+ds-1 [191 kB]
+#9 6.265 Get:51 http://deb.debian.org/debian bookworm/main amd64 libnsl-dev amd64 1.3.0-2 [66.4 kB]
+#9 6.266 Get:52 http://deb.debian.org/debian bookworm/main amd64 rpcsvc-proto amd64 1.4.3-1 [63.3 kB]
+#9 6.295 Get:53 http://deb.debian.org/debian bookworm/main amd64 libc6-dev amd64 2.36-9+deb12u14 [1904 kB]
+#9 6.413 Get:54 http://deb.debian.org/debian bookworm/main amd64 libstdc++-12-dev amd64 12.2.0-14+deb12u1 [2047 kB]
+#9 6.542 Get:55 http://deb.debian.org/debian bookworm/main amd64 g++-12 amd64 12.2.0-14+deb12u1 [10.7 MB]
+#9 7.082 Get:56 http://deb.debian.org/debian bookworm/main amd64 g++ amd64 4:12.2.0-3 [1356 B]
+#9 7.082 Get:57 http://deb.debian.org/debian bookworm/main amd64 libicu72 amd64 72.1-3+deb12u1 [9376 kB]
+#9 7.542 Get:58 http://deb.debian.org/debian bookworm/main amd64 libxml2 amd64 2.9.14+dfsg-1.3~deb12u6 [689 kB]
+#9 7.598 Get:59 http://deb.debian.org/debian-security bookworm-security/main amd64 libarchive13 amd64 3.6.2-1+deb12u5 [345 kB]
+#9 7.632 Get:60 http://deb.debian.org/debian-security bookworm-security/main amd64 libarchive-dev amd64 3.6.2-1+deb12u5 [561 kB]
+#9 7.657 Get:61 http://deb.debian.org/debian bookworm/main amd64 libdrm-common all 2.4.114-1 [7112 B]
+#9 7.657 Get:62 http://deb.debian.org/debian bookworm/main amd64 libdrm2 amd64 2.4.114-1+b1 [37.5 kB]
+#9 7.658 Get:63 http://deb.debian.org/debian bookworm/main amd64 libdrm-amdgpu1 amd64 2.4.114-1+b1 [20.9 kB]
+#9 7.659 Get:64 http://deb.debian.org/debian bookworm/main amd64 libelf1 amd64 0.188-2.1 [174 kB]
+#9 7.666 Get:65 http://deb.debian.org/debian bookworm/main amd64 libnuma1 amd64 2.0.16-1 [21.0 kB]
+#9 7.667 Get:66 http://deb.debian.org/debian bookworm/main amd64 libpciaccess0 amd64 0.17-2 [51.4 kB]
+#9 7.668 Get:67 http://deb.debian.org/debian bookworm/main amd64 libpkgconf3 amd64 1.8.1-1 [36.1 kB]
+#9 7.669 Get:68 http://deb.debian.org/debian-security bookworm-security/main amd64 libssl-dev amd64 3.0.22-1~deb12u2 [2450 kB]
+#9 7.786 Get:69 http://deb.debian.org/debian bookworm/main amd64 libyaml-0-2 amd64 0.2.5-1 [53.6 kB]
+#9 7.788 Get:70 http://deb.debian.org/debian bookworm/main amd64 libyaml-dev amd64 0.2.5-1 [64.5 kB]
+#9 7.790 Get:71 http://deb.debian.org/debian bookworm/main amd64 pkgconf-bin amd64 1.8.1-1 [29.5 kB]
+#9 7.792 Get:72 http://deb.debian.org/debian bookworm/main amd64 pkgconf amd64 1.8.1-1 [25.9 kB]
+#9 7.793 Get:73 http://deb.debian.org/debian bookworm/main amd64 pkg-config amd64 1.8.1-1 [13.7 kB]
+#9 7.865 Get:74 http://deb.debian.org/debian bookworm/main amd64 tini amd64 0.19.0-1+b3 [267 kB]
+#9 7.871 Get:75 http://deb.debian.org/debian bookworm/main amd64 zlib1g-dev amd64 1:1.2.13.dfsg-1 [916 kB]
+#9 8.082 debconf: delaying package configuration, since apt-utils is not installed
+#9 8.112 Fetched 84.6 MB in 3s (25.0 MB/s)
+#9 8.166 Selecting previously unselected package libssl3:amd64.
+#9 8.166 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6096 files and directories currently installed.)
+#9 8.170 Preparing to unpack .../00-libssl3_3.0.22-1~deb12u2_amd64.deb ...
+#9 8.191 Unpacking libssl3:amd64 (3.0.22-1~deb12u2) ...
+#9 8.409 Selecting previously unselected package openssl.
+#9 8.410 Preparing to unpack .../01-openssl_3.0.22-1~deb12u2_amd64.deb ...
+#9 8.419 Unpacking openssl (3.0.22-1~deb12u2) ...
+#9 8.607 Selecting previously unselected package ca-certificates.
+#9 8.608 Preparing to unpack .../02-ca-certificates_20250419~deb12u2_all.deb ...
+#9 8.617 Unpacking ca-certificates (20250419~deb12u2) ...
+#9 8.720 Selecting previously unselected package binutils-common:amd64.
+#9 8.721 Preparing to unpack .../03-binutils-common_2.40-2_amd64.deb ...
+#9 8.730 Unpacking binutils-common:amd64 (2.40-2) ...
+#9 9.009 Selecting previously unselected package libbinutils:amd64.
+#9 9.011 Preparing to unpack .../04-libbinutils_2.40-2_amd64.deb ...
+#9 9.020 Unpacking libbinutils:amd64 (2.40-2) ...
+#9 9.141 Selecting previously unselected package libctf-nobfd0:amd64.
+#9 9.142 Preparing to unpack .../05-libctf-nobfd0_2.40-2_amd64.deb ...
+#9 9.151 Unpacking libctf-nobfd0:amd64 (2.40-2) ...
+#9 9.236 Selecting previously unselected package libctf0:amd64.
+#9 9.237 Preparing to unpack .../06-libctf0_2.40-2_amd64.deb ...
+#9 9.246 Unpacking libctf0:amd64 (2.40-2) ...
+#9 9.326 Selecting previously unselected package libgprofng0:amd64.
+#9 9.327 Preparing to unpack .../07-libgprofng0_2.40-2_amd64.deb ...
+#9 9.336 Unpacking libgprofng0:amd64 (2.40-2) ...
+#9 9.480 Selecting previously unselected package libjansson4:amd64.
+#9 9.481 Preparing to unpack .../08-libjansson4_2.14-2_amd64.deb ...
+#9 9.490 Unpacking libjansson4:amd64 (2.14-2) ...
+#9 9.545 Selecting previously unselected package binutils-x86-64-linux-gnu.
+#9 9.546 Preparing to unpack .../09-binutils-x86-64-linux-gnu_2.40-2_amd64.deb ...
+#9 9.555 Unpacking binutils-x86-64-linux-gnu (2.40-2) ...
+#9 9.851 Selecting previously unselected package binutils.
+#9 9.852 Preparing to unpack .../10-binutils_2.40-2_amd64.deb ...
+#9 9.861 Unpacking binutils (2.40-2) ...
+#9 9.944 Selecting previously unselected package libisl23:amd64.
+#9 9.946 Preparing to unpack .../11-libisl23_0.25-1.1_amd64.deb ...
+#9 9.954 Unpacking libisl23:amd64 (0.25-1.1) ...
+#9 10.09 Selecting previously unselected package libmpfr6:amd64.
+#9 10.09 Preparing to unpack .../12-libmpfr6_4.2.0-1_amd64.deb ...
+#9 10.10 Unpacking libmpfr6:amd64 (4.2.0-1) ...
+#9 10.21 Selecting previously unselected package libmpc3:amd64.
+#9 10.21 Preparing to unpack .../13-libmpc3_1.3.1-1_amd64.deb ...
+#9 10.22 Unpacking libmpc3:amd64 (1.3.1-1) ...
+#9 10.28 Selecting previously unselected package cpp-12.
+#9 10.28 Preparing to unpack .../14-cpp-12_12.2.0-14+deb12u1_amd64.deb ...
+#9 10.29 Unpacking cpp-12 (12.2.0-14+deb12u1) ...
+#9 11.08 Selecting previously unselected package cpp.
+#9 11.08 Preparing to unpack .../15-cpp_4%3a12.2.0-3_amd64.deb ...
+#9 11.09 Unpacking cpp (4:12.2.0-3) ...
+#9 11.16 Selecting previously unselected package libbrotli1:amd64.
+#9 11.16 Preparing to unpack .../16-libbrotli1_1.0.9-2+deb12u1_amd64.deb ...
+#9 11.17 Unpacking libbrotli1:amd64 (1.0.9-2+deb12u1) ...
+#9 11.25 Selecting previously unselected package libkrb5support0:amd64.
+#9 11.26 Preparing to unpack .../17-libkrb5support0_1.20.1-2+deb12u5_amd64.deb ...
+#9 11.26 Unpacking libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+#9 11.31 Selecting previously unselected package libk5crypto3:amd64.
+#9 11.31 Preparing to unpack .../18-libk5crypto3_1.20.1-2+deb12u5_amd64.deb ...
+#9 11.31 Unpacking libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+#9 11.35 Selecting previously unselected package libkeyutils1:amd64.
+#9 11.35 Preparing to unpack .../19-libkeyutils1_1.6.3-2_amd64.deb ...
+#9 11.35 Unpacking libkeyutils1:amd64 (1.6.3-2) ...
+#9 11.43 Selecting previously unselected package libkrb5-3:amd64.
+#9 11.43 Preparing to unpack .../20-libkrb5-3_1.20.1-2+deb12u5_amd64.deb ...
+#9 11.44 Unpacking libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+#9 11.55 Selecting previously unselected package libgssapi-krb5-2:amd64.
+#9 11.55 Preparing to unpack .../21-libgssapi-krb5-2_1.20.1-2+deb12u5_amd64.deb ...
+#9 11.56 Unpacking libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...
+#9 11.64 Selecting previously unselected package libsasl2-modules-db:amd64.
+#9 11.64 Preparing to unpack .../22-libsasl2-modules-db_2.1.28+dfsg-10+deb12u1_amd64.deb ...
+#9 11.65 Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...
+#9 11.76 Selecting previously unselected package libsasl2-2:amd64.
+#9 11.76 Preparing to unpack .../23-libsasl2-2_2.1.28+dfsg-10+deb12u1_amd64.deb ...
+#9 11.77 Unpacking libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...
+#9 11.86 Selecting previously unselected package libldap-2.5-0:amd64.
+#9 11.86 Preparing to unpack .../24-libldap-2.5-0_2.5.13+dfsg-5_amd64.deb ...
+#9 11.87 Unpacking libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+#9 11.97 Selecting previously unselected package libnghttp2-14:amd64.
+#9 11.97 Preparing to unpack .../25-libnghttp2-14_1.52.0-1+deb12u3_amd64.deb ...
+#9 11.98 Unpacking libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...
+#9 12.05 Selecting previously unselected package libpsl5:amd64.
+#9 12.05 Preparing to unpack .../26-libpsl5_0.21.2-1_amd64.deb ...
+#9 12.06 Unpacking libpsl5:amd64 (0.21.2-1) ...
+#9 12.14 Selecting previously unselected package librtmp1:amd64.
+#9 12.14 Preparing to unpack .../27-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_amd64.deb ...
+#9 12.15 Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+#9 12.23 Selecting previously unselected package libssh2-1:amd64.
+#9 12.23 Preparing to unpack .../28-libssh2-1_1.10.0-3+deb12u1_amd64.deb ...
+#9 12.24 Unpacking libssh2-1:amd64 (1.10.0-3+deb12u1) ...
+#9 12.33 Selecting previously unselected package libcurl4:amd64.
+#9 12.33 Preparing to unpack .../29-libcurl4_7.88.1-10+deb12u15_amd64.deb ...
+#9 12.34 Unpacking libcurl4:amd64 (7.88.1-10+deb12u15) ...
+#9 12.42 Selecting previously unselected package curl.
+#9 12.42 Preparing to unpack .../30-curl_7.88.1-10+deb12u15_amd64.deb ...
+#9 12.43 Unpacking curl (7.88.1-10+deb12u15) ...
+#9 12.53 Selecting previously unselected package libcc1-0:amd64.
+#9 12.53 Preparing to unpack .../31-libcc1-0_12.2.0-14+deb12u1_amd64.deb ...
+#9 12.54 Unpacking libcc1-0:amd64 (12.2.0-14+deb12u1) ...
+#9 12.61 Selecting previously unselected package libgomp1:amd64.
+#9 12.61 Preparing to unpack .../32-libgomp1_12.2.0-14+deb12u1_amd64.deb ...
+#9 12.62 Unpacking libgomp1:amd64 (12.2.0-14+deb12u1) ...
+#9 12.71 Selecting previously unselected package libitm1:amd64.
+#9 12.72 Preparing to unpack .../33-libitm1_12.2.0-14+deb12u1_amd64.deb ...
+#9 12.72 Unpacking libitm1:amd64 (12.2.0-14+deb12u1) ...
+#9 12.81 Selecting previously unselected package libatomic1:amd64.
+#9 12.81 Preparing to unpack .../34-libatomic1_12.2.0-14+deb12u1_amd64.deb ...
+#9 12.82 Unpacking libatomic1:amd64 (12.2.0-14+deb12u1) ...
+#9 12.89 Selecting previously unselected package libasan8:amd64.
+#9 12.89 Preparing to unpack .../35-libasan8_12.2.0-14+deb12u1_amd64.deb ...
+#9 12.90 Unpacking libasan8:amd64 (12.2.0-14+deb12u1) ...
+#9 13.17 Selecting previously unselected package liblsan0:amd64.
+#9 13.17 Preparing to unpack .../36-liblsan0_12.2.0-14+deb12u1_amd64.deb ...
+#9 13.18 Unpacking liblsan0:amd64 (12.2.0-14+deb12u1) ...
+#9 ...
+
+#11 [sdk 6/6] RUN make -C sputnik-lang -j12 build/sputnik
+#11 0.369 make: Entering directory '/src/sputnik-lang'
+#11 0.437 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c tools/sputnik/main.cpp -o build/obj/tools/sputnik/main.o
+#11 0.451 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c buildsys/build.cpp -o build/obj/buildsys/build.o
+#11 0.466 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c buildsys/entry.cpp -o build/obj/buildsys/entry.o
+#11 0.481 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c bytecode/emitter.cpp -o build/obj/bytecode/emitter.o
+#11 0.497 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c bytecode/format.cpp -o build/obj/bytecode/format.o
+#11 0.512 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c bytecode/graph_linker.cpp -o build/obj/bytecode/graph_linker.o
+#11 0.528 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/ast/expr.cpp -o build/obj/frontend/ast/expr.o
+#11 0.544 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/binder/binder.cpp -o build/obj/frontend/binder/binder.o
+#11 0.559 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/checker/checker.cpp -o build/obj/frontend/checker/checker.o
+#11 0.574 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/hir/hir.cpp -o build/obj/frontend/hir/hir.o
+#11 0.590 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/lexer/lexer.cpp -o build/obj/frontend/lexer/lexer.o
+#11 0.605 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/lexer/token.cpp -o build/obj/frontend/lexer/token.o
+#11 1.392 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/lint/one_liners.cpp -o build/obj/frontend/lint/one_liners.o
+#11 2.038 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/parser/parser.cpp -o build/obj/frontend/parser/parser.o
+#11 2.595 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/pattern/pattern.cpp -o build/obj/frontend/pattern/pattern.o
+#11 3.374 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frontend/templates/templates.cpp -o build/obj/frontend/templates/templates.o
+#11 3.783 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c frozen/image.cpp -o build/obj/frozen/image.o
+#11 4.857 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c optimizer/mir.cpp -o build/obj/optimizer/mir.o
+#11 5.447 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c optimizer/native.cpp -o build/obj/optimizer/native.o
+#11 5.595 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c package/distribution.cpp -o build/obj/package/distribution.o
+#11 6.428 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c package/package.cpp -o build/obj/package/package.o
+#11 7.758 In file included from tools/sputnik/main.cpp:3:
+#11 7.758 In file included from ./buildsys/build.h:3:
+#11 7.758 In file included from ./package/package.h:4:
+#11 7.758 In file included from ./runtime/semver.h:4:
+#11 7.758 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/algorithm:61:
+#11 7.758 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#11 7.758 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<unsigned int>' is deprecated [-Wdeprecated-declarations]
+#11 7.758   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#11 7.758       |                      ^
+#11 7.758 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<unsigned int *, std::vector<unsigned int>>, unsigned int>::_Temporary_buffer' requested here
+#11 7.758  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#11 7.758       |               ^
+#11 7.758 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<unsigned int *, std::vector<unsigned int>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at tools/sputnik/main.cpp:4947:7)>>' requested here
+#11 7.758  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#11 7.758       |                       ^
+#11 7.758 tools/sputnik/main.cpp:4945:8: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<unsigned int *, std::vector<unsigned int>>, (lambda at tools/sputnik/main.cpp:4947:7)>' requested here
+#11 7.758  4945 |   std::stable_sort(
+#11 7.758       |        ^
+#11 7.758 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<unsigned int>' has been explicitly marked deprecated here
+#11 7.758    99 |     _GLIBCXX17_DEPRECATED
+#11 7.758       |     ^
+#11 7.758 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#11 7.758   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#11 7.758       |                                  ^
+#11 7.855 In file included from tools/sputnik/main.cpp:3:
+#11 7.855 In file included from ./buildsys/build.h:3:
+#11 7.855 In file included from ./package/package.h:4:
+#11 7.855 In file included from ./runtime/semver.h:4:
+#11 7.855 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/algorithm:61:
+#11 7.855 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#11 7.855 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<sputnik::bytecode::HandlerEntry>' is deprecated [-Wdeprecated-declarations]
+#11 7.855   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#11 7.855       |                      ^
+#11 7.855 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<sputnik::bytecode::HandlerEntry *, std::vector<sputnik::bytecode::HandlerEntry>>, sputnik::bytecode::HandlerEntry>::_Temporary_buffer' requested here
+#11 7.855  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#11 7.855       |               ^
+#11 7.855 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<sputnik::bytecode::HandlerEntry *, std::vector<sputnik::bytecode::HandlerEntry>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at tools/sputnik/main.cpp:8221:9)>>' requested here
+#11 7.855  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#11 7.855       |                       ^
+#11 7.855 tools/sputnik/main.cpp:8219:10: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<sputnik::bytecode::HandlerEntry *, std::vector<sputnik::bytecode::HandlerEntry>>, (lambda at tools/sputnik/main.cpp:8221:9)>' requested here
+#11 7.855  8219 |     std::stable_sort(
+#11 7.855       |          ^
+#11 7.855 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<sputnik::bytecode::HandlerEntry>' has been explicitly marked deprecated here
+#11 7.855    99 |     _GLIBCXX17_DEPRECATED
+#11 7.855       |     ^
+#11 7.855 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#11 7.855   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#11 7.856       |                                  ^
+#11 8.231 In file included from tools/sputnik/main.cpp:3:
+#11 8.231 In file included from ./buildsys/build.h:3:
+#11 8.231 In file included from ./package/package.h:4:
+#11 8.231 In file included from ./runtime/semver.h:4:
+#11 8.231 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/algorithm:61:
+#11 8.231 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#11 8.231 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<sputnik::bytecode::LineEntry>' is deprecated [-Wdeprecated-declarations]
+#11 8.231   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#11 8.231       |                      ^
+#11 8.231 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<sputnik::bytecode::LineEntry *, std::vector<sputnik::bytecode::LineEntry>>, sputnik::bytecode::LineEntry>::_Temporary_buffer' requested here
+#11 8.231  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#11 8.231       |               ^
+#11 8.231 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<sputnik::bytecode::LineEntry *, std::vector<sputnik::bytecode::LineEntry>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at tools/sputnik/main.cpp:25047:22)>>' requested here
+#11 8.231  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#11 8.231       |                       ^
+#11 8.231 tools/sputnik/main.cpp:25046:10: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<sputnik::bytecode::LineEntry *, std::vector<sputnik::bytecode::LineEntry>>, (lambda at tools/sputnik/main.cpp:25047:22)>' requested here
+#11 8.231  25046 |     std::stable_sort(lines.begin(), lines.end(),
+#11 8.231        |          ^
+#11 8.231 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<sputnik::bytecode::LineEntry>' has been explicitly marked deprecated here
+#11 8.231    99 |     _GLIBCXX17_DEPRECATED
+#11 8.231       |     ^
+#11 8.231 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#11 8.231   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#11 8.231       |                                  ^
+#11 8.682 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c package/registry.cpp -o build/obj/package/registry.o
+#11 9.166 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c package/selection.cpp -o build/obj/package/selection.o
+#11 9.198 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c package/store.cpp -o build/obj/package/store.o
+#11 ...
+
+#9 [runtime 2/8] RUN apt-get update && apt-get install -y --no-install-recommends     ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev     zlib1g-dev libnuma1 libelf1 libdrm2 libdrm-amdgpu1 libpciaccess0     && rm -rf /var/lib/apt/lists/*     && groupadd --gid 1000 sputnik && useradd --uid 1000 --gid 1000 --create-home sputnik     && ! command -v python3 && ! command -v python
+#9 13.34 Selecting previously unselected package libtsan2:amd64.
+#9 13.34 Preparing to unpack .../37-libtsan2_12.2.0-14+deb12u1_amd64.deb ...
+#9 13.35 Unpacking libtsan2:amd64 (12.2.0-14+deb12u1) ...
+#9 14.21 Selecting previously unselected package libubsan1:amd64.
+#9 14.21 Preparing to unpack .../38-libubsan1_12.2.0-14+deb12u1_amd64.deb ...
+#9 14.25 Unpacking libubsan1:amd64 (12.2.0-14+deb12u1) ...
+#9 14.40 Selecting previously unselected package libquadmath0:amd64.
+#9 14.40 Preparing to unpack .../39-libquadmath0_12.2.0-14+deb12u1_amd64.deb ...
+#9 14.42 Unpacking libquadmath0:amd64 (12.2.0-14+deb12u1) ...
+#9 14.48 Selecting previously unselected package libgcc-12-dev:amd64.
+#9 14.48 Preparing to unpack .../40-libgcc-12-dev_12.2.0-14+deb12u1_amd64.deb ...
+#9 14.49 Unpacking libgcc-12-dev:amd64 (12.2.0-14+deb12u1) ...
+#9 14.73 Selecting previously unselected package gcc-12.
+#9 14.74 Preparing to unpack .../41-gcc-12_12.2.0-14+deb12u1_amd64.deb ...
+#9 14.74 Unpacking gcc-12 (12.2.0-14+deb12u1) ...
+#9 15.58 Selecting previously unselected package gcc.
+#9 15.58 Preparing to unpack .../42-gcc_4%3a12.2.0-3_amd64.deb ...
+#9 15.59 Unpacking gcc (4:12.2.0-3) ...
+#9 15.65 Selecting previously unselected package libc-dev-bin.
+#9 15.65 Preparing to unpack .../43-libc-dev-bin_2.36-9+deb12u14_amd64.deb ...
+#9 15.67 Unpacking libc-dev-bin (2.36-9+deb12u14) ...
+#9 15.73 Selecting previously unselected package linux-libc-dev:amd64.
+#9 15.73 Preparing to unpack .../44-linux-libc-dev_6.1.190-1_amd64.deb ...
+#9 15.74 Unpacking linux-libc-dev:amd64 (6.1.190-1) ...
+#9 16.00 Selecting previously unselected package libcrypt-dev:amd64.
+#9 16.00 Preparing to unpack .../45-libcrypt-dev_1%3a4.4.33-2_amd64.deb ...
+#9 16.01 Unpacking libcrypt-dev:amd64 (1:4.4.33-2) ...
+#9 16.08 Selecting previously unselected package libtirpc-common.
+#9 16.08 Preparing to unpack .../46-libtirpc-common_1.3.3+ds-1_all.deb ...
+#9 16.09 Unpacking libtirpc-common (1.3.3+ds-1) ...
+#9 16.16 Selecting previously unselected package libtirpc3:amd64.
+#9 16.17 Preparing to unpack .../47-libtirpc3_1.3.3+ds-1_amd64.deb ...
+#9 16.17 Unpacking libtirpc3:amd64 (1.3.3+ds-1) ...
+#9 16.25 Selecting previously unselected package libnsl2:amd64.
+#9 16.25 Preparing to unpack .../48-libnsl2_1.3.0-2_amd64.deb ...
+#9 16.26 Unpacking libnsl2:amd64 (1.3.0-2) ...
+#9 16.32 Selecting previously unselected package libtirpc-dev:amd64.
+#9 16.32 Preparing to unpack .../49-libtirpc-dev_1.3.3+ds-1_amd64.deb ...
+#9 16.33 Unpacking libtirpc-dev:amd64 (1.3.3+ds-1) ...
+#9 16.40 Selecting previously unselected package libnsl-dev:amd64.
+#9 16.41 Preparing to unpack .../50-libnsl-dev_1.3.0-2_amd64.deb ...
+#9 16.42 Unpacking libnsl-dev:amd64 (1.3.0-2) ...
+#9 16.49 Selecting previously unselected package rpcsvc-proto.
+#9 16.49 Preparing to unpack .../51-rpcsvc-proto_1.4.3-1_amd64.deb ...
+#9 16.50 Unpacking rpcsvc-proto (1.4.3-1) ...
+#9 16.56 Selecting previously unselected package libc6-dev:amd64.
+#9 16.56 Preparing to unpack .../52-libc6-dev_2.36-9+deb12u14_amd64.deb ...
+#9 16.57 Unpacking libc6-dev:amd64 (2.36-9+deb12u14) ...
+#9 16.82 Selecting previously unselected package libstdc++-12-dev:amd64.
+#9 16.83 Preparing to unpack .../53-libstdc++-12-dev_12.2.0-14+deb12u1_amd64.deb ...
+#9 16.84 Unpacking libstdc++-12-dev:amd64 (12.2.0-14+deb12u1) ...
+#9 17.14 Selecting previously unselected package g++-12.
+#9 17.14 Preparing to unpack .../54-g++-12_12.2.0-14+deb12u1_amd64.deb ...
+#9 17.15 Unpacking g++-12 (12.2.0-14+deb12u1) ...
+#9 17.95 Selecting previously unselected package g++.
+#9 17.95 Preparing to unpack .../55-g++_4%3a12.2.0-3_amd64.deb ...
+#9 17.96 Unpacking g++ (4:12.2.0-3) ...
+#9 18.02 Selecting previously unselected package libicu72:amd64.
+#9 18.03 Preparing to unpack .../56-libicu72_72.1-3+deb12u1_amd64.deb ...
+#9 18.04 Unpacking libicu72:amd64 (72.1-3+deb12u1) ...
+#9 18.72 Selecting previously unselected package libxml2:amd64.
+#9 18.72 Preparing to unpack .../57-libxml2_2.9.14+dfsg-1.3~deb12u6_amd64.deb ...
+#9 18.73 Unpacking libxml2:amd64 (2.9.14+dfsg-1.3~deb12u6) ...
+#9 18.85 Selecting previously unselected package libarchive13:amd64.
+#9 18.85 Preparing to unpack .../58-libarchive13_3.6.2-1+deb12u5_amd64.deb ...
+#9 18.86 Unpacking libarchive13:amd64 (3.6.2-1+deb12u5) ...
+#9 18.95 Selecting previously unselected package libarchive-dev:amd64.
+#9 18.95 Preparing to unpack .../59-libarchive-dev_3.6.2-1+deb12u5_amd64.deb ...
+#9 18.96 Unpacking libarchive-dev:amd64 (3.6.2-1+deb12u5) ...
+#9 19.06 Selecting previously unselected package libdrm-common.
+#9 19.06 Preparing to unpack .../60-libdrm-common_2.4.114-1_all.deb ...
+#9 19.07 Unpacking libdrm-common (2.4.114-1) ...
+#9 19.15 Selecting previously unselected package libdrm2:amd64.
+#9 19.15 Preparing to unpack .../61-libdrm2_2.4.114-1+b1_amd64.deb ...
+#9 19.16 Unpacking libdrm2:amd64 (2.4.114-1+b1) ...
+#9 19.24 Selecting previously unselected package libdrm-amdgpu1:amd64.
+#9 19.24 Preparing to unpack .../62-libdrm-amdgpu1_2.4.114-1+b1_amd64.deb ...
+#9 19.25 Unpacking libdrm-amdgpu1:amd64 (2.4.114-1+b1) ...
+#9 19.32 Selecting previously unselected package libelf1:amd64.
+#9 19.32 Preparing to unpack .../63-libelf1_0.188-2.1_amd64.deb ...
+#9 19.33 Unpacking libelf1:amd64 (0.188-2.1) ...
+#9 19.42 Selecting previously unselected package libnuma1:amd64.
+#9 19.42 Preparing to unpack .../64-libnuma1_2.0.16-1_amd64.deb ...
+#9 19.43 Unpacking libnuma1:amd64 (2.0.16-1) ...
+#9 19.50 Selecting previously unselected package libpciaccess0:amd64.
+#9 19.50 Preparing to unpack .../65-libpciaccess0_0.17-2_amd64.deb ...
+#9 19.50 Unpacking libpciaccess0:amd64 (0.17-2) ...
+#9 19.55 Selecting previously unselected package libpkgconf3:amd64.
+#9 19.55 Preparing to unpack .../66-libpkgconf3_1.8.1-1_amd64.deb ...
+#9 19.55 Unpacking libpkgconf3:amd64 (1.8.1-1) ...
+#9 19.59 Selecting previously unselected package libssl-dev:amd64.
+#9 19.59 Preparing to unpack .../67-libssl-dev_3.0.22-1~deb12u2_amd64.deb ...
+#9 19.60 Unpacking libssl-dev:amd64 (3.0.22-1~deb12u2) ...
+#9 19.87 Selecting previously unselected package libyaml-0-2:amd64.
+#9 19.87 Preparing to unpack .../68-libyaml-0-2_0.2.5-1_amd64.deb ...
+#9 19.88 Unpacking libyaml-0-2:amd64 (0.2.5-1) ...
+#9 19.94 Selecting previously unselected package libyaml-dev:amd64.
+#9 19.94 Preparing to unpack .../69-libyaml-dev_0.2.5-1_amd64.deb ...
+#9 19.95 Unpacking libyaml-dev:amd64 (0.2.5-1) ...
+#9 20.02 Selecting previously unselected package pkgconf-bin.
+#9 20.02 Preparing to unpack .../70-pkgconf-bin_1.8.1-1_amd64.deb ...
+#9 20.03 Unpacking pkgconf-bin (1.8.1-1) ...
+#9 20.10 Selecting previously unselected package pkgconf:amd64.
+#9 20.10 Preparing to unpack .../71-pkgconf_1.8.1-1_amd64.deb ...
+#9 20.11 Unpacking pkgconf:amd64 (1.8.1-1) ...
+#9 20.20 Selecting previously unselected package pkg-config:amd64.
+#9 20.20 Preparing to unpack .../72-pkg-config_1.8.1-1_amd64.deb ...
+#9 20.21 Unpacking pkg-config:amd64 (1.8.1-1) ...
+#9 20.31 Selecting previously unselected package tini.
+#9 20.31 Preparing to unpack .../73-tini_0.19.0-1+b3_amd64.deb ...
+#9 20.33 Unpacking tini (0.19.0-1+b3) ...
+#9 20.46 Selecting previously unselected package zlib1g-dev:amd64.
+#9 20.46 Preparing to unpack .../74-zlib1g-dev_1%3a1.2.13.dfsg-1_amd64.deb ...
+#9 20.47 Unpacking zlib1g-dev:amd64 (1:1.2.13.dfsg-1) ...
+#9 20.73 Setting up libpciaccess0:amd64 (0.17-2) ...
+#9 20.80 Setting up libkeyutils1:amd64 (1.6.3-2) ...
+#9 20.84 Setting up libpsl5:amd64 (0.21.2-1) ...
+#9 20.89 Setting up libicu72:amd64 (72.1-3+deb12u1) ...
+#9 20.93 Setting up libyaml-0-2:amd64 (0.2.5-1) ...
+#9 20.98 Setting up libtirpc-common (1.3.3+ds-1) ...
+#9 21.04 Setting up libbrotli1:amd64 (1.0.9-2+deb12u1) ...
+#9 21.09 Setting up binutils-common:amd64 (2.40-2) ...
+#9 21.16 Setting up libssl3:amd64 (3.0.22-1~deb12u2) ...
+#9 21.21 Setting up libnghttp2-14:amd64 (1.52.0-1+deb12u3) ...
+#9 21.26 Setting up linux-libc-dev:amd64 (6.1.190-1) ...
+#9 21.32 Setting up libctf-nobfd0:amd64 (2.40-2) ...
+#9 21.37 Setting up libgomp1:amd64 (12.2.0-14+deb12u1) ...
+#9 21.42 Setting up libjansson4:amd64 (2.14-2) ...
+#9 21.48 Setting up libkrb5support0:amd64 (1.20.1-2+deb12u5) ...
+#9 21.53 Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10+deb12u1) ...
+#9 21.59 Setting up libpkgconf3:amd64 (1.8.1-1) ...
+#9 21.64 Setting up rpcsvc-proto (1.4.3-1) ...
+#9 21.69 Setting up libmpfr6:amd64 (4.2.0-1) ...
+#9 21.75 Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+#9 21.81 Setting up libquadmath0:amd64 (12.2.0-14+deb12u1) ...
+#9 21.87 Setting up libssl-dev:amd64 (3.0.22-1~deb12u2) ...
+#9 21.93 Setting up libmpc3:amd64 (1.3.1-1) ...
+#9 21.98 Setting up libatomic1:amd64 (12.2.0-14+deb12u1) ...
+#9 22.04 Setting up tini (0.19.0-1+b3) ...
+#9 22.10 Setting up pkgconf-bin (1.8.1-1) ...
+#9 22.15 Setting up libk5crypto3:amd64 (1.20.1-2+deb12u5) ...
+#9 22.21 Setting up libsasl2-2:amd64 (2.1.28+dfsg-10+deb12u1) ...
+#9 22.26 Setting up libubsan1:amd64 (12.2.0-14+deb12u1) ...
+#9 22.30 Setting up libnuma1:amd64 (2.0.16-1) ...
+#9 22.34 Setting up libcrypt-dev:amd64 (1:4.4.33-2) ...
+#9 22.38 Setting up libasan8:amd64 (12.2.0-14+deb12u1) ...
+#9 22.42 Setting up libssh2-1:amd64 (1.10.0-3+deb12u1) ...
+#9 22.46 Setting up libkrb5-3:amd64 (1.20.1-2+deb12u5) ...
+#9 22.49 Setting up libtsan2:amd64 (12.2.0-14+deb12u1) ...
+#9 22.52 Setting up libbinutils:amd64 (2.40-2) ...
+#9 22.55 Setting up libisl23:amd64 (0.25-1.1) ...
+#9 22.58 Setting up libc-dev-bin (2.36-9+deb12u14) ...
+#9 22.61 Setting up openssl (3.0.22-1~deb12u2) ...
+#9 22.65 Setting up libdrm-common (2.4.114-1) ...
+#9 22.67 Setting up libelf1:amd64 (0.188-2.1) ...
+#9 22.70 Setting up libxml2:amd64 (2.9.14+dfsg-1.3~deb12u6) ...
+#9 22.73 Setting up libcc1-0:amd64 (12.2.0-14+deb12u1) ...
+#9 22.76 Setting up liblsan0:amd64 (12.2.0-14+deb12u1) ...
+#9 22.79 Setting up libitm1:amd64 (12.2.0-14+deb12u1) ...
+#9 22.82 Setting up libctf0:amd64 (2.40-2) ...
+#9 22.84 Setting up cpp-12 (12.2.0-14+deb12u1) ...
+#9 22.87 Setting up libyaml-dev:amd64 (0.2.5-1) ...
+#9 22.90 Setting up libarchive13:amd64 (3.6.2-1+deb12u5) ...
+#9 22.93 Setting up libldap-2.5-0:amd64 (2.5.13+dfsg-5) ...
+#9 22.96 Setting up pkgconf:amd64 (1.8.1-1) ...
+#9 22.99 Setting up ca-certificates (20250419~deb12u2) ...
+#9 23.10 debconf: unable to initialize frontend: Dialog
+#9 23.10 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#9 23.10 debconf: falling back to frontend: Readline
+#9 23.10 debconf: unable to initialize frontend: Readline
+#9 23.10 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#9 23.10 debconf: falling back to frontend: Teletype
+#9 23.47 Updating certificates in /etc/ssl/certs...
+#9 23.99 148 added, 0 removed; done.
+#9 24.07 Setting up libgprofng0:amd64 (2.40-2) ...
+#9 24.10 Setting up libgcc-12-dev:amd64 (12.2.0-14+deb12u1) ...
+#9 24.12 Setting up libgssapi-krb5-2:amd64 (1.20.1-2+deb12u5) ...
+#9 24.15 Setting up pkg-config:amd64 (1.8.1-1) ...
+#9 24.18 Setting up libdrm2:amd64 (2.4.114-1+b1) ...
+#9 24.21 Setting up libarchive-dev:amd64 (3.6.2-1+deb12u5) ...
+#9 ...
+
+#11 [sdk 6/6] RUN make -C sputnik-lang -j12 build/sputnik
+#11 10.88 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c profile/capabilities.cpp -o build/obj/profile/capabilities.o
+#11 11.59 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c profile/data.cpp -o build/obj/profile/data.o
+#11 11.61 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c profile/effects.cpp -o build/obj/profile/effects.o
+#11 12.36 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c profile/modern.cpp -o build/obj/profile/modern.o
+#11 12.54 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c profile/replay.cpp -o build/obj/profile/replay.o
+#11 13.73 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c profile/wasm_accel.cpp -o build/obj/profile/wasm_accel.o
+#11 14.22 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/concurrency.cpp -o build/obj/runtime/concurrency.o
+#11 14.54 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/config_document.cpp -o build/obj/runtime/config_document.o
+#11 16.22 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/context.cpp -o build/obj/runtime/context.o
+#11 16.52 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/digest.cpp -o build/obj/runtime/digest.o
+#11 16.72 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/errors.cpp -o build/obj/runtime/errors.o
+#11 17.12 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/frozen_image.cpp -o build/obj/runtime/frozen_image.o
+#11 17.34 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/heap.cpp -o build/obj/runtime/heap.o
+#11 17.64 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/http_codec.cpp -o build/obj/runtime/http_codec.o
+#11 17.85 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/io.cpp -o build/obj/runtime/io.o
+#11 18.99 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/macro_expander.cpp -o build/obj/runtime/macro_expander.o
+#11 19.13 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/module_loader.cpp -o build/obj/runtime/module_loader.o
+#11 19.38 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/native_bridge.cpp -o build/obj/runtime/native_bridge.o
+#11 19.54 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/net_http.cpp -o build/obj/runtime/net_http.o
+#11 19.97 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/net_http_server.cpp -o build/obj/runtime/net_http_server.o
+#11 ...
+
+#9 [runtime 2/8] RUN apt-get update && apt-get install -y --no-install-recommends     ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev     zlib1g-dev libnuma1 libelf1 libdrm2 libdrm-amdgpu1 libpciaccess0     && rm -rf /var/lib/apt/lists/*     && groupadd --gid 1000 sputnik && useradd --uid 1000 --gid 1000 --create-home sputnik     && ! command -v python3 && ! command -v python
+#9 24.24 Setting up cpp (4:12.2.0-3) ...
+#9 24.27 Setting up libcurl4:amd64 (7.88.1-10+deb12u15) ...
+#9 24.30 Setting up curl (7.88.1-10+deb12u15) ...
+#9 24.33 Setting up binutils-x86-64-linux-gnu (2.40-2) ...
+#9 24.36 Setting up libdrm-amdgpu1:amd64 (2.4.114-1+b1) ...
+#9 24.38 Setting up libtirpc3:amd64 (1.3.3+ds-1) ...
+#9 24.41 Setting up binutils (2.40-2) ...
+#9 24.44 Setting up libtirpc-dev:amd64 (1.3.3+ds-1) ...
+#9 24.47 Setting up gcc-12 (12.2.0-14+deb12u1) ...
+#9 24.50 Setting up libnsl2:amd64 (1.3.0-2) ...
+#9 24.53 Setting up gcc (4:12.2.0-3) ...
+#9 24.58 Setting up libnsl-dev:amd64 (1.3.0-2) ...
+#9 24.61 Setting up libc6-dev:amd64 (2.36-9+deb12u14) ...
+#9 24.63 Setting up libstdc++-12-dev:amd64 (12.2.0-14+deb12u1) ...
+#9 24.66 Setting up zlib1g-dev:amd64 (1:1.2.13.dfsg-1) ...
+#9 24.69 Setting up g++-12 (12.2.0-14+deb12u1) ...
+#9 24.72 Setting up g++ (4:12.2.0-3) ...
+#9 24.74 update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+#9 24.76 Processing triggers for libc-bin (2.36-9+deb12u14) ...
+#9 24.80 Processing triggers for ca-certificates (20250419~deb12u2) ...
+#9 24.81 Updating certificates in /etc/ssl/certs...
+#9 25.21 0 added, 0 removed; done.
+#9 25.21 Running hooks in /etc/ca-certificates/update.d...
+#9 25.21 done.
+#9 ...
+
+#11 [sdk 6/6] RUN make -C sputnik-lang -j12 build/sputnik
+#11 21.22 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/net_http_transport.cpp -o build/obj/runtime/net_http_transport.o
+#11 21.45 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/numeric.cpp -o build/obj/runtime/numeric.o
+#11 21.64 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/objects.cpp -o build/obj/runtime/objects.o
+#11 22.33 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/reactor.cpp -o build/obj/runtime/reactor.o
+#11 22.95 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/sputnik_ext.cpp -o build/obj/runtime/sputnik_ext.o
+#11 23.01 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_argparser.cpp -o build/obj/runtime/stdlib_argparser.o
+#11 23.57 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_benchmark.cpp -o build/obj/runtime/stdlib_benchmark.o
+#11 23.62 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_bool.cpp -o build/obj/runtime/stdlib_bool.o
+#11 23.89 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_codecs.cpp -o build/obj/runtime/stdlib_codecs.o
+#11 24.04 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_digest.cpp -o build/obj/runtime/stdlib_digest.o
+#11 24.47 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_fs.cpp -o build/obj/runtime/stdlib_fs.o
+#11 26.32 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_io.cpp -o build/obj/runtime/stdlib_io.o
+#11 26.58 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_json.cpp -o build/obj/runtime/stdlib_json.o
+#11 26.84 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_math.cpp -o build/obj/runtime/stdlib_math.o
+#11 27.00 In file included from runtime/stdlib_benchmark.cpp:1:
+#11 27.00 In file included from ./runtime/stdlib_registry.h:16:
+#11 27.00 In file included from ./runtime/io.h:7:
+#11 27.00 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#11 27.00 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#11 27.00 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<Row>' is deprecated [-Wdeprecated-declarations]
+#11 27.00   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#11 27.00       |                      ^
+#11 27.00 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, Row>::_Temporary_buffer' requested here
+#11 27.00  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#11 27.00       |               ^
+#11 27.00 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at runtime/stdlib_benchmark.cpp:1409:26)>>' requested here
+#11 27.00  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#11 27.00       |                       ^
+#11 27.00 runtime/stdlib_benchmark.cpp:1408:14: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, (lambda at runtime/stdlib_benchmark.cpp:1409:26)>' requested here
+#11 27.00  1408 |         std::stable_sort(parsed.begin(), parsed.end(),
+#11 27.00       |              ^
+#11 27.00 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<Row>' has been explicitly marked deprecated here
+#11 27.00    99 |     _GLIBCXX17_DEPRECATED
+#11 27.00       |     ^
+#11 27.00 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#11 27.00   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#11 27.00       |                                  ^
+#11 27.45 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_net.cpp -o build/obj/runtime/stdlib_net.o
+#11 27.46 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_net_http.cpp -o build/obj/runtime/stdlib_net_http.o
+#11 27.53 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_notebook_ui.cpp -o build/obj/runtime/stdlib_notebook_ui.o
+#11 27.88 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_regexp.cpp -o build/obj/runtime/stdlib_regexp.o
+#11 28.20 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_registry.cpp -o build/obj/runtime/stdlib_registry.o
+#11 28.60 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_secure_random.cpp -o build/obj/runtime/stdlib_secure_random.o
+#11 ...
+
+#9 [runtime 2/8] RUN apt-get update && apt-get install -y --no-install-recommends     ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev     zlib1g-dev libnuma1 libelf1 libdrm2 libdrm-amdgpu1 libpciaccess0     && rm -rf /var/lib/apt/lists/*     && groupadd --gid 1000 sputnik && useradd --uid 1000 --gid 1000 --create-home sputnik     && ! command -v python3 && ! command -v python
+#9 DONE 33.0s
+
+#11 [sdk 6/6] RUN make -C sputnik-lang -j12 build/sputnik
+#11 30.16 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_signature.cpp -o build/obj/runtime/stdlib_signature.o
+#11 30.74 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_task.cpp -o build/obj/runtime/stdlib_task.o
+#11 30.78 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_time.cpp -o build/obj/runtime/stdlib_time.o
+#11 31.26 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_url.cpp -o build/obj/runtime/stdlib_url.o
+#11 31.51 1 warning generated.
+#11 31.52 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_uuid.cpp -o build/obj/runtime/stdlib_uuid.o
+#11 31.55 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/stdlib_yaml.cpp -o build/obj/runtime/stdlib_yaml.o
+#11 31.64 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/system.cpp -o build/obj/runtime/system.o
+#11 31.89 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/text.cpp -o build/obj/runtime/text.o
+#11 32.02 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/tls.cpp -o build/obj/runtime/tls.o
+#11 33.82 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/value.cpp -o build/obj/runtime/value.o
+#11 34.11 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/value_display.cpp -o build/obj/runtime/value_display.o
+#11 34.24 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/vm.cpp -o build/obj/runtime/vm.o
+#11 34.31 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/watch.cpp -o build/obj/runtime/watch.o
+#11 34.32 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -std=c++17 -Wall -Wextra -Wpedantic -O2 -MMD -MP -c runtime/world.cpp -o build/obj/runtime/world.o
+#11 34.83 mkdir -p build
+#11 34.83 touch build/.dir
+#11 55.26 3 warnings generated.
+#11 91.61 ar rcs build/libsputnik.a build/obj/buildsys/build.o build/obj/buildsys/entry.o build/obj/bytecode/emitter.o build/obj/bytecode/format.o build/obj/bytecode/graph_linker.o build/obj/frontend/ast/expr.o build/obj/frontend/binder/binder.o build/obj/frontend/checker/checker.o build/obj/frontend/hir/hir.o build/obj/frontend/lexer/lexer.o build/obj/frontend/lexer/token.o build/obj/frontend/lint/one_liners.o build/obj/frontend/parser/parser.o build/obj/frontend/pattern/pattern.o build/obj/frontend/templates/templates.o build/obj/frozen/image.o build/obj/optimizer/mir.o build/obj/optimizer/native.o build/obj/package/distribution.o build/obj/package/package.o build/obj/package/registry.o build/obj/package/selection.o build/obj/package/store.o build/obj/profile/capabilities.o build/obj/profile/data.o build/obj/profile/effects.o build/obj/profile/modern.o build/obj/profile/replay.o build/obj/profile/wasm_accel.o build/obj/runtime/concurrency.o build/obj/runtime/config_document.o build/obj/runtime/context.o build/obj/runtime/digest.o build/obj/runtime/errors.o build/obj/runtime/frozen_image.o build/obj/runtime/heap.o build/obj/runtime/http_codec.o build/obj/runtime/io.o build/obj/runtime/macro_expander.o build/obj/runtime/module_loader.o build/obj/runtime/native_bridge.o build/obj/runtime/net_http.o build/obj/runtime/net_http_server.o build/obj/runtime/net_http_transport.o build/obj/runtime/numeric.o build/obj/runtime/objects.o build/obj/runtime/reactor.o build/obj/runtime/sputnik_ext.o build/obj/runtime/stdlib_argparser.o build/obj/runtime/stdlib_benchmark.o build/obj/runtime/stdlib_bool.o build/obj/runtime/stdlib_codecs.o build/obj/runtime/stdlib_digest.o build/obj/runtime/stdlib_fs.o build/obj/runtime/stdlib_io.o build/obj/runtime/stdlib_json.o build/obj/runtime/stdlib_math.o build/obj/runtime/stdlib_net.o build/obj/runtime/stdlib_net_http.o build/obj/runtime/stdlib_notebook_ui.o build/obj/runtime/stdlib_regexp.o build/obj/runtime/stdlib_registry.o build/obj/runtime/stdlib_secure_random.o build/obj/runtime/stdlib_signature.o build/obj/runtime/stdlib_task.o build/obj/runtime/stdlib_time.o build/obj/runtime/stdlib_url.o build/obj/runtime/stdlib_uuid.o build/obj/runtime/stdlib_yaml.o build/obj/runtime/system.o build/obj/runtime/text.o build/obj/runtime/tls.o build/obj/runtime/value.o build/obj/runtime/value_display.o build/obj/runtime/vm.o build/obj/runtime/watch.o build/obj/runtime/world.o
+#11 92.22 clang++-19 -std=c++17 -Wall -Wextra -Wpedantic -O2 build/obj/tools/sputnik/main.o build/libsputnik.a -L/usr/lib/x86_64-linux-gnu -lssl -lcrypto -L/opt/pcre2/lib -lpcre2-8 -L/usr/lib/x86_64-linux-gnu -lyaml  -larchive -lz -pthread -Wl,--export-dynamic -ldl -o build/sputnik
+#11 92.65 make: Leaving directory '/src/sputnik-lang'
+#11 DONE 93.2s
+
+#12 [build 1/6] COPY sqlite3/ sqlite3/
+#12 DONE 0.4s
+
+#13 [build 2/6] COPY orm/ orm/
+#13 DONE 0.2s
+
+#14 [build 3/6] COPY orbit/ orbit/
+#14 DONE 0.2s
+
+#15 [build 4/6] COPY plot/ plot/
+#15 DONE 0.2s
+
+#16 [build 5/6] COPY sputnik-notebook/ sputnik-notebook/
+#16 DONE 0.4s
+
+#17 [build 6/6] RUN --mount=type=cache,target=/src/sputnik-notebook/.build/native-runtime     SPUTNIK_NATIVE_RT_CACHE=/src/sputnik-notebook/.build/native-runtime     make -C sputnik-notebook -j12 remote-core
+#17 0.403 make: Entering directory '/src/sputnik-notebook'
+#17 0.435 make -C ../sputnik-lang BUILD_DIR="build" runtime
+#17 0.437 make[1]: Entering directory '/src/sputnik-lang'
+#17 0.499 make[1]: Nothing to be done for 'runtime'.
+#17 0.499 make[1]: Leaving directory '/src/sputnik-lang'
+#17 0.515 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c packages/notebook-core/native/notebook.cpp -o build/core/obj/packages/notebook-core/native/notebook.o
+#17 0.531 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c packages/notebook-core/native/execution.cpp -o build/core/obj/packages/notebook-core/native/execution.o
+#17 0.546 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c packages/notebook-core/native/worker.cpp -o build/core/obj/packages/notebook-core/native/worker.o
+#17 0.562 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c packages/notebook-core/native/protocol.cpp -o build/core/obj/packages/notebook-core/native/protocol.o
+#17 0.577 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c packages/notebook-core/native/process.cpp -o build/core/obj/packages/notebook-core/native/process.o
+#17 0.593 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c packages/notebook-core/native/presentation.cpp -o build/core/obj/packages/notebook-core/native/presentation.o
+#17 0.608 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/tools/isputnik/session.cpp -o build/core/obj/sputnik/tools/isputnik/session.o
+#17 0.623 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/tools/isputnik/project_session.cpp -o build/core/obj/sputnik/tools/isputnik/project_session.o
+#17 0.638 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/tools/isputnik/tabs.cpp -o build/core/obj/sputnik/tools/isputnik/tabs.o
+#17 0.653 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/tools/isputnik/environment.cpp -o build/core/obj/sputnik/tools/isputnik/environment.o
+#17 0.668 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/tools/isputnik/dependencies.cpp -o build/core/obj/sputnik/tools/isputnik/dependencies.o
+#17 0.683 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/tools/isputnik/activity.cpp -o build/core/obj/sputnik/tools/isputnik/activity.o
+#17 1.379 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/tools/isputnik/dispatch.cpp -o build/core/obj/sputnik/tools/isputnik/dispatch.o
+#17 1.394 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/project.cpp -o build/core/obj/sputnik/notebook/project.o
+#17 2.755 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/project_json.cpp -o build/core/obj/sputnik/notebook/project_json.o
+#17 3.342 ../sputnik-lang/tools/isputnik/tabs.cpp:272:121: warning: captured structured bindings are a C++20 extension [-Wc++20-extensions]
+#17 3.342   272 |     const auto found = std::find_if(definitions.begin(), definitions.end(), [&](const auto &input) { return input.id == id; });
+#17 3.342       |                                                                                                                         ^
+#17 3.342 ../sputnik-lang/tools/isputnik/tabs.cpp:271:21: note: 'id' declared here
+#17 3.342   271 |   for (const auto &[id, json] : values) {
+#17 3.342       |                     ^
+#17 3.390 packages/notebook-core/native/execution.cpp:185:138: warning: captured structured bindings are a C++20 extension [-Wc++20-extensions]
+#17 3.390   185 |     if (!id.empty() && id[0] != '\0' && std::none_of(document.inputs.begin(), document.inputs.end(), [&](const auto &v) { return v.id == id; })) {
+#17 3.390       |                                                                                                                                          ^
+#17 3.390 packages/notebook-core/native/execution.cpp:184:49: note: 'id' declared here
+#17 3.390   184 |   if (session.project_inputs) for (const auto &[id, value] : *session.project_inputs)
+#17 3.390       |                                                 ^
+#17 3.393 packages/notebook-core/native/execution.cpp:187:53: warning: missing field 'minimum' initializer [-Wmissing-field-initializers]
+#17 3.393   187 |       document.inputs.push_back({id, id, type, value});
+#17 3.393       |                                                     ^
+#17 4.654 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/model.cpp -o build/core/obj/sputnik/notebook/model.o
+#17 4.824 In file included from packages/notebook-core/native/worker.cpp:2:
+#17 4.824 In file included from packages/notebook-core/include/notebook/core/worker/telemetry.h:2:
+#17 4.824 In file included from ../sputnik-lang/runtime/context.h:3:
+#17 4.824 In file included from ../sputnik-lang/runtime/concurrency.h:3:
+#17 4.824 In file included from ../sputnik-lang/runtime/value.h:7:
+#17 4.824 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#17 4.824 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#17 4.824 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<sputnik::runtime::RuntimeTextOutputEvent>' is deprecated [-Wdeprecated-declarations]
+#17 4.824   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#17 4.824       |                      ^
+#17 4.824 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<sputnik::runtime::RuntimeTextOutputEvent *, std::vector<sputnik::runtime::RuntimeTextOutputEvent>>, sputnik::runtime::RuntimeTextOutputEvent>::_Temporary_buffer' requested here
+#17 4.824  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#17 4.824       |               ^
+#17 4.824 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<sputnik::runtime::RuntimeTextOutputEvent *, std::vector<sputnik::runtime::RuntimeTextOutputEvent>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at packages/notebook-core/native/worker.cpp:241:66)>>' requested here
+#17 4.824  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#17 4.824       |                       ^
+#17 4.824 packages/notebook-core/native/worker.cpp:241:14: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<sputnik::runtime::RuntimeTextOutputEvent *, std::vector<sputnik::runtime::RuntimeTextOutputEvent>>, (lambda at packages/notebook-core/native/worker.cpp:241:66)>' requested here
+#17 4.824   241 |         std::stable_sort(cell.output.begin(), cell.output.end(), [](const auto &a, const auto &b) { return a.order < b.order; });
+#17 4.824       |              ^
+#17 4.824 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<sputnik::runtime::RuntimeTextOutputEvent>' has been explicitly marked deprecated here
+#17 4.824    99 |     _GLIBCXX17_DEPRECATED
+#17 4.824       |     ^
+#17 4.824 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#17 4.824   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#17 4.824       |                                  ^
+#17 5.377 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/analysis.cpp -o build/core/obj/sputnik/notebook/analysis.o
+#17 5.506 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/dependency_graph.cpp -o build/core/obj/sputnik/notebook/dependency_graph.o
+#17 6.863 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/scheduler.cpp -o build/core/obj/sputnik/notebook/scheduler.o
+#17 6.881 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/slot_table.cpp -o build/core/obj/sputnik/notebook/slot_table.o
+#17 7.773 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/kernel.cpp -o build/core/obj/sputnik/notebook/kernel.o
+#17 8.023 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/vm_cell_executor.cpp -o build/core/obj/sputnik/notebook/vm_cell_executor.o
+#17 8.184 2 warnings generated.
+#17 8.198 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/compiler.cpp -o build/core/obj/sputnik/notebook/compiler.o
+#17 9.212 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -DSPUTNIK_NOTEBOOK_PLOT -std=c++17 -Wall -Wextra -Wpedantic -O2  -MMD -MP -c ../sputnik-lang/notebook/renderers.cpp -o build/core/obj/sputnik/notebook/renderers.o
+#17 9.332 cc -I../sputnik-lang -std=c11 -O2  -MMD -MP -c ../plot/native/plot_png.c -o build/core/plot_png.o
+#17 9.395 make -C ../sputnik-lang BUILD_DIR="build" "build/sputnik"
+#17 9.396 make[1]: Entering directory '/src/sputnik-lang'
+#17 9.461 make[1]: 'build/sputnik' is up to date.
+#17 9.461 make[1]: Leaving directory '/src/sputnik-lang'
+#17 9.464 SPUTNIK_NATIVE_CXX="clang++-19" "/src/sputnik-lang/build/sputnik" build tools/notebook-remote/sputnik.build.json --target native --require-full-native --out-dir "/src/sputnik-notebook/build/remote-native" --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant net.listen --grant net.connect --grant random.secure --grant process.spawn
+#17 11.35 1 warning generated.
+#17 13.72 1 warning generated.
+#17 17.04 ar rcs build/core/libNotebookCore.a build/core/obj/packages/notebook-core/native/notebook.o build/core/obj/packages/notebook-core/native/execution.o build/core/obj/packages/notebook-core/native/worker.o build/core/obj/packages/notebook-core/native/protocol.o build/core/obj/packages/notebook-core/native/process.o build/core/obj/packages/notebook-core/native/presentation.o build/core/obj/sputnik/tools/isputnik/session.o build/core/obj/sputnik/tools/isputnik/project_session.o build/core/obj/sputnik/tools/isputnik/tabs.o build/core/obj/sputnik/tools/isputnik/environment.o build/core/obj/sputnik/tools/isputnik/dependencies.o build/core/obj/sputnik/tools/isputnik/activity.o build/core/obj/sputnik/tools/isputnik/dispatch.o build/core/obj/sputnik/notebook/project.o build/core/obj/sputnik/notebook/project_json.o build/core/obj/sputnik/notebook/model.o build/core/obj/sputnik/notebook/analysis.o build/core/obj/sputnik/notebook/dependency_graph.o build/core/obj/sputnik/notebook/scheduler.o build/core/obj/sputnik/notebook/slot_table.o build/core/obj/sputnik/notebook/kernel.o build/core/obj/sputnik/notebook/vm_cell_executor.o build/core/obj/sputnik/notebook/compiler.o build/core/obj/sputnik/notebook/renderers.o build/core/plot_png.o
+#17 17.17 clang++-19 -I. -I/usr/include '-DSPUTNIK_OPENSSL_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_OPENSSL_LIB_DIR="/usr/lib/x86_64-linux-gnu"' -I/opt/pcre2/include '-DSPUTNIK_PCRE2_INCLUDE_DIR="/opt/pcre2/include"' '-DSPUTNIK_PCRE2_LIB_DIR="/opt/pcre2/lib"' -I/usr/include '-DSPUTNIK_YAML_INCLUDE_DIR="/usr/include"' '-DSPUTNIK_YAML_LIB_DIR="/usr/lib/x86_64-linux-gnu"'  -DSPUTNIK_ALLOCATOR=\"system\" -DSPUTNIK_VALUE_REPR_TAGGED -I../sputnik-lang '-DSPUTNIK_SOURCE_ROOT="/src/sputnik-lang"' -I. -Ipackages/notebook-core/include -std=c++17 -Wall -Wextra -Wpedantic -O2 tools/notebook-worker/main.cpp build/core/libNotebookCore.a /src/sputnik-lang/build/libsputnik.a -L/usr/lib/x86_64-linux-gnu -lssl -lcrypto -L/opt/pcre2/lib -lpcre2-8 -L/usr/lib/x86_64-linux-gnu -lyaml  -larchive -lz -pthread -Wl,--export-dynamic -ldl -pthread -o build/sputnik-notebook-worker.tmp
+#17 17.71 mv -f build/sputnik-notebook-worker.tmp build/sputnik-notebook-worker
+#17 127.9 In file included from /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1:
+#17 127.9 In file included from /src/sputnik-lang/runtime/stdlib_registry.h:16:
+#17 127.9 In file included from /src/sputnik-lang/runtime/io.h:7:
+#17 127.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#17 127.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#17 127.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<Row>' is deprecated [-Wdeprecated-declarations]
+#17 127.9   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#17 127.9       |                      ^
+#17 127.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, Row>::_Temporary_buffer' requested here
+#17 127.9  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#17 127.9       |               ^
+#17 127.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1409:26)>>' requested here
+#17 127.9  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#17 127.9       |                       ^
+#17 127.9 /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1408:14: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, (lambda at /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1409:26)>' requested here
+#17 127.9  1408 |         std::stable_sort(parsed.begin(), parsed.end(),
+#17 127.9       |              ^
+#17 127.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<Row>' has been explicitly marked deprecated here
+#17 127.9    99 |     _GLIBCXX17_DEPRECATED
+#17 127.9       |     ^
+#17 127.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#17 127.9   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#17 127.9       |                                  ^
+#17 132.6 1 warning generated.
+#17 165.9 In file included from /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:3:
+#17 165.9 In file included from /src/sputnik-lang/runtime/sputnik_ext_runtime.h:16:
+#17 165.9 In file included from /src/sputnik-lang/runtime/stdlib_registry.h:16:
+#17 165.9 In file included from /src/sputnik-lang/runtime/io.h:7:
+#17 165.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#17 165.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>' is deprecated [-Wdeprecated-declarations]
+#17 165.9   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#17 165.9       |                      ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue> *, std::vector<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>>, std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>::_Temporary_buffer' requested here
+#17 165.9  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#17 165.9       |               ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue> *, std::vector<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:105196:50)>>' requested here
+#17 165.9  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#17 165.9       |                       ^
+#17 165.9 /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:105196:10: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue> *, std::vector<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>>, (lambda at /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:105196:50)>' requested here
+#17 165.9  105196 |     std::stable_sort(keyed.begin(), keyed.end(), [&](const auto &left,
+#17 165.9         |          ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>' has been explicitly marked deprecated here
+#17 165.9    99 |     _GLIBCXX17_DEPRECATED
+#17 165.9       |     ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#17 165.9   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#17 165.9       |                                  ^
+#17 165.9 In file included from /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:3:
+#17 165.9 In file included from /src/sputnik-lang/runtime/sputnik_ext_runtime.h:16:
+#17 165.9 In file included from /src/sputnik-lang/runtime/stdlib_registry.h:16:
+#17 165.9 In file included from /src/sputnik-lang/runtime/io.h:7:
+#17 165.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#17 165.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<(anonymous namespace)::NativeValue>' is deprecated [-Wdeprecated-declarations]
+#17 165.9   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#17 165.9       |                      ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<(anonymous namespace)::NativeValue *, std::vector<(anonymous namespace)::NativeValue>>, (anonymous namespace)::NativeValue>::_Temporary_buffer' requested here
+#17 165.9  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#17 165.9       |               ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<(anonymous namespace)::NativeValue *, std::vector<(anonymous namespace)::NativeValue>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:105204:50)>>' requested here
+#17 165.9  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#17 165.9       |                       ^
+#17 165.9 /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:105204:10: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<(anonymous namespace)::NativeValue *, std::vector<(anonymous namespace)::NativeValue>>, (lambda at /src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp:105204:50)>' requested here
+#17 165.9  105204 |     std::stable_sort(items.begin(), items.end(), [&](const NativeValue &left,
+#17 165.9         |          ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<(anonymous namespace)::NativeValue>' has been explicitly marked deprecated here
+#17 165.9    99 |     _GLIBCXX17_DEPRECATED
+#17 165.9       |     ^
+#17 165.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#17 165.9   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#17 165.9       |                                  ^
+#17 177.2 2 warnings generated.
+#17 365.6 {
+#17 365.6   "schema": "sputnik.build.result.v2",
+#17 365.6   "status": "ok",
+#17 365.6   "name": "notebook.remote.main",
+#17 365.6   "root": "notebook.remote.main",
+#17 365.6   "target": "native",
+#17 365.6   "inputs": ["/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/environment.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/grants.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/presentation.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/process.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/protocol.h","/src/sputnik-notebook/packages/notebook-core/native/bundle.cpp","/src/sputnik-notebook/packages/notebook-core/native/host.cpp","/src/sputnik-notebook/packages/notebook-core/native/presentation.cpp","/src/sputnik-notebook/packages/notebook-core/native/process.cpp","/src/sputnik-notebook/packages/notebook-core/native/protocol.cpp","/src/sputnik-notebook/packages/notebook-core/sputnik.build.yaml","/src/sputnik-notebook/packages/notebook-core/src/notebook/core.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/client.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/common.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/dependencies.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/environments.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/host.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/policy.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/services.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/storage.s","/src/sputnik-notebook/tools/notebook-remote/client.s","/src/sputnik-notebook/tools/notebook-remote/common.s","/src/sputnik-notebook/tools/notebook-remote/local_dependencies.s","/src/sputnik-notebook/tools/notebook-remote/main.s","/src/sputnik-notebook/tools/notebook-remote/server.s","/src/sputnik-notebook/tools/notebook-remote/service.s","/src/sqlite3/native/sqlite3.c","/src/sqlite3/native/sqlite3.h","/src/sqlite3/native/sqlite3_ext.c","/src/sqlite3/sputnik.build.yaml","/src/sqlite3/src/sqlite3.s"],
+#17 365.6   "out_dir": "/src/sputnik-notebook/build/remote-native",
+#17 365.6   "cache_dir": "/src/sputnik-notebook/build/remote-native/.cache",
+#17 365.6   "native_output": "/src/sputnik-notebook/build/remote-native/notebook.remote.main",
+#17 365.6   "native_backend": "cpp-bytecode-direct-v1",
+#17 365.6   "native_hash": "21e540cec7e560bbaec7d0d696f7cf76ad51b1fd58b7b383df7eb3aaa72998f0",
+#17 365.6   "native_source": "/src/sputnik-notebook/build/remote-native/notebook.remote.main.native.cpp",
+#17 365.6   "native_cxx": "clang++-19",
+#17 365.6   "native_bytecode_fallback": false,
+#17 365.6   "native_graph_module_count": 16,
+#17 365.6   "native_graph_code_count": 1441,
+#17 365.6   "native_graph_native_code_count": 1441,
+#17 365.6   "native_graph_vm_fallback_code_count": 0,
+#17 365.6   "native_graph_fallback_code_count": 0,
+#17 365.6   "native_binary_size_bytes": 27604328,
+#17 365.6   "native_graph_body_coverage_full": true,
+#17 365.6   "native_graph_full_coverage": true,
+#17 365.6   "native_graph_runtime_bridge": false,
+#17 365.6   "native_graph_runtime_bridge_kind": "",
+#17 365.6   "native_graph_vm_independent": true,
+#17 365.6   "native_extensions": [
+#17 365.6     {"name":"notebook_core_host","sputnik_version":"1.0.0","target_triple":"x86_64-unknown-linux","native_source_sha256":"sha256:f3d6cf0106ee6190576defb9565d00a85490c291464d02e483a660cbafbebc51","exported_symbol_sha256":"sha256:8907ba297b32a3c2983824f2e291ecd3770d66b434a4b98b0d17d620943d6f37","types":[{"sputnik":"notebook.core.host.ServiceProcess","tag":"notebook.core.ServiceProcess","ownership":"owned","destructor":"nb_core_service_process_free"},{"sputnik":"notebook.core.host.ServiceSignals","tag":"notebook.core.ServiceSignals","ownership":"owned","destructor":"nb_core_service_signals_free"},{"sputnik":"notebook.core.host.Worker","tag":"notebook.core.Worker","ownership":"owned","destructor":"nb_core_worker_free"},{"sputnik":"sqlite3.Conn","tag":"sqlite3.Conn","ownership":"owned","destructor":"amsq_conn_free"},{"sputnik":"sqlite3.LeaseConn","tag":"sqlite3.LeaseConn","ownership":"collected","destructor":"amsq_lease_conn_free"},{"sputnik":"sqlite3.PoolCore","tag":"sqlite3.PoolCore","ownership":"collected","destructor":"amsq_pool_core_free"},{"sputnik":"sqlite3.Stmt","tag":"sqlite3.Stmt","ownership":"owned","destructor":"amsq_stmt_free"}],"errors":[{"name":"Sqlite3.BindError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.BusyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ConstraintError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.CorruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.Error","parent":"NativeError","default_message":"","default_exit_code":""},{"name":"Sqlite3.InterruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonbUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.LockedError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.MisuseError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.OpenError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolClosedError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolLeaseError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolTimeoutError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PrepareError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.RangeError","parent":"Sqlite3.BindError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ReadOnlyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.StepError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.TransactionError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""}]},
+#17 365.6     {"name":"sqlite3","sputnik_version":"1.0.0","target_triple":"x86_64-unknown-linux","native_source_sha256":"sha256:d55625190d6bc2d7de0d3065ffeeed9c251892e605cf814f4b0afb7a18db7aac","exported_symbol_sha256":"sha256:3acd6904e20120582e597ea5f33bc5020ed6b308771d73be03cf96b4a3c2ad41","types":[],"errors":[]}
+#17 365.6   ],
+#17 365.6   "profiles": {
+#17 365.6     "required": ["core.v1"],
+#17 365.6     "optional": [],
+#17 365.6     "forbidden": []
+#17 365.6   },
+#17 365.6   "artifacts": [
+#17 365.6     {"name":"notebook.remote.main","path":"/src/sputnik-notebook/tools/notebook-remote/main.s","output":"/src/sputnik-notebook/build/remote-native/notebook.remote.main.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.main-bd40de7c27e7f76f1ac4a84bef057acc74f050b55efd93773bf5b9d4f168fdde.sputnikbc","cache_key":"bd40de7c27e7f76f1ac4a84bef057acc74f050b55efd93773bf5b9d4f168fdde","source_hash":"8eb27677ef701222a6907cba2da0dac0b58782143af35c924465e872ed8834e6","artifact_hash":"4166778f1191caa3685c14d24bf7862a73b718535349f051bc8a83df6143ea08","abi_hash":"8615db4c15df3c0236ac8f7afc043e55d41619cebba47ad6ee2ebbd679d340f1","native_output":"/src/sputnik-notebook/build/remote-native/notebook.remote.main","native_hash":"21e540cec7e560bbaec7d0d696f7cf76ad51b1fd58b7b383df7eb3aaa72998f0","native_backend":"cpp-bytecode-direct-v1","native_eligible":true,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":40131,"native_bytes":27604328},
+#17 365.6     {"name":"notebook.remote.server","path":"/src/sputnik-notebook/tools/notebook-remote/server.s","output":"/src/sputnik-notebook/build/remote-native/notebook.remote.server.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.server-600710b608282feb475bfe3b601d25f339ad739e97e35f674f84c7c67314a898.sputnikbc","cache_key":"600710b608282feb475bfe3b601d25f339ad739e97e35f674f84c7c67314a898","source_hash":"7b1b036c51ab6ab3a273f065f8415e568f86b69b049511c04dee4bf8d003913e","artifact_hash":"36d3ab64a5b8268282c8af7035206f7f487f6e135d78c74941df042b061b31a8","abi_hash":"38978ebb977d98ad27dd54826c7acebcfbf3d7b394f296198670d4f3e05a0346","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":190381,"native_bytes":0},
+#17 365.6     {"name":"notebook.remote.client","path":"/src/sputnik-notebook/tools/notebook-remote/client.s","output":"/src/sputnik-notebook/build/remote-native/notebook.remote.client.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.client-8b6ee59cd7ef8a7943ca7aa3fb94212e725147ab9581af3882f2d1e1556a0d74.sputnikbc","cache_key":"8b6ee59cd7ef8a7943ca7aa3fb94212e725147ab9581af3882f2d1e1556a0d74","source_hash":"c48d10951ff96a548f39ec52a86e4b62c63892fb8110f67723e141e72dd95f6a","artifact_hash":"1525a2a84fa692462445f80e57323e12c9b86e46d0729c91b5a3887cd8997bb0","abi_hash":"9f5c7801de803a5ab565922283b854068de5d51b77c0be2a8afdbb70c20cc4b6","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":181766,"native_bytes":0},
+#17 365.6     {"name":"notebook.remote.local_dependencies","path":"/src/sputnik-notebook/tools/notebook-remote/local_dependencies.s","output":"/src/sputnik-notebook/build/remote-native/notebook.remote.local_dependencies.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.local_dependencies-50c1a3cd96f5fe0b0a8232c405aab2df16f5c778668f57654879281562f2b379.sputnikbc","cache_key":"50c1a3cd96f5fe0b0a8232c405aab2df16f5c778668f57654879281562f2b379","source_hash":"df17bd9d7db952059014dc7676c72468625efc43e295d662fa4ff82eef101e24","artifact_hash":"9788f17fcb8c899bc10066783789f68f74deb44426ab9fae6bd6a4154c478536","abi_hash":"f29051c1cdee1be1f86f32591161524574017b0a02cd8a5ee9f9d8f0b1f540d8","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":34502,"native_bytes":0},
+#17 365.6     {"name":"notebook.remote.service","path":"/src/sputnik-notebook/tools/notebook-remote/service.s","output":"/src/sputnik-notebook/build/remote-native/notebook.remote.service.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.service-c62887865105b9cc20b772f8bc693625a6ea612e08d42fd282fa1cb7963374f0.sputnikbc","cache_key":"c62887865105b9cc20b772f8bc693625a6ea612e08d42fd282fa1cb7963374f0","source_hash":"d264644670cb21a6aeea9d64e9ca96cb3b79c1dfc3a6348966bac319f3d96c1e","artifact_hash":"69c5733a2249c28b018de705c27633b160d1a4412b1417850efad90922731b91","abi_hash":"15666e09be2a41139849fb36d6e0bd7f48ed859ec70e9fffcb3648872776bbc2","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":77865,"native_bytes":0},
+#17 365.6     {"name":"notebook.remote.common","path":"/src/sputnik-notebook/tools/notebook-remote/common.s","output":"/src/sputnik-notebook/build/remote-native/notebook.remote.common.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.remote.common-caaca6270b445c63dce19068e9d61d63e6561d2e20e8b6e54111b80ffdfe25fd.sputnikbc","cache_key":"caaca6270b445c63dce19068e9d61d63e6561d2e20e8b6e54111b80ffdfe25fd","source_hash":"531af475c2579dc28ce3290b5b00feab88660146ffe201d64b9a04715d4173db","artifact_hash":"77779965a1c58728f3e260ad64210b02df16872f8e20cdec02178958b4e257e5","abi_hash":"b674898a204c2ea156d98ef126cd6dca81c7d4a206326e56f99ed65fbe3a46e7","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":9415,"native_bytes":0},
+#17 365.6     {"name":"notebook.core","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core-3866f76e4a9465f1fa742ead1b2281f8fe6e9cc75926dfd8144c440fe1f21dbb.sputnikbc","cache_key":"3866f76e4a9465f1fa742ead1b2281f8fe6e9cc75926dfd8144c440fe1f21dbb","source_hash":"aa0a24d069469504892fe7a18c811c13943bef36975479ae7490c2d1a531e494","artifact_hash":"98e803936e64c5093e1160020dc8ff8da322a3fe59f224251f4af965986c2e2f","abi_hash":"3f6ffc1749d42318f57a89e40b09224b0535ad1b78ef41766a8f30f16e0d6d07","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":1586136,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.common","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/common.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.common.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.common-1f30feb886bc71effc0c62b2f69eac1b1e0bd49ef9d6dd878c8140c3a7608e2a.sputnikbc","cache_key":"1f30feb886bc71effc0c62b2f69eac1b1e0bd49ef9d6dd878c8140c3a7608e2a","source_hash":"dae39e012c069eae3b446b42926a3ba27b55086f61fd7cc5d74aa744ba391912","artifact_hash":"9f536bf09f07b6056421200540ed407222049ddf53f08f23d57b646e4cda8d20","abi_hash":"a4265e362ae0b0a54d388cf86fb43c11b1305cf36c590194884e7f6160200e57","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":70039,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.host","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/host.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.host.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.host-10ed27836b800685b6f192dd7e06377954efff82f6f8ad7585603930213e5d09.sputnikbc","cache_key":"10ed27836b800685b6f192dd7e06377954efff82f6f8ad7585603930213e5d09","source_hash":"e75113d73b935d1f9027127788fdd5356909f5cdea51cfd2bed1a9dd36a0da99","artifact_hash":"75b3299d429507a513b0592063ac60f1f318fefd7f7fbc9fab8e3ccf66e0fffa","abi_hash":"7016f0561c12d2e8a362719668613308e212dbd4ac409c820e31a17a9e2957af","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":55914,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.client","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/client.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.client.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.client-b7fb0c7e4a8fe17c280f6f78891990990938c9b0381c6a33f908f4118f9c7954.sputnikbc","cache_key":"b7fb0c7e4a8fe17c280f6f78891990990938c9b0381c6a33f908f4118f9c7954","source_hash":"1ab447d24dabc55984e28fd8708a0d4b03b5189aa136d6e6a8af35948250730e","artifact_hash":"fd5f2ade7ffbf55f0c7cb23b92e22822286933679e685d673d55d9be62b83512","abi_hash":"91e885b7e99e89e1cb21d1e38c32e26623b33fa80d43753247e3672207a7dd60","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":37768,"native_bytes":0},
+#17 365.6     {"name":"sqlite3","path":"/src/sqlite3/src/sqlite3.s","output":"/src/sputnik-notebook/build/remote-native/sqlite3.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/sqlite3-a17eafedafbbe36ef6f797e111d04caf2d775323f32fdd5ddcdb5c3c5c3831b3.sputnikbc","cache_key":"a17eafedafbbe36ef6f797e111d04caf2d775323f32fdd5ddcdb5c3c5c3831b3","source_hash":"748f79a5b6aa39b35830efaa99f57d355b27feeb3e9f6556499505daa563c43a","artifact_hash":"7bb5ccff91162307b1b631be3a3cb31199db0bd0f864461845f4140e1cf0b169","abi_hash":"3348d9ef6f1c4b390eba439945496262731d6eeba466ef86b6424d33efc5399e","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":742178,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.environments","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/environments.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.environments.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.environments-bc92aadbe267cc52a85178375a56f72b05dbde3af2e1e5adac888f319fa98579.sputnikbc","cache_key":"bc92aadbe267cc52a85178375a56f72b05dbde3af2e1e5adac888f319fa98579","source_hash":"461d2ec9e327e6b8c6f9f4d5bf5b16d5c5f2b8aca601191d2bd373e6df663e43","artifact_hash":"670f5f1727862cf937a143f5bcc6ab0529ab31e9aa911edb565ce524d42cf526","abi_hash":"4b1d8aa7d09abe95827a090a5c3f655baa2870516250346efbffab2dd4a56af4","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":240268,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.dependencies","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/dependencies.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.dependencies.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.dependencies-c7c1ee01635d8c0a0448e82248991d32ba848f536b26012de141be924e73266d.sputnikbc","cache_key":"c7c1ee01635d8c0a0448e82248991d32ba848f536b26012de141be924e73266d","source_hash":"3f6b6cbd6bf1d91edce0ccf55655bd0a7a0274fe8deac3600a3fc0bfb85e4c8a","artifact_hash":"97f6abfea185f903fc14cf695ad6c809f3ba6d7eb29f190f238889ac3a26285d","abi_hash":"20d7b0dcdcfb3407766273f94798ff71f92255ea2e889575f2727e6924b8b1cc","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":362323,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.services","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/services.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.services.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.services-6cf4b2b6d1099c87b5d56b0729797cfbd660791b6c54a7093d57c27217f3b2cc.sputnikbc","cache_key":"6cf4b2b6d1099c87b5d56b0729797cfbd660791b6c54a7093d57c27217f3b2cc","source_hash":"e3fc2cd0406b9f3c7d4e6d5e21054a31d2d25d33b89c2d2031c427232fdafbdd","artifact_hash":"56353c47fb83343b01b3070a43fe4408367b94a033a008173847d49f8c67f1eb","abi_hash":"4dd2b1dac3ae5d0261310622f18fadced1e86cc09ad818e0bfd9cc1604192e33","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":283645,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.storage","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/storage.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.storage.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.storage-9a63d9ae7557cabca6d9e08fdccc918058d8b93b7980e4dd01b0fa86ae9b05eb.sputnikbc","cache_key":"9a63d9ae7557cabca6d9e08fdccc918058d8b93b7980e4dd01b0fa86ae9b05eb","source_hash":"d0b3d48769b250be065b4052b8af4792cd14993edf3d8b8563e026caaa5ffa02","artifact_hash":"6fa5ad6a38c0ecb044c35b7d07503716eabea04a46723b17cd100ec5781124f1","abi_hash":"d11e9c413f71d45a439d579660d7455d42f4b489eb92cec7ade60e0fb8237355","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":367727,"native_bytes":0},
+#17 365.6     {"name":"notebook.core.policy","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/policy.s","output":"/src/sputnik-notebook/build/remote-native/notebook.core.policy.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-native/.cache/notebook.core.policy-75dd0b3647ffffe6a9f70858057cc5e0892fe8e7e749d0f98e29f81dea5872a7.sputnikbc","cache_key":"75dd0b3647ffffe6a9f70858057cc5e0892fe8e7e749d0f98e29f81dea5872a7","source_hash":"d03233cf6898cf84adaa15a33f7b5348d1ee40461e0253a30a7088aadaa9e72e","artifact_hash":"e42ac9d992c97a3340bdb7d702901ead9072c7b10ecdba2bd0bda3c648cc0569","abi_hash":"8038cc2e7466f26d795ddf7756a517a7d641e8bdb8b11ec99602de598fb1ae49","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":298771,"native_bytes":0}
+#17 365.6   ],
+#17 365.6   "diagnostics": []
+#17 365.6 }
+#17 365.6 cp "/src/sputnik-notebook/build/remote-native/notebook.remote.main" "build/sputnik-notebook-remote.tmp"
+#17 366.2 mv -f "build/sputnik-notebook-remote.tmp" "build/sputnik-notebook-remote"
+#17 366.2 make: Leaving directory '/src/sputnik-notebook'
+#17 DONE 368.2s
+
+#18 [test 1/1] RUN make -C /src/sputnik-notebook test-notebook-remote test-notebook-remote-serve     && ! command -v python3 && ! command -v python
+#18 0.369 make: Entering directory '/src/sputnik-notebook'
+#18 0.406 make -C ../sputnik-lang BUILD_DIR="build" runtime
+#18 0.407 make[1]: Entering directory '/src/sputnik-lang'
+#18 0.470 make[1]: Nothing to be done for 'runtime'.
+#18 0.470 make[1]: Leaving directory '/src/sputnik-lang'
+#18 0.477 make -C ../sputnik-lang BUILD_DIR="build" "build/sputnik"
+#18 0.479 make[1]: Entering directory '/src/sputnik-lang'
+#18 0.539 make[1]: 'build/sputnik' is up to date.
+#18 0.539 make[1]: Leaving directory '/src/sputnik-lang'
+#18 0.540 SPUTNIK_NATIVE_CXX="clang++-19" "/src/sputnik-lang/build/sputnik" build "tests/notebook_remote_tests.build.json" --target native --require-full-native --out-dir "/src/sputnik-notebook/build/remote-tests" --grant time.now --grant fs.read --grant fs.write --grant fs.metadata --grant net.listen --grant net.connect --grant random.secure --grant process.spawn --grant ffi
+#18 124.7 In file included from /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1:
+#18 124.7 In file included from /src/sputnik-lang/runtime/stdlib_registry.h:16:
+#18 124.7 In file included from /src/sputnik-lang/runtime/io.h:7:
+#18 124.7 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#18 124.7 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#18 124.7 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<Row>' is deprecated [-Wdeprecated-declarations]
+#18 124.7   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#18 124.7       |                      ^
+#18 124.7 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, Row>::_Temporary_buffer' requested here
+#18 124.7  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#18 124.7       |               ^
+#18 124.7 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1409:26)>>' requested here
+#18 124.7  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#18 124.7       |                       ^
+#18 124.7 /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1408:14: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<Row *, std::vector<Row>>, (lambda at /src/sputnik-lang/runtime/stdlib_benchmark.cpp:1409:26)>' requested here
+#18 124.7  1408 |         std::stable_sort(parsed.begin(), parsed.end(),
+#18 124.7       |              ^
+#18 124.7 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<Row>' has been explicitly marked deprecated here
+#18 124.7    99 |     _GLIBCXX17_DEPRECATED
+#18 124.7       |     ^
+#18 124.7 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#18 124.7   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#18 124.7       |                                  ^
+#18 128.6 1 warning generated.
+#18 155.8 In file included from /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:3:
+#18 155.8 In file included from /src/sputnik-lang/runtime/sputnik_ext_runtime.h:16:
+#18 155.8 In file included from /src/sputnik-lang/runtime/stdlib_registry.h:16:
+#18 155.8 In file included from /src/sputnik-lang/runtime/io.h:7:
+#18 155.8 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#18 155.8 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#18 155.8 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>' is deprecated [-Wdeprecated-declarations]
+#18 155.8   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#18 155.8       |                      ^
+#18 155.8 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue> *, std::vector<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>>, std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>::_Temporary_buffer' requested here
+#18 155.8  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#18 155.8       |               ^
+#18 155.8 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue> *, std::vector<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:45269:50)>>' requested here
+#18 155.8  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#18 155.8       |                       ^
+#18 155.8 /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:45269:10: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue> *, std::vector<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>>, (lambda at /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:45269:50)>' requested here
+#18 155.8  45269 |     std::stable_sort(keyed.begin(), keyed.end(), [&](const auto &left,
+#18 155.8        |          ^
+#18 155.8 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<std::pair<(anonymous namespace)::NativeValue, (anonymous namespace)::NativeValue>>' has been explicitly marked deprecated here
+#18 155.8    99 |     _GLIBCXX17_DEPRECATED
+#18 155.8       |     ^
+#18 155.8 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#18 155.8   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#18 155.9       |                                  ^
+#18 155.9 In file included from /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:3:
+#18 155.9 In file included from /src/sputnik-lang/runtime/sputnik_ext_runtime.h:16:
+#18 155.9 In file included from /src/sputnik-lang/runtime/stdlib_registry.h:16:
+#18 155.9 In file included from /src/sputnik-lang/runtime/io.h:7:
+#18 155.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/functional:64:
+#18 155.9 In file included from /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:61:
+#18 155.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:263:8: warning: 'get_temporary_buffer<(anonymous namespace)::NativeValue>' is deprecated [-Wdeprecated-declarations]
+#18 155.9   263 |                 std::get_temporary_buffer<value_type>(_M_original_len));
+#18 155.9       |                      ^
+#18 155.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:4996:15: note: in instantiation of member function 'std::_Temporary_buffer<__gnu_cxx::__normal_iterator<(anonymous namespace)::NativeValue *, std::vector<(anonymous namespace)::NativeValue>>, (anonymous namespace)::NativeValue>::_Temporary_buffer' requested here
+#18 155.9  4996 |       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
+#18 155.9       |               ^
+#18 155.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_algo.h:5070:23: note: in instantiation of function template specialization 'std::__stable_sort<__gnu_cxx::__normal_iterator<(anonymous namespace)::NativeValue *, std::vector<(anonymous namespace)::NativeValue>>, __gnu_cxx::__ops::_Iter_comp_iter<(lambda at /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:45277:50)>>' requested here
+#18 155.9  5070 |       _GLIBCXX_STD_A::__stable_sort(__first, __last,
+#18 155.9       |                       ^
+#18 155.9 /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:45277:10: note: in instantiation of function template specialization 'std::stable_sort<__gnu_cxx::__normal_iterator<(anonymous namespace)::NativeValue *, std::vector<(anonymous namespace)::NativeValue>>, (lambda at /src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp:45277:50)>' requested here
+#18 155.9  45277 |     std::stable_sort(items.begin(), items.end(), [&](const NativeValue &left,
+#18 155.9        |          ^
+#18 155.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/c++/12/bits/stl_tempbuf.h:99:5: note: 'get_temporary_buffer<(anonymous namespace)::NativeValue>' has been explicitly marked deprecated here
+#18 155.9    99 |     _GLIBCXX17_DEPRECATED
+#18 155.9       |     ^
+#18 155.9 /usr/lib/gcc/x86_64-linux-gnu/12/../../../../include/x86_64-linux-gnu/c++/12/bits/c++config.h:119:34: note: expanded from macro '_GLIBCXX17_DEPRECATED'
+#18 155.9   119 | # define _GLIBCXX17_DEPRECATED [[__deprecated__]]
+#18 155.9       |                                  ^
+#18 162.2 2 warnings generated.
+#18 308.2 {
+#18 308.2   "schema": "sputnik.build.result.v2",
+#18 308.2   "status": "ok",
+#18 308.2   "name": "test.notebook_remote",
+#18 308.2   "root": "test.notebook_remote",
+#18 308.2   "target": "native",
+#18 308.2   "inputs": ["/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/environment.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/grants.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/presentation.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/process.h","/src/sputnik-notebook/packages/notebook-core/include/notebook/core/worker/protocol.h","/src/sputnik-notebook/packages/notebook-core/native/bundle.cpp","/src/sputnik-notebook/packages/notebook-core/native/host.cpp","/src/sputnik-notebook/packages/notebook-core/native/presentation.cpp","/src/sputnik-notebook/packages/notebook-core/native/process.cpp","/src/sputnik-notebook/packages/notebook-core/native/protocol.cpp","/src/sputnik-notebook/packages/notebook-core/sputnik.build.yaml","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/common.s","/src/sputnik-notebook/packages/notebook-core/src/notebook/core/host.s","/src/sputnik-notebook/tests/notebook_package_catalog_test.s","/src/sputnik-notebook/tests/notebook_remote_desktop_tests.s","/src/sputnik-notebook/tests/notebook_remote_regression_tests.s","/src/sputnik-notebook/tests/notebook_remote_test_support.s","/src/sputnik-notebook/tests/notebook_remote_tests.s","/src/sqlite3/native/sqlite3.c","/src/sqlite3/native/sqlite3.h","/src/sqlite3/native/sqlite3_ext.c","/src/sqlite3/sputnik.build.yaml","/src/sqlite3/src/sqlite3.s"],
+#18 308.2   "out_dir": "/src/sputnik-notebook/build/remote-tests",
+#18 308.2   "cache_dir": "/src/sputnik-notebook/build/remote-tests/.cache",
+#18 308.2   "native_output": "/src/sputnik-notebook/build/remote-tests/test.notebook_remote",
+#18 308.2   "native_backend": "cpp-bytecode-direct-v1",
+#18 308.2   "native_hash": "aa74fca3ebf18b0145e18e9ac957a35db49ebcd52e356d1d33c607c5d31bd251",
+#18 308.2   "native_source": "/src/sputnik-notebook/build/remote-tests/test.notebook_remote.native.cpp",
+#18 308.2   "native_cxx": "clang++-19",
+#18 308.2   "native_bytecode_fallback": false,
+#18 308.2   "native_graph_module_count": 8,
+#18 308.2   "native_graph_code_count": 943,
+#18 308.2   "native_graph_native_code_count": 943,
+#18 308.2   "native_graph_vm_fallback_code_count": 0,
+#18 308.2   "native_graph_fallback_code_count": 0,
+#18 308.2   "native_binary_size_bytes": 14819984,
+#18 308.2   "native_graph_body_coverage_full": true,
+#18 308.2   "native_graph_full_coverage": true,
+#18 308.2   "native_graph_runtime_bridge": false,
+#18 308.2   "native_graph_runtime_bridge_kind": "",
+#18 308.2   "native_graph_vm_independent": true,
+#18 308.2   "native_extensions": [
+#18 308.2     {"name":"notebook_core_host","sputnik_version":"1.0.0","target_triple":"x86_64-unknown-linux","native_source_sha256":"sha256:f3d6cf0106ee6190576defb9565d00a85490c291464d02e483a660cbafbebc51","exported_symbol_sha256":"sha256:8907ba297b32a3c2983824f2e291ecd3770d66b434a4b98b0d17d620943d6f37","types":[{"sputnik":"notebook.core.host.ServiceProcess","tag":"notebook.core.ServiceProcess","ownership":"owned","destructor":"nb_core_service_process_free"},{"sputnik":"notebook.core.host.ServiceSignals","tag":"notebook.core.ServiceSignals","ownership":"owned","destructor":"nb_core_service_signals_free"},{"sputnik":"notebook.core.host.Worker","tag":"notebook.core.Worker","ownership":"owned","destructor":"nb_core_worker_free"},{"sputnik":"sqlite3.Conn","tag":"sqlite3.Conn","ownership":"owned","destructor":"amsq_conn_free"},{"sputnik":"sqlite3.LeaseConn","tag":"sqlite3.LeaseConn","ownership":"collected","destructor":"amsq_lease_conn_free"},{"sputnik":"sqlite3.PoolCore","tag":"sqlite3.PoolCore","ownership":"collected","destructor":"amsq_pool_core_free"},{"sputnik":"sqlite3.Stmt","tag":"sqlite3.Stmt","ownership":"owned","destructor":"amsq_stmt_free"}],"errors":[{"name":"Sqlite3.BindError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.BusyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ConstraintError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.CorruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.Error","parent":"NativeError","default_message":"","default_exit_code":""},{"name":"Sqlite3.InterruptError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.JsonbUnavailableError","parent":"Sqlite3.JsonError","default_message":"","default_exit_code":""},{"name":"Sqlite3.LockedError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.MisuseError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.OpenError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolClosedError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolLeaseError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PoolTimeoutError","parent":"Sqlite3.PoolError","default_message":"","default_exit_code":""},{"name":"Sqlite3.PrepareError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.RangeError","parent":"Sqlite3.BindError","default_message":"","default_exit_code":""},{"name":"Sqlite3.ReadOnlyError","parent":"Sqlite3.StepError","default_message":"","default_exit_code":""},{"name":"Sqlite3.StepError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""},{"name":"Sqlite3.TransactionError","parent":"Sqlite3.Error","default_message":"","default_exit_code":""}]},
+#18 308.2     {"name":"sqlite3","sputnik_version":"1.0.0","target_triple":"x86_64-unknown-linux","native_source_sha256":"sha256:d55625190d6bc2d7de0d3065ffeeed9c251892e605cf814f4b0afb7a18db7aac","exported_symbol_sha256":"sha256:3acd6904e20120582e597ea5f33bc5020ed6b308771d73be03cf96b4a3c2ad41","types":[],"errors":[]}
+#18 308.2   ],
+#18 308.2   "profiles": {
+#18 308.2     "required": ["core.v1"],
+#18 308.2     "optional": [],
+#18 308.2     "forbidden": []
+#18 308.2   },
+#18 308.2   "artifacts": [
+#18 308.2     {"name":"test.notebook_remote","path":"/src/sputnik-notebook/tests/notebook_remote_tests.s","output":"/src/sputnik-notebook/build/remote-tests/test.notebook_remote.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/test.notebook_remote-4dd82a01898c818a7ed7d7cd2b9fcc5175396fa67b173ff80b6445a1c808a5b8.sputnikbc","cache_key":"4dd82a01898c818a7ed7d7cd2b9fcc5175396fa67b173ff80b6445a1c808a5b8","source_hash":"bcd9495c6b8cc8d4309ba0824947c30840231c4aaa017bb5302165192ef2cd0c","artifact_hash":"6701a8c4840904c81427e9ce299dfbe6c95140e1fbe8f027b15aef68ed7e6a0d","abi_hash":"9309567da44de8da0d84144af71896300014505935f18f33291b1ba9db06bd70","native_output":"/src/sputnik-notebook/build/remote-tests/test.notebook_remote","native_hash":"aa74fca3ebf18b0145e18e9ac957a35db49ebcd52e356d1d33c607c5d31bd251","native_backend":"cpp-bytecode-direct-v1","native_eligible":true,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":348295,"native_bytes":14819984},
+#18 308.2     {"name":"test.notebook_package_catalog","path":"/src/sputnik-notebook/tests/notebook_package_catalog_test.s","output":"/src/sputnik-notebook/build/remote-tests/test.notebook_package_catalog.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/test.notebook_package_catalog-fa996ee8d62f5355bbbfa09344d2a37a10184469fac0d994ec7a9343a59a6a8f.sputnikbc","cache_key":"fa996ee8d62f5355bbbfa09344d2a37a10184469fac0d994ec7a9343a59a6a8f","source_hash":"ed3b0ece3077a5f2ca1737299fff63487aa0363fe135a8d4b24a69466068c333","artifact_hash":"f6fcf85761e175fcab786c7f5cfa27d5eb4b8d0991dfe8a08ac5736ea0faeb08","abi_hash":"f955607389d9e0d631607d54d9b8bfff6860ddedd2acf5b73fb9b818a96022df","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":76209,"native_bytes":0},
+#18 308.2     {"name":"test.notebook_remote_support","path":"/src/sputnik-notebook/tests/notebook_remote_test_support.s","output":"/src/sputnik-notebook/build/remote-tests/test.notebook_remote_support.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/test.notebook_remote_support-c10c7ff4792457a5c7658f57672d75b9ccc439f5b931c8e5198e6af6224a5a1e.sputnikbc","cache_key":"c10c7ff4792457a5c7658f57672d75b9ccc439f5b931c8e5198e6af6224a5a1e","source_hash":"3beb639d02c6c3b492614249558d710d8a0c037a346366bd63847adb0dc8cec5","artifact_hash":"c0aae677bf8c345c1092f069353dc7062db8513fa241e09669985e71452ff3af","abi_hash":"cea0d1f4c372f1b8331dfe10ab171d857b79dbfc40818f3122127729c3780671","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":147651,"native_bytes":0},
+#18 308.2     {"name":"notebook.core.common","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/common.s","output":"/src/sputnik-notebook/build/remote-tests/notebook.core.common.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/notebook.core.common-1f30feb886bc71effc0c62b2f69eac1b1e0bd49ef9d6dd878c8140c3a7608e2a.sputnikbc","cache_key":"1f30feb886bc71effc0c62b2f69eac1b1e0bd49ef9d6dd878c8140c3a7608e2a","source_hash":"dae39e012c069eae3b446b42926a3ba27b55086f61fd7cc5d74aa744ba391912","artifact_hash":"9f536bf09f07b6056421200540ed407222049ddf53f08f23d57b646e4cda8d20","abi_hash":"a4265e362ae0b0a54d388cf86fb43c11b1305cf36c590194884e7f6160200e57","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":70039,"native_bytes":0},
+#18 308.2     {"name":"notebook.core.host","path":"/src/sputnik-notebook/packages/notebook-core/src/notebook/core/host.s","output":"/src/sputnik-notebook/build/remote-tests/notebook.core.host.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/notebook.core.host-10ed27836b800685b6f192dd7e06377954efff82f6f8ad7585603930213e5d09.sputnikbc","cache_key":"10ed27836b800685b6f192dd7e06377954efff82f6f8ad7585603930213e5d09","source_hash":"e75113d73b935d1f9027127788fdd5356909f5cdea51cfd2bed1a9dd36a0da99","artifact_hash":"75b3299d429507a513b0592063ac60f1f318fefd7f7fbc9fab8e3ccf66e0fffa","abi_hash":"7016f0561c12d2e8a362719668613308e212dbd4ac409c820e31a17a9e2957af","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":55914,"native_bytes":0},
+#18 308.2     {"name":"test.notebook_remote_regressions","path":"/src/sputnik-notebook/tests/notebook_remote_regression_tests.s","output":"/src/sputnik-notebook/build/remote-tests/test.notebook_remote_regressions.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/test.notebook_remote_regressions-8809253a7fac3294a90e3a5e65eb6aaf9813a60418101c9b7efc2d68b235c65b.sputnikbc","cache_key":"8809253a7fac3294a90e3a5e65eb6aaf9813a60418101c9b7efc2d68b235c65b","source_hash":"ac669bfaf72767760ab144ba090af8b78a3603291a6f29ea5be3ffac4c0d7ef3","artifact_hash":"7e342c8ed841a628f8870cc9d1c6e84cec5829eec2d4daec4efdb6da5f415103","abi_hash":"485619cacb43463a9e360a9b137f63d1577acd0fe59e3c0e59a8ebd24836661b","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":155440,"native_bytes":0},
+#18 308.2     {"name":"test.notebook_remote_desktop","path":"/src/sputnik-notebook/tests/notebook_remote_desktop_tests.s","output":"/src/sputnik-notebook/build/remote-tests/test.notebook_remote_desktop.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/test.notebook_remote_desktop-8f7dab48e4cdd0cf0f045f31548c1de9cce1e69972bd569e63d77d3b7c737bfa.sputnikbc","cache_key":"8f7dab48e4cdd0cf0f045f31548c1de9cce1e69972bd569e63d77d3b7c737bfa","source_hash":"b85b60dbce9bc4b301b08b4e9112476def9cbbae5252515f5b9ebd2c6fa49aab","artifact_hash":"1051b6b6e0634249bcf8ab31cebfe4e80e16456f9d51fb6d5d9099790f66bc18","abi_hash":"37b6f54e02bca50ccff0c35e2a71b13259a85b70e1a57136a3ebe10e50329dff","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":127265,"native_bytes":0},
+#18 308.2     {"name":"sqlite3","path":"/src/sqlite3/src/sqlite3.s","output":"/src/sputnik-notebook/build/remote-tests/sqlite3.sputnikbc","cache_path":"/src/sputnik-notebook/build/remote-tests/.cache/sqlite3-a17eafedafbbe36ef6f797e111d04caf2d775323f32fdd5ddcdb5c3c5c3831b3.sputnikbc","cache_key":"a17eafedafbbe36ef6f797e111d04caf2d775323f32fdd5ddcdb5c3c5c3831b3","source_hash":"748f79a5b6aa39b35830efaa99f57d355b27feeb3e9f6556499505daa563c43a","artifact_hash":"7bb5ccff91162307b1b631be3a3cb31199db0bd0f864461845f4140e1cf0b169","abi_hash":"3348d9ef6f1c4b390eba439945496262731d6eeba466ef86b6424d33efc5399e","native_output":"","native_hash":"","native_backend":"","native_eligible":false,"native_fallback_reason":"","stdlib":false,"cached":false,"bootstrap":"","bytes":742178,"native_bytes":0}
+#18 308.2   ],
+#18 308.2   "diagnostics": []
+#18 308.2 }
+#18 308.2 cp "build/remote-tests/test.notebook_remote" "build/notebook-remote-tests"
+#18 308.5 tests/run-remote-tests "/src/sputnik-lang/build/sputnik" "/src/sputnik-notebook/build" command --vm
+#18 371.4 PASS command launcher: literal cwd, argv, environment and missing-directory rejection
+#18 371.4 0
+#18 371.4 tests/run-remote-tests "/src/sputnik-lang/build/sputnik" "/src/sputnik-notebook/build" command
+#18 371.4 PASS command launcher: literal cwd, argv, environment and missing-directory rejection
+#18 371.4 0
+#18 371.5 tests/run-remote-tests "/src/sputnik-lang/build/sputnik" "/src/sputnik-notebook/build" remote
+#18 388.9 PASS package catalog: authentication, versions, compatibility, CLI, no installation or worker retirement
+#18 388.9 PASS snapshots: opaque data, modules, conflicts, traversal, receipts, presentation, reconnect and restart
+#18 388.9 PASS execution: function references, membership, Unicode, command argv, live heap and explicit restart
+#18 388.9 PASS cancellation: stale epoch, cooperative stop, force stop and owner retirement
+#18 388.9 PASS dependencies: registry install, receipts, isolated worker import, removal and runtime retirement
+#18 388.9 PASS worker settings: deny, scoped grant, stale version and durable settings
+#18 388.9 PASS inputs and watch: atomic batches, int64, receipts, manual scope, durability and idle pump
+#18 388.9 PASS board actions and periodic work: isolated world, inputs, receipts, gateway restart, pause, retention and agent restart
+#18 388.9 PASS durable restart: SQLite failure preserves heap, retry and receipt protect newer world
+#18 388.9 PASS desktop HTTP contract: targeted restart, service pause, epoch, replay, shared metadata, deletion and history paging
+#18 388.9 PASS agent failure: interrupted durable run, no replay and preserved receipt
+#18 388.9 PASS native Sputnik remote integration
+#18 388.9 0
+#18 388.9 tests/run-remote-tests "/src/sputnik-lang/build/sputnik" "/src/sputnik-notebook/build" serve
+#18 389.6 ResourceBusyError: file is already locked
+#18 389.6 ResourceBusyError: file is already locked
+#18 389.6   at c1121:48 (/src/sputnik-notebook/packages/notebook-core/src/notebook/core.s:161:14)
+#18 389.6   at c1374:23 (/src/sputnik-notebook/tools/notebook-remote/server.s:11:10)
+#18 389.6   at c1440:262 (/src/sputnik-notebook/tools/notebook-remote/main.s:55:34)
+#18 389.7 IOError: execution agent exited during startup
+#18 389.7 IOError: execution agent exited during startup
+#18 389.7   at c1437:289 (/src/sputnik-notebook/tools/notebook-remote/service.s:25:3)
+#18 389.7   at c1440:202 (/src/sputnik-notebook/tools/notebook-remote/main.s:54:32)
+#18 389.8 IOError: execution agent exited; stopping service
+#18 389.8 IOError: execution agent exited; stopping service
+#18 389.8   at c1437:289 (/src/sputnik-notebook/tools/notebook-remote/service.s:25:3)
+#18 389.8   at c1440:202 (/src/sputnik-notebook/tools/notebook-remote/main.s:54:32)
+#18 390.3 AddressInUseError: listen: Address already in use
+#18 390.3 AddressInUseError: listen: Address already in use
+#18 390.3   at c1394:17 (/src/sputnik-notebook/tools/notebook-remote/server.s:150:12)
+#18 390.3   at c1440:272 (/src/sputnik-notebook/tools/notebook-remote/main.s:56:11)
+#18 390.4 IOError: HTTP gateway exited; stopping service
+#18 390.4 IOError: HTTP gateway exited; stopping service
+#18 390.4   at c1437:289 (/src/sputnik-notebook/tools/notebook-remote/service.s:25:3)
+#18 390.4   at c1440:202 (/src/sputnik-notebook/tools/notebook-remote/main.s:54:32)
+#18 390.7 PASS serve: SIGTERM cleanup, durable restart, duplicate ownership, agent failure and bind failure
+#18 390.7 0
+#18 390.7 make: Leaving directory '/src/sputnik-notebook'
+#18 DONE 391.1s
+
+#19 [runtime 3/8] COPY --from=test /opt/pcre2 /opt/pcre2
+#19 DONE 0.2s
+
+#20 [runtime 4/8] COPY --from=test /src/sputnik-lang /src/sputnik-lang
+#20 DONE 0.5s
+
+#21 [runtime 5/8] COPY --from=test /src/sputnik-notebook/build/sputnik-notebook-remote /usr/local/bin/
+#21 DONE 0.2s
+
+#22 [runtime 6/8] COPY --from=test /src/sputnik-notebook/build/sputnik-notebook-worker /usr/local/bin/
+#22 DONE 0.2s
+
+#23 [runtime 7/8] COPY --from=test /src/sputnik-notebook/tools/notebook-remote/docker-healthcheck /usr/local/bin/sputnik-notebook-healthcheck
+#23 DONE 0.2s
+
+#24 [runtime 8/8] RUN ln -s /src/sputnik-lang/build/sputnik /usr/local/bin/sputnik     && mkdir -p /var/lib/sputnik-notebook /var/lib/sputnik-packages /var/cache/sputnik     && chown -R sputnik:sputnik /var/lib/sputnik-notebook /var/lib/sputnik-packages /var/cache/sputnik
+#24 DONE 0.5s
+
+#25 exporting to image
+#25 exporting layers
+#25 exporting layers 2.1s done
+#25 writing image sha256:e21143e3e635f26ce166dcacc2b1ce1f6ebd923f6f40774c82037841f00b2c1f done
+#25 naming to docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0 0.0s done
+#25 DONE 2.2s
+PASS image built, Linux integration/lifecycle tested and published: docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0

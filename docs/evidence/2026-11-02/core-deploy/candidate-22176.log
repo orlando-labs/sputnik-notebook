@@ -1,0 +1,4 @@
+ec03aca53407278ee3dd6bc6b1d34aa2f1bf8f14ffb1301002b913c3a3073a76
+PASS short torch import, shared package reference and GPU forward/backward without Python on 2 devices
+0
+PASS candidate cuda: health, desktop capabilities, native Torch on 2 GPUs

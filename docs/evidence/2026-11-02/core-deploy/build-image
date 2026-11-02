@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release=/home/slowpilot/sputnik-core-builds/20261102-remote-actions
+image=docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0
+trap 'result=$?; printf "%s\n" "$result" > "$release/build.exit"; exit "$result"' EXIT
+builtin cd "$release"
+printf '%s  context.tar.gz\n' ba6a93fe5140d9c58b9f3221b281ddbcb251f00093991dd059e2248b86147d9f | sha256sum -c -
+mkdir -p context
+tar -xzf context.tar.gz -C context
+DOCKER_BUILDKIT=1 docker build --progress=plain --build-arg BUILD_JOBS=12 \
+  --build-arg NOTEBOOK_REVISION=bc5413054349265719149e92d99755ffd4f26b64 \
+  --build-arg SPUTNIK_REVISION=ccb0d744bf4fbe77cc0e78fe3fedaa190f8220fb \
+  --label io.sputnik.source-context.sha256=ba6a93fe5140d9c58b9f3221b281ddbcb251f00093991dd059e2248b86147d9f \
+  -f context/sputnik-notebook/Dockerfile --iidfile image.id -t "$image" context
+# Publication uses this builder's existing login; no credential is transferred.
+docker push "$image" > push.log 2>&1
+docker manifest inspect "$image" > published-manifest.json
+docker image inspect --format '{{.Id}} {{json .Config.Labels}}' "$image" > image-identity.txt
+printf 'PASS image built, Linux integration/lifecycle tested and published: %s\n' "$image"

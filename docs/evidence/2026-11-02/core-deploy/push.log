@@ -1,0 +1,21 @@
+The push refers to repository [docker.orlando-labs.com/sputnik-remote-core]
+bf18e941e8b0: Preparing
+e5e12a7533bb: Preparing
+5231923dd285: Preparing
+bcbc3b64e86e: Preparing
+249e4faee6e6: Preparing
+151ac5d3aacd: Preparing
+2fcd2404f755: Preparing
+44a87794b739: Preparing
+151ac5d3aacd: Waiting
+44a87794b739: Waiting
+2fcd2404f755: Waiting
+bf18e941e8b0: Pushed
+e5e12a7533bb: Pushed
+5231923dd285: Pushed
+44a87794b739: Layer already exists
+bcbc3b64e86e: Pushed
+151ac5d3aacd: Pushed
+249e4faee6e6: Pushed
+2fcd2404f755: Pushed
+20261102-1.0.0: digest: sha256:8dbdbe80240a57ac71a2db46a8b36d308dad8b499b92df190f8a096f8392030e size: 2001

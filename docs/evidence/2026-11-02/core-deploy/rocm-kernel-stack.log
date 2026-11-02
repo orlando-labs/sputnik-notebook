@@ -1,0 +1,42 @@
+[<0>] add_kgd_mem_to_kfd_bo_list+0x28/0xa0 [amdgpu]
+[<0>] amdgpu_amdkfd_gpuvm_alloc_memory_of_gpu+0x558/0x7c0 [amdgpu]
+[<0>] kfd_ioctl_alloc_memory_of_gpu+0x194/0x520 [amdgpu]
+[<0>] kfd_ioctl+0x38e/0x4f0 [amdgpu]
+[<0>] __x64_sys_ioctl+0x8a/0xc0
+[<0>] do_syscall_64+0x5f/0xe0
+[<0>] entry_SYSCALL_64_after_hwframe+0x78/0x80
+Name:	sputnik-noteboo
+State:	D (disk sleep)
+Threads:	1
+SigPnd:	0000000000000100
+ShdPnd:	0000000000040100
+total 0
+lr-x------. 1 slowpilot slowpilot 64 Nov  2 22:35 0 -> /dev/null
+l-wx------. 1 slowpilot slowpilot 64 Nov  2 22:35 1 -> /dev/null
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 10 -> anon_inode:[eventpoll]
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 11 -> /dev/dri/renderD129
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 12 -> /dev/dri/renderD130
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 198 -> socket:[4925989]
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 199 -> socket:[4925991]
+l-wx------. 1 slowpilot slowpilot 64 Nov  2 22:35 2 -> pipe:[4832980]
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 3 -> /dev/kfd
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 4 -> anon_inode:[eventfd]
+lrwx------. 1 slowpilot slowpilot 64 Nov  2 22:35 7 -> /dev/dri/renderD128
+lr-x------. 1 slowpilot slowpilot 64 Nov  2 22:35 8 -> pipe:[4897124]
+l-wx------. 1 slowpilot slowpilot 64 Nov  2 22:35 9 -> pipe:[4897124]
+lrwxrwxrwx. 1 root root 0 Sep 25 11:06 /sys/class/drm/card1/device -> ../../../0000:04:00.0
+lrwxrwxrwx. 1 root root 0 Sep 25 11:06 /sys/class/drm/card2/device -> ../../../0000:83:00.0
+lrwxrwxrwx. 1 root root 0 Sep 25 11:06 /sys/class/drm/card3/device -> ../../../0000:86:00.0
+total 0
+lrwxrwxrwx.  1 root root 0 Sep 24 15:09 0 -> 0000:09:00.0
+drwxr-xr-x. 16 root root 0 Sep 24 15:09 0000:04:00.0
+drwxr-xr-x.  5 root root 0 Sep 24 15:09 0000:09:00.0
+drwxr-xr-x. 16 root root 0 Sep 24 15:09 0000:83:00.0
+drwxr-xr-x. 16 root root 0 Sep 24 15:09 0000:86:00.0
+lrwxrwxrwx.  1 root root 0 Sep 24 15:09 1 -> 0000:04:00.0
+lrwxrwxrwx.  1 root root 0 Sep 24 15:09 128 -> 0000:04:00.0
+lrwxrwxrwx.  1 root root 0 Sep 24 15:09 129 -> 0000:83:00.0
+lrwxrwxrwx.  1 root root 0 Sep 24 15:09 130 -> 0000:86:00.0
+lrwxrwxrwx.  1 root root 0 Sep 24 15:09 2 -> 0000:83:00.0
+lrwxrwxrwx.  1 root root 0 Sep 24 15:09 3 -> 0000:86:00.0
+sputnik-remote-core Up 21 minutes (healthy)

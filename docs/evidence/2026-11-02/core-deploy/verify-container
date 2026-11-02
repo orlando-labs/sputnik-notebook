@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release=$1
+container=sputnik-remote-core
+state=/home/slowpilot/sputnik-remote-core/state
+expected=sha256:e21143e3e635f26ce166dcacc2b1ce1f6ebd923f6f40774c82037841f00b2c1f
+[[ $(docker inspect --format '{{.Image}}' "$container") == "$expected" ]]
+[[ $(docker inspect --format '{{.State.Health.Status}}' "$container") == healthy ]]
+[[ $(docker inspect --format '{{.RestartCount}}' "$container") == 0 ]]
+[[ $(docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' "$container") == unless-stopped ]]
+[[ -z $(docker ps -aq --filter name=sputnik-core-candidate-) ]]
+backup=$(find "$release/backups" -mindepth 1 -maxdepth 1 -type d -name 'before-core-*' | sort | tail -n 1)
+[[ -d "$backup/state" ]]
+cmp "$backup/state-before.json" "$backup/state-after.json"
+cmp "$backup/state/token" "$state/token"
+printf 'UTC='
+date -u +%Y-%m-%dT%H:%M:%SZ
+docker inspect --format 'Image={{.Image}} Health={{.State.Health.Status}} Restarts={{.RestartCount}} RestartPolicy={{.HostConfig.RestartPolicy.Name}} User={{.Config.User}} Ports={{json .NetworkSettings.Ports}} Mounts={{json .Mounts}} GPUs={{json .HostConfig.DeviceRequests}} Devices={{json .HostConfig.Devices}} Groups={{json .HostConfig.GroupAdd}}' "$container"
+docker exec "$container" sputnik-notebook-remote --mode cli --token-file "$state/token" --command health
+docker exec -e SPUTNIK_PKG_HOME=/tmp/maintenance-packages "$container" sputnik run /tmp/sputnik-core-maintenance.s \
+  --grant fs.read --grant fs.write --grant fs.metadata --grant net.connect --grant random.secure -- \
+  --root "$state" --mode audit --output /tmp/state-final.json
+sha256sum "$backup/state-before.json" "$backup/state-after.json"
+printf 'Backup=%s\n' "$backup"
+docker ps -a --filter name=sputnik-core-before- --format 'Rollback={{.Names}} Image={{.Image}} Status={{.Status}}'
+printf 'PASS final identity, health, restart policy, preserved history/settings/token, quiescent state and candidate cleanup\n'

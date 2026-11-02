@@ -1,0 +1,6 @@
+{"probe":"core_upgrade_probe_f9b70cd49ba11e09","run":"1b4709d801c30d512a8766bb7ace1331","state":"terminating","epoch":"1fff36b0d5b13c8fb34dce1c3cde7418"}
+PASS no user work is active; only the known maintenance probe may be terminating
+0
+Before boot ID=b2d6287e-868f-4d52-a077-a3eabb2ace60
+Backup=/home/slowpilot/sputnik-core-deployments/20261102-remote-actions/backups/before-core-20261102T191325Z
+Requesting authorized normal host reboot; Docker retains unless-stopped policy

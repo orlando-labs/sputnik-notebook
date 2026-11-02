@@ -1,0 +1,4 @@
+5fe8164c6d41d3c55270ebce2e6e81114465b2efd3895845e952ee57f2a058a0
+PASS short torch import, shared package reference and GPU forward/backward without Python on 3 devices
+0
+PASS candidate rocm: health, desktop capabilities, native Torch on 3 GPUs

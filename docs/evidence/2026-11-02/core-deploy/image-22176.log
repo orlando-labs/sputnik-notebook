@@ -1,0 +1,2 @@
+Id=sha256:e21143e3e635f26ce166dcacc2b1ce1f6ebd923f6f40774c82037841f00b2c1f Size=524527045 Labels={"io.sputnik.source-context.sha256":"ba6a93fe5140d9c58b9f3221b281ddbcb251f00093991dd059e2248b86147d9f","io.sputnik.vm.revision":"ccb0d744bf4fbe77cc0e78fe3fedaa190f8220fb","org.opencontainers.image.revision":"bc5413054349265719149e92d99755ffd4f26b64","org.opencontainers.image.title":"Sputnik Remote Core"}
+sputnik-core-candidate-20261102T190706Z-3749848 Up About a minute (healthy)

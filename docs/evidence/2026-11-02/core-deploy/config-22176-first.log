@@ -1,0 +1,6 @@
+/sputnik-core-before-20261102T191001Z [{"Driver":"","Count":0,"DeviceIDs":["GPU-08a27f45-3e58-12a9-4626-4997e56e765f","GPU-f8d896e0-2607-a025-88a1-7ed8979035af"],"Capabilities":[["gpu"]],"Options":{}}]
+SPUTNIK_TASK_MAX_THREADS=56
+SPUTNIK_FFI_MAX_THREADS=32
+/sputnik-remote-core [{"Driver":"","Count":0,"DeviceIDs":["GPU-08a27f45-3e58-12a9-4626-4997e56e765f","GPU-f8d896e0-2607-a025-88a1-7ed8979035af",""],"Capabilities":[["gpu"]],"Options":{}}]
+SPUTNIK_FFI_MAX_THREADS=32
+SPUTNIK_TASK_MAX_THREADS=56

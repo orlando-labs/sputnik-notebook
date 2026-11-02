@@ -1,0 +1,32 @@
+Health=healthy Restarts=0
+ 447212  447190       21:33 Ss   do_sigtimedwait                     /usr/bin/tini -- /usr/local/bin/sputnik-notebook-remote --mode serve --host 0.0.0.0 --port 18765 --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik
+ 447358  447212       21:33 Sl   hrtimer_nanosleep                   /usr/local/bin/sputnik-notebook-remote --mode serve --host 0.0.0.0 --port 18765 --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik
+ 447360  447358       21:33 Sl   futex_wait_queue                    /usr/local/bin/sputnik-notebook-remote --mode agent --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --python python3 --ruby ruby --sputnik /usr/local/bin/sputnik --orphan-gc-interval 0 --orphan-min-age 604800
+ 447823  447360       21:22 Ds   add_kgd_mem_to_kfd_bo_list          /usr/local/bin/sputnik-notebook-worker --notebook-worker 1 --working-directory /home/slowpilot/sputnik-remote-core/state/runtimes/263b4e2e76ee4d8ff0ea2947e8a573d1/work --environment-directory /home/slowpilot/sputnik-remote-core/state/revisions/37642fc12831450531d67bb8ce9a8aeb8cb61eddf4fb646d484107c27ce9267e --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a --grant ffi.call=* --grant ffi.load=* --grant fs.read=*
+ 453773  453772       00:00 Ss   do_wait                             bash -c docker inspect --format "Health={{.State.Health.Status}} Restarts={{.RestartCount}}" sputnik-remote-core; ps -eo pid,ppid,etime,stat,wchan:35,args | grep -E "(sputnik-notebook-worker|sputnik-core-maintenance)"; sudo -n fuser -v /dev/kfd /dev/dri/renderD128 /dev/dri/renderD129 /dev/dri/renderD130 2>&1; sudo -n dmesg --ctime | tail -n 25
+ 453807  453773       00:00 S    pipe_read                           grep -E (sputnik-notebook-worker|sputnik-core-maintenance)
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3245800000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3249e00000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f324b600000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3251400000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3253200000, queue evicted
+[Mon Nov  2 22:07:27 2026] [drm:amdgpu_job_submit [amdgpu]] *ERROR* Trying to push to a killed entity
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:07:27 2026] vethbd90b02: renamed from eth0
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:07:27 2026] veth003e47d (unregistering): left allmulticast mode
+[Mon Nov  2 22:07:27 2026] veth003e47d (unregistering): left promiscuous mode
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth7120e71: renamed from eth0
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth52e16e9 (unregistering): left allmulticast mode
+[Mon Nov  2 22:12:42 2026] veth52e16e9 (unregistering): left promiscuous mode
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered blocking state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth18c3c91: entered allmulticast mode
+[Mon Nov  2 22:12:42 2026] veth18c3c91: entered promiscuous mode
+[Mon Nov  2 22:12:42 2026] eth0: renamed from veth187908d
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered blocking state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered forwarding state

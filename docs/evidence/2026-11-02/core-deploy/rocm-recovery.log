@@ -1,0 +1,9 @@
+{"probe":"core_upgrade_probe_f9b70cd49ba11e09","run":"1b4709d801c30d512a8766bb7ace1331","state":"terminating","epoch":"1fff36b0d5b13c8fb34dce1c3cde7418"}
+PASS no user work is active; only the known maintenance probe may be terminating
+0
+GPU opener pid=447823 device=/dev/dri/renderD129
+GPU opener pid=447823 device=/dev/dri/renderD130
+GPU opener pid=447823 device=/dev/kfd
+GPU opener pid=447823 device=/dev/dri/renderD128
+Attempt GPU recovery: 0000:04:00.0
+Attempt GPU recovery: 0000:83:00.0

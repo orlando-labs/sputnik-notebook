@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release=/home/slowpilot/sputnik-core-deployments/20261102-remote-actions
+container=sputnik-remote-core
+state=/home/slowpilot/sputnik-remote-core/state
+probe_pid=447823
+[[ $(cat /proc/$probe_pid/comm) == sputnik-noteboo ]]
+[[ $(cat /proc/$probe_pid/wchan) == add_kgd_mem_to_kfd_bo_list ]]
+gateway=$(docker top "$container" -eo pid,args | awk '/--mode gateway/ {print $1}')
+[[ "$gateway" =~ ^[0-9]+$ ]]
+trap 'kill -CONT "$gateway" 2>/dev/null || true' EXIT
+kill -STOP "$gateway"
+docker cp "$release/rocm-recovery-guard.s" "$container:/tmp/rocm-recovery-guard.s"
+docker exec -e SPUTNIK_PKG_HOME=/tmp/maintenance-packages "$container" sputnik run /tmp/rocm-recovery-guard.s \
+  --grant fs.read --grant fs.write --grant net.connect -- \
+  --root "$state"
+# Freeze admission before inspecting every host GPU opener. Refuse to reset if
+# any process other than the known, already-cancelled maintenance worker owns it.
+sudo -n bash -s -- "$probe_pid" <<'ROOT'
+set -euo pipefail
+expected=$1
+for entry in /proc/[0-9]*/fd/*; do
+  target=$(readlink "$entry" 2>/dev/null) || continue
+  case "$target" in
+    /dev/kfd|/dev/dri/renderD*|/dev/dri/card[123])
+      pid=${entry#/proc/}; pid=${pid%%/*}
+      printf 'GPU opener pid=%s device=%s\n' "$pid" "$target"
+      [[ "$pid" == "$expected" ]] || { printf 'Refusing GPU reset: another process owns a GPU\n' >&2; exit 1; }
+    ;;
+  esac
+done
+ROOT
+for device in 0000:04:00.0 0000:83:00.0 0000:86:00.0; do
+  [[ -d /proc/$probe_pid ]] || break
+  printf 'Attempt GPU recovery: %s\n' "$device"
+  sudo -n timeout --kill-after=5s 20s cat "/sys/kernel/debug/dri/$device/amdgpu_gpu_recover"
+done
+[[ ! -d /proc/$probe_pid ]] || { printf 'Probe still blocked after GPU recovery\n' >&2; exit 1; }
+printf 'PASS blocked maintenance worker released after GPU recovery\n'

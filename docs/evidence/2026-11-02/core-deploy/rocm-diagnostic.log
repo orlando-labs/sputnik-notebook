@@ -1,0 +1,48 @@
+[Sun Nov  1 09:24:26 2026] veth52e16e9: entered allmulticast mode
+[Sun Nov  1 09:24:26 2026] veth52e16e9: entered promiscuous mode
+[Sun Nov  1 09:24:26 2026] eth0: renamed from veth7120e71
+[Sun Nov  1 09:24:26 2026] docker0: port 1(veth52e16e9) entered blocking state
+[Sun Nov  1 09:24:26 2026] docker0: port 1(veth52e16e9) entered forwarding state
+[Sun Nov  1 09:25:10 2026] amdgpu: Freeing queue vital buffer 0x7f9cc2000000, queue evicted
+[Sun Nov  1 09:25:10 2026] amdgpu: Freeing queue vital buffer 0x7f9cc3800000, queue evicted
+[Sun Nov  1 09:25:10 2026] amdgpu: Freeing queue vital buffer 0x7f9cc7e00000, queue evicted
+[Sun Nov  1 09:25:10 2026] amdgpu: Freeing queue vital buffer 0x7f9cc9600000, queue evicted
+[Sun Nov  1 09:25:10 2026] amdgpu: Freeing queue vital buffer 0x7f9ccf200000, queue evicted
+[Sun Nov  1 09:25:10 2026] amdgpu: Freeing queue vital buffer 0x7f9cd1000000, queue evicted
+[Sun Nov  1 09:25:10 2026] [drm:amdgpu_job_submit [amdgpu]] *ERROR* Trying to push to a killed entity
+[Mon Nov  2 22:06:50 2026] docker0: port 2(veth003e47d) entered blocking state
+[Mon Nov  2 22:06:50 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:06:50 2026] veth003e47d: entered allmulticast mode
+[Mon Nov  2 22:06:50 2026] veth003e47d: entered promiscuous mode
+[Mon Nov  2 22:06:50 2026] eth0: renamed from vethbd90b02
+[Mon Nov  2 22:06:50 2026] docker0: port 2(veth003e47d) entered blocking state
+[Mon Nov  2 22:06:50 2026] docker0: port 2(veth003e47d) entered forwarding state
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3244000000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3245800000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3249e00000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f324b600000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3251400000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3253200000, queue evicted
+[Mon Nov  2 22:07:27 2026] [drm:amdgpu_job_submit [amdgpu]] *ERROR* Trying to push to a killed entity
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:07:27 2026] vethbd90b02: renamed from eth0
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:07:27 2026] veth003e47d (unregistering): left allmulticast mode
+[Mon Nov  2 22:07:27 2026] veth003e47d (unregistering): left promiscuous mode
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth7120e71: renamed from eth0
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth52e16e9 (unregistering): left allmulticast mode
+[Mon Nov  2 22:12:42 2026] veth52e16e9 (unregistering): left promiscuous mode
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered blocking state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth18c3c91: entered allmulticast mode
+[Mon Nov  2 22:12:42 2026] veth18c3c91: entered promiscuous mode
+[Mon Nov  2 22:12:42 2026] eth0: renamed from veth187908d
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered blocking state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered forwarding state
+/sys/class/drm/card1/device/mem_info_vram_used 28471296
+/sys/class/drm/card2/device/mem_info_vram_used 24793088
+/sys/class/drm/card3/device/mem_info_vram_used 24592384

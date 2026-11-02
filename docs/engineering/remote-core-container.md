@@ -17,9 +17,9 @@ Start the service in one command, using persistent directories owned by your use
 tools/notebook-remote/run-container --state ./state --packages ./packages --cache ./cache
 ```
 
-The default image is `docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0`.
+The default image is `docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0`.
 Its published manifest digest is
-`sha256:b0a49b4a342113107adae5be91dd5a909fdcd815f8264efde4778cac5eef556c`.
+`sha256:8dbdbe80240a57ac71a2db46a8b36d308dad8b499b92df190f8a096f8392030e`.
 Authenticate with `docker login docker.orlando-labs.com` before a fresh pull.
 The host port defaults to `127.0.0.1:18765`. Retrieve the bearer token from
 `state/token`; it survives image replacement and restarts. Set `--bind` to change
@@ -67,8 +67,8 @@ Build and publish from current sibling checkouts:
 tools/container-context
 mkdir -p .build/docker-context
 tar -xzf .build/container-context.tar.gz -C .build/docker-context
-docker build -f .build/docker-context/sputnik-notebook/Dockerfile -t docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0 .build/docker-context
-docker push docker.orlando-labs.com/sputnik-remote-core:20261101-1.0.0
+docker build -f .build/docker-context/sputnik-notebook/Dockerfile -t docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0 .build/docker-context
+docker push docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0
 ```
 
 The build runs service lifecycle and full remote API integration tests before
@@ -76,7 +76,20 @@ producing the runtime image. Docker's health check uses the persisted token
 without putting it in process arguments. Use `docker logs`, `docker inspect`
 and `docker restart sputnik-remote-core` to operate the service.
 
-Verified deployments of the 20261101 image:
+The 20261102 image includes the shared Core extraction and the five remote
+desktop action fixes, with targeted restart and shared history capabilities.
+Its source commits, Linux image tests and rollout logs are recorded in the
+[release evidence](../evidence/2026-11-02/core-deploy/).
+
+The 22176 rollout is verified healthy with both selected NVIDIA GPUs. The image
+was also installed on 22015 and its state/token comparison passed; the isolated
+three-MI50 candidate passed. A production GPU repeat blocked in the host AMD
+kernel driver. GPU recovery and then a host reboot were explicitly authorized;
+as of 2026-11-02 19:44 UTC, 22015 has not returned over SSH. Its post-reboot
+availability/GPU verification remains pending. See the release evidence for
+kernel diagnostics and the recovery sequence.
+
+Earlier verified deployments of the 20261101 image:
 
 | SSH port | GPU backend | Verified devices | Evidence |
 |---|---|---|---|
@@ -88,11 +101,13 @@ imports plus forward/backward on every selected GPU. The GTX 1080 Ti on 22176
 is outside the declared targets of the installed CUDA 13 Torch build; the
 previous two-GPU UUID selection remains in place.
 
-At the user's request, server cleanup completed on 2026-11-02. Stopped rollback
+Before this release, server cleanup completed at the user's request on
+2026-11-02. Stopped rollback
 containers, backups, old images, host launchers, build trees and transfer files
 were removed from both GPU servers; Notebook build/publication artifacts were
 also removed from builder 22136. Only working core images/containers and their
 mounted data/runtime dependencies remain. No bare-host Notebook processes were
 found. Docker's `unless-stopped` policy provides automatic restarts. See the
 [cleanup evidence](../evidence/2026-11-01/core-server-cleanup/) for retained paths
-and successful GPU checks after cleanup.
+and successful GPU checks after cleanup. The 20261102 upgrade retains a new
+state backup and stopped rollback container on each host.

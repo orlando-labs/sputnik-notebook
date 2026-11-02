@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Execute only after explicit user authorization for a host reboot.
+container=sputnik-remote-core
+state=/home/slowpilot/sputnik-remote-core/state
+release=/home/slowpilot/sputnik-core-deployments/20261102-remote-actions
+expected=sha256:e21143e3e635f26ce166dcacc2b1ce1f6ebd923f6f40774c82037841f00b2c1f
+[[ $(docker inspect --format '{{.Image}}' "$container") == "$expected" ]]
+[[ $(docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' "$container") == unless-stopped ]]
+backup=$(find "$release/backups" -mindepth 1 -maxdepth 1 -type d -name 'before-core-*' | sort | tail -n 1)
+[[ -d "$backup/state" ]]
+cmp "$backup/state-before.json" "$backup/state-after.json"
+cmp "$backup/state/token" "$state/token"
+gateway=$(docker top "$container" -eo pid,args | awk '/--mode gateway/ {print $1}')
+[[ "$gateway" =~ ^[0-9]+$ ]]
+trap 'kill -CONT "$gateway" 2>/dev/null || true' EXIT
+kill -STOP "$gateway"
+docker exec -e SPUTNIK_PKG_HOME=/tmp/maintenance-packages "$container" sputnik run /tmp/rocm-recovery-guard.s \
+  --grant fs.read --grant fs.write --grant net.connect -- \
+  --root "$state"
+printf 'Before boot ID='
+cat /proc/sys/kernel/random/boot_id
+printf 'Backup=%s\n' "$backup"
+sync
+printf 'Requesting authorized normal host reboot; Docker retains unless-stopped policy\n'
+sudo -n systemctl reboot

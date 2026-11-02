@@ -1,0 +1,93 @@
+Health=healthy Restarts=0
+ 447212  447190       24:35 Ss   do_sigtimedwait                     /usr/bin/tini -- /usr/local/bin/sputnik-notebook-remote --mode serve --host 0.0.0.0 --port 18765 --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik
+ 447358  447212       24:35 Sl   hrtimer_nanosleep                   /usr/local/bin/sputnik-notebook-remote --mode serve --host 0.0.0.0 --port 18765 --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik
+ 447360  447358       24:35 Sl   futex_wait_queue                    /usr/local/bin/sputnik-notebook-remote --mode agent --root /home/slowpilot/sputnik-remote-core/state --worker /usr/local/bin/sputnik-notebook-worker --python python3 --ruby ruby --sputnik /usr/local/bin/sputnik --orphan-gc-interval 0 --orphan-min-age 604800
+ 447823  447360       24:24 Ds   add_kgd_mem_to_kfd_bo_list          /usr/local/bin/sputnik-notebook-worker --notebook-worker 1 --working-directory /home/slowpilot/sputnik-remote-core/state/runtimes/263b4e2e76ee4d8ff0ea2947e8a573d1/work --environment-directory /home/slowpilot/sputnik-remote-core/state/revisions/37642fc12831450531d67bb8ce9a8aeb8cb61eddf4fb646d484107c27ce9267e --environment-fingerprint 546d4447f5ef746c2e3ab09323a93fee774d86b8321bdd0452709a4c29c4269a --grant ffi.call=* --grant ffi.load=* --grant fs.read=*
+ 455228  455227       00:00 Ss   do_wait                             bash -c docker inspect --format "Health={{.State.Health.Status}} Restarts={{.RestartCount}}" sputnik-remote-core; ps -eo pid,ppid,etime,stat,wchan:35,args | grep -E "(sputnik-notebook-worker|amdgpu_gpu_recover)"; sudo -n dmesg --ctime | tail -n 70; sudo -n cat /proc/447823/stack; ls /sys/class/drm/
+ 455262  455228       00:00 S    pipe_read                           grep -E (sputnik-notebook-worker|amdgpu_gpu_recover)
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f324b600000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3251400000, queue evicted
+[Mon Nov  2 22:07:27 2026] amdgpu: Freeing queue vital buffer 0x7f3253200000, queue evicted
+[Mon Nov  2 22:07:27 2026] [drm:amdgpu_job_submit [amdgpu]] *ERROR* Trying to push to a killed entity
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:07:27 2026] vethbd90b02: renamed from eth0
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:07:27 2026] veth003e47d (unregistering): left allmulticast mode
+[Mon Nov  2 22:07:27 2026] veth003e47d (unregistering): left promiscuous mode
+[Mon Nov  2 22:07:27 2026] docker0: port 2(veth003e47d) entered disabled state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth7120e71: renamed from eth0
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth52e16e9 (unregistering): left allmulticast mode
+[Mon Nov  2 22:12:42 2026] veth52e16e9 (unregistering): left promiscuous mode
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth52e16e9) entered disabled state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered blocking state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered disabled state
+[Mon Nov  2 22:12:42 2026] veth18c3c91: entered allmulticast mode
+[Mon Nov  2 22:12:42 2026] veth18c3c91: entered promiscuous mode
+[Mon Nov  2 22:12:42 2026] eth0: renamed from veth187908d
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered blocking state
+[Mon Nov  2 22:12:42 2026] docker0: port 1(veth18c3c91) entered forwarding state
+[Mon Nov  2 22:36:37 2026] amdgpu 0000:04:00.0: amdgpu: GPU reset begin!
+[Mon Nov  2 22:36:37 2026] amdgpu 0000:04:00.0: amdgpu: psp gfx command UNLOAD_TA(0x2) failed and response status is (0x117)
+[Mon Nov  2 22:36:37 2026] amdgpu 0000:04:00.0: amdgpu: BACO reset
+[Mon Nov  2 22:36:39 2026] amdgpu 0000:04:00.0: amdgpu: GPU reset succeeded, trying to resume
+[Mon Nov  2 22:36:39 2026] [drm] PCIE GART of 512M enabled.
+[Mon Nov  2 22:36:39 2026] [drm] PTB located at 0x00000087FEF00000
+[Mon Nov  2 22:36:39 2026] [drm] VRAM is lost due to GPU reset!
+[Mon Nov  2 22:36:39 2026] amdgpu 0000:04:00.0: amdgpu: PSP is resuming...
+[Mon Nov  2 22:36:39 2026] amdgpu 0000:04:00.0: amdgpu: reserve 0x400000 from 0x87fe000000 for PSP TMR
+[Mon Nov  2 22:36:39 2026] amdgpu 0000:04:00.0: amdgpu: RAP: optional rap ta ucode is not available
+[Mon Nov  2 22:36:39 2026] [drm] kiq ring mec 2 pipe 1 q 0
+[Mon Nov  2 22:36:39 2026] [drm] UVD and UVD ENC initialized successfully.
+[Mon Nov  2 22:36:40 2026] [drm] VCE initialized successfully.
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring gfx uses VM inv eng 0 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.0.0 uses VM inv eng 1 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.1.0 uses VM inv eng 4 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.2.0 uses VM inv eng 5 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.3.0 uses VM inv eng 6 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.0.1 uses VM inv eng 7 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.1.1 uses VM inv eng 8 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.2.1 uses VM inv eng 9 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring comp_1.3.1 uses VM inv eng 10 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring kiq_0.2.1.0 uses VM inv eng 11 on hub 0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring sdma0 uses VM inv eng 0 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring page0 uses VM inv eng 1 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring sdma1 uses VM inv eng 4 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring page1 uses VM inv eng 5 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring uvd_0 uses VM inv eng 6 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring uvd_enc_0.0 uses VM inv eng 7 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring uvd_enc_0.1 uses VM inv eng 8 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring uvd_1 uses VM inv eng 9 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring uvd_enc_1.0 uses VM inv eng 10 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring uvd_enc_1.1 uses VM inv eng 11 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring vce0 uses VM inv eng 12 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring vce1 uses VM inv eng 13 on hub 8
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: ring vce2 uses VM inv eng 14 on hub 8
+[Mon Nov  2 22:36:40 2026] [drm] Fence fallback timer expired on ring comp_1.0.0
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:04:00.0: amdgpu: GPU reset(1) succeeded!
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:83:00.0: amdgpu: GPU reset begin!
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:83:00.0: amdgpu: psp gfx command UNLOAD_TA(0x2) failed and response status is (0x117)
+[Mon Nov  2 22:36:40 2026] amdgpu 0000:83:00.0: amdgpu: BACO reset
+[Mon Nov  2 22:37:00 2026] [drm:atom_op_jump [amdgpu]] *ERROR* atombios stuck in loop for more than 20secs aborting
+[Mon Nov  2 22:37:00 2026] [drm:amdgpu_atom_execute_table_locked [amdgpu]] *ERROR* atombios stuck executing 4F5A (len 1031, WS 12, PS 8) @ 0x4FFA
+[Mon Nov  2 22:37:00 2026] [drm:amdgpu_atom_execute_table_locked [amdgpu]] *ERROR* atombios stuck executing 4EC4 (len 74, WS 0, PS 8) @ 0x4EF0
+[Mon Nov  2 22:37:00 2026] amdgpu 0000:83:00.0: amdgpu: asic atom init failed!
+[Mon Nov  2 22:37:00 2026] amdgpu 0000:83:00.0: amdgpu: GPU reset(1) failed
+[Mon Nov  2 22:37:00 2026] amdgpu 0000:83:00.0: amdgpu: GPU reset end with ret = -22
+[<0>] add_kgd_mem_to_kfd_bo_list+0x28/0xa0 [amdgpu]
+[<0>] amdgpu_amdkfd_gpuvm_alloc_memory_of_gpu+0x558/0x7c0 [amdgpu]
+[<0>] kfd_ioctl_alloc_memory_of_gpu+0x194/0x520 [amdgpu]
+[<0>] kfd_ioctl+0x38e/0x4f0 [amdgpu]
+[<0>] __x64_sys_ioctl+0x8a/0xc0
+[<0>] do_syscall_64+0x5f/0xe0
+[<0>] entry_SYSCALL_64_after_hwframe+0x78/0x80
+card0
+card0-VGA-1
+card1
+card2
+card3
+renderD128
+renderD129
+renderD130
+version
