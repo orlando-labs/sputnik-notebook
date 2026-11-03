@@ -1,6 +1,6 @@
 {
   "date": "2026-11-02",
-  "recorded_at_utc": "2026-11-02T19:44:58.114Z",
+  "recorded_at_utc": "2026-11-03T07:30:03.698Z",
   "vm_commit": "ccb0d744bf4fbe77cc0e78fe3fedaa190f8220fb",
   "notebook_commit": "bc5413054349265719149e92d99755ffd4f26b64",
   "image": "docker.orlando-labs.com/sputnik-remote-core:20261102-1.0.0",
@@ -44,17 +44,18 @@
       "candidate": "passed on 3 devices",
       "image_identity": "exact",
       "state_token_history_settings": "preserved before GPU repeat",
-      "production_gpu": "blocked in AMD kernel allocation path; failed test after timeout",
+      "production_gpu": "initial probe timed out in AMDGPU kernel; retry deferred after reboot because AMDGPU kernel workers were already blocked",
       "gpu_recovery": "explicitly authorized; first device recovered, second ATOM BIOS recovery failed",
       "host_reboot": "explicitly authorized; normal systemctl reboot requested",
-      "current_status": "SSH unavailable after reboot request; post-reboot verification pending",
-      "backup": "/home/slowpilot/sputnik-core-deployments/20261102-remote-actions/backups/before-core-20261102T191325Z"
+      "current_status": "Core healthy after reboot; AMDGPU kernel workers still blocked before retry",
+      "backup": "/home/slowpilot/sputnik-core-deployments/20261102-remote-actions/backups/before-core-20261102T191325Z",
+      "post_reboot_verify": "passed Core image, health, history/settings/token and quiescence checks"
     }
   ],
   "git_push": false,
   "concurrent_changes": "Later web deployment edits remain outside the image source snapshot and this release evidence commit.",
   "sha256": {
-    "README.md": "1eea82734981089844fa292c85ac8955f27fd566bbe4cfebf5aa2cf7062a91b4",
+    "README.md": "15333611b6966756e66c58c726c12e9aa13843db1e32e2834c601e6e99beb7a6",
     "build-image": "af7a34dd2eee0ea807df423405a248b18669949ce94fa9214e8290dbf3d80dff",
     "build.log": "e1b193943ba784b275d983dc03ed916efcff4bdd7243395bfe60f2b54fc97308",
     "candidate-22015.log": "ba20d11782a8d7cf78875e1169c0fb5c80bc62637498473561faa750dcc5b028",
@@ -87,6 +88,7 @@
     "source-manifest.json": "28e7528aa6e56c9c0ea84e399851052c7abdf116a2304910ebb7297b13d9aa20",
     "verify-22176-first.log": "4824c118f7b40959084c293faaced7e11dffd1a07a6e059a6de512a1e13248ae",
     "verify-22176.log": "3c8c37624374228021f319607a4199e2a894fec906e1d715ce62a47aaaef16d4",
-    "verify-container": "8153561de567d99feee0aac79e901b20fc7d883f793afd7a0e939cfc687003a5"
+    "verify-container": "8153561de567d99feee0aac79e901b20fc7d883f793afd7a0e939cfc687003a5",
+    "verify-22015-after-boot.log": "845f91f456701d483f173bbd8163901a982949fe7875922b8d6611b191765400"
   }
 }

@@ -84,10 +84,10 @@ Its source commits, Linux image tests and rollout logs are recorded in the
 The 22176 rollout is verified healthy with both selected NVIDIA GPUs. The image
 was also installed on 22015 and its state/token comparison passed; the isolated
 three-MI50 candidate passed. A production GPU repeat blocked in the host AMD
-kernel driver. GPU recovery and then a host reboot were explicitly authorized;
-as of 2026-11-02 19:44 UTC, 22015 has not returned over SSH. Its post-reboot
-availability/GPU verification remains pending. See the release evidence for
-kernel diagnostics and the recovery sequence.
+kernel driver. GPU recovery and a host reboot followed. On 2026-11-03, Core started
+automatically and passed health and state checks. The AMDGPU kernel workers
+were still blocked before any new GPU load, so production GPU verification
+remains pending. The release evidence includes the kernel diagnostics.
 
 Earlier verified deployments of the 20261101 image:
 

@@ -17,11 +17,10 @@ identifies every source file used by the build.
 | Host SSH port | New image | State preservation | Production GPU check | Current status |
 |---|---|---|---|---|
 | 22176 | Exact published image ID | Passed, including token | Passed on RTX 3090 + RTX 4090 | Healthy, restart count 0, original GPU UUIDs |
-| 22015 | Exact published image ID | Passed, including token | Candidate passed on 3 × MI50; production repeat blocked in AMD kernel driver | Authorized host reboot requested; awaiting SSH return |
+| 22015 | Exact published image ID | Passed, including token | Candidate passed on 3 × MI50; production repeat blocked in AMD kernel driver | Core healthy after reboot; AMDGPU kernel workers still blocked |
 
 At 19:44 UTC (22:44 Moscow) the 22015 SSH endpoint still timed out during
-banner exchange. Its availability and post-reboot GPU operation are not yet
-verified. The user was asked to inspect a console/BMC while SSH retries continue.
+banner exchange. On 2026-11-03, SSH returned and Core started automatically with the published image. Authenticated health and state preservation checks passed, including history, settings and the token. Kernel workers were already blocked in `amdgpu_tlb_fence_work` before any new GPU workload, so the production Torch retry was deferred. See `verify-22015-after-boot.log`.
 
 ## Published image
 

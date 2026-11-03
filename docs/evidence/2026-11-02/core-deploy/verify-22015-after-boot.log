@@ -1,0 +1,70 @@
+Boot ID: 7d16d1f9-053c-4b88-8bf7-1fac081a35e1
+5.14.0-570.33.2.el9_6.x86_64
+UTC=2026-11-03T07:29:55Z
+Image=sha256:e21143e3e635f26ce166dcacc2b1ce1f6ebd923f6f40774c82037841f00b2c1f Health=healthy Restarts=0 RestartPolicy=unless-stopped User=1001:1001 Ports={"18765/tcp":[{"HostIp":"127.0.0.1","HostPort":"18765"}]} Mounts=[{"Type":"bind","Source":"/home/slowpilot/sputnik-remote-core/deps/rocblas-gfx906/opt/rocm-6.3.4/lib/rocblas/library","Destination":"/opt/rocm-tensile","Mode":"","RW":false,"Propagation":"rprivate"},{"Type":"bind","Source":"/home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-cache","Destination":"/var/cache/sputnik","Mode":"","RW":true,"Propagation":"rprivate"},{"Type":"volume","Name":"fb4771cb87cc9b3c3573975e5761a19dd86e7485f9bbc2e19453d7156fecf0d3","Source":"/var/lib/docker/volumes/fb4771cb87cc9b3c3573975e5761a19dd86e7485f9bbc2e19453d7156fecf0d3/_data","Destination":"/var/lib/sputnik-notebook","Driver":"local","Mode":"","RW":true,"Propagation":""},{"Type":"bind","Source":"/home/slowpilot/sputnik-releases/20261031-current-c17d12b/container-packages","Destination":"/var/lib/sputnik-packages","Mode":"","RW":true,"Propagation":"rprivate"},{"Type":"bind","Source":"/home/slowpilot/sputnik-remote-core/state","Destination":"/home/slowpilot/sputnik-remote-core/state","Mode":"","RW":true,"Propagation":"rprivate"},{"Type":"bind","Source":"/opt/rocm-6.4.3","Destination":"/opt/rocm","Mode":"","RW":false,"Propagation":"rprivate"}] GPUs=null Devices=[{"PathOnHost":"/dev/kfd","PathInContainer":"/dev/kfd","CgroupPermissions":"rwm"},{"PathOnHost":"/dev/dri","PathInContainer":"/dev/dri","CgroupPermissions":"rwm"}] Groups=["998","39"]
+{"protocol":1,"agent_pid":9,"implementation":"sputnik","allow_book_policy_overrides":false,"capabilities":["sheet_run","bundled_modules","project_revisions","reattach","stop","force_stop","gui_reconnect","live_presentation","revision_document","compact_registry","worker_grants","worker_environment","managed_environments","orphan_gc","dependency_management","package_catalog","cell_inputs","run_document","project_inputs","idle_watch","board_actions","server_periodic","bounded_registry","run_history","storage_retention","hierarchical_policy","temporary_sessions","execution_budgets","desktop_policy","targeted_restart","desktop_history"]}
+PASS quiescent state snapshot
+0
+08328a3a077071d393626779efc6b5796d5eae994890fe04994fbae697da085e  /home/slowpilot/sputnik-core-deployments/20261102-remote-actions/backups/before-core-20261102T191325Z/state-before.json
+08328a3a077071d393626779efc6b5796d5eae994890fe04994fbae697da085e  /home/slowpilot/sputnik-core-deployments/20261102-remote-actions/backups/before-core-20261102T191325Z/state-after.json
+Backup=/home/slowpilot/sputnik-core-deployments/20261102-remote-actions/backups/before-core-20261102T191325Z
+Rollback=sputnik-core-before-20261102T191325Z Image=40591db1f396 Status=Exited (0) 12 hours ago
+PASS final identity, health, restart policy, preserved history/settings/token, quiescent state and candidate cleanup
+Blocked kernel workers:
+246
+480
+761
+3055
+3056
+3057
+3058
+3059
+3060
+3061
+3062
+3063
+3064
+3065
+3066
+[<0>] dma_fence_default_wait+0x178/0x220
+[<0>] dma_fence_wait_timeout+0x10e/0x130
+[<0>] amdgpu_tlb_fence_work+0x28/0xe0 [amdgpu]
+[<0>] process_one_work+0x197/0x380
+[<0>] worker_thread+0x2fe/0x410
+[<0>] kthread+0xe0/0x100
+[<0>] ret_from_fork+0x2c/0x50
+[<0>] dma_fence_default_wait+0x178/0x220
+[<0>] dma_fence_wait_timeout+0x10e/0x130
+[<0>] amdgpu_tlb_fence_work+0x28/0xe0 [amdgpu]
+[<0>] process_one_work+0x197/0x380
+[<0>] worker_thread+0x2fe/0x410
+[<0>] kthread+0xe0/0x100
+[<0>] ret_from_fork+0x2c/0x50
+[<0>] dma_fence_default_wait+0x178/0x220
+[<0>] dma_fence_wait_timeout+0x10e/0x130
+[<0>] amdgpu_tlb_fence_work+0x28/0xe0 [amdgpu]
+[<0>] process_one_work+0x197/0x380
+[<0>] worker_thread+0x2fe/0x410
+[<0>] kthread+0xe0/0x100
+[<0>] ret_from_fork+0x2c/0x50
+[   20.580022] [drm:amdgpu_job_submit [amdgpu]] *ERROR* Trying to push to a killed entity
+[  246.885239] INFO: task kworker/37:0:246 blocked for more than 122 seconds.
+[  246.885313] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.886606] INFO: task kworker/37:1:480 blocked for more than 122 seconds.
+[  246.886656] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.887707] INFO: task kworker/37:2:761 blocked for more than 122 seconds.
+[  246.887755] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.888711] INFO: task kworker/37:3:3055 blocked for more than 122 seconds.
+[  246.888758] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.889676] INFO: task kworker/37:4:3056 blocked for more than 122 seconds.
+[  246.889722] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.890637] INFO: task kworker/37:5:3057 blocked for more than 122 seconds.
+[  246.890683] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.891598] INFO: task kworker/37:6:3058 blocked for more than 122 seconds.
+[  246.891638] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.892545] INFO: task kworker/37:7:3059 blocked for more than 122 seconds.
+[  246.892589] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.893508] INFO: task kworker/37:8:3060 blocked for more than 122 seconds.
+[  246.893570] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
+[  246.894532] INFO: task kworker/37:9:3061 blocked for more than 122 seconds.
+[  246.894576] Workqueue: events amdgpu_tlb_fence_work [amdgpu]
