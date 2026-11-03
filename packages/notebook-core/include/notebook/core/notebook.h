@@ -46,6 +46,8 @@ char *sputnik_notebook_worker_pending(SputnikNotebook *, char **error);
 // Stateless policy validation shared with the worker. Returns canonical grants,
 // one per line, or null with a diagnostic. Does not authorize execution.
 char *sputnik_notebook_normalize_grants(const char *text, char **error);
+char *sputnik_notebook_grant_catalog(void);
+char *sputnik_notebook_missing_grants(const char *existing, const char *required, char **error);
 // Stateless Config Editor validation/formatting; never creates a runtime.
 char *sputnik_notebook_config_json(const char *text, int pretty, char **error);
 char *sputnik_notebook_config_document(const char *text, const char *format, int pretty, char **error);

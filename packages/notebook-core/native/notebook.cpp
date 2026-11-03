@@ -1320,6 +1320,29 @@ char *sputnik_notebook_normalize_grants(const char *text, char **error) {
   } catch (...) { report_current_exception(error); return nullptr; }
 }
 
+char *sputnik_notebook_grant_catalog(void) {
+  try {
+    std::string text;
+    for (const auto &name : sputnik::capability::canonical_capability_names()) {
+      if (!text.empty()) text += '\n';
+      text += name;
+    }
+    return copy_c_string(text);
+  } catch (...) { return nullptr; }
+}
+
+char *sputnik_notebook_missing_grants(const char *existing, const char *required, char **error) {
+  if (error) *error = nullptr;
+  try {
+    const auto granted = sputnik::notebook::worker::parse_grants(existing ? existing : "");
+    auto missing = sputnik::notebook::worker::parse_grants(required ? required : "");
+    missing.erase(std::remove_if(missing.begin(), missing.end(), [&](const auto &grant) {
+      return sputnik::capability::capability_set_allows(granted, grant.name, grant.target);
+    }), missing.end());
+    return copy_c_string(sputnik::notebook::worker::grants_text(missing));
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
 char *sputnik_notebook_config_json(const char *text, int pretty, char **error) {
   if (error) *error = nullptr;
   try {

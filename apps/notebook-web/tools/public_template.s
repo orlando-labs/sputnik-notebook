@@ -9,8 +9,13 @@ export main
 def main():
   parser = ArgParser()
   parser.arg("--core-root", required: true)
+  parser.flag("--health-only")
   args = parser.parse_or_raise
   core = Client(args[:core_root])
+  if args[:health_only]:
+    core.handle("health", {})
+    print Json.generate({ready: true})
+    return null
   document = {format: "sputnik-notebook", version: 4, title: "Getting started", active_sheet: "main",
     sheets: [{id: "main", title: "Main", cells: [{id: "1", kind: "code", mode: "manual", source: "message = \"Hello, Sputnik!\"\nmessage\n"}]}],
     modules: [], auto_imports: [], dependencies: [], inputs: [], boards: []}

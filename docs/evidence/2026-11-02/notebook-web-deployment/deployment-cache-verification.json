@@ -1,0 +1,14 @@
+{
+  "critical_changed": [],
+  "changed": [
+    "sputnik-notebook/apps/notebook-web/deploy/Dockerfile",
+    "sputnik-notebook/apps/notebook-web/deploy/compose.yaml",
+    "sputnik-notebook/apps/notebook-web/deploy/healthcheck",
+    "sputnik-notebook/apps/notebook-web/frontend/test/deployment-mode.spec.ts",
+    "sputnik-notebook/apps/notebook-web/backend/app.s",
+    "sputnik-notebook/apps/notebook-web/tools/public_template.s",
+    "sputnik-notebook/apps/notebook-web/deploy/nginx.remote.conf"
+  ],
+  "cache_source": "20261102-4i4-72c7b495",
+  "release_source": "20261102-4i4-02914a2e"
+}

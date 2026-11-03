@@ -63,6 +63,7 @@ export ServiceSignals, ServiceProcess, executable
 
 native def package_home() -> Str from "nb_core_package_home"
 native def package_link(source as Str, home as Str, relative as Str) -> Bool from "nb_core_package_link" blocking
+native def package_adopt(staging as Str, home as Str, relative as Str) -> Bool from "nb_core_package_adopt" blocking
 native def package_unlink(home as Str, relative as Str) -> Bool from "nb_core_package_unlink" blocking
 native def package_reference?(path as Str) -> Bool from "nb_core_package_reference" blocking
-export package_home, package_link, package_unlink, package_reference?
+export package_home, package_link, package_adopt, package_unlink, package_reference?

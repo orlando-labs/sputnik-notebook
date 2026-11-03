@@ -13,13 +13,14 @@ await new Promise(resolve => listener.listen(0, '127.0.0.1', resolve))
 const port = listener.address().port
 await new Promise(resolve => listener.close(resolve))
 const origin = `http://127.0.0.1:${port}`
-const args = ['--mode', 'development', '--origin', origin, '--port', String(port), '--database', path.join(root, 'catalog.sqlite'),
-  '--client-id', 'not-used', '--client-secret', 'not-used', '--session-secret', 'main-test-session-secret-at-least-32-bytes',
-  '--csrf-secret', 'main-test-csrf-secret-at-least-32-bytes', '--core-root', path.join(root, 'unstarted-core')]
+const env = { ...process.env, ORBIT_ORIGIN: origin, ORBIT_PORT: String(port), NOTEBOOK_WEB_DATABASE: path.join(root, 'catalog.sqlite'),
+  GITHUB_CLIENT_ID: 'not-used', GITHUB_CLIENT_SECRET: 'not-used', ORBIT_SESSION_SECRET: 'main-test-session-secret-at-least-32-bytes',
+  ORBIT_CSRF_SECRET: 'main-test-csrf-secret-at-least-32-bytes', NOTEBOOK_CORE_ROOT: path.join(root, 'unstarted-core') }
+const args = ['--mode', 'development']
 const native = process.argv.includes('--native')
 const server = native
-  ? spawn(path.join(APP, 'build/native/notebook-web'), args, { cwd: APP, stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' })
-  : backend('backend/main.s', args, process.env, ['ignore', 'pipe', 'pipe'])
+  ? spawn(path.join(APP, 'build/native/notebook-web'), args, { cwd: APP, env, stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' })
+  : backend('backend/main.s', args, env, ['ignore', 'pipe', 'pipe'])
 let output = ''
 server.stdout.on('data', value => { output += value })
 server.stderr.on('data', value => { output += value })

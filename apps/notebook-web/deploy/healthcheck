@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+test -n "${ORBIT_ORIGIN:-}"
+authority=${ORBIT_ORIGIN#https://}
+test "$authority" != "$ORBIT_ORIGIN"
+exec curl --fail --silent --show-error --max-time 4 \
+  --header "Host: $authority" --header "X-Forwarded-Host: $authority" \
+  --header 'X-Forwarded-Proto: https' --header 'X-Forwarded-For: 127.0.0.1' \
+  "http://127.0.0.1:${ORBIT_PORT:-3000}/health/ready" --output /dev/null

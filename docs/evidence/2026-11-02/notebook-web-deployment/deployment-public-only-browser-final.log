@@ -1,0 +1,22 @@
+
+> sputnik-notebook-web@0.1.0 test:browser
+> playwright test test/public.spec.ts test/deployment-mode.spec.ts
+
+[WebServer] (node:67170) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:67184) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/deployment-mode.spec.ts:3:1 › public-only deployment has no sign-in or private workspace authority (478ms)
+  ✓  2 test/public.spec.ts:21:1 › guest opens the pinned public template inertly, edits/runs explicitly and discards its private copy (2.4s)
+  ✓  3 test/public.spec.ts:45:1 › two anonymous visitors are isolated; CSRF, forged authority and private APIs remain rejected (567ms)
+  ✓  4 test/public.spec.ts:69:1 › lost opening/run replies recover the same commands only on explicit retry or receipt check (1.7s)
+  ✓  5 test/public.spec.ts:92:1 › tighter book quota stops work; fresh copies keep charged visitor time and the public/storage ceilings (2.4s)
+  ✓  6 test/public.spec.ts:112:1 › lease expiry and hidden/disconnected views discard public copies without replay (15.6s)
+  ✓  7 test/public.spec.ts:124:1 › admission serializes concurrent opens and bounds repeated copies for the same anonymous visitor (608ms)
+  -  8 test/public.spec.ts:133:1 › actual 60-second aggregate ceiling survives a fresh copy
+
+  1 skipped
+  7 passed (27.5s)

@@ -218,6 +218,13 @@ Linking an external package opts into version 3.
   imports can select bundled modules instead of ambient Auto-import. Dependencies
   can be unlinked through their context menu; external package files are never
   deleted. Apply refreshes external source edits. See the dependency guide above.
+- The Sputnik package installer shows declared worker grants, including their
+  targets, and the native loading grants for native builds. A green check marks
+  each grant the selected worker already has. **Use Package and Add Grants…**
+  confirms the missing grants before installing and applies them to that sheet
+  after the package is ready.
+  **Worker Settings** offers a searchable grant catalogue and an optional target
+  for each grant added to the draft.
 
 Text blocks have portable plain-text source plus versioned UTF-16 style ranges;
 they are not HTML, RTF, or executable cells. isputnik displays their plain text

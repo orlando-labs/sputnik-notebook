@@ -27,8 +27,8 @@ class Packages:
   def status(current, id):
     project = @catalog.require_project(current, id)
     source = @notebooks.call("dependency.status", {project_id: project[:core_project_id]})
-    {can_manage: @catalog.role(current, project) == "owner", native_allowed: @native,
-      packages: source[:packages].map |item|: {name: item[:name], display_name: item[?:display_name] or item[:name], version: item[:version], variant: item[?:variant], digest: item[:digest]},
+    {can_manage: @catalog.role(current, project) == "owner", native_allowed: @native, package_scopes: source[?:package_scopes] or ["shared"],
+      packages: source[:packages].map |item|: {name: item[:name], display_name: item[?:display_name] or item[:name], version: item[:version], variant: item[?:variant], digest: item[:digest], scope: item[?:scope]},
       jobs: source[:jobs].map: job($it)}
 
   def read(current, id, operation):
@@ -44,22 +44,28 @@ class Packages:
     source += "@" + bounded(version, "package version", 128) if version
     value = @notebooks.call("dependency.catalog", {project_id: project[:core_project_id], query: query, source: source}, execution: true)
     if query == "versions":
-      return {package_ref: value[:package_ref], versions: value[:versions].map |release|: {version: release[:version], yanked: release[:yanked]}}
+      return {package_ref: value[:package_ref], versions: value[:versions].map |release|: {version: release[:version], yanked: release[:yanked], shared_installed: release[?:shared_installed] or false}}
     artifacts = value[:artifacts].map |artifact|:
       selection = artifact[:host_selection]
       target = artifact[?:target] or {}
-      {variant: artifact[:variant], native_mode: artifact[?:native_mode], size: artifact[?:size],
+      {variant: artifact[:variant], native_mode: artifact[?:native_mode], size: artifact[?:size], shared_installed: artifact[?:shared_installed] or false,
+        runtime_grants: artifact[?:runtime_grants],
         target: {os: target[?:os], arch: target[?:arch], min_os: target[?:min_os], compute_backend: target[?:compute_backend]},
         host_selection: {compatible: selection[:compatible], reason: selection[:reason], backend: selection[:backend], bundle: selection[:bundle], allow_native: selection[:allow_native], build_from_source: selection[:build_from_source]}}
     {package_ref: value[:package_ref], version: value[:version], yanked: value[:yanked], recommended_variant: value[:recommended_variant],
       host: {os: value[:host][:os], arch: value[:host][:arch]}, artifacts: artifacts}
 
-  def change(current, id, command, action, name, version, variant, native, build, large):
+  def change(current, id, command, action, name, version, variant, native, build, large, scope = null):
     project = @catalog.require_project(current, id, capability: :manage)
     raise InvalidInput("Choose Install or Remove.") unless ["install_sputnik", "remove_sputnik"].include?(action)
+    raise InvalidInput("Choose shared or notebook-only package storage.") unless scope == null or ["shared", "local"].include?(scope)
+    if action == "install_sputnik" and scope == "local":
+      inventory = @notebooks.call("dependency.status", {project_id: project[:core_project_id]})
+      raise InvalidInput("This Core does not support notebook-only package storage.") unless (inventory[?:package_scopes] or []).include?("local")
     raise WebError(403, "native_packages_disabled", "Native package installation/builds are disabled by the server operator.") if not @native and (native or build or large)
     params = {project_id: project[:core_project_id], command_id: command_id(command), action: action, source: package_name(name), version: bounded(version, "package version", 128)}
     if action == "install_sputnik":
+      params[:scope] = scope if scope
       params[:variant] = bounded(variant, "package build") if variant != ""
       params[:allow_native] = native
       params[:build_from_source] = build

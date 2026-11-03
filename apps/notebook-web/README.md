@@ -632,10 +632,15 @@ changes separate from the current server head. Installed server packages and
 prepared environments are independent of the source archive.
 
 Dependencies lists installed Sputnik packages and operation history. Only the
-owner can install/remove packages using the server-configured registry. Native
+owner can install/remove packages using the server-configured registry. Shared
+server storage is the default. A matching installed build can be reused without
+downloading it. Choose **This notebook only** to install a private copy. Native
 installation/build flags require the operator to start `backend/main.s` with
-`--allow-native-packages`; the default is disabled. This setting does not add
-worker runtime grants. Python/Ruby manifests can be edited as bundled files;
+`--allow-native-packages`; the default is disabled. The package build shows its
+declared worker grants and the grants needed for native loading. **Add package
+grants…** opens a draft for the current sheet with the operator-allowed grants
+selected. Worker settings support searching the operator's grant catalogue and
+require confirmation before resetting the worker. Python/Ruby manifests can be edited as bundled files;
 environment preparation and per-sheet worker settings are available in Environments… (see below).
 
 The notebook-core host extension requires libarchive headers and `-larchive`

@@ -25,6 +25,7 @@ def catalog(h):
   check(builds[:recommended_variant] == "source", "portable variant recommendation")
   builds[:artifacts].each |artifact|:
     check(artifact[:host_selection][:compatible] == (artifact[:variant] == "source"), "execution-host compatibility")
+    equal(artifact[:runtime_grants], ["fs.read=/package-fixture"], "catalog preserves the declared grant target")
   check(["macos", "linux"].include?(builds[:host][:os]), "catalog reports execution host")
   ["install", "--help", "missing"].each |value|:
     query = if value == "install" then "install" else "versions"
@@ -142,7 +143,10 @@ def dependencies(h, fixture):
   check(installed[:state] == "succeeded", Json.generate(installed))
   inventory = h.call("GET", route)[:packages]
   check(inventory.count == 1 and inventory[0][:version] == "1.0.0", "exact registry installation")
-  check(inventory[0][:display_name] == "editor-probe" and fs.metadata(inventory[0][:directory]).symlink?, "book holds a shared package reference with a short display name")
+  check(inventory[0][:display_name] == "editor-probe" and inventory[0][:scope] == "shared" and fs.metadata(inventory[0][:directory]).symlink?, "book holds a shared package reference with a short display name")
+  catalog = h.call("POST", "/v1/projects/" + project + "/package-catalog", {query: "variants", source: "editor-probe@1.0.0"})
+  cached = catalog[:artifacts].find |item|: item[:variant] == "source" and item[:shared_installed]
+  check(cached != null, "catalog marks the installed shared build")
   foreign = h.directory + "/foreign-package"
   fs.mkdir_p(foreign)
   fs.atomic_write_text(foreign + "/modules.index", "sputnik.package.index.v2\nevil/private\n1.0.0\n" + inventory[0][:digest] + "\nsource\nevil.private\n")
@@ -162,6 +166,20 @@ def dependencies(h, fixture):
     value = h.call("GET", second_route + "/" + second[:id])
     value unless ["queued", "running"].include?(value[:state])
   check(reused[:state] == "succeeded" and fixture.downloads.count == downloads, "second book reuses verified installation without downloading")
+  local_project = "packages-local"
+  local_saved = h.upload(local_project, document("from editor_probe import answer\nanswer()\n"))
+  local_route = "/v1/projects/" + local_project + "/dependencies"
+  local_job = h.call("POST", local_route, body.merge({command_id: "install-private", scope: "local"}))
+  copied = eventually:
+    value = h.call("GET", local_route + "/" + local_job[:id])
+    value unless ["queued", "running"].include?(value[:state])
+  check(copied[:state] == "succeeded" and fixture.downloads.count == downloads + 1, Json.generate(copied))
+  private_package = h.call("GET", local_route)[:packages][0]
+  check(private_package[:scope] == "local" and not fs.metadata(private_package[:directory]).symlink?, "notebook-only install keeps a private copy")
+  check(fs.metadata(inventory[0][:directory]).symlink?, "notebook-only install leaves other shared references intact")
+  local_run = h.wait_run(h.start(local_project, local_saved[:revision])[:run_id])
+  check(local_run[:state] == "succeeded" and local_run[:result][:cells][0][:result] == "42", "notebook-only package resolves in its worker")
+  h.delete(local_project)
   removed = h.call("POST", route, {command_id: "remove", action: "remove_sputnik", source: "test/editor-probe"})
   terminal = eventually:
     value = h.call("GET", route + "/" + removed[:id])

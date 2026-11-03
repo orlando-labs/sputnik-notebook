@@ -1,0 +1,9 @@
+{
+  "core": {
+    "total_bytes": 10737418240,
+    "project_bytes": 67108864,
+    "max_run_bytes": 8388608,
+    "minimum_free_bytes": 536870912,
+    "run_seconds": 60
+  }
+}

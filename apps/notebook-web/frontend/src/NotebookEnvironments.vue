@@ -12,6 +12,8 @@ const base = `/api/projects/${encodeURIComponent(props.projectId)}`
 const key = `sputnik.runtime-settings.pending.v1:${props.accountId}:${props.projectId}`
 const dialog = ref<HTMLDialogElement>(), status = ref<Status | null>(null), settings = ref<Settings | null>(null)
 const sheet = ref(''), grants = ref<string[]>([]), environment = ref('keep'), error = ref(''), note = ref(''), busy = ref(false), loading = ref(false), confirming = ref(false)
+const grantSearch = ref(''), selectedGrant = ref(''), packageGrants = ref<string[]>([])
+const grantChoices = computed(() => (settings.value?.allowed_grants || []).filter(grant => !grants.value.includes(grant) && grant.toLowerCase().includes(grantSearch.value.trim().toLowerCase())))
 const diagnostics = ref<{ id: string; lines: string[] } | null>(null), pending = ref<Command | null>(null), unknown = ref(false)
 let disposed = false, generation = 0, timer: ReturnType<typeof setTimeout> | undefined, controller: AbortController | undefined
 try { const value = JSON.parse(sessionStorage.getItem(key) || 'null'); if (['worker', 'environment'].includes(value?.kind) && typeof value.body?.command_id === 'string') pending.value = value } catch { /* Server receipts remain authoritative. */ }
@@ -36,7 +38,17 @@ async function refresh(reset = false) {
     if (disposed || stamp !== generation) return
     status.value = value
     // Polling never rebases a local draft over another owner's changes.
-    if (reset || !settings.value) { settings.value = worker; grants.value = [...worker.grants]; environment.value = 'keep'; confirming.value = false }
+    if (reset || !settings.value) {
+      settings.value = worker; grants.value = [...worker.grants]; environment.value = 'keep'; confirming.value = false
+      if (packageGrants.value.length) {
+        const requested = packageGrants.value
+        const permitted = requested.filter(grant => worker.allowed_grants.includes(grant))
+        const blocked = requested.filter(grant => !worker.allowed_grants.includes(grant))
+        if (worker.can_manage) grants.value = [...new Set([...grants.value, ...permitted])]
+        note.value = blocked.length ? `Only operator-allowed grants can be added here. Review unavailable grants: ${blocked.join(', ')}.` : 'Package grants added to the draft. Review settings to apply them.'
+        packageGrants.value = []
+      }
+    }
     if (!worker.can_manage) confirming.value = false
     await check()
   } catch (cause) { if (!disposed && stamp === generation) { error.value = cause instanceof Error ? cause.message : 'Could not read environments.'; denied(cause) } }
@@ -73,8 +85,8 @@ function apply() {
 async function inspect(item: Environment) {
   await act(async () => { const result = await api<{ diagnostics: string[] }>(`${base}/environments/${encodeURIComponent(item.id)}`); if (!disposed && dialog.value?.open) diagnostics.value = { id: item.id, lines: result.diagnostics } })
 }
-function selectSheet() { settings.value = null; diagnostics.value = null; confirming.value = false; void refresh(true) }
-function show(native = false) { sheet.value = props.sheetId || props.sheets[0]?.id || ''; status.value = null; settings.value = null; error.value = ''; note.value = native ? 'Native execution requires explicit ffi.call and ffi.load grants. Select the permitted grants below, then review and apply the worker reset.' : ''; dialog.value?.showModal(); void refresh(true) }
+function selectSheet() { settings.value = null; diagnostics.value = null; confirming.value = false; selectedGrant.value = ''; void refresh(true) }
+function show(native = false, required: string[] = []) { sheet.value = props.sheetId || props.sheets[0]?.id || ''; status.value = null; settings.value = null; error.value = ''; grantSearch.value = ''; selectedGrant.value = ''; packageGrants.value = [...required]; note.value = native && !required.length ? 'Native execution requires explicit ffi.call and ffi.load grants. Select the permitted grants below, then review and apply the worker reset.' : ''; dialog.value?.showModal(); void refresh(true) }
 watch(() => props.writable, value => { if (!value) close() })
 watch(() => props.revision, () => { confirming.value = false })
 onUnmounted(() => { disposed = true; close() })
@@ -100,7 +112,15 @@ defineExpose({ show })
       <section aria-label="Worker settings"><h3>Worker settings</h3><label for="environment-sheet">Sheet</label><select id="environment-sheet" v-model="sheet" :disabled="busy || !!pending" @change="selectSheet"><option v-for="item in sheets" :key="item.id" :value="item.id">{{ item.title }}</option></select>
         <template v-if="settings">
           <label for="worker-environment">Environment for next worker</label><select id="worker-environment" v-model="environment" :disabled="!allowed || confirming"><option value="keep">Keep current setting{{ settings.custom_environment ? ' (configured by operator)' : settings.environment_id ? ' (prepared generation)' : ' (saved manifests)' }}</option><option value="default">Resolve saved notebook manifests</option><option v-for="item in status.environments.filter(item => item.state === 'ready')" :key="item.id" :value="item.id">{{ item.python ? 'Python' : '' }}{{ item.ruby ? ' Ruby' : '' }} · {{ item.id }}</option></select>
-          <fieldset :disabled="!allowed || confirming"><legend>Worker grants allowed by the operator</legend><p v-if="!settings.allowed_grants.length" class="source-note">No grants can be changed through the web app.</p><label v-for="grant in settings.allowed_grants" :key="grant"><input v-model="grants" type="checkbox" :value="grant">{{ grant }}</label></fieldset>
+          <fieldset :disabled="!allowed || confirming"><legend>Worker grants allowed by the operator</legend>
+            <p v-if="!settings.allowed_grants.length" class="source-note">No grants can be changed through the web app.</p>
+            <template v-else>
+              <label for="worker-grant-search">Search available grants</label><input id="worker-grant-search" v-model="grantSearch" @input="selectedGrant = ''">
+              <label for="worker-grant-choice">Available grant</label><select id="worker-grant-choice" v-model="selectedGrant"><option value="">Choose a grant</option><option v-for="grant in grantChoices" :key="grant" :value="grant">{{ grant }}</option></select>
+              <button :disabled="!selectedGrant" @click="grants.push(selectedGrant); selectedGrant = ''">Add to draft</button>
+              <ul><li v-for="grant in grants" :key="grant"><code>{{ grant }}</code> <button :aria-label="`Remove grant ${grant}`" @click="grants = grants.filter(item => item !== grant)">Remove</button></li></ul>
+            </template>
+          </fieldset>
           <p v-if="settings.preserved_grants" class="source-note">{{ settings.preserved_grants }} operator-configured grant(s) will be preserved.</p>
           <p class="source-note">Applying discards worker variables and pauses its services. Active runs must finish or be stopped first. The next Run is explicit.</p>
           <div v-if="confirming" class="execution-message" role="status"><p>Reset the worker for {{ sheets.find(item => item.id === sheet)?.title }} with these settings?</p><button :disabled="!allowed" @click="apply">Confirm settings and reset</button><button :disabled="busy" @click="confirming = false">Keep editing settings</button></div>

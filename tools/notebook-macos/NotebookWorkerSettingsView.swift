@@ -13,6 +13,11 @@ struct NotebookWorkerSettingsEditor: View {
     @State private var loading = true
     @State private var applying = false
     @State private var message: String?
+    @State private var showingGrantCatalog = false
+    @State private var grantSearch = ""
+    @State private var grantName = ""
+    @State private var grantTarget = ""
+    private let grantCatalog = workerGrantCatalog()
 
     private var current: Bool { model.documentIdentity == document && remote.selected == execution }
     private var validation: String? {
@@ -33,6 +38,46 @@ struct NotebookWorkerSettingsEditor: View {
                 : "Automatic prepares a persistent server environment from requirements.lock / requirements.txt and Gemfile.lock. A custom path selects an existing directory on the server.")
                 .font(.caption).foregroundStyle(.secondary)
             Text("Runtime grants").font(.headline)
+            HStack {
+                Button(grantName.isEmpty ? "Choose a grant…" : grantName) {
+                    grantSearch = ""
+                    showingGrantCatalog.toggle()
+                }
+                .popover(isPresented: $showingGrantCatalog) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        TextField("Search available grants", text: $grantSearch).textFieldStyle(.roundedBorder)
+                            .accessibilityLabel("Search available grants")
+                        let matches = grantCatalog.filter { grantSearch.isEmpty || $0.localizedCaseInsensitiveContains(grantSearch) }
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 2) {
+                                if matches.isEmpty { Text("No matching grants").foregroundStyle(.secondary) }
+                                ForEach(matches, id: \.self) { name in
+                                    Button {
+                                        grantName = name
+                                        grantTarget = ""
+                                        showingGrantCatalog = false
+                                    } label: {
+                                        Text(name).font(.system(.body, design: .monospaced))
+                                            .frame(maxWidth: .infinity, alignment: .leading).padding(4)
+                                    }.buttonStyle(.plain)
+                                }
+                            }
+                        }.frame(height: 220)
+                    }.padding(12).frame(width: 300)
+                }
+                TextField("Target (optional, all if empty)", text: $grantTarget)
+                    .textFieldStyle(.roundedBorder).disabled(grantName.isEmpty)
+                Button("Add to Draft") {
+                    let target = grantTarget.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let grant = grantName + "=" + (target.isEmpty ? "*" : target)
+                    do {
+                        let existing = try normalizedWorkerGrants(text).split(separator: "\n").map(String.init)
+                        let additions = try missingWorkerGrants([grant], from: existing)
+                        text = try normalizedWorkerGrants((existing + additions).joined(separator: "\n"))
+                        message = nil
+                    } catch { message = error.localizedDescription }
+                }.disabled(grantName.isEmpty || grantTarget.contains(where: \.isNewline))
+            }.disabled(loading || applying)
             Text("Enter one capability per line: capability=target. Omit =target to allow all targets. An empty list removes explicit grants.")
                 .font(.callout).foregroundStyle(.secondary)
             TextEditor(text: $text)

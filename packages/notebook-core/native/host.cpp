@@ -805,6 +805,19 @@ extern "C" SputnikStatus nb_core_package_home(SputnikCtx *cx, const SputnikValue
   try { const auto path = notebook_package_home().string(); *out = sputnik_make_str(cx, path.data(), path.size()); return SPUTNIK_OK; }
   catch (const std::exception &e) { return sputnik_fault(cx, "IOError", e.what()); }
 }
+static void publish_package(const std::filesystem::path &staged, const std::filesystem::path &target) {
+  namespace fs = std::filesystem;
+  const auto current = fs::symlink_status(target);
+  if (fs::exists(current) && !fs::is_symlink(current) && !fs::is_regular_file(target / "modules.index"))
+    throw ProtocolError("refusing to replace a directory without an installed package index");
+  const auto previous = target.parent_path() / (".previous-" + target.filename().string() + "-" + std::to_string(getpid()));
+  if (fs::exists(fs::symlink_status(previous))) throw ProtocolError("unfinished package reference change");
+  const bool moved = fs::exists(current) || fs::is_symlink(current);
+  if (moved) fs::rename(target, previous);
+  try { fs::rename(staged, target); }
+  catch (...) { if (moved) fs::rename(previous, target); throw; }
+  if (moved) fs::remove_all(previous);
+}
 extern "C" SputnikStatus nb_core_package_link(SputnikCtx *cx, const SputnikValue *args, size_t argc, SputnikValue *out) {
   try {
     namespace fs = std::filesystem;
@@ -815,21 +828,24 @@ extern "C" SputnikStatus nb_core_package_link(SputnikCtx *cx, const SputnikValue
     if (within.empty() || *within.begin() == ".." || !fs::is_regular_file(source / "modules.index")) throw ProtocolError("package is outside shared storage");
     const auto target = package_reference(str(cx, args[1]), str(cx, args[2]));
     if (fs::exists(target) && fs::canonical(target) == source) { *out = sputnik_make_bool(cx, true); return SPUTNIK_OK; }
-    if (fs::exists(target) && !fs::is_symlink(target) && !fs::is_regular_file(target / "modules.index"))
-      throw ProtocolError("refusing to replace a directory without an installed package index");
     const auto staging = target.parent_path() / (".link-" + target.filename().string() + "-" + std::to_string(getpid()));
-    const auto previous = target.parent_path() / (".previous-" + target.filename().string() + "-" + std::to_string(getpid()));
-    if (fs::exists(staging) || fs::exists(previous)) throw ProtocolError("unfinished package reference change");
     fs::create_directory_symlink(source, staging);
-    bool moved = false;
-    try {
-      if (fs::exists(target) || fs::is_symlink(target)) { fs::rename(target, previous); moved = true; }
-      fs::rename(staging, target);
-    } catch (...) {
-      if (moved) fs::rename(previous, target);
-      fs::remove(staging); throw;
-    }
-    if (moved) fs::remove_all(previous); // remove_all never traverses the old symlink.
+    try { publish_package(staging, target); }
+    catch (...) { fs::remove(staging); throw; }
+    *out = sputnik_make_bool(cx, true); return SPUTNIK_OK;
+  } catch (const std::exception &e) { return sputnik_fault(cx, "IOError", e.what()); }
+}
+extern "C" SputnikStatus nb_core_package_adopt(SputnikCtx *cx, const SputnikValue *args, size_t argc, SputnikValue *out) {
+  try {
+    namespace fs = std::filesystem;
+    if (argc != 3) throw ProtocolError("package_adopt expects staging home, notebook home and reference");
+    const auto relative = str(cx, args[2]);
+    const auto target = package_reference(str(cx, args[1]), relative);
+    const auto staging = fs::canonical(str(cx, args[0]));
+    const auto source = staging / relative;
+    if (fs::canonical(source) != source || !fs::is_regular_file(source / "modules.index"))
+      throw ProtocolError("invalid staged notebook package");
+    publish_package(source, target);
     *out = sputnik_make_bool(cx, true); return SPUTNIK_OK;
   } catch (const std::exception &e) { return sputnik_fault(cx, "IOError", e.what()); }
 }

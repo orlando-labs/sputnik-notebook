@@ -1,0 +1,9 @@
+ARG CANDIDATE_IMAGE
+FROM ${CANDIDATE_IMAGE} AS verification
+COPY sputnik-notebook/apps/notebook-web/test/deployment_probe.s /opt/notebook-verification/deployment_probe.s
+COPY sputnik-notebook/apps/notebook-web/deploy/verify-runtime /opt/notebook-verification/verify-runtime
+RUN sh /opt/notebook-verification/verify-runtime
+
+# Test programs, cookie state and temporary services are not in the release.
+FROM ${CANDIDATE_IMAGE} AS release
+COPY --from=verification /tmp/notebook-runtime-evidence/ /opt/notebook-evidence/runtime/

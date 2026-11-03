@@ -1,0 +1,63 @@
+#!/bin/sh
+set -eu
+umask 077
+verify_root=$(mktemp -d /tmp/nbimage-XXXXXX)
+verify_core=
+verify_web=
+cleanup() {
+  if [ -n "$verify_web" ]; then kill -TERM "$verify_web" 2>/dev/null || :; wait "$verify_web" 2>/dev/null || :; fi
+  if [ -n "$verify_core" ]; then kill -TERM "$verify_core" 2>/dev/null || :; wait "$verify_core" 2>/dev/null || :; fi
+  rm -rf "$verify_root"
+}
+trap cleanup EXIT
+trap 'exit 143' TERM HUP
+trap 'exit 130' INT
+! command -v python3
+! command -v python
+! command -v node
+export SPUTNIK_PKG_HOME="$verify_root/packages" SPUTNIK_VM_CACHE="$verify_root/vm"
+export SPUTNIK_NATIVE_RT_CACHE="$verify_root/native-runtime" SPUTNIK_NATIVE_EXT_CACHE="$verify_root/native-extensions"
+export ORBIT_ORIGIN=https://notebook.example.test ORBIT_PORT=3000
+export ORBIT_SESSION_SECRET=image-only-session-secret-with-no-production-authority
+export ORBIT_CSRF_SECRET=image-only-csrf-secret-with-no-production-authority
+mkdir -p /tmp/notebook-runtime-evidence
+start_core() {
+  /usr/local/bin/sputnik-notebook-remote --mode agent --root "$verify_root/core" \
+    --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik > "$verify_root/core.log" 2>&1 &
+  verify_core=$!
+  verify_try=0
+  until /usr/local/bin/notebook-public-template --core-root "$verify_root/core" --health-only >/dev/null 2>&1; do
+    verify_try=$((verify_try + 1)); test "$verify_try" -lt 100 || { cat "$verify_root/core.log"; exit 1; }; sleep 0.1
+  done
+}
+start_web() {
+  export NOTEBOOK_WEB_DATABASE="$verify_root/catalog.sqlite" NOTEBOOK_CORE_ROOT="$verify_root/core" NOTEBOOK_PUBLIC_TEMPLATES="$verify_root/templates.json"
+  /usr/local/bin/notebook-web --mode production --behind-proxy --public-only \
+    > "$verify_root/web.log" 2>&1 &
+  verify_web=$!
+  verify_try=0
+  until sh /usr/local/bin/notebook-web-healthcheck >/dev/null 2>&1; do
+    verify_try=$((verify_try + 1)); test "$verify_try" -lt 100 || { cat "$verify_root/web.log"; exit 1; }; sleep 0.1
+  done
+}
+probe() {
+  /usr/local/bin/sputnik run /opt/notebook-verification/deployment_probe.s \
+    --grant net.connect --grant fs.read --grant fs.write --grant fs.metadata --grant random.secure --grant time.now -- \
+    --origin "$ORBIT_ORIGIN" --connect-origin http://127.0.0.1:3000 --allow-http-loopback \
+    --phase "$1" --state "$verify_root/visitor.json" --report "/tmp/notebook-runtime-evidence/$1.json"
+}
+start_core
+/usr/local/bin/notebook-public-template --core-root "$verify_root/core" > "$verify_root/templates.json"
+start_web
+probe begin
+kill -TERM "$verify_web"; wait "$verify_web" 2>/dev/null || :; verify_web=
+start_web
+probe verify
+cp /tmp/notebook-runtime-evidence/verify.json /tmp/notebook-runtime-evidence/http-restart.json
+kill -TERM "$verify_core"; wait "$verify_core" 2>/dev/null || :; verify_core=
+if sh /usr/local/bin/notebook-web-healthcheck >/dev/null 2>&1; then echo 'readiness must fail while Core is stopped' >&2; exit 1; fi
+start_core
+probe verify
+cp /tmp/notebook-runtime-evidence/verify.json /tmp/notebook-runtime-evidence/core-restart.json
+sha256sum /opt/notebook-verification/deployment_probe.s /opt/notebook-verification/verify-runtime > /tmp/notebook-runtime-evidence/verification-sources.sha256
+echo 'PASS Python/Node-free runtime: real anonymous execution, HTTP/Core restart, fail-closed readiness and retained quota'

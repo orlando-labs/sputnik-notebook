@@ -7,6 +7,7 @@ struct NotebookInstalledPackage: Decodable, Identifiable {
     var display_name: String? = nil
     let variant: String?
     let digest: String?
+    let scope: String?
     var id: String { name + "@" + version + (variant.map { "/" + $0 } ?? "") }
     var displayName: String { display_name ?? name.split(separator: "/").last.map(String.init) ?? name }
 }
@@ -22,6 +23,7 @@ struct NotebookDependencyJob: Decodable, Identifiable {
 struct NotebookDependencyInventory: Decodable {
     struct Ready: Decodable { let directory: String; let python_packages: String; let ruby_packages: String }
     var packages: [NotebookInstalledPackage] = []
+    var package_scopes: [String]?
     var environments: [NotebookDependencyEnvironment] = []
     var jobs: [NotebookDependencyJob] = []
     var ready: Ready?
@@ -30,6 +32,7 @@ struct NotebookDependencyInventory: Decodable {
 struct NotebookPackageRelease: Decodable, Identifiable {
     let version: String
     let yanked: Bool
+    let shared_installed: Bool?
     var id: String { version }
     var stable: Bool { !version.contains("-") }
 }
@@ -50,7 +53,9 @@ struct NotebookPackageVariant: Decodable, Identifiable {
     let target: Target?
     let native_mode: String?
     let size: UInt64?
+    let shared_installed: Bool?
     let host_selection: Selection
+    let runtime_grants: [String]?
     var id: String { variant }
     var detail: String {
         var parts = [target?.os, target?.arch].compactMap { $0 }.filter { $0 != "any" }
@@ -110,6 +115,10 @@ struct NotebookDependencyFiles {
 
 @MainActor
 final class NotebookDependencyController: ObservableObject {
+    struct GrantApproval {
+        let tab: NotebookTab
+        let missing: [String]
+    }
     @Published var inventory = NotebookDependencyInventory()
     @Published var requirementFile = "requirements.txt"
     @Published var requirements = ""
@@ -121,7 +130,16 @@ final class NotebookDependencyController: ObservableObject {
     @Published private(set) var packageBuilds: NotebookPackageVariants?
     @Published private(set) var catalogBusy = false
     @Published private(set) var catalogError: String?
-    @Published var packageSource = ""
+    @Published var packageSource = "" {
+        didSet {
+            if packageSource != oldValue { localPackageGrants = nil; localGrantError = nil }
+        }
+    }
+    @Published private(set) var workerGrantsError: String?
+    @Published private var workerGrantSnapshot: (tabID: String, grants: [String])?
+    @Published private(set) var localPackageGrants: [String]?
+    @Published private(set) var localGrantError: String?
+    @Published var packageScope = "shared"
     @Published var packageVersion = "" {
         didSet { if packageVersion != oldValue { packageBuilds = nil; registryVariant = "" } }
     }
@@ -150,7 +168,9 @@ final class NotebookDependencyController: ObservableObject {
     private var catalogGeneration = UUID()
     private var catalogName = ""
     var isRemote: Bool { execution != nil }
+    var supportsLocalPackageScope: Bool { inventory.package_scopes?.contains("local") == true }
     var executionTab: NotebookTab? { model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab }
+    private var executionSheet: NotebookTab? { executionTab.flatMap { $0.kind == "sheet" ? $0 : nil } }
     var current: Bool { model.documentIdentity == document && model.remote.selected == execution }
     var canChange: Bool { current && !busy && !catalogBusy && !model.busy && !model.executingWorker && !model.remote.busy && !model.remote.active && !inventory.jobs.contains(where: \.active) }
     var manifestChanged: Bool { requirements != files?.text(requirementFile) || gemfile != files?.text("Gemfile") }
@@ -175,6 +195,7 @@ final class NotebookDependencyController: ObservableObject {
             let value = try await status()
             guard current else { return }
             inventory = try decode(value)
+            await refreshWorkerGrants()
             message = inventory.jobs.contains(where: \.active) ? "Installation continues on the server. Refresh to update." : "Ready"
         } catch { self.error = error.localizedDescription }
     }
@@ -188,17 +209,49 @@ final class NotebookDependencyController: ObservableObject {
         if gemfile != files.text("Gemfile") { changes["Gemfile"] = gemfile }
         try files.save(changes); self.files = files
     }
-    func installPackage() async {
-        var options: [String: Any] = ["local_source": true,
+    func installPackage(approval: GrantApproval? = nil) async {
+        var options: [String: Any] = ["local_source": true, "scope": packageScope,
             "allow_native": packageAllowNative, "build_from_source": packageBuildFromSource,
             "allow_native_large": packageAllowNativeLarge]
         if packageBackend != "cpu" { options["backend"] = packageBackend }
         if packageBundle != "none" { options["bundle"] = packageBundle }
         let variant = packageVariant.trimmingCharacters(in: .whitespacesAndNewlines)
         if !variant.isEmpty { options["variant"] = variant }
-        await change(action: "install_sputnik", source: packageSource.trimmingCharacters(in: .whitespacesAndNewlines), version: "", options: options)
+        await change(action: "install_sputnik", source: packageSource.trimmingCharacters(in: .whitespacesAndNewlines),
+                     version: "", options: options, required: localPackageGrants ?? [], approval: approval)
     }
     var selectedPackageVariant: NotebookPackageVariant? { packageBuilds?.artifacts.first { $0.variant == registryVariant } }
+    static let nativeWorkerGrants = ["ffi.call=*", "ffi.load=*"]
+    var registryPackageGrants: [String] {
+        guard let build = selectedPackageVariant else { return [] }
+        return build.runtime_grants ?? (build.host_selection.allow_native ? Self.nativeWorkerGrants : [])
+    }
+    private func effectiveGrants(_ grants: [String]) throws -> [String] {
+        let native = Self.nativeWorkerGrants
+        let missingNative = try missingWorkerGrants(native, from: grants)
+        if model.hasNativeWorkerTrust || missingNative.isEmpty {
+            return grants + native + ["fs.read=*"]
+        }
+        return grants
+    }
+    func refreshWorkerGrants() async {
+        workerGrantSnapshot = nil; workerGrantsError = nil
+        guard current, let tab = executionSheet else { return }
+        do {
+            let settings = try await model.workerSettings(for: tab)
+            guard current, !Task.isCancelled, executionSheet?.id == tab.id else { return }
+            workerGrantSnapshot = (tab.id, settings.grants)
+        } catch {
+            if current, !Task.isCancelled, executionSheet?.id == tab.id { workerGrantsError = error.localizedDescription }
+        }
+    }
+    func missingPackageGrants(_ required: [String]) -> [String]? {
+        if required.isEmpty { return [] }
+        guard let snapshot = workerGrantSnapshot, snapshot.tabID == executionSheet?.id else { return nil }
+        do { return try missingWorkerGrants(required, from: effectiveGrants(snapshot.grants)) }
+        catch { return nil }
+    }
+    var reusesSharedPackage: Bool { packageScope == "shared" && selectedPackageVariant?.shared_installed == true }
     var canInstallRegistryPackage: Bool {
         canChange && catalogName == packageName.trimmingCharacters(in: .whitespacesAndNewlines) &&
         packageBuilds?.version == packageVersion && packageBuilds?.yanked == false &&
@@ -243,41 +296,56 @@ final class NotebookDependencyController: ObservableObject {
         guard current, generation == catalogGeneration, packageVersion == version else { return }
         guard builds.package_ref == packageCatalog.package_ref, builds.version == version else { throw NotebookFailure(message: "Registry returned a different package release.") }
         packageBuilds = builds
-        registryVariant = builds.artifacts.first { $0.variant == builds.recommended_variant && $0.host_selection.compatible }?.variant ?? ""
+        let shared = packageScope == "shared" ? builds.artifacts.first { $0.shared_installed == true && $0.host_selection.compatible } : nil
+        registryVariant = shared?.variant ?? builds.artifacts.first { $0.variant == builds.recommended_variant && $0.host_selection.compatible }?.variant ?? ""
         if builds.yanked { catalogError = "This release has been withdrawn. Choose another version." }
     }
     private func catalog(query: String, source: String) async throws -> [String: Any] {
         let body: [String: Any] = ["query": query, "source": source, "command_id": UUID().uuidString.lowercased()]
         return isRemote ? try await model.remote.dependencyRequest("package_catalog", body: body) : try await local("catalog", body: body)
     }
-    func installRegistryPackage() async {
-        guard canInstallRegistryPackage, let build = selectedPackageVariant, let catalog = packageCatalog else { return }
+    func installRegistryPackage(approval: GrantApproval? = nil) async {
+        guard canInstallRegistryPackage, let build = selectedPackageVariant else { return }
         let selection = build.host_selection
         guard !selection.allow_native || packageAllowNative else { error = "Allow native code to install this build."; return }
-        guard !selection.build_from_source || packageBuildFromSource else { error = "Allow building native code from source to install this build."; return }
-        guard (build.size ?? 0) <= 67_108_864 || packageAllowNativeLarge else { error = "Allow packages up to 2 GiB to install this build."; return }
+        guard reusesSharedPackage || !selection.build_from_source || packageBuildFromSource else { error = "Allow building native code from source to install this build."; return }
+        guard reusesSharedPackage || (build.size ?? 0) <= 67_108_864 || packageAllowNativeLarge else { error = "Allow packages up to 2 GiB to install this build."; return }
         await change(action: "install_sputnik", source: catalogName, version: packageVersion,
-            options: ["variant": build.variant, "backend": selection.backend, "bundle": selection.bundle,
+            options: ["scope": packageScope, "variant": build.variant, "backend": selection.backend, "bundle": selection.bundle,
                 "allow_native": packageAllowNative, "build_from_source": selection.build_from_source && packageBuildFromSource,
-                "allow_native_large": packageAllowNativeLarge])
+                "allow_native_large": packageAllowNativeLarge], required: registryPackageGrants, approval: approval)
     }
-    func grantNativeExecution() async {
-        guard let tab = executionTab, tab.kind == "sheet", canChange else { return }
+    func addPackageGrants(_ required: [String], to tab: NotebookTab) async {
+        guard tab.kind == "sheet", canChange, !required.isEmpty else { return }
         busy = true; error = nil
         defer { busy = false }
         do {
             let settings = try await model.workerSettings(for: tab)
             guard current else { return }
-            var grants = settings.grants
-            for grant in ["ffi.call", "ffi.load", "fs.read"] {
-                if !grants.contains(grant) && !grants.contains(grant + "=*") { grants.append(grant) }
-            }
-            try await model.configureWorker(tab, text: grants.joined(separator: "\n"), settings: settings)
-            message = "Native execution allowed for this sheet. Run cells when ready."
+            let missing = try missingWorkerGrants(required, from: effectiveGrants(settings.grants))
+            guard !missing.isEmpty else { message = "This worker already has the package grants."; return }
+            try await model.configureWorker(tab, text: (settings.grants + missing).joined(separator: "\n"), settings: settings)
+            message = "Package grants added to \(tab.title). Run cells when ready."
         } catch { if current { self.error = error.localizedDescription } }
+        await refreshWorkerGrants()
     }
     func chooseLocalPackage(_ path: String) {
         packageSource = path; packageVariant = ""; packageBackend = "cpu"; packageBundle = "none"
+    }
+    func inspectLocalPackageGrants() async {
+        let path = packageSource.trimmingCharacters(in: .whitespacesAndNewlines)
+        localPackageGrants = nil; localGrantError = nil
+        guard path.hasPrefix("/") else { return }
+        do {
+            try await Task.sleep(nanoseconds: 350_000_000)
+            let value = try await catalog(query: "inspect", source: path)
+            guard !Task.isCancelled, current, packageSource.trimmingCharacters(in: .whitespacesAndNewlines) == path else { return }
+            localPackageGrants = value["runtime_grants"] as? [String] ?? []
+        } catch {
+            if !Task.isCancelled, current, packageSource.trimmingCharacters(in: .whitespacesAndNewlines) == path {
+                localGrantError = error.localizedDescription
+            }
+        }
     }
     func removePackage(_ package: NotebookInstalledPackage) async {
         await change(action: "remove_sputnik", source: package.name, version: package.version,
@@ -333,13 +401,49 @@ final class NotebookDependencyController: ObservableObject {
             guard success else { throw NotebookFailure(message: model.error ?? "Could not restart worker.") }
         }
     }
-    private func change(action: String, source: String, version: String, options: [String: Any] = [:]) async {
+    private func change(action: String, source: String, version: String, options: [String: Any] = [:],
+                        required: [String] = [], approval: GrantApproval? = nil) async {
         await perform(action == "remove_sputnik" ? "Removing package…" : "Installing package…") {
+            let tab = self.executionSheet
+            if !required.isEmpty {
+                guard let tab, approval == nil || approval?.tab.id == tab.id else {
+                    throw NotebookFailure(message: "Select the sheet that will use this package.")
+                }
+                _ = try await self.checkedPackageGrants(required, tab: tab, approval: approval)
+            }
             _ = try await self.changeRequest(action: action, source: source, version: version, options: options)
+            if let tab, !required.isEmpty {
+                do {
+                    let (settings, missing) = try await self.checkedPackageGrants(required, tab: tab, approval: approval)
+                    if !missing.isEmpty {
+                        try await self.model.configureWorker(tab, text: (settings.grants + missing).joined(separator: "\n"), settings: settings)
+                        self.message = "Package ready on \(tab.title). Run cells when ready."
+                        return
+                    }
+                } catch {
+                    self.inventory = (try? self.decode(await self.status())) ?? self.inventory
+                    throw NotebookFailure(message: "Package installed, but worker grants could not be applied. " + error.localizedDescription)
+                }
+            }
             self.message = "Package \(action == "remove_sputnik" ? "removed" : "installed"). Workers restarted; run cells when ready."
         }
+        await refreshWorkerGrants()
+    }
+    private func checkedPackageGrants(_ required: [String], tab: NotebookTab,
+                                      approval: GrantApproval?) async throws -> (NotebookWorkerSettings, [String]) {
+        guard current, executionSheet?.id == tab.id else { throw CancellationError() }
+        let settings = try await model.workerSettings(for: tab)
+        guard current, executionSheet?.id == tab.id else { throw CancellationError() }
+        let missing = try missingWorkerGrants(required, from: effectiveGrants(settings.grants))
+        guard Set(missing).isSubset(of: Set(approval?.missing ?? [])) else {
+            throw NotebookFailure(message: "Worker grants changed. Review and confirm the missing grants.")
+        }
+        return (settings, missing)
     }
     private func changeRequest(action: String, source: String, version: String, options: [String: Any] = [:]) async throws -> [String: Any] {
+        if options["scope"] as? String == "local" && !supportsLocalPackageScope {
+            throw NotebookFailure(message: "This Core does not support notebook-only package storage.")
+        }
         var body: [String: Any] = ["command_id": UUID().uuidString.lowercased(), "action": action, "source": source, "version": version]
         body.merge(options) { _, new in new }
         let result: [String: Any]

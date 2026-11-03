@@ -964,7 +964,10 @@ class Core:
 
   def handle(method, params):
     if method == "dependency.catalog":
-      @mutex.synchronize: project(identifier(params[?:project_id]))
+      @mutex.synchronize:
+        id = identifier(params[?:project_id])
+        project(id)
+        fail(403, "temporary sessions cannot inspect server package paths") if params[?:query] == "inspect" and @policies.temporary?(id)
       # A registry request must not hold the core lock or delay running cells.
       return @dependencies.catalog(params)
     @mutex.synchronize: dispatch(method, params)
@@ -1051,7 +1054,7 @@ class Core:
       when "dependency.status":
         environments = @environments.list(id)
         ready = environments.reversed.find: $it[:state] == "ready"
-        return {packages: installed_packages(package_directory(id)), jobs: @dependencies.list(id), environments: environments, ready: if ready then @environments.details(ready) else null}
+        return {packages: installed_packages(package_directory(id)), package_scopes: ["shared", "local"], jobs: @dependencies.list(id), environments: environments, ready: if ready then @environments.details(ready) else null}
       when "dependency.get": return @dependencies.get(id, identifier(params[?:operation_id]))
       when "environment.get":
         found = @environments.record(id, identifier(params[?:environment_id]))

@@ -235,6 +235,25 @@ func normalizedWorkerGrants(_ text: String) throws -> String {
     defer { sputnik_notebook_string_free(result) }
     return String(cString: result)
 }
+
+func workerGrantCatalog() -> [String] {
+    guard let value = sputnik_notebook_grant_catalog() else { return [] }
+    defer { sputnik_notebook_string_free(value) }
+    return String(cString: value).split(separator: "\n").map(String.init)
+}
+
+func missingWorkerGrants(_ required: [String], from existing: [String]) throws -> [String] {
+    guard !(required + existing).contains(where: { $0.utf8.contains { $0 < 32 || $0 == 127 } }) else {
+        throw NotebookFailure(message: "Worker grants cannot contain control characters.")
+    }
+    var error: UnsafeMutablePointer<CChar>?
+    guard let value = sputnik_notebook_missing_grants(existing.joined(separator: "\n"), required.joined(separator: "\n"), &error) else {
+        defer { sputnik_notebook_string_free(error) }
+        throw NotebookFailure(message: error.map { String(cString: $0) } ?? "Invalid package grants.")
+    }
+    defer { sputnik_notebook_string_free(value) }
+    return String(cString: value).split(separator: "\n").map(String.init)
+}
 private final class NotebookControl {
     let pointer: OpaquePointer
     init(_ pointer: OpaquePointer) { self.pointer = pointer }
@@ -735,6 +754,7 @@ final class NotebookModel: ObservableObject {
     private var liveTab = ""
     private var liveReceived: [String: TimeInterval] = [:]
     private var nativeTrusted = false
+    var hasNativeWorkerTrust: Bool { nativeTrusted && !remote.isSelected }
     private var livePollPending = false
     private var livePollGeneration = 0
     func liveCell(_ cell: NotebookCell, in tab: NotebookTab) -> NotebookLiveCell? {

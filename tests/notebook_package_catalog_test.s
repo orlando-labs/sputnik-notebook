@@ -21,7 +21,8 @@ class PackageCatalogFixture:
     fs.atomic_write_text(stage + "/main.s", "package test.editor_probe\nexport answer\ndef answer(): 42\n")
     ["0.9.0", "1.0.0", "1.1.0", "2.0.0-rc.1", "3.0.0"].each |version|:
       manifest = {schema: "sputnik.build.v1", name: "test/editor-probe", version: version,
-        requires: {sputnik: ">=1.0.0 <2.0.0"}, files: ["main.s"], module_names: {"main.s": "test.editor_probe"}}
+        requires: {sputnik: ">=1.0.0 <2.0.0"}, files: ["main.s"], module_names: {"main.s": "test.editor_probe"},
+        capabilities: {"fs.read": ["/package-fixture"]}}
       fs.atomic_write_text(stage + "/sputnik.build.yaml", Json.generate(manifest))
       archive = root + "/" + version + ".sputnikpkg"
       result = system.command(sdk, "pkg", "build", stage, "--out", archive).capture(timeout: 30.0)
@@ -49,6 +50,7 @@ class PackageCatalogFixture:
   def release(version):
     variants = if version == "0.9.0" then ["foreign"] else ["foreign", "source"]
     {package_ref: "test/editor-probe", version: version, yanked: version == "3.0.0",
+      capabilities: [{name: "fs.read", target: "/package-fixture", flags: 0}],
       artifacts: variants.map |variant|: artifact(version, variant)}
 
   def dispatch(request):

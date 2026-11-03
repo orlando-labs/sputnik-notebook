@@ -14,7 +14,12 @@ struct NotebookDependenciesView: View {
     @State private var showLog = false
     @State private var workerSettingsTarget: NotebookTab?
     @State private var showNativeOptions = false
-    @State private var confirmNativeExecution = false
+    private enum GrantAction { case registry, local, grantsOnly }
+    private struct GrantChange {
+        let approval: NotebookDependencyController.GrantApproval
+        let action: GrantAction
+    }
+    @State private var grantChange: GrantChange?
 
     init(model: NotebookModel, initialEcosystem: String = "Sputnik", controller: NotebookDependencyController? = nil) {
         self.model = model; remote = model.remote
@@ -65,7 +70,8 @@ struct NotebookDependenciesView: View {
             .foregroundStyle(NotebookPalette.ink).background(NotebookPalette.canvas)
             .interactiveDismissDisabled(controller.busy || controller.manifestChanged)
             .task { await controller.load() }
-            .sheet(item: $workerSettingsTarget) { tab in
+            .task(id: controller.executionTab?.id) { await controller.refreshWorkerGrants() }
+            .sheet(item: $workerSettingsTarget, onDismiss: { Task { await controller.refreshWorkerGrants() } }) { tab in
                 NotebookWorkerSettingsEditor(model: model, remote: remote, tab: tab,
                     document: model.documentIdentity, execution: remote.selected)
             }
@@ -74,6 +80,23 @@ struct NotebookDependenciesView: View {
                     Button("Remove Package", role: .destructive) { removing = nil; Task { await controller.removePackage(package) } }
                 }
                 Button("Cancel", role: .cancel) { removing = nil }
+            }
+            .confirmationDialog("Add grants to \(grantChange?.approval.tab.title ?? "this worker")?", isPresented: Binding(get: { grantChange != nil }, set: { if !$0 { grantChange = nil } }), titleVisibility: .visible) {
+                if let change = grantChange {
+                    Button(change.action == .grantsOnly ? "Add Grants and Restart Worker" : "Use Package and Add Grants") {
+                        grantChange = nil
+                        Task {
+                            switch change.action {
+                            case .registry: await controller.installRegistryPackage(approval: change.approval)
+                            case .local: await controller.installPackage(approval: change.approval)
+                            case .grantsOnly: await controller.addPackageGrants(change.approval.missing, to: change.approval.tab)
+                            }
+                        }
+                    }
+                }
+                Button("Cancel", role: .cancel) { grantChange = nil }
+            } message: {
+                Text((grantChange?.approval.missing ?? []).joined(separator: "\n") + "\n\nApplying changes restarts this worker.")
             }
     }
     private var sputnik: some View {
@@ -92,12 +115,17 @@ struct NotebookDependenciesView: View {
                             }
                         }
                         Text(package.version).foregroundStyle(.secondary)
+                        if let scope = package.scope { Text(scope == "shared" ? "Shared" : "This notebook").font(.caption).foregroundStyle(.secondary) }
                         Spacer()
                         Button("Remove", role: .destructive) { removing = package }.disabled(!controller.canChange)
                     }
                 }
             }.frame(height: controller.inventory.packages.isEmpty ? 48 : 125)
             Divider()
+            Picker("Package storage", selection: $controller.packageScope) {
+                Text(controller.isRemote ? "Shared on server" : "Shared on this Mac").tag("shared")
+                if controller.supportsLocalPackageScope { Text("This notebook only").tag("local") }
+            }.disabled(!controller.canChange).accessibilityIdentifier("dependency-package-scope")
             registryInstaller
             Divider()
             localInstaller
@@ -108,18 +136,12 @@ struct NotebookDependenciesView: View {
             HStack {
                 Text("Native packages require native trust or ffi.call and ffi.load worker grants.").font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Button("Grant Native Execution…") { confirmNativeExecution = true }
+                Button("Grant Native Execution…") { requestGrants(NotebookDependencyController.nativeWorkerGrants, action: .grantsOnly) }
                     .disabled(!controller.canChange || controller.executionTab?.kind != "sheet")
                 Button("Worker Settings…") {
                     workerSettingsTarget = controller.executionTab.flatMap { !controller.isRemote || $0.kind == "sheet" ? $0 : nil }
                         ?? model.snapshot?.tabs.first { $0.kind == "sheet" }
                 }.disabled(!controller.canChange)
-            }
-            .confirmationDialog("Allow native execution in this sheet?", isPresented: $confirmNativeExecution, titleVisibility: .visible) {
-                Button("Grant Native Execution") { Task { await controller.grantNativeExecution() } }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("Grants ffi.call, ffi.load and fs.read to the current sheet. Native libraries execute with the worker's access. The idle worker will restart; cells run only when you choose Run.")
             }
             if !(model.snapshot?.dependencies ?? []).isEmpty {
                 Text("Linked source directories").font(.headline)
@@ -159,7 +181,8 @@ struct NotebookDependenciesView: View {
                         Task { await controller.findPackageVariants() }
                     })) {
                         ForEach(catalog.available) { release in
-                            Text(release.version + (release.version == catalog.latest ? " (Latest)" : "")).tag(release.version)
+                            Text(release.version + (release.version == catalog.latest ? " (Latest)" : "") +
+                                (release.shared_installed == true ? " · Installed in shared store" : "")).tag(release.version)
                         }
                     }.frame(width: 260).accessibilityIdentifier("dependency-package-version")
                     Text(catalog.displayName).font(.caption).foregroundStyle(.secondary).help(catalog.package_ref).textSelection(.enabled)
@@ -171,23 +194,29 @@ struct NotebookDependenciesView: View {
                     if controller.registryVariant.isEmpty { Text("No compatible build").tag("") }
                     ForEach(builds.artifacts) { build in
                         Text(build.variant + (build.variant == builds.recommended_variant ? " (Recommended)" : "") +
+                            (build.shared_installed == true ? " · Installed in shared store" : "") +
                             (build.host_selection.compatible ? "" : " — " + build.host_selection.reason))
                             .tag(build.variant).disabled(!build.host_selection.compatible)
                     }
                 }.disabled(!controller.canChange).accessibilityIdentifier("dependency-package-variant")
                 if let build = controller.selectedPackageVariant {
                     Text(build.detail).font(.callout).foregroundStyle(.secondary).textSelection(.enabled)
-                    if build.host_selection.allow_native || (build.size ?? 0) > 67_108_864 {
+                    packageGrants(controller.registryPackageGrants)
+                    if controller.reusesSharedPackage {
+                        Text("This build is already installed in the shared store. No download is needed.")
+                            .font(.callout).foregroundStyle(.secondary)
+                    }
+                    if build.host_selection.allow_native || (!controller.reusesSharedPackage && (build.size ?? 0) > 67_108_864) {
                         Text("This package requires explicit permissions below before installation. Native execution also requires a separate grant for this sheet.")
                             .font(.callout).foregroundStyle(NotebookPalette.sputnik)
                     }
                     if build.host_selection.allow_native {
                         Toggle("Allow native code", isOn: $controller.packageAllowNative)
                     }
-                    if build.host_selection.build_from_source {
+                    if !controller.reusesSharedPackage && build.host_selection.build_from_source {
                         Toggle("Build native code from source", isOn: $controller.packageBuildFromSource)
                     }
-                    if (build.size ?? 0) > 67_108_864 {
+                    if !controller.reusesSharedPackage && (build.size ?? 0) > 67_108_864 {
                         Toggle("Allow packages up to 2 GiB", isOn: $controller.packageAllowNativeLarge)
                     }
                 } else {
@@ -198,11 +227,15 @@ struct NotebookDependenciesView: View {
                     Text("Checked for \(builds.host.os) / \(builds.host.arch) on \(controller.isRemote ? "the server" : "this Mac").")
                         .font(.caption).foregroundStyle(.secondary)
                     Spacer()
-                    Button("Install Package") { Task { await controller.installRegistryPackage() } }
+                    let required = controller.registryPackageGrants
+                    Button(packageActionTitle(controller.reusesSharedPackage ? "Use Installed Package" : "Install Package", required)) {
+                        requestGrants(required, action: .registry)
+                    }
                         .disabled(!controller.canInstallRegistryPackage ||
+                            controller.missingPackageGrants(required) == nil ||
                             (controller.selectedPackageVariant?.host_selection.allow_native == true && !controller.packageAllowNative) ||
-                            (controller.selectedPackageVariant?.host_selection.build_from_source == true && !controller.packageBuildFromSource) ||
-                            ((controller.selectedPackageVariant?.size ?? 0) > 67_108_864 && !controller.packageAllowNativeLarge))
+                            (!controller.reusesSharedPackage && controller.selectedPackageVariant?.host_selection.build_from_source == true && !controller.packageBuildFromSource) ||
+                            (!controller.reusesSharedPackage && (controller.selectedPackageVariant?.size ?? 0) > 67_108_864 && !controller.packageAllowNativeLarge))
                         .accessibilityIdentifier("dependency-install-sputnik")
                 }
             }
@@ -230,14 +263,23 @@ struct NotebookDependenciesView: View {
                     .textFieldStyle(.roundedBorder).disabled(!controller.canChange)
             }
             if !controller.packageSource.isEmpty {
+                if let grants = controller.localPackageGrants { packageGrants(grants) }
+                else if let error = controller.localGrantError {
+                    Text("Could not read package grants. " + error).font(.caption).foregroundStyle(.red).textSelection(.enabled)
+                } else if controller.packageSource.hasPrefix("/") {
+                    Text("Reading package grants…").font(.caption).foregroundStyle(.secondary)
+                }
                 HStack {
                     if !controller.isRemote {
                         Label(URL(fileURLWithPath: controller.packageSource).lastPathComponent, systemImage: "shippingbox")
                             .lineLimit(1).help(controller.packageSource)
                     }
                     Spacer()
-                    Button("Install Local Package") { Task { await controller.installPackage() } }
-                        .disabled(!controller.canChange || controller.packageSource.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    let required = controller.localPackageGrants ?? []
+                    Button(packageActionTitle("Install Local Package", required)) { requestGrants(required, action: .local) }
+                        .disabled(!controller.canChange || controller.packageSource.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                            controller.missingPackageGrants(required) == nil ||
+                            (controller.packageSource.hasPrefix("/") && controller.localPackageGrants == nil && controller.localGrantError == nil))
                         .accessibilityIdentifier("dependency-install-local")
                 }
                 DisclosureGroup("Local installation options", isExpanded: $showNativeOptions) {
@@ -247,6 +289,44 @@ struct NotebookDependenciesView: View {
                         Toggle("Allow packages up to 2 GiB", isOn: $controller.packageAllowNativeLarge)
                     }.padding(.top, 4)
                 }.disabled(!controller.canChange)
+            }
+        }.task(id: controller.packageSource) { await controller.inspectLocalPackageGrants() }
+    }
+    private func packageActionTitle(_ defaultTitle: String, _ grants: [String]) -> String {
+        controller.missingPackageGrants(grants)?.isEmpty == false ? "Use Package and Add Grants…" : defaultTitle
+    }
+    private func requestGrants(_ grants: [String], action: GrantAction) {
+        if action != .grantsOnly && controller.missingPackageGrants(grants)?.isEmpty == true {
+            Task {
+                if action == .registry { await controller.installRegistryPackage() }
+                else { await controller.installPackage() }
+            }
+            return
+        }
+        guard let tab = controller.executionTab, tab.kind == "sheet" else { return }
+        guard let missing = controller.missingPackageGrants(grants), !missing.isEmpty else { return }
+        grantChange = GrantChange(approval: .init(tab: tab, missing: missing), action: action)
+    }
+    private func packageGrants(_ grants: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text("Required worker grants").font(.subheadline.bold())
+            if grants.isEmpty {
+                Text("No runtime grants declared.").font(.caption).foregroundStyle(.secondary)
+            } else {
+                let missing = controller.missingPackageGrants(grants)
+                ForEach(grants, id: \.self) { grant in
+                    let granted = missing?.contains(grant) == false
+                    HStack(spacing: 6) {
+                        Image(systemName: granted ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(granted ? Color.green : Color.secondary)
+                            .accessibilityLabel(granted ? "Granted" : (missing == nil ? "Unchecked" : "Missing"))
+                        Text(grant).font(.caption.monospaced()).textSelection(.enabled)
+                    }
+                }
+                if missing == nil {
+                    Text(controller.workerGrantsError ?? (controller.executionTab?.kind == "sheet" ? "Checking worker grants…" : "Select a sheet to check its grants."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
         }
     }

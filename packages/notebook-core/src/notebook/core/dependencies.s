@@ -1,7 +1,7 @@
 package notebook.core.dependencies
 
 from notebook.core.common import fail, decode, identifier, command_at
-from notebook.core.host import environment_log, package_home, package_link, package_unlink, package_reference?
+from notebook.core.host import environment_log, package_home, package_link, package_adopt, package_unlink, package_reference?
 
 export Dependencies, installed_packages
 
@@ -20,6 +20,7 @@ def scan_packages(directory, result, depth):
     if lines.count >= 4 and ["sputnik.package.index.v1", "sputnik.package.index.v2"].include?(lines[0]):
       item = {name: lines[1], display_name: lines[1].split("/").last, version: lines[2], digest: lines[3], directory: directory.to_str}
       item[:variant] = lines[4] if lines[0] == "sputnik.package.index.v2" and lines.count >= 5
+      item[:scope] = if fs.metadata(directory).symlink? then "shared" else "local"
       modules = lines[(if lines[0] == "sputnik.package.index.v2" then 5 else 4)..].filter: $it != ""
       item[:module_root] = modules.find |name|: modules.all? |other|: other == name or other.starts_with?(name + ".")
       result.push!(item)
@@ -32,6 +33,17 @@ def scan_packages(directory, result, depth):
     # Only core-managed links into the shared store are traversed.
     next if fs.metadata(path).symlink? and not package_reference?(path.to_str)
     scan_packages(path, result, depth + 1)
+
+def matching_package(packages, metadata, artifact):
+  packages.find |item|: item[:name] == metadata[:package_ref] and item[:version] == metadata[:version] and item[?:variant] == artifact[:variant] and item[:digest] == artifact[:sha256]
+
+def runtime_grants(capabilities, native):
+  grants = capabilities.map |request|:
+    target = request[?:target] or ""
+    flags = request[?:flags] or 0
+    request[:name] + "=" + (if target == "" or flags % 2 == 1 then "*" else target)
+  grants += ["ffi.call=*", "ffi.load=*"] if native
+  grants.uniq.sorted
 
 class Dependencies:
   def init(@core, @compiler):
@@ -50,13 +62,29 @@ class Dependencies:
   def catalog(params):
     query = params[?:query]
     source = params[?:source]
-    fail(400, "unsupported package query") unless ["versions", "variants"].include?(query)
-    fail(400, "invalid package name") unless Str === source and source.bytes.count > 0 and source.bytes.count <= 257 and not source.starts_with?("-") and not source.contains?("\u{0}")
-    arguments = ["pkg", query, source, "--json"]
+    fail(400, "unsupported package query") unless ["versions", "variants", "inspect"].include?(query)
+    limit = if query == "inspect" then 4096 else 257
+    fail(400, "invalid package source") unless Str === source and source.bytes.count > 0 and source.bytes.count <= limit and not source.starts_with?("-") and not source.contains?("\u{0}")
+    fail(400, "package inspection requires an absolute local path") if query == "inspect" and not fs.Path(source).absolute?
+    arguments = ["pkg", query, source]
+    arguments += ["--json"] unless query == "inspect"
     arguments = arguments + ["--check-host"] if query == "variants"
-    checked = system.command(@compiler, *arguments).capture(timeout: 20.0, check: false)
+    checked = system.command(@compiler, *arguments).capture(timeout: if query == "inspect" then 120.0 else 20.0, check: false)
     fail(422, checked.stderr.to_str) unless checked.success?
-    decode(checked.stdout.to_str)
+    metadata = decode(checked.stdout.to_str)
+    if query == "inspect":
+      native = (metadata[?:native_adapter] or "none") != "none" or not (metadata[?:native_extensions] or []).empty?
+      return {runtime_grants: runtime_grants(metadata[?:capabilities] or [], native)}
+    shared = installed_packages(package_home())
+    if query == "variants":
+      metadata[:artifacts].each |artifact|:
+        artifact[:shared_installed] = matching_package(shared, metadata, artifact) != null
+        native = artifact[?:kind] != "native" and (artifact[?:native_mode] or "none") != "none"
+        artifact[:runtime_grants] = runtime_grants(metadata[?:capabilities] or [], native)
+    else:
+      metadata[:versions].each |release|:
+        release[:shared_installed] = shared.any? |item|: item[:name] == metadata[:package_ref] and item[:version] == release[:version]
+    metadata
 
   def request(project, revision, params):
     action = params[?:action]
@@ -72,6 +100,8 @@ class Dependencies:
     ["allow_native", "build_from_source", "allow_native_large", "local_source"].each |key|:
       value = params[?key]
       fail(400, "invalid package flag") unless value == null or value == true or value == false
+    scope = params[?:scope]
+    fail(400, "invalid package installation scope") unless scope == null or ["shared", "local"].include?(scope)
     fail(422, "Gemfile is missing") if action == "lock_ruby" and not fs.exists?(revision[:directory] + "/Gemfile")
     @core.retire_dependency_workers(project)
     project_directory = @core.ensure_environment_project(project)
@@ -87,6 +117,7 @@ class Dependencies:
       @core.event(project, {type: "dependency_operation", id: id, state: state, error: error})
 
   def execute(project, id, action, source, version, directory, revision, params):
+    staging = null
     try:
       update(project, id, "running")
       fs.mkdir_p(directory)
@@ -139,10 +170,14 @@ class Dependencies:
           {allow_native: "--allow-native", build_from_source: "--build-from-source", allow_native_large: "--allow-native-large"}.each |key, flag|:
             arguments = arguments + [flag] if params[?key]
         shared = package_home()
-        fs.mkdir_p(shared)
+        local = params[?:scope] == "local"
+        staging = directory + "/packages" if local
+        destination = staging or shared
+        fs.mkdir_p(destination)
         # One store lock spans verification, preparation and publishing references.
         # Other books keep their workers and references while this book changes.
-        fs.lock(shared + "/.notebook-install.lock", nonblock: false) |lease|:
+        lock_home = if local then fs.Path(directory).parent.to_str else shared
+        fs.lock(lock_home + "/.notebook-install.lock", nonblock: false) |lease|:
           metadata = null
           cached = null
           unless params[?:local_source] or params[?:registry]:
@@ -152,9 +187,10 @@ class Dependencies:
               if artifact:
                 fail(422, "This package build is incompatible with the execution server.") unless artifact[:host_selection][:compatible]
                 fail(422, "This package requires explicit permission to install native code.") if artifact[:host_selection][:allow_native] and not params[?:allow_native]
-                fail(422, "This package requires explicit permission to build native code.") if artifact[:host_selection][:build_from_source] and not params[?:build_from_source]
-                fail(422, "This package exceeds 64 MiB and requires explicit size permission.") if artifact[:size] > 67108864 and not params[?:allow_native_large]
-                cached = installed_packages(shared).find |item|: item[:name] == metadata[:package_ref] and item[:version] == metadata[:version] and item[?:variant] == artifact[:variant] and item[:digest] == artifact[:sha256]
+                cached = matching_package(installed_packages(shared), metadata, artifact) unless local
+                unless cached:
+                  fail(422, "This package requires explicit permission to build native code.") if artifact[:host_selection][:build_from_source] and not params[?:build_from_source]
+                  fail(422, "This package exceeds 64 MiB and requires explicit size permission.") if artifact[:size] > 67108864 and not params[?:allow_native_large]
           selected = []
           if cached:
             archive = fs.entries(cached[:directory]).find: $it.to_str.ends_with?(".sputnikpkg")
@@ -164,14 +200,17 @@ class Dependencies:
             fail(422, "Shared package cache failed verification. Repair the shared installation before retrying.") unless verified[:sha256] == cached[:digest] and verified[:name] == cached[:name] and verified[:version] == cached[:version] and verified[:variant] == cached[?:variant]
             selected = [cached]
           else:
-            command(directory, @compiler, arguments, {SPUTNIK_PKG_HOME: shared})
-            names = fs.read_text(directory + "/stdout.log").split("\n").filter: $it.starts_with?("Installed ")
-            identities = names.map |line|: line.split(" in ")[0].split("Installed ")[1] + "\t" + line.split("/").last
-            selected = installed_packages(shared).filter |item|: identities.include?(item[:name] + "@" + item[:version] + "\t" + (item[?:variant] or item[:version]))
+            command(directory, @compiler, arguments, {SPUTNIK_PKG_HOME: destination})
+            names = fs.read_text(directory + "/stdout.log").split("\n").filter: $it.starts_with?("Installed ") or $it.starts_with?("Already installed ")
+            identities = names.map |line|:
+              prefix = if line.starts_with?("Installed ") then "Installed " else "Already installed "
+              line.split(" in ")[0].split(prefix)[1].split(" (")[0] + "\t" + line.split("/").last
+            selected = installed_packages(destination).filter |item|: identities.include?(item[:name] + "@" + item[:version] + "\t" + (item[?:variant] or item[:version]))
           fail(422, "The installer did not publish a package.") if selected.empty?
           selected.each |item|:
             relative = item[:name] + "/" + item[:version] + (if item[?:variant] then "/" + item[:variant] else "")
-            package_link(item[:directory], home, relative)
+            if local: package_adopt(destination, home, relative)
+            else: package_link(item[:directory], home, relative)
           unless params[?:local_source]:
             root = null
             if metadata: root = selected.find: $it[:name] == metadata[:package_ref]
@@ -179,8 +218,12 @@ class Dependencies:
             if root and root[?:module_root]:
               alias = import_alias(source, root)
               update_imports(home, root[:name], alias, root[:module_root]) if alias
+      @core.remove_tree(staging) if staging and fs.exists?(staging)
       update(project, id, "succeeded", "", result)
     rescue Exception |error|:
+      if staging:
+        try: @core.remove_tree(staging) if fs.exists?(staging)
+        rescue Exception: null
       update(project, id, "failed", error.message)
 
   def import_alias(source, root):

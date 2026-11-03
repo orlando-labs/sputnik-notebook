@@ -81,6 +81,7 @@ class Schemas:
       field(:name, type: Str, required: true)
       field(:version, type: Str, required: true)
       field(:variant, type: Str, required: true)
+      field(:scope, type: Str)
       field(:allow_native, type: Bool, required: true)
       field(:build_from_source, type: Bool, required: true)
       field(:allow_native_large, type: Bool, required: true)
@@ -170,7 +171,7 @@ class Pages < oauth.Controller:
   def catalog(): service(:catalog)
 
   def current_account():
-    return null unless service(:sign_in_available)
+    return null unless service(:authentication)[:available]
     id = session[:account_id]
     return null unless id
     try:
@@ -194,7 +195,7 @@ class Pages < oauth.Controller:
       projects: if current then catalog.projects(current) else [],
       project: project,
       auth_error: request.query("auth_error") == "1",
-      sign_in_available: service(:sign_in_available),
+      sign_in_available: service(:authentication)[:available],
       public_templates: service(:public).listing()
     }
 
@@ -207,12 +208,16 @@ class Pages < oauth.Controller:
       html: shell(data)
       json: data
 
+  def readiness():
+    service(:notebooks).call("health", {}, execution: true)
+    render(json: {ready: true})
+
   def session_info():
     respond:
       json: snapshot()
 
   def sign_in():
-    raise NotFound() unless service(:sign_in_available)
+    raise NotFound() unless service(:authentication)[:available]
     header("referrer-policy", "no-referrer")
     target = service(:oauth).flow(:github).start(session, return_to: "/")
     respond:
@@ -220,7 +225,7 @@ class Pages < oauth.Controller:
       json: {authorize_url: target}
 
   def callback():
-    raise NotFound() unless service(:sign_in_available)
+    raise NotFound() unless service(:authentication)[:available]
     try:
       result = oauth_callback(:github)
       identity = result.identity
@@ -432,7 +437,7 @@ class Pages < oauth.Controller:
     current = require_account()
     params = request.params.json.expect(service(:schemas).package_change)
     respond:
-      json: service(:packages).change(current, id, params[:command_id], params[:action], params[:name], params[:version], params[:variant], params[:allow_native], params[:build_from_source], params[:allow_native_large])
+      json: service(:packages).change(current, id, params[:command_id], params[:action], params[:name], params[:version], params[:variant], params[:allow_native], params[:build_from_source], params[:allow_native_large], params[?:scope])
 
   def package_receipt(id as Str, command as Str):
     current = require_account()
@@ -655,6 +660,7 @@ routes = orbit.routes:
   get "/api/projects/:id/dependencies/jobs/:operation", to: &Pages#package_job
   get "/api/projects/:id/dependencies/commands/:command", to: &Pages#package_receipt
   post "/api/projects/:id/preview-sessions", to: &Pages#preview_open
+  get "/health/ready", to: &Pages#readiness
   post "/api/public/sessions", to: &Pages#public_open
   get "/api/public/sessions/:session", to: &Pages#public_read
   delete "/api/public/sessions/:session", to: &Pages#public_close
@@ -703,7 +709,7 @@ def application(provider, assets, database, catalog, session_secret:, csrf_secre
   resources = Resources(catalog, notebooks)
   execution = Execution(catalog, notebooks)
   orbit.App(routes: routes, security: security, expose_exceptions: debug,
-    services: {sign_in_available: provider != null, public: PublicSessions(catalog, notebooks, database, public_templates), run_history: RunHistory(catalog, notebooks, execution), environments: Environments(catalog, notebooks, environment_preparation, worker_grants), resources: resources, preview: PreviewSessions(catalog, notebooks, database), assets: assets, catalog: catalog, core: core, notebooks: notebooks, execution: execution, sources: Sources(catalog, notebooks), transfer: Transfer(catalog, notebooks), packages: Packages(catalog, notebooks, native_packages), inputs: Inputs(catalog, notebooks), media_inputs: MediaInputs(catalog, notebooks), schemas: Schemas(), oauth: oauth.Registry(if provider then [oauth.Flow(provider, max_pending: 1)] else [])},
+    services: {authentication: {available: provider != null}, public: PublicSessions(catalog, notebooks, database, public_templates), run_history: RunHistory(catalog, notebooks, execution), environments: Environments(catalog, notebooks, environment_preparation, worker_grants), resources: resources, preview: PreviewSessions(catalog, notebooks, database), assets: assets, catalog: catalog, core: core, notebooks: notebooks, execution: execution, sources: Sources(catalog, notebooks), transfer: Transfer(catalog, notebooks), packages: Packages(catalog, notebooks, native_packages), inputs: Inputs(catalog, notebooks), media_inputs: MediaInputs(catalog, notebooks), schemas: Schemas(), oauth: oauth.Registry(if provider then [oauth.Flow(provider, max_pending: 1)] else [])},
     integrations: [orm_pool(database), WebBoundary()],
     middleware: [StaticFiles(), sessions.Middleware(store: sessions.CookieStore(), secret: session_secret, secure: security.origin.secure?),
       CsrfMiddleware(secret: csrf_secret, session_service: :session)])

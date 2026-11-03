@@ -27,6 +27,15 @@ struct NotebookDependencyTests {
         try require(controller.packageCatalog?.latest == "1.1.0" && controller.packageVersion == "1.1.0", "select latest stable, excluding yanked releases")
         try require(controller.registryVariant == "source" && controller.canInstallRegistryPackage, "recommend a compatible portable build")
         try require(controller.selectedPackageVariant?.host_selection.allow_native == false, "portable packages do not need native consent")
+        try require(controller.registryPackageGrants == ["fs.read=/package-fixture"], "show the declared package grant")
+        let tab = model.activeTab!
+        let previous = try await model.workerSettings(for: tab)
+        try await model.configureWorker(tab, text: "time.now=*", settings: previous)
+        await controller.addPackageGrants(controller.registryPackageGrants, to: tab)
+        let updated = try await model.workerSettings(for: tab)
+        try require(Set(updated.grants) == ["time.now=*", "fs.read=/package-fixture"], "add package grants without replacing existing grants")
+        let missing = try missingWorkerGrants(["fs.read=/data/models", "ffi.load=*"], from: ["fs.read=/data"])
+        try require(missing == ["ffi.load=*"] && workerGrantCatalog().contains("workflow.persist"), "respect grant scopes and load the canonical catalogue")
         try require(controller.inventory.packages.isEmpty && !model.dependencyOperationActive, "discovery never installs or takes worker ownership")
         try await capture(model, controller, build, name: "dependency-editor-registry")
         controller.packageVersion = "0.9.0"
@@ -41,9 +50,21 @@ struct NotebookDependencyTests {
         controller.registryVariant = "source"
         // Local-install settings must not override the selected registry build.
         controller.packageBackend = "cuda"; controller.packageBundle = "sdk"; controller.packageVariant = "wrong-local-variant"
+        try await model.configureWorker(tab, text: "time.now=*", settings: updated)
+        await controller.refreshWorkerGrants()
+        try require(controller.missingPackageGrants(controller.registryPackageGrants) == ["fs.read=/package-fixture"], "show the missing scoped grant")
         await controller.installRegistryPackage()
+        try require(controller.error != nil && controller.inventory.packages.isEmpty, "do not install with unconfirmed missing grants")
+        await controller.installRegistryPackage(approval: .init(tab: tab, missing: ["fs.read=/package-fixture"]))
         try require(controller.error == nil, controller.error ?? "install selected registry build")
+        try require(controller.missingPackageGrants(controller.registryPackageGrants) == [], "combined install adds the grant and refreshes the status")
+        let combined = try await model.workerSettings(for: tab)
+        try require(Set(combined.grants) == ["time.now=*", "fs.read=/package-fixture"], "combined install preserves the worker's other grants")
         try require(controller.inventory.packages.first?.name == "test/editor-probe" && controller.inventory.packages.first?.version == "1.0.0" && controller.inventory.packages.first?.variant == "source", "install exact selected version and variant")
+        await controller.findPackageVariants()
+        try require(controller.reusesSharedPackage, "catalog offers the already installed shared build")
+        await controller.installRegistryPackage()
+        try require(controller.error == nil, controller.error ?? "reuse the shared registry build")
         await controller.removePackage(controller.inventory.packages.first!)
         try require(controller.error == nil && controller.inventory.packages.isEmpty, "remove registry installation")
         controller.chooseLocalPackage("")
@@ -91,6 +112,7 @@ struct NotebookDependencyTests {
             let opened = await withCheckedContinuation { c in model.open(url: book) { c.resume(returning: $0) } }
             try require(opened, model.error ?? "open fixture")
             let controller = NotebookDependencyController(model: model)
+            try require(controller.packageScope == "shared", "shared package storage is the default")
             await controller.load()
             try require(controller.error == nil, controller.error ?? "load dependency editor")
             if ProcessInfo.processInfo.environment["SPUTNIK_TEST_PACKAGE_CATALOG"] == "1" {
@@ -116,6 +138,11 @@ struct NotebookDependencyTests {
             await controller.installPackage()
             try require(controller.error == nil, controller.error ?? "install local package through editor")
             try require(controller.inventory.packages.first?.name == "editor-probe", "show installed notebook package")
+            try require(controller.inventory.packages.first?.scope == "shared", "show a shared package reference")
+            controller.packageScope = "local"
+            await controller.installPackage()
+            try require(controller.error == nil && controller.inventory.packages.first?.scope == "local", controller.error ?? "replace the shared reference with a notebook-only package")
+            controller.packageScope = "shared"
             for ecosystem in ["Sputnik", "Python", "Ruby"] {
                 try await capture(model, controller, build, ecosystem: ecosystem, name: "dependency-editor-" + ecosystem.lowercased())
             }
@@ -136,7 +163,7 @@ struct NotebookDependencyTests {
             }
             let native = root.appendingPathComponent("native-source")
             try FileManager.default.createDirectory(at: native, withIntermediateDirectories: false)
-            try Data("#include \"runtime/sputnik_ext.h\"\nextern \"C\" uint32_t sputnik_ext_abi_version(){return SPUTNIK_EXT_ABI_VERSION;}\nextern \"C\" SputnikStatus editor_answer(SputnikCtx*c,const SputnikValue*,size_t,SputnikValue*out){*out=sputnik_make_int(c,42);return SPUTNIK_OK;}\n".utf8).write(to: native.appendingPathComponent("answer.cpp"))
+            try Data("#include \"runtime/sputnik_ext.h\"\nextern \"C\" const char *sputnik_language_version(){return SPUTNIK_VERSION;}\nextern \"C\" SputnikStatus editor_answer(SputnikCtx*c,const SputnikValue*,size_t,SputnikValue*out){*out=sputnik_make_int(c,42);return SPUTNIK_OK;}\n".utf8).write(to: native.appendingPathComponent("answer.cpp"))
             try Data("package editor_native\nexport answer\nnative def answer() -> Int from \"editor_answer\"\n".utf8).write(to: native.appendingPathComponent("main.s"))
             try command(URL(fileURLWithPath: "/usr/bin/clang++"), ["-std=c++17", "-O2", "-mmacosx-version-min=14.0", "-dynamiclib", "-Wl,-undefined,dynamic_lookup", "-I" + workspace.appendingPathComponent("sputnik-lang").path, native.appendingPathComponent("answer.cpp").path, "-o", native.appendingPathComponent("answer.dylib").path])
             #if arch(arm64)
@@ -146,7 +173,7 @@ struct NotebookDependencyTests {
             #endif
             for variant in ["cpu-a", "cpu-b"] {
                 let bundle = variant == "cpu-b" ? "runtime" : "none"
-                let manifest = "name: editor-native\nversion: \"1.0.0\"\nfiles: [main.s, answer.dylib]\nmodule_names: {main.s: editor_native}\nprofiles: {required: [core.v1, ffi.v1]}\nartifact: {variant: \"\(variant)\", bundle: \"\(bundle)\"}\ntarget: {os: macos, arch: \"\(arch)\", min_os: \"14.0\", compute_backend: cpu}\nnative_extensions: [{name: answer, kind: prebuilt, library: answer.dylib, sputnik_ext_abi: 1}]\n"
+                let manifest = "name: editor-native\nversion: \"1.0.0\"\nfiles: [main.s, answer.dylib]\nmodule_names: {main.s: editor_native}\nprofiles: {required: [core.v1, ffi.v1]}\nartifact: {variant: \"\(variant)\", bundle: \"\(bundle)\"}\ntarget: {os: macos, arch: \"\(arch)\", min_os: \"14.0\", compute_backend: cpu}\nnative_extensions: [{name: answer, kind: prebuilt, library: answer.dylib, sputnik_version: \"1.0.0\"}]\n"
                 try Data(manifest.utf8).write(to: native.appendingPathComponent("sputnik.build.yaml"))
                 try command(sdk, ["pkg", "build", native.path, "--out", root.appendingPathComponent(variant + ".sputnikpkg").path])
             }
