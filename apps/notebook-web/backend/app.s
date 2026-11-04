@@ -85,6 +85,9 @@ class Schemas:
       field(:allow_native, type: Bool, required: true)
       field(:build_from_source, type: Bool, required: true)
       field(:allow_native_large, type: Bool, required: true)
+      array(:install_options, unknown: :reject):
+        field(:name, type: Str, required: true)
+        field(:value, type: Str, required: true)
     @input_change = orbit.params(unknown: :reject):
       field(:command_id, type: Str, required: true)
       field(:revision, type: Str, required: true)
@@ -437,7 +440,7 @@ class Pages < oauth.Controller:
     current = require_account()
     params = request.params.json.expect(service(:schemas).package_change)
     respond:
-      json: service(:packages).change(current, id, params[:command_id], params[:action], params[:name], params[:version], params[:variant], params[:allow_native], params[:build_from_source], params[:allow_native_large], params[?:scope])
+      json: service(:packages).change(current, id, params[:command_id], params[:action], params[:name], params[:version], params[:variant], params[:allow_native], params[:build_from_source], params[:allow_native_large], params[?:scope], params[?:install_options])
 
   def package_receipt(id as Str, command as Str):
     current = require_account()

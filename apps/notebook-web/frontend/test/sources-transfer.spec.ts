@@ -85,6 +85,8 @@ test('imports reject unsafe archives and unauthorized file/dependency operations
 test('registry packages install, recover an accepted response loss, and remove through owner UI', async ({ page }) => {
   await login(page); const p = await project(page); await page.goto(`/projects/${p.id}`); await page.getByRole('button', { name: 'Dependencies…', exact: true }).click()
   await page.getByLabel('Registry package', { exact: true }).fill('test/web-probe'); await page.getByRole('button', { name: 'Find package', exact: true }).click(); await expect(page.getByLabel('Version', { exact: true })).toHaveValue('1.0.0'); await expect(page.getByLabel('Build', { exact: true })).toHaveValue('source')
+  await page.getByText('Package parameters', { exact: true }).click()
+  await page.getByPlaceholder('WEB_FIXTURE_DIRECTORY').fill('/tmp')
   let lost = false
   await page.route(`**/api/projects/${p.id}/dependencies`, async route => { if (!lost && route.request().method() === 'POST') { lost = true; await route.fetch(); await route.abort('failed') } else await route.continue() })
   await page.getByRole('button', { name: 'Install package', exact: true }).click(); await expect(page.getByRole('list', { name: 'Installed packages' })).toContainText('web-probe', { timeout: 20_000 }); await expect(page.getByRole('list', { name: 'Installed packages' }).locator('strong')).toHaveText('web-probe'); await expect(page.getByRole('button', { name: 'Remove package test/web-probe', exact: true })).toBeEnabled(); expect(lost).toBe(true)

@@ -7,18 +7,21 @@ const emit = defineEmits<{ changed: []; permissions: [grants: string[]] }>()
 interface Job { id: string; action: string; state: string; message: string }
 interface Package { name: string; display_name?: string; version: string; variant: string | null; digest: string; scope?: 'shared' | 'local' }
 interface Status { can_manage: boolean; native_allowed: boolean; package_scopes?: string[]; packages: Package[]; jobs: Job[] }
-interface Build { variant: string; size?: number; native_mode?: string; shared_installed?: boolean; runtime_grants?: string[] | null; target: { os?: string; arch?: string }; host_selection: { compatible: boolean; reason: string; allow_native: boolean; build_from_source: boolean } }
-interface Command { command_id: string; action: string; name: string; version: string; variant: string; scope?: 'shared' | 'local'; allow_native: boolean; build_from_source: boolean; allow_native_large: boolean }
+interface InstallOption { name: string; type: string; description: string; env: string; choices?: string[] }
+interface Build { variant: string; size?: number; native_mode?: string; shared_installed?: boolean; runtime_grants?: string[] | null; install_options?: InstallOption[]; target: { os?: string; arch?: string }; host_selection: { compatible: boolean; reason: string; allow_native: boolean; build_from_source: boolean } }
+interface Command { command_id: string; action: string; name: string; version: string; variant: string; scope?: 'shared' | 'local'; allow_native: boolean; build_from_source: boolean; allow_native_large: boolean; install_options?: { name: string; value: string }[] }
 const base = `/api/projects/${encodeURIComponent(props.projectId)}/dependencies`
 const key = `sputnik.packages.pending.v1:${props.accountId}:${props.projectId}`
 const dialog = ref<HTMLDialogElement>(), status = ref<Status | null>(null), busy = ref(false), error = ref('')
 const name = ref(''), version = ref(''), variant = ref(''), releases = ref<{ version: string; yanked: boolean; shared_installed?: boolean }[]>([]), builds = ref<Build[]>([])
 const scope = ref<'shared' | 'local'>('shared')
+const installValues = ref<Record<string, string>>({})
 const native = ref(false), build = ref(false), large = ref(false), pending = ref<Command | null>(null), unknown = ref(false)
-watch(variant, () => { native.value = false; build.value = false; large.value = false })
+watch(variant, () => { native.value = false; build.value = false; large.value = false; installValues.value = {} })
 const selectedBuild = computed(() => builds.value.find(item => item.variant === variant.value))
 const requiredGrants = computed(() => selectedBuild.value?.runtime_grants ?? (selectedBuild.value?.host_selection.allow_native ? ['ffi.call=*', 'ffi.load=*'] : []))
-const reusesShared = computed(() => scope.value === 'shared' && selectedBuild.value?.shared_installed === true)
+const reusesShared = computed(() => scope.value === 'shared' && selectedBuild.value?.shared_installed === true &&
+  Object.values(installValues.value).every(value => value === ''))
 const missingPermissions = computed(() => {
   const item = selectedBuild.value
   if (!item) return 'Choose a compatible build.'
@@ -79,7 +82,8 @@ async function send(command: Command) {
 }
 function install() { void act(async () => {
   if (!status.value?.can_manage || pending.value || running() || !version.value || missingPermissions.value) return
-  const command: Command = { command_id: newId('package'), action: 'install_sputnik', name: name.value.trim(), version: version.value, variant: variant.value, scope: scope.value, allow_native: native.value, build_from_source: build.value, allow_native_large: large.value }
+  const command: Command = { command_id: newId('package'), action: 'install_sputnik', name: name.value.trim(), version: version.value, variant: variant.value, scope: scope.value, allow_native: native.value, build_from_source: build.value, allow_native_large: large.value,
+    install_options: Object.entries(installValues.value).filter(([, value]) => value !== '').map(([name, value]) => ({ name, value })) }
   remember(command); await send(command)
 }) }
 function remove(item: Package) {
@@ -108,6 +112,19 @@ defineExpose({ show })
         <label for="package-version">Version</label><select id="package-version" v-model="version" :disabled="busy || !!pending" @change="act(loadBuilds)"><option v-for="release in releases" :key="release.version" :value="release.version" :disabled="release.yanked">{{ release.version }}{{ release.yanked ? ' (yanked)' : '' }}{{ release.shared_installed ? ' · Installed in shared store' : '' }}</option></select>
         <label for="package-variant">Build</label><select id="package-variant" v-model="variant" :disabled="busy || !!pending"><option value="">Automatic selection</option><option v-for="item in builds" :key="item.variant" :value="item.variant" :disabled="!item.host_selection.compatible">{{ item.variant }} · {{ item.target.os || 'portable' }} {{ item.target.arch || '' }}{{ item.host_selection.compatible ? '' : ' · incompatible' }}{{ item.shared_installed ? ' · Installed in shared store' : '' }}</option></select>
         <p v-if="reusesShared" class="source-note">This build is already installed in the shared store. No download is needed.</p>
+        <details v-if="selectedBuild?.install_options?.length">
+          <summary>Package parameters</summary>
+          <p class="source-note">Paths refer to the execution server. Empty fields use its environment and standard locations.</p>
+          <label v-for="option in selectedBuild.install_options" :key="option.name">
+            <code>--{{ option.name }}</code>
+            <select v-if="option.type === 'bool' || option.choices?.length" v-model="installValues[option.name]" :disabled="busy || !!pending">
+              <option value="">Automatic</option>
+              <option v-for="value in option.type === 'bool' ? ['true', 'false'] : option.choices" :key="value" :value="value">{{ value }}</option>
+            </select>
+            <input v-else v-model="installValues[option.name]" :placeholder="option.env" :disabled="busy || !!pending">
+            <span>{{ option.description }} · {{ option.env }}</span>
+          </label>
+        </details>
         <div v-if="selectedBuild" aria-label="Required worker grants">
           <strong>Required worker grants</strong>
           <ul v-if="requiredGrants.length"><li v-for="grant in requiredGrants" :key="grant"><code>{{ grant }}</code></li></ul>

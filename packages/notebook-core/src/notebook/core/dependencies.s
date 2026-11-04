@@ -74,7 +74,7 @@ class Dependencies:
     metadata = decode(checked.stdout.to_str)
     if query == "inspect":
       native = (metadata[?:native_adapter] or "none") != "none" or not (metadata[?:native_extensions] or []).empty?
-      return {runtime_grants: runtime_grants(metadata[?:capabilities] or [], native)}
+      return {runtime_grants: runtime_grants(metadata[?:capabilities] or [], native), install_options: metadata[?:install_options] or []}
     shared = installed_packages(package_home())
     if query == "variants":
       metadata[:artifacts].each |artifact|:
@@ -100,6 +100,10 @@ class Dependencies:
     ["allow_native", "build_from_source", "allow_native_large", "local_source"].each |key|:
       value = params[?key]
       fail(400, "invalid package flag") unless value == null or value == true or value == false
+    settings = params[?:install_options] or {}
+    fail(400, "invalid package install options") unless Map === settings and settings.count <= 64
+    settings.each |name, value|:
+      fail(400, "invalid package install option") unless Str === name and name.bytes.count <= 64 and name.contains_only?("abcdefghijklmnopqrstuvwxyz0123456789-") and Str === value and value.bytes.count <= 4096 and not value.contains?("\u{0}")
     scope = params[?:scope]
     fail(400, "invalid package installation scope") unless scope == null or ["shared", "local"].include?(scope)
     fail(422, "Gemfile is missing") if action == "lock_ruby" and not fs.exists?(revision[:directory] + "/Gemfile")
@@ -167,6 +171,8 @@ class Dependencies:
         if action == "install_sputnik":
           ["backend", "bundle", "registry"].each |key|:
             arguments = arguments + ["--" + key, params[key]] if params[?key]
+        (params[?:install_options] or {}).each |name, value|:
+          arguments += ["--option", name + "=" + value]
           {allow_native: "--allow-native", build_from_source: "--build-from-source", allow_native_large: "--allow-native-large"}.each |key, flag|:
             arguments = arguments + [flag] if params[?key]
         shared = package_home()
@@ -187,7 +193,8 @@ class Dependencies:
               if artifact:
                 fail(422, "This package build is incompatible with the execution server.") unless artifact[:host_selection][:compatible]
                 fail(422, "This package requires explicit permission to install native code.") if artifact[:host_selection][:allow_native] and not params[?:allow_native]
-                cached = matching_package(installed_packages(shared), metadata, artifact) unless local
+                if not local and (params[?:install_options] or {}).empty?:
+                  cached = matching_package(installed_packages(shared), metadata, artifact)
                 unless cached:
                   fail(422, "This package requires explicit permission to build native code.") if artifact[:host_selection][:build_from_source] and not params[?:build_from_source]
                   fail(422, "This package exceeds 64 MiB and requires explicit size permission.") if artifact[:size] > 67108864 and not params[?:allow_native_large]

@@ -50,12 +50,13 @@ class Packages:
       target = artifact[?:target] or {}
       {variant: artifact[:variant], native_mode: artifact[?:native_mode], size: artifact[?:size], shared_installed: artifact[?:shared_installed] or false,
         runtime_grants: artifact[?:runtime_grants],
+        install_options: artifact[?:install_options] or [],
         target: {os: target[?:os], arch: target[?:arch], min_os: target[?:min_os], compute_backend: target[?:compute_backend]},
         host_selection: {compatible: selection[:compatible], reason: selection[:reason], backend: selection[:backend], bundle: selection[:bundle], allow_native: selection[:allow_native], build_from_source: selection[:build_from_source]}}
     {package_ref: value[:package_ref], version: value[:version], yanked: value[:yanked], recommended_variant: value[:recommended_variant],
       host: {os: value[:host][:os], arch: value[:host][:arch]}, artifacts: artifacts}
 
-  def change(current, id, command, action, name, version, variant, native, build, large, scope = null):
+  def change(current, id, command, action, name, version, variant, native, build, large, scope = null, install_options = null):
     project = @catalog.require_project(current, id, capability: :manage)
     raise InvalidInput("Choose Install or Remove.") unless ["install_sputnik", "remove_sputnik"].include?(action)
     raise InvalidInput("Choose shared or notebook-only package storage.") unless scope == null or ["shared", "local"].include?(scope)
@@ -70,6 +71,14 @@ class Packages:
       params[:allow_native] = native
       params[:build_from_source] = build
       params[:allow_native_large] = large
+      if install_options:
+        raise InvalidInput("Too many package parameters.") if install_options.count > 64
+        values = {}
+        install_options.each |option|:
+          name = option[:name]
+          raise InvalidInput("Duplicate package parameter.") if values.has_key?(name)
+          values[name] = option[:value]
+        params[:install_options] = values
     accepted = @notebooks.call("dependency.change", params, execution: true)
     {job: {id: accepted[:id], action: accepted[:action], state: accepted[:state], message: ""}}
 

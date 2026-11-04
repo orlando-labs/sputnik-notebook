@@ -23,6 +23,7 @@ class PackageCatalogFixture:
       manifest = {schema: "sputnik.build.v1", name: "test/editor-probe", version: version,
         requires: {sputnik: ">=1.0.0 <2.0.0"}, files: ["main.s"], module_names: {"main.s": "test.editor_probe"},
         capabilities: {"fs.read": ["/package-fixture"]}}
+      manifest[:install_options] = install_options
       fs.atomic_write_text(stage + "/sputnik.build.yaml", Json.generate(manifest))
       archive = root + "/" + version + ".sputnikpkg"
       result = system.command(sdk, "pkg", "build", stage, "--out", archive).capture(timeout: 30.0)
@@ -41,11 +42,16 @@ class PackageCatalogFixture:
     body = @archives[version]
     target = {os: (if variant == "foreign" then "windows" else "any"), arch: "any", compute_backend: "none"}
     {package_ref: "test/editor-probe", version: version, variant: variant, target: target,
+      install_options: install_options,
       native_mode: "none", bundle: "none", compatibility: {sputnik_requirement: ">=1.0.0 <2.0.0"},
       quarantined: false, size: body.count, sha256: "sha256:" + Digest.sha256(body).hex,
       url: @origin + "/api/v1/namespaces/test/packages/editor-probe/versions/" + version + "/artifacts/" + variant + "/download"}
 
   def archive(version): @archives[version]
+
+  def install_options():
+    [{name: "fixture-directory", type: "path", env: "SPUTNIK_CATALOG_FIXTURE_DIRECTORY",
+      description: "Directory used by the package installation fixture.", choices: []}]
 
   def release(version):
     variants = if version == "0.9.0" then ["foreign"] else ["foreign", "source"]

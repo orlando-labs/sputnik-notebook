@@ -9,7 +9,8 @@ import { createHash } from 'node:crypto'
 export async function packageFixture(compiler) {
   const root = await mkdtemp(path.join(tmpdir(), 'notebook-web-registry-'))
   await writeFile(path.join(root, 'main.s'), 'package test.web_probe\nexport answer\ndef answer(): 42\n')
-  await writeFile(path.join(root, 'sputnik.build.yaml'), JSON.stringify({ schema: 'sputnik.build.v1', name: 'test/web-probe', version: '1.0.0', requires: { sputnik: '>=1.0.0 <2.0.0' }, files: ['main.s'], module_names: { 'main.s': 'test.web_probe' } }))
+  const installOptions = [{ name: 'fixture-directory', type: 'path', env: 'WEB_FIXTURE_DIRECTORY', description: 'Directory for the package fixture.' }]
+  await writeFile(path.join(root, 'sputnik.build.yaml'), JSON.stringify({ schema: 'sputnik.build.v1', name: 'test/web-probe', version: '1.0.0', requires: { sputnik: '>=1.0.0 <2.0.0' }, files: ['main.s'], module_names: { 'main.s': 'test.web_probe' }, install_options: installOptions }))
   const archive = path.join(root, 'package.sputnikpkg')
   await promisify(execFile)(compiler, ['pkg', 'build', root, '--out', archive])
   const bytes = await readFile(archive), digest = 'sha256:' + createHash('sha256').update(bytes).digest('hex')
@@ -17,7 +18,7 @@ export async function packageFixture(compiler) {
   let origin
   const server = http.createServer((request, response) => {
     const route = request.url
-    const artifact = { package_ref: 'test/web-probe', version: '1.0.0', variant: 'source', target: { os: 'any', arch: 'any', compute_backend: 'none' }, compatibility: { sputnik_requirement: '>=1.0.0 <2.0.0' }, native_mode: 'none', bundle: 'none', quarantined: false, size: bytes.length, sha256: digest, url: origin + base + '/versions/1.0.0/artifacts/source/download' }
+    const artifact = { package_ref: 'test/web-probe', version: '1.0.0', variant: 'source', target: { os: 'any', arch: 'any', compute_backend: 'none' }, compatibility: { sputnik_requirement: '>=1.0.0 <2.0.0' }, native_mode: 'none', bundle: 'none', quarantined: false, install_options: installOptions, size: bytes.length, sha256: digest, url: origin + base + '/versions/1.0.0/artifacts/source/download' }
     const release = { package_ref: 'test/web-probe', version: '1.0.0', yanked: false, artifacts: [artifact] }
     if (route === base + '/versions/1.0.0/artifacts/source/download') { response.writeHead(200, { 'Content-Type': 'application/octet-stream', 'x-sputnik-sha256': digest, 'Content-Length': bytes.length }); response.end(bytes); return }
     let data

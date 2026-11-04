@@ -220,6 +220,7 @@ struct NotebookDependenciesView: View {
                         Toggle("Allow packages up to 2 GiB", isOn: $controller.packageAllowNativeLarge)
                     }
                 } else {
+                    packageOptions(build.install_options ?? [], values: $controller.registryInstallValues)
                     Text("No build of this version is compatible with the execution machine. Choose another version.")
                         .font(.callout).foregroundStyle(.secondary)
                 }
@@ -282,6 +283,7 @@ struct NotebookDependenciesView: View {
                             (controller.packageSource.hasPrefix("/") && controller.localPackageGrants == nil && controller.localGrantError == nil))
                         .accessibilityIdentifier("dependency-install-local")
                 }
+                packageOptions(controller.localInstallOptions, values: $controller.localInstallValues)
                 DisclosureGroup("Local installation options", isExpanded: $showNativeOptions) {
                     VStack(alignment: .leading, spacing: 6) {
                         Toggle("Allow native code", isOn: $controller.packageAllowNative)
@@ -311,6 +313,37 @@ struct NotebookDependenciesView: View {
         VStack(alignment: .leading, spacing: 5) {
             Text("Required worker grants").font(.subheadline.bold())
             if grants.isEmpty {
+    @ViewBuilder
+    private func packageOptions(_ definitions: [NotebookPackageInstallOption], values: Binding<[String: String]>) -> some View {
+        if !definitions.isEmpty {
+            DisclosureGroup("Package parameters") {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(controller.isRemote ? "Paths refer to the execution server. Empty fields use its environment and standard locations." :
+                        "Empty fields use environment variables and standard locations on this Mac.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    ForEach(definitions) { option in
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("--" + option.name).font(.callout.monospaced())
+                            let value = Binding(get: { values.wrappedValue[option.name] ?? "" },
+                                set: { values.wrappedValue[option.name] = $0 })
+                            if option.type == "bool" || !(option.choices ?? []).isEmpty {
+                                Picker(option.env, selection: value) {
+                                    Text("Automatic").tag("")
+                                    ForEach(option.type == "bool" ? ["true", "false"] : option.choices ?? [], id: \.self) {
+                                        Text($0).tag($0)
+                                    }
+                                }.labelsHidden()
+                            } else {
+                                TextField(option.env, text: value).textFieldStyle(.roundedBorder)
+                                    .accessibilityIdentifier("dependency-option-" + option.name)
+                            }
+                            Text(option.description + " · " + option.env).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                }.padding(.top, 6)
+            }.disabled(!controller.canChange)
+        }
+    }
                 Text("No runtime grants declared.").font(.caption).foregroundStyle(.secondary)
             } else {
                 let missing = controller.missingPackageGrants(grants)

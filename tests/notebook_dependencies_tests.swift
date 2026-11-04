@@ -27,6 +27,8 @@ struct NotebookDependencyTests {
         try require(controller.packageCatalog?.latest == "1.1.0" && controller.packageVersion == "1.1.0", "select latest stable, excluding yanked releases")
         try require(controller.registryVariant == "source" && controller.canInstallRegistryPackage, "recommend a compatible portable build")
         try require(controller.selectedPackageVariant?.host_selection.allow_native == false, "portable packages do not need native consent")
+        try require(controller.selectedPackageVariant?.install_options?.first?.name == "fixture-directory",
+            "package manifest describes the parameter form")
         try require(controller.registryPackageGrants == ["fs.read=/package-fixture"], "show the declared package grant")
         let tab = model.activeTab!
         let previous = try await model.workerSettings(for: tab)
@@ -48,6 +50,7 @@ struct NotebookDependencyTests {
         controller.registryVariant = "foreign"
         try require(!controller.canInstallRegistryPackage, "incompatible build cannot be installed")
         controller.registryVariant = "source"
+        controller.registryInstallValues["fixture-directory"] = build.path
         // Local-install settings must not override the selected registry build.
         controller.packageBackend = "cuda"; controller.packageBundle = "sdk"; controller.packageVariant = "wrong-local-variant"
         try await model.configureWorker(tab, text: "time.now=*", settings: updated)

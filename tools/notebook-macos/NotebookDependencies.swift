@@ -62,6 +62,11 @@ struct NotebookPackageVariant: Decodable, Identifiable {
         if let minimum = target?.min_os, !minimum.isEmpty { parts.append("OS ≥ " + minimum) }
         if host_selection.backend != "cpu" || target?.compute_backend == "cpu" { parts.append(host_selection.backend.uppercased()) }
         if native_mode == "prebuilt" { parts.append("Prebuilt") }
+struct NotebookPackageInstallOption: Decodable, Identifiable {
+    let name: String, type: String, description: String, env: String
+    let choices: [String]?
+    var id: String { name }
+}
         if host_selection.build_from_source { parts.append("Build from source") }
         if host_selection.bundle != "none" { parts.append(host_selection.bundle.capitalized + " bundle") }
         if let size { parts.append(ByteCountFormatter.string(fromByteCount: Int64(clamping: size), countStyle: .file)) }
@@ -75,6 +80,7 @@ struct NotebookPackageVariants: Decodable {
     let artifacts: [NotebookPackageVariant]
     let recommended_variant: String?
     let host: Host
+    var install_options: [NotebookPackageInstallOption]? = nil
 }
 
 // Only these authored inputs can be changed by the editor. Byte comparisons
@@ -132,7 +138,10 @@ final class NotebookDependencyController: ObservableObject {
     @Published private(set) var catalogError: String?
     @Published var packageSource = "" {
         didSet {
-            if packageSource != oldValue { localPackageGrants = nil; localGrantError = nil }
+            if packageSource != oldValue {
+                localPackageGrants = nil; localGrantError = nil
+                localInstallOptions = []; localInstallValues = [:]
+            }
         }
     }
     @Published private(set) var workerGrantsError: String?
@@ -145,7 +154,10 @@ final class NotebookDependencyController: ObservableObject {
     }
     @Published var registryVariant = "" {
         didSet {
-            if registryVariant != oldValue { packageAllowNative = false; packageAllowNativeLarge = false; packageBuildFromSource = false }
+            if registryVariant != oldValue {
+                packageAllowNative = false; packageAllowNativeLarge = false; packageBuildFromSource = false
+                registryInstallValues = [:]
+            }
         }
     }
     @Published var packageVariant = ""
@@ -157,6 +169,9 @@ final class NotebookDependencyController: ObservableObject {
     @Published var python = "python3"
     @Published var ruby = "ruby"
     @Published var busy = false
+    @Published private(set) var localInstallOptions: [NotebookPackageInstallOption] = []
+    @Published var registryInstallValues: [String: String] = [:]
+    @Published var localInstallValues: [String: String] = [:]
     @Published var message = ""
     @Published var error: String?
     @Published var log = ""
@@ -237,6 +252,7 @@ final class NotebookDependencyController: ObservableObject {
     func refreshWorkerGrants() async {
         workerGrantSnapshot = nil; workerGrantsError = nil
         guard current, let tab = executionSheet else { return }
+        options["install_options"] = localInstallValues.filter { !$0.value.isEmpty }
         do {
             let settings = try await model.workerSettings(for: tab)
             guard current, !Task.isCancelled, executionSheet?.id == tab.id else { return }
@@ -251,7 +267,10 @@ final class NotebookDependencyController: ObservableObject {
         do { return try missingWorkerGrants(required, from: effectiveGrants(snapshot.grants)) }
         catch { return nil }
     }
-    var reusesSharedPackage: Bool { packageScope == "shared" && selectedPackageVariant?.shared_installed == true }
+    var reusesSharedPackage: Bool {
+        packageScope == "shared" && selectedPackageVariant?.shared_installed == true &&
+            registryInstallValues.values.allSatisfy(\.isEmpty)
+    }
     var canInstallRegistryPackage: Bool {
         canChange && catalogName == packageName.trimmingCharacters(in: .whitespacesAndNewlines) &&
         packageBuilds?.version == packageVersion && packageBuilds?.yanked == false &&
@@ -281,6 +300,7 @@ final class NotebookDependencyController: ObservableObject {
     }
     func findPackageVariants() async {
         guard current, !busy, !catalogBusy, let catalog = packageCatalog,
+        registryInstallValues = [:]
               catalog.available.contains(where: { $0.version == packageVersion }) else { return }
         catalogGeneration = UUID()
         let generation = catalogGeneration
@@ -332,6 +352,7 @@ final class NotebookDependencyController: ObservableObject {
     func chooseLocalPackage(_ path: String) {
         packageSource = path; packageVariant = ""; packageBackend = "cpu"; packageBundle = "none"
     }
+                "install_options": registryInstallValues.filter { !$0.value.isEmpty },
     func inspectLocalPackageGrants() async {
         let path = packageSource.trimmingCharacters(in: .whitespacesAndNewlines)
         localPackageGrants = nil; localGrantError = nil
@@ -351,6 +372,7 @@ final class NotebookDependencyController: ObservableObject {
         await change(action: "remove_sputnik", source: package.name, version: package.version,
             options: package.variant.map { ["variant": $0] } ?? [:])
     }
+        localInstallOptions = []; localInstallValues = [:]
     func resolveRuby() async {
         await perform("Resolving Gemfile.lock…") {
             try self.saveInputs()
@@ -361,6 +383,10 @@ final class NotebookDependencyController: ObservableObject {
             guard try files.read("Gemfile") == files.baseline["Gemfile"] else { throw NotebookFailure(message: "Gemfile changed while resolving. Reload and resolve again.") }
             try files.save(["Gemfile.lock": lock]); self.files = files
             self.message = "Gemfile.lock saved. Prepare the environment to install it."
+            if let definitions = value["install_options"] {
+                localInstallOptions = try JSONDecoder().decode([NotebookPackageInstallOption].self,
+                    from: JSONSerialization.data(withJSONObject: definitions))
+            }
         }
     }
     func prepare() async {
