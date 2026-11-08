@@ -129,8 +129,8 @@ struct RichTextPreview: NSViewRepresentable {
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
         let width = max(48, proposal.width ?? 640)
-        guard let view = nsView.documentView as? NSTextView else { return CGSize(width: width, height: 120) }
-        let naturalHeight = RichTextLayout.height(view.attributedString(), width: width)
+        guard let scroll = nsView as? RichTextScrollView else { return CGSize(width: width, height: 120) }
+        let naturalHeight = scroll.textHeight(width: width)
         return CGSize(width: width, height: proposal.height.map { min(naturalHeight, max(0, $0)) } ?? naturalHeight)
     }
 }

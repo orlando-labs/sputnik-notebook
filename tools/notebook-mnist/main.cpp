@@ -58,7 +58,7 @@ static void prepare(const fs::path &torch, const fs::path &plot, const fs::path 
        "The dashboard carousel shows the ten highest-loss validation samples from the final model, with true labels, predictions and confidence. "
        "Use each chart’s … menu for Axes… and Save PNG…. Drag to zoom; Reset axes or double-click restores the full range. "
        "Rerun with five full epochs for the showcase; a small smoke run only verifies the pipeline.");
-  document.modules.push_back({"mnist_demo", "modules/training.s", {}});
+  document.modules.push_back({"mnist_demo", "modules/mnist_demo.s", {}});
   document.auto_imports = {"mnist_demo"};
   if (fs::exists(torch / "build/notebook/current.json")) {
     document.dependencies.push_back(prepared_native_dependency(torch));
@@ -71,7 +71,6 @@ static void prepare(const fs::path &torch, const fs::path &plot, const fs::path 
   }
   document.dependencies.push_back({plot.string(), false, {}});
   document.dependencies.push_back({(base.parent_path() / "sputnik-lang/packages/progressbar").string(), false, {}});
-  document.dependencies.push_back({(base.parent_path() / "sputnik-lang/packages/notebook_ui").string(), false, {}});
   ProjectBoard board; board.id = "training"; board.title = "Training dashboard";
   board.sheet = document.sheets[0].id; board.columns = 1;
   board.components.push_back({"training_progress", "progress", "Training progress", {}, training, "",
@@ -100,7 +99,7 @@ static void prepare(const fs::path &torch, const fs::path &plot, const fs::path 
   auto initial = document; initial.modules.clear(); initial.auto_imports.clear();
   auto project = create_project(out, initial);
   fs::create_directories(project.directory / "modules");
-  std::ofstream(project.directory / "modules/training.s") << read(base / "tools/notebook-mnist/training.s");
+  std::ofstream(project.directory / "modules/mnist_demo.s") << read(base / "tools/notebook-mnist/training.s");
   save_project(&project, document);
   if (fs::exists(torch / "build/notebook/current.json"))
     register_project_native_updates(torch, project.directory);

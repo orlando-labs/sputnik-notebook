@@ -76,6 +76,59 @@ static void scope_tests() {
   require(!result.ok() && result.fault->error_name == "NotebookCellError" && result.displays.empty(),
           "ordinary module execution cannot create unowned display output");
 }
+static void scoped_plot_tests(const std::filesystem::path &directory,
+                              const std::filesystem::path &plot_source) {
+  const auto write_package = [&](const std::string &name, const std::string &source) {
+    const auto path = directory / name;
+    std::filesystem::create_directory(path);
+    std::ofstream(path / "plot.s") << "package " << name << '\n' << source;
+    std::ofstream(path / "sputnik.build.json")
+        << "{\"schema\":\"sputnik.build.v1\",\"name\":\"" << name
+        << "\",\"root\":\"" << name << "\",\"modules\":[{\"name\":\"" << name
+        << "\",\"path\":\"plot.s\"}]}\n";
+    return path.string();
+  };
+  std::ifstream plot(plot_source);
+  std::string declaration;
+  require(static_cast<bool>(std::getline(plot, declaration)) && declaration == "package plot",
+          "plot fixture should start with its package declaration");
+  std::ostringstream source;
+  source << plot.rdbuf();
+  auto document = sputnik::notebook::make_project_document("Scoped plot regression");
+  document.version = 3;
+  document.dependencies.push_back({write_package("school.plot", source.str()), false, {}});
+  document.dependencies.push_back({write_package("other.plot", "export Figure\nclass Figure\n"), false, {}});
+  auto &cell = document.sheets[0].cells[0];
+  cell.id = 1;
+  cell.source =
+      "import plot\n"
+      "p = plot.figure(width: 320, height: 240).line([[0, 0], [1, 1]])\n"
+      "notebook.show(p, caption: \"Scoped figure\")\n"
+      "notebook.show(p.render(format: :png), caption: \"Scoped PNG\")\n"
+      "q = plot.figure3d(width: 320, height: 240).surface([[0, 1], [1, 0]])\n"
+      "notebook.show(q, caption: \"Scoped surface\")\n"
+      "plot.Figure === p\n";
+  auto project = sputnik::notebook::create_project(directory / "Scoped.sputnikbook", document);
+  std::filesystem::create_directory(project.directory / "packages");
+  std::ofstream(project.directory / "packages/imports.index") << "school/plot\tplot\tschool.plot\n";
+  char *error = nullptr;
+  auto *host = sputnik_notebook_open(project.directory.c_str(), 0, nullptr, &error);
+  require(host != nullptr, error ? error : "open scoped project");
+  command(host, "run_all");
+  const auto json = state(host);
+  const auto panels = displays(json);
+  require(json.find("\"result\":\"true\"") != std::string::npos &&
+              panels.find("Scoped figure") != std::string::npos &&
+              panels.find("Scoped PNG") != std::string::npos &&
+              panels.find("Scoped surface") != std::string::npos &&
+              panels.find("\\\"version\\\":1") != std::string::npos,
+          "display recognizes the scoped classes reached through import plot: " + json.substr(0, 1600));
+  command(host, "source", "import plot\nfrom other.plot import Figure\nnotebook.show(Figure())\n");
+  command(host, "run_all");
+  require(state(host).find("from the selected plot provider") != std::string::npos,
+          "a same-named class from an unselected provider is rejected");
+  sputnik_notebook_destroy(host);
+}
 int main(int argc, char **argv) {
   collector_tests();
   scope_tests();
@@ -186,6 +239,7 @@ int main(int argc, char **argv) {
   command(host, "source", "figure().view(x: [1])\n"); command(host, "run_all");
   require(state(host).find("minimum, maximum") != std::string::npos, "invalid axis pair rejected");
   sputnik_notebook_destroy(host);
+  scoped_plot_tests(directory, argv[1]);
   std::filesystem::remove_all(directory);
   std::cout << "notebook plot tests passed\n";
 }

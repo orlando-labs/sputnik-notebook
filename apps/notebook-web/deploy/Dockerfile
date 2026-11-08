@@ -47,6 +47,7 @@ COPY --from=native /opt/pcre2 /opt/pcre2
 COPY --from=native /src/sputnik-lang /src/sputnik-lang
 COPY --from=native /src/sputnik-notebook/build/sputnik-notebook-remote /usr/local/bin/
 COPY --from=native /src/sputnik-notebook/build/sputnik-notebook-worker /usr/local/bin/
+COPY --from=native /src/sputnik-lang/packages/notebook_ui /usr/local/share/sputnik-notebook/essentials
 COPY --from=native /src/sputnik-notebook/apps/notebook-web/build/native/notebook-web /usr/local/bin/
 COPY --from=native /src/sputnik-notebook/apps/notebook-web/build/native/notebook-public-template /usr/local/bin/
 COPY --from=native /src/sputnik-notebook/apps/notebook-web/build/evidence/ /opt/notebook-evidence/

@@ -18,6 +18,7 @@ private struct NotebookMacOSRichTextTests {
             try testStyleOnlyFormatting()
             try testArbitraryAttributesAreSanitized()
             try testNativeStyleUndoRedo()
+            try testCachedTextMeasurements()
             try testTypingStylesAndEditorGuards()
             try testLongPlainTextAndSplitAttributes()
             try testParagraphHeadingAtCaret()
@@ -183,6 +184,47 @@ private struct NotebookMacOSRichTextTests {
                     "second native redo should still restore heading formatting")
         try require(textView.string == "undo me" && textView.selectedRange() == NSRange(location: 0, length: 7),
                     "format and undo must preserve source and selection")
+    }
+
+    private static func testCachedTextMeasurements() throws {
+        let fixture = try NativeEditorFixture(text: String(repeating: "A paragraph with enough words to wrap at a narrow width.\n", count: 7))
+        let scroll = RichTextScrollView(frame: fixture.view.frame)
+        scroll.documentView = fixture.view
+        fixture.window.contentView = scroll
+        fixture.window.makeFirstResponder(fixture.view)
+        let storage = fixture.view.textStorage!
+        let wide = scroll.textHeight(width: 500)
+        let narrow = scroll.textHeight(width: 180)
+        try require(narrow > wide, "different width proposals must keep separate text measurements")
+        for _ in 0..<20 {
+            try require(scroll.textHeight(width: 500) == wide && scroll.textHeight(width: 180) == narrow,
+                        "repeated width probes must preserve the measured geometry")
+        }
+        let liveContainer = fixture.view.textContainer!.containerSize
+        _ = scroll.textHeight(width: 48)
+        try require(fixture.view.textContainer!.containerSize == liveContainer,
+                    "measuring a narrow proposal must not resize the live text container")
+
+        fixture.view.setSelectedRange(NSRange(location: 0, length: storage.length))
+        fixture.apply(.style(.heading1))
+        let heading = scroll.textHeight(width: 500)
+        try require(heading > wide && heading == RichTextLayout.height(storage, width: 500),
+                    "style-only edits must invalidate cached heights")
+        fixture.view.undoManager?.undo()
+        try require(scroll.textHeight(width: 500) == wide, "Undo must invalidate the heading measurement")
+        fixture.view.undoManager?.redo()
+        try require(scroll.textHeight(width: 500) == heading, "Redo must invalidate the restored body measurement")
+
+        storage.setAttributedString(try RichTextCodec.decode(text: "Short replacement", formatting: ""))
+        try require(scroll.textHeight(width: 500) == 120,
+                    "a shorter external snapshot must shrink the cached height")
+        let replacement = NSTextView(frame: fixture.view.frame)
+        replacement.textStorage?.setAttributedString(try RichTextCodec.decode(
+            text: String(repeating: "Replacement paragraph\n", count: 12), formatting: ""))
+        scroll.documentView = replacement
+        try require(scroll.textHeight(width: 500) == RichTextLayout.height(replacement.attributedString(), width: 500) &&
+                    scroll.textHeight(width: 500) > 120,
+                    "a replacement text storage must receive a fresh height cache")
     }
 
     private static func testTypingStylesAndEditorGuards() throws {

@@ -112,6 +112,8 @@ class RemoteClient:
       when "cell_inputs": request("GET", route + "/cell-inputs")
       when "set_cell_inputs": request("PUT", route + "/cell-inputs", decode(fs.read_text(@args[:request_file])))
       when "worker_settings": request("GET", route + "/worker-settings/" + identifier(@args[:sheet]))
+      when "book_worker_settings": request("GET", route + "/book-worker-settings")
+      when "configure_book_worker": request("PUT", route + "/book-worker-settings", decode(fs.read_text(@args[:request_file])))
       when "configure_worker": request("PUT", route + "/worker-settings/" + identifier(@args[:sheet]), decode(fs.read_text(@args[:request_file])))
       when "receipt": request("GET", route + "/commands/" + @args[?:command_id])
       when "restart_invocation": request("POST", route + "/restart", decode(fs.read_text(@args[:request_file])))

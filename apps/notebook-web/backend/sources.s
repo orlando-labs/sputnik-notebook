@@ -95,6 +95,11 @@ class Sources:
     raise NotFound() unless data
     Base64.decode(data)
 
+  def diagnostics(current, id, source):
+    project = @catalog.require_project(current, id)
+    raise InvalidInput("Module source is limited to 1 MiB.") if source.bytes.count > 1048576
+    @notebooks.call("module.diagnostics", {project_id: project[:core_project_id], source: source}, execution: true)
+
   def archive(current, id, revision):
     source = snapshot(current, id, revision)
     entries = [["project.json", source[:document].bytes]]

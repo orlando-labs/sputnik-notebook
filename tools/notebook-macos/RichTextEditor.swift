@@ -653,8 +653,8 @@ struct RichTextEditorRepresentable: NSViewRepresentable {
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
         let width = max(48, proposal.width ?? 640)
-        guard let view = nsView.documentView as? NSTextView else { return CGSize(width: width, height: 160) }
-        return CGSize(width: width, height: RichTextLayout.height(view.attributedString(), width: width))
+        guard let scroll = nsView as? RichTextScrollView else { return CGSize(width: width, height: 160) }
+        return CGSize(width: width, height: scroll.textHeight(width: width))
     }
 
     private func applySnapshot(_ textView: RichTextTextView,

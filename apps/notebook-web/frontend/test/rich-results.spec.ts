@@ -328,9 +328,11 @@ test('live progress, stopwatch and chart survive reload, preserve zoom and retai
     await expect(page.getByTestId('cell-display-component').first()).toContainText('Authored audio')
     await page.getByRole('button', { name: 'Run cell 1', exact: true }).click()
     const progress = page.getByTestId('runtime-progress'), timer = page.getByTestId('runtime-stopwatch'), chart = page.getByTestId('runtime-chart')
+    const rebuild = page.getByTestId('environment-rebuilt')
     await expect(progress).toContainText('Running')
     await expect(progress.getByRole('progressbar')).toHaveAttribute('value', '1e-11')
     await expect(timer).toContainText('Running')
+    await expect(rebuild).toHaveAttribute('title', /Preparation: \d+ ms\nCell execution: \d+ ms/)
     const registry = (await (await request(page, execution(project.id))).json())
     const runId = registry.runs.at(-1).id
     const initial = (await (await request(page, `${execution(project.id)}/runs/${runId}`)).json()).run
@@ -350,6 +352,7 @@ test('live progress, stopwatch and chart survive reload, preserve zoom and retai
     const result = (await (await request(page, `${execution(project.id)}/runs/${runId}`)).json()).run
     expect(result.state).toBe('succeeded'); expect(result.rich_error).toBe('')
     expect(typeof result.cells[0].elapsed_ms).toBe('string')
+    expect(result.cells[0].environment_rebuild_ms).toMatch(/^\d+$/)
     expect(typeof result.cells[0].stopwatches[0].elapsed_ms).toBe('string')
     expect(result.cells[0].charts[0].total_points).toBe('2')
     expect(result.cells[0].charts[0].points).toEqual([[0, -0.000000000123456789], [1, 0.000000000234567891]])
@@ -374,6 +377,7 @@ test('live progress, stopwatch and chart survive reload, preserve zoom and retai
     await page.locator('.run-history > summary').click()
     await page.getByRole('button', { name: `View run ${runId}`, exact: true }).click()
     await expect(chart).toContainText('2 retained / 2 total samples')
+    await expect(rebuild).toBeVisible()
     await expect(page.getByTestId('runtime-telemetry')).toContainText('Previous measurements')
   } finally { await release(page, project.id) }
 })

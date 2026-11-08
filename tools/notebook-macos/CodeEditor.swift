@@ -14,6 +14,9 @@ struct CodeEditor: NSViewRepresentable {
     var editable: Bool = true
     var substituteGreekLetters: Bool = true
     var language: NotebookEditorLanguage = .sputnik
+    var fillsHeight = false
+    var errorRanges: [NotebookSourceRange] = []
+    var selectionRequest: NotebookSourceSelection?
     var onFocus: () -> Void = {}
     var onRun: () -> Void = {}
 
@@ -46,6 +49,7 @@ struct CodeEditor: NSViewRepresentable {
         textView.textContainerInset = NSSize(width: 16, height: 14)
         textView.isHorizontallyResizable = false
         textView.isVerticallyResizable = true
+        textView.autoresizingMask = [.width]
         textView.minSize = NSSize(width: 0, height: 0)
         textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         textView.textContainer?.widthTracksTextView = true
@@ -62,18 +66,21 @@ struct CodeEditor: NSViewRepresentable {
         if let storage = textView.textStorage {
             applySyntax(to: storage)
         }
+        textView.showsLineNumbers = language == .sputnik
+        textView.updateDecorations(errorRanges)
         textView.setAccessibilityLabel(language != .sputnik ? "\(language.configTitle) config editor" : editable ? "Sputnik source editor" : "Read-only Sputnik source")
         scrollView.documentView = textView
+        context.coordinator.revealSelection(in: textView)
         return scrollView
     }
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         context.coordinator.parent = self
-        guard let textView = scrollView.documentView as? NSTextView else { return }
+        guard let textView = scrollView.documentView as? FocusTrackingTextView else { return }
 
         textView.isEditable = editable
         textView.setAccessibilityLabel(language != .sputnik ? "\(language.configTitle) config editor" : editable ? "Sputnik source editor" : "Read-only Sputnik source")
-        (textView as? FocusTrackingTextView)?.onFocus = onFocus
+        textView.onFocus = onFocus
 
         // Runtime snapshots arrive frequently. Assign only when the source
         // itself changed so the normal snapshot path never disturbs selection
@@ -83,12 +90,16 @@ struct CodeEditor: NSViewRepresentable {
         } else {
             context.coordinator.flushPendingSource(in: textView)
         }
+        textView.updateDecorations(textView.string.utf16.elementsEqual(text.utf16) ? errorRanges : [])
+        context.coordinator.revealSelection(in: textView)
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
         let width = max(240, proposal.width ?? 640)
         if language != .sputnik { return CGSize(width: width, height: max(150, proposal.height ?? 220)) }
-        let usableWidth = max(160, width - 44)
+        if fillsHeight, let height = proposal.height { return CGSize(width: width, height: max(96, height)) }
+        let inset = (nsView.documentView as? NSTextView)?.textContainerInset.width ?? 40
+        let usableWidth = max(160, width - 2 * inset - 10)
         let approximateCharacterWidth: CGFloat = 7.7
         let sourceLines = text.components(separatedBy: .newlines)
         let visualLineCount = sourceLines.reduce(0) { count, line in
@@ -105,6 +116,7 @@ struct CodeEditor: NSViewRepresentable {
         private(set) var isApplyingSyntax = false
         private var isSubstitutingGreekLetter = false
         private var pendingExternalSource: String?
+        private var revealedSelection: UUID?
 
         init(_ parent: CodeEditor) {
             self.parent = parent
@@ -116,6 +128,23 @@ struct CodeEditor: NSViewRepresentable {
             textView.onUndoRedo = { [weak self, weak textView] in
                 guard let textView else { return }
                 self?.sourceDidChange(in: textView)
+            }
+            textView.onLayout = { [weak self, weak textView] in
+                guard let textView else { return }
+                self?.revealSelection(in: textView)
+            }
+        }
+
+        func revealSelection(in textView: FocusTrackingTextView) {
+            guard let request = parent.selectionRequest, request.id != revealedSelection else { return }
+            DispatchQueue.main.async { [weak self, weak textView] in
+                guard let self, let textView, self.parent.selectionRequest?.id == request.id,
+                      self.revealedSelection != request.id,
+                      textView.window != nil,
+                      (textView.enclosingScrollView?.contentSize.height ?? 0) > 0,
+                      textView.string.utf16.elementsEqual(request.source.utf16),
+                      textView.revealSourceRange(request.range) else { return }
+                self.revealedSelection = request.id
             }
         }
 
@@ -191,6 +220,7 @@ struct CodeEditor: NSViewRepresentable {
 
         private func sourceDidChange(in textView: NSTextView) {
             guard !isApplyingExternalSource, !isApplyingSyntax else { return }
+            (textView as? FocusTrackingTextView)?.updateDecorations([])
             if parent.text != textView.string {
                 parent.text = textView.string
             }
@@ -235,6 +265,47 @@ struct CodeEditor: NSViewRepresentable {
             if commandSelector == #selector(NSResponder.insertNewline(_:)),
                textView.window?.currentEvent?.modifierFlags.contains(.command) == true {
                 parent.onRun()
+                return true
+            }
+
+            if parent.language == .sputnik, commandSelector == #selector(NSResponder.insertNewline(_:)),
+               parent.editable, !textView.hasMarkedText() {
+                let source = textView.string as NSString
+                let selection = textView.selectedRange()
+                guard selection.location != NSNotFound, NSMaxRange(selection) <= source.length else { return false }
+                let lineStart = source.lineRange(for: NSRange(location: selection.location, length: 0)).location
+                let prefix = source.substring(with: NSRange(location: lineStart, length: selection.location - lineStart))
+                let indentation = String(prefix.prefix { $0 == " " || $0 == "\t" })
+                let step = indentation.contains("\t") ? "\t" : "  "
+                // Tokenize the prefix so colons/brackets in comments and
+                // strings cannot open a block, even in unfinished code.
+                let tokens = SputnikSyntax.tokens(in: source.substring(to: selection.location))
+                    .filter { $0.category != .comment }
+                let last = tokens.last(where: { $0.range.location >= lineStart })
+                var brackets: [SputnikSyntaxToken] = []
+                for token in tokens where token.category != .string {
+                    if ["(", "[", "{"].contains(token.text) { brackets.append(token) }
+                    else if [")", "]", "}"].contains(token.text), !brackets.isEmpty { brackets.removeLast() }
+                }
+                var nextIndent = indentation
+                if last?.text == ":", brackets.isEmpty { nextIndent += step }
+                else if let opener = brackets.last {
+                    let start = source.lineRange(for: NSRange(location: opener.range.location, length: 0)).location
+                    let line = source.substring(with: NSRange(location: start, length: opener.range.location - start))
+                    let base = String(line.prefix { $0 == " " || $0 == "\t" })
+                    if nextIndent.count <= base.count { nextIndent = base + step }
+                }
+                var insertion = "\n" + nextIndent
+                var tailLength = 0
+                let closing = ["(": ")", "[": "]", "{": "}"]
+                if let last, let end = closing[last.text], NSMaxRange(selection) < source.length,
+                   source.substring(from: NSMaxRange(selection)).hasPrefix(end) {
+                    let tail = "\n" + indentation
+                    insertion += tail
+                    tailLength = (tail as NSString).length
+                }
+                textView.insertText(insertion, replacementRange: selection)
+                textView.setSelectedRange(NSRange(location: max(0, textView.selectedRange().location - tailLength), length: 0))
                 return true
             }
 
@@ -284,6 +355,110 @@ struct CodeEditor: NSViewRepresentable {
 class FocusTrackingTextView: NSTextView {
     var onFocus: () -> Void = {}
     var onUndoRedo: () -> Void = {}
+    var onLayout: () -> Void = {}
+    var showsLineNumbers = false
+    private static let gutterFont = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+    private var decoratedSource: String?
+    private var sourceLines = NotebookSourceLines("")
+    private var errorRanges: [NotebookSourceRange] = []
+    private var errorLines = IndexSet()
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        onLayout()
+    }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        onLayout()
+    }
+
+    @discardableResult
+    func revealSourceRange(_ range: NotebookSourceRange) -> Bool {
+        guard !hasMarkedText(),
+              let selection = NotebookSourceLines(string).selection(for: range, in: string as NSString) else { return false }
+        window?.makeFirstResponder(self)
+        setSelectedRange(selection)
+        if let layoutManager, let textContainer {
+            layoutManager.ensureLayout(for: textContainer)
+            sizeToFit()
+        }
+        scrollRangeToVisible(selection)
+        return true
+    }
+
+    func updateDecorations(_ ranges: [NotebookSourceRange]) {
+        guard showsLineNumbers, let layoutManager, let textStorage else { return }
+        let source = string
+        let sourceChanged = decoratedSource?.utf16.elementsEqual(source.utf16) != true
+        guard sourceChanged || errorRanges != ranges else { return }
+        if sourceChanged {
+            decoratedSource = source
+            sourceLines = NotebookSourceLines(source)
+            let digits = max(3, String(sourceLines.lines.count).count)
+            let width = (String(repeating: "0", count: digits) as NSString).size(withAttributes: [.font: Self.gutterFont]).width
+            textContainerInset = NSSize(width: ceil(width) + 18, height: textContainerInset.height)
+        }
+        if !errorRanges.isEmpty {
+            let all = NSRange(location: 0, length: textStorage.length)
+            for key: NSAttributedString.Key in [.backgroundColor, .underlineColor, .underlineStyle] {
+                layoutManager.removeTemporaryAttribute(key, forCharacterRange: all)
+            }
+        }
+        errorRanges = ranges
+        errorLines = IndexSet()
+        for range in ranges {
+            guard let decoration = sourceLines.decoration(for: range, in: source as NSString) else { continue }
+            errorLines.insert(integersIn: decoration.rows)
+            if let characters = decoration.characters {
+                layoutManager.addTemporaryAttributes([
+                    .backgroundColor: NSColor.systemRed.withAlphaComponent(0.21),
+                    .underlineColor: NSColor.systemRed,
+                    .underlineStyle: NSUnderlineStyle.single.rawValue
+                ], forCharacterRange: characters)
+            }
+        }
+        needsDisplay = true
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        if showsLineNumbers, let layoutManager, let textContainer {
+            let origin = textContainerOrigin
+            let visible = dirtyRect.offsetBy(dx: -origin.x, dy: -origin.y)
+            // Include the text layout even when only the gutter needs repainting.
+            let rows = NSRect(x: 0, y: visible.minY, width: textContainer.containerSize.width, height: visible.height)
+            let glyphs = layoutManager.glyphRange(forBoundingRect: rows, in: textContainer)
+            func drawLine(_ offset: Int, in rect: NSRect) {
+                let line = sourceLines.line(at: offset)
+                let y = rect.minY + origin.y
+                if errorLines.contains(line) {
+                    NSColor.systemRed.withAlphaComponent(0.10).setFill()
+                    NSRect(x: 0, y: y, width: bounds.width, height: rect.height).fill()
+                }
+                guard sourceLines.lines[line].lowerBound == offset else { return }
+                let label = String(line + 1) as NSString
+                let attributes: [NSAttributedString.Key: Any] = [
+                    .font: Self.gutterFont,
+                    .foregroundColor: errorLines.contains(line) ? NSColor.systemRed : NotebookPalette.nativeMuted
+                ]
+                let size = label.size(withAttributes: attributes)
+                label.draw(at: NSPoint(x: origin.x - 8 - size.width, y: y + (rect.height - size.height) / 2),
+                           withAttributes: attributes)
+            }
+            if glyphs.length > 0 {
+                layoutManager.enumerateLineFragments(forGlyphRange: glyphs) { rect, _, _, fragment, _ in
+                    drawLine(layoutManager.characterIndexForGlyph(at: fragment.location), in: rect)
+                }
+            }
+            if layoutManager.extraLineFragmentTextContainer === textContainer,
+               rows.intersects(layoutManager.extraLineFragmentRect) {
+                drawLine(sourceLines.lines.last!.upperBound, in: layoutManager.extraLineFragmentRect)
+            }
+            NotebookPalette.nativeRule.setFill()
+            NSRect(x: origin.x, y: dirtyRect.minY, width: 1, height: dirtyRect.height).fill()
+        }
+        super.draw(dirtyRect)
+    }
 
     // AppKit can restore the buffer without sending textDidChange on undo.
     // Publish the restored source before the next Save or runtime snapshot.

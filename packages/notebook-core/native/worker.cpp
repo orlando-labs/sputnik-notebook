@@ -114,6 +114,12 @@ public:
         send_mutex_(send_mutex), generation_(generation), request_(request),
         revisions_(revisions), token_(std::move(token)), session_(session), previous_(session.output_observer) {
     previous_finished_ = session_.execution_finished;
+    previous_prepared_ = session_.environment_prepared;
+    session_.environment_prepared = [this](std::uint64_t milliseconds) {
+      if (previous_prepared_) previous_prepared_(milliseconds);
+      std::lock_guard<std::mutex> lock(telemetry_mutex_);
+      environment_rebuild_ms_ = milliseconds;
+    };
     session_.execution_finished = [this](CellId id) {
       if (previous_finished_) previous_finished_(id);
       finish_cell(id);
@@ -124,7 +130,7 @@ public:
       if (id && revisions_.count(id)) writers_[id] = Writers{out, err};
       const auto now = sputnik::runtime::NotebookLiveStore::monotonic_millis();
       for (auto &[_, value] : timings_) if (value.running) { value.elapsed = now - value.start; value.running = false; }
-      if (id && revisions_.count(id)) timings_[id] = Timing{now, 0, true};
+      if (id && revisions_.count(id)) timings_[id] = Timing{now, 0, true, environment_rebuild_ms_};
       executing_cell_.store(id);
     };
     thread_ = std::thread([this] {
@@ -137,7 +143,7 @@ public:
       } catch (...) { failure_ = std::current_exception(); token_->request_cancel(); }
     });
   }
-  ~LiveReporter() { session_.output_observer = std::move(previous_); session_.execution_finished = std::move(previous_finished_); join(); store->close(); }
+  ~LiveReporter() { session_.output_observer = std::move(previous_); session_.execution_finished = std::move(previous_finished_); session_.environment_prepared = std::move(previous_prepared_); join(); store->close(); }
   void end_evaluation() { finish_cell(executing_cell_.load()); executing_cell_.store(0); }
   void finish(Session &session) {
     store->finish_audio_streams();
@@ -154,7 +160,10 @@ public:
         target.images = cell.images;
         if (target.ok || !cell.audio.empty()) target.audio = cell.audio;
         target.audio_controls = cell.audio_controls;
-        if (cell.elapsed_ms) target.elapsed_ms = cell.elapsed_ms;
+        if (cell.elapsed_ms) {
+          target.elapsed_ms = cell.elapsed_ms;
+          target.environment_rebuild_ms = cell.environment_rebuild_ms;
+        }
         if (cell.stopwatches_updated) target.stopwatches = cell.stopwatches;
         // Live output is explicitly nontransactional. On cancellation retain
         // the last accepted frame, labelled stale by the cell outcome in UI.
@@ -168,7 +177,7 @@ private:
   std::map<CellId, Writers> writers_;
   ProcessTelemetry process_usage_;
   std::uint64_t last_usage_ms_ = 0;
-  struct Timing { std::uint64_t start, elapsed; bool running; };
+  struct Timing { std::uint64_t start, elapsed; bool running; std::optional<std::uint64_t> environment_rebuild_ms; };
   void finish_cell(CellId id) {
     std::lock_guard<std::mutex> lock(telemetry_mutex_);
     const auto found = timings_.find(id);
@@ -247,6 +256,7 @@ private:
       for (const auto &[id, timing] : timings_) {
         auto &cell = cell_for(id);
         cell.elapsed_ms = timing.running ? now - timing.start : timing.elapsed;
+        cell.environment_rebuild_ms = timing.environment_rebuild_ms;
         cell.timing_running = timing.running;
         ticking |= timing.running;
       }
@@ -274,6 +284,8 @@ private:
   Session &session_;
   SessionOutputObserver previous_;
   std::function<void(CellId)> previous_finished_;
+  std::function<void(std::uint64_t)> previous_prepared_;
+  std::optional<std::uint64_t> environment_rebuild_ms_;
   std::mutex telemetry_mutex_;
   std::map<CellId, Timing> timings_;
   bool finishing_ = false;
@@ -396,6 +408,7 @@ int serve(std::uint64_t generation, std::vector<sputnik::capability::CapabilityR
           } else if (sheet == document.sheets.end()) throw ProtocolError("missing synchronized sheet");
           std::vector<Cell> cells;
           std::map<CellId, std::uint64_t> revisions;
+          bool source_changed = false;
           for (const auto &source : (session.module_editor ? module_sheet.cells : sheet->cells)) {
             const auto old = std::find_if(session.cells.begin(), session.cells.end(),
                 [&](const auto &c) { return c.id == source.id && c.kind == source.kind; });
@@ -413,6 +426,13 @@ int serve(std::uint64_t generation, std::vector<sputnik::capability::CapabilityR
                 cell.dirty = true;
             }
             const bool watch = source.kind == "code" && source.mode == CellMode::Watch;
+            source_changed = source_changed || cell.source != source.source ||
+                cells.size() >= session.cells.size() || session.cells[cells.size()].id != source.id;
+            if (source_changed) {
+              cell.error_ranges.clear();
+              cell.errors.clear();
+              cell.selected_error = 0;
+            }
             if (cell.source != source.source || cell.watch != watch) cell.dirty = true;
             cell.id = source.id; cell.kind = source.kind;
             cell.source = source.source; cell.formatting = source.formatting; cell.watch = watch;

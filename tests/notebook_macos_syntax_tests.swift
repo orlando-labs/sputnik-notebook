@@ -18,9 +18,11 @@ private enum NotebookMacOSSyntaxTests {
         try regexpTagsAndSymmetricOperator()
         try macroSplicesUseSputnikHashRules()
         try applyingColorPreservesText()
+        try editorDiagnosticRanges()
         try editorCoordinatorPreservesSelectionUndoAndIME()
         try greekLetterTokenReplacement()
         try editorGreekLetterReplacement()
+        try editorSmartIndentation()
         print("notebook macOS syntax tests passed")
     }
 
@@ -236,6 +238,37 @@ private enum NotebookMacOSSyntaxTests {
         }
     }
 
+    private static func editorDiagnosticRanges() throws {
+        NSApplication.shared.setActivationPolicy(.prohibited)
+        let source = "😀π\r\ninvalid\n"
+        let range = NotebookSourceRange(start_line: 0, start_column: 1, end_line: 0, end_column: 2, whole_line: false)
+        let lines = NotebookSourceLines(source)
+        let decorated = lines.decoration(for: range, in: source as NSString)
+        require(lines.lines == [0..<3, 5..<12, 13..<13], "CRLF and trailing empty source lines must count once")
+        require(decorated?.characters == NSRange(location: 2, length: 1), "diagnostics count Unicode scalars")
+        let eof = NotebookSourceRange(start_line: 2, start_column: 0, end_line: 2, end_column: 1, whole_line: false)
+        require(lines.decoration(for: eof, in: source as NSString)?.rows == 2...2, "end of file can mark an empty row")
+        let view = FocusTrackingTextView(frame: NSRect(x: 0, y: 0, width: 500, height: 100))
+        view.showsLineNumbers = true
+        view.string = source
+        view.updateDecorations([range])
+        let layout = view.layoutManager!
+        require(layout.temporaryAttribute(.underlineStyle, atCharacterIndex: 2, effectiveRange: nil) != nil,
+                "the exact error range must be underlined")
+        require(layout.temporaryAttribute(.underlineStyle, atCharacterIndex: 0, effectiveRange: nil) == nil,
+                "characters outside the error must not be underlined")
+        view.updateDecorations([])
+        require(layout.temporaryAttribute(.underlineStyle, atCharacterIndex: 2, effectiveRange: nil) == nil,
+                "stale error styling must be removed")
+        require(view.revealSourceRange(range) && view.selectedRange() == NSRange(location: 2, length: 1),
+                "error navigation must select the diagnostic's Unicode scalar range")
+        require(view.revealSourceRange(eof) && view.selectedRange() == NSRange(location: 13, length: 0),
+                "end of file diagnostics must navigate to the final empty line")
+        let invalid = NotebookSourceRange(start_line: 100, start_column: 0, end_line: 100, end_column: 1, whole_line: false)
+        require(!view.revealSourceRange(invalid) && view.selectedRange() == NSRange(location: 13, length: 0),
+                "invalid diagnostics must preserve selection")
+    }
+
     private static func greekLetterTokenReplacement() throws {
         func completed(_ source: String, with delimiter: String = " ") -> String {
             guard let edit = SputnikGreekLetters.replacement(in: source,
@@ -274,6 +307,41 @@ private enum NotebookMacOSSyntaxTests {
         require(SputnikGreekLetters.replacement(in: "alpha_value", range: NSRange(location: 5, length: 0),
                                                insertedText: " ") == nil,
                 "Inserting whitespace inside an existing name must not replace part of that name")
+    }
+
+    private static func editorSmartIndentation() throws {
+        var source = ""
+        let coordinator = CodeEditor(text: Binding(get: { source }, set: { source = $0 }), substituteGreekLetters: false).makeCoordinator()
+        let view = UndoTextView(frame: NSRect(x: 0, y: 0, width: 500, height: 120))
+        coordinator.install(view)
+        view.isRichText = false; view.allowsUndo = true
+        let window = NSWindow(contentRect: view.frame, styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = view; window.makeFirstResponder(view)
+        func newline(_ initial: String, _ expected: String, at caret: Int? = nil, length: Int = 0, selected: Int? = nil) {
+            source = initial
+            coordinator.replaceExternalSource(initial, in: view)
+            view.setSelectedRange(NSRange(location: caret ?? (initial as NSString).length, length: length))
+            view.breakUndoCoalescing(); view.undoManager?.removeAllActions()
+            require(coordinator.textView(view, doCommandBy: #selector(NSResponder.insertNewline(_:))), "Enter uses editor indentation")
+            require(view.string == expected && source == expected, "Smart Enter: \(initial.debugDescription) produced \(view.string.debugDescription)")
+            require(view.selectedRange().location == (selected ?? (expected as NSString).length), "Caret follows indentation")
+            view.undo(nil)
+            require(view.string == initial && source == initial, "One Undo restores the complete Enter edit")
+            view.redo(nil)
+            require(view.string == expected && source == expected, "Redo restores the complete indented newline")
+        }
+        newline("  value = 42", "  value = 42\n  ")
+        newline("  if ready:", "  if ready:\n    ")
+        newline("  if ready: # comment", "  if ready: # comment\n    ")
+        newline("  # comment:", "  # comment:\n  ")
+        newline("  text = \"colon:\"", "  text = \"colon:\"\n  ")
+        newline("  text = \"(\"", "  text = \"(\"\n  ")
+        newline("  call(", "  call(\n    ")
+        newline("  call(\n    value,", "  call(\n    value,\n    ")
+        newline("  call()", "  call(\n    \n  )", at: 7, selected: 12)
+        newline("  x = 123", "  x = \n  3", at: 6, length: 2, selected: 9)
+        newline("\tif ready:", "\tif ready:\n\t\t")
+        newline("  π = 42\r\n  x", "  π = 42\r\n  x\n  ")
     }
 
     private static func editorGreekLetterReplacement() throws {

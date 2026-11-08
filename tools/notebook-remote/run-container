@@ -70,7 +70,9 @@ if [[ "$backend" == cuda ]]; then
   args+=(--gpus "$selection" -e NVIDIA_DRIVER_CAPABILITIES=compute,utility)
 elif [[ "$backend" == rocm ]]; then
   rocm_root=$(cd -- "$rocm_root" && pwd -P)
-  args+=(-e LD_LIBRARY_PATH=/opt/pcre2/lib:/opt/rocm/lib:/opt/rocm/lib64 --device /dev/kfd --device /dev/dri
+  args+=(-e ROCM_PATH=/opt/rocm
+    -e LD_LIBRARY_PATH=/opt/pcre2/lib:/opt/rocm/lib:/opt/rocm/lib64:/opt/rocm/lib/rocm_sysdeps/lib:/opt/rocm/lib/host-math/lib:/opt/rocm/lib/llvm/lib:/opt/rocm/lib/llvm/lib/x86_64-unknown-linux-gnu
+    --device /dev/kfd --device /dev/dri
     --mount "type=bind,src=$rocm_root,dst=/opt/rocm,readonly")
   for group in render video; do
     gid=$(getent group "$group" | cut -d: -f3 || true)

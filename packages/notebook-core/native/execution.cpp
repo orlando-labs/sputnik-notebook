@@ -143,7 +143,8 @@ void merge(Session &session, const Presentation &result, std::uint64_t revision,
     cell.locals = value.locals; cell.output_events = value.output; cell.displays = value.displays;
     cell.progress = value.progress; cell.charts = value.charts;
     cell.images = value.images; cell.audio = value.audio; cell.audio_controls = value.audio_controls;
-    cell.elapsed_ms = value.elapsed_ms; cell.stopwatches = value.stopwatches;
+    cell.elapsed_ms = value.elapsed_ms; cell.environment_rebuild_ms = value.environment_rebuild_ms;
+    cell.stopwatches = value.stopwatches;
     cell.watch_epoch = value.watch_epoch; cell.watch_event_count = value.watch_event_count;
     cell.error_ranges = value.error_ranges; cell.errors = value.errors; cell.selected_error = 0;
   }
@@ -156,6 +157,7 @@ void merge(Session &session, const Presentation &result, std::uint64_t revision,
   }
   auto telemetry = result.telemetry;
   auto environment_error = result.environment_error;
+  auto module_errors = result.module_errors;
   auto environment_output = result.environment_output;
   // Linearize publication against Force Stop without allocating/copying under
   // the control lock. Once committed, a late Stop cannot kill the idle worker.
@@ -163,6 +165,7 @@ void merge(Session &session, const Presentation &result, std::uint64_t revision,
   session.run_telemetry = std::move(telemetry);
   session.cells.swap(cells); session.status.swap(status);
   session.environment_error.swap(environment_error); session.environment_output.swap(environment_output);
+  session.module_errors.swap(module_errors);
   session.environment_stale = result.environment_stale;
 }
 }
@@ -227,7 +230,10 @@ bool NotebookExecution::run(ProjectTabs &tabs, ProjectTab &tab, const std::strin
   try {
     if (!sheet.process) {
       sheet.owner = owner;
-      sheet.process = std::make_shared<Process>(); sheet.process->start(executable_, tabs.project().directory.string(), grants_[owner], environment_directories_[owner]);
+      auto grants = grants_[owner];
+      if (!tab.module) for (const auto &grant : book_grants_)
+        if (std::find(grants.begin(), grants.end(), grant) == grants.end()) grants.push_back(grant);
+      sheet.process = std::make_shared<Process>(); sheet.process->start(executable_, tabs.project().directory.string(), grants, environment_directories_[owner]);
       control->bind(sheet.process);
       const auto ready = sheet.process->receive(5s);
       if (!ready || ready->kind != Kind::Ready) throw ProtocolError("worker handshake failed");
@@ -289,6 +295,14 @@ void NotebookExecution::configure_grants(ProjectTab &tab, const std::string &tex
   const auto parsed = parse_grants(text); // Validate before affecting any live world.
   std::vector<std::string> grants;
   for (const auto &grant : parsed) grants.push_back(sputnik::capability::request_to_text(grant));
+  if (!tab.module) {
+    auto effective = grants;
+    for (const auto &grant : book_grants_)
+      if (std::find(effective.begin(), effective.end(), grant) == effective.end()) effective.push_back(grant);
+    std::string combined;
+    for (const auto &grant : effective) { if (!combined.empty()) combined += '\n'; combined += grant; }
+    (void)parse_grants(combined);
+  }
   const auto owner = tab.module ? "module:" + tab.module->id : "sheet:" + tab.session.project_sheet_id;
   restart(tab);
   // Invocation runtimes use the controller sheet's policy too. Revocation
@@ -300,6 +314,28 @@ void NotebookExecution::configure_grants(ProjectTab &tab, const std::string &tex
   }
   grants_[owner] = std::move(grants);
   tab.session.status = "Worker grants updated; next Run starts a fresh runtime. No cells replayed.";
+}
+
+void NotebookExecution::configure_book_grants(ProjectTabs &tabs, const std::string &text) {
+  const auto parsed = parse_grants(text);
+  std::vector<std::string> grants;
+  for (const auto &grant : parsed) grants.push_back(sputnik::capability::request_to_text(grant));
+  for (const auto &tab : tabs.tabs()) if (!tab->module) {
+    auto effective = grants_["sheet:" + tab->session.project_sheet_id];
+    for (const auto &grant : grants)
+      if (std::find(effective.begin(), effective.end(), grant) == effective.end()) effective.push_back(grant);
+    std::string combined;
+    for (const auto &grant : effective) { if (!combined.empty()) combined += '\n'; combined += grant; }
+    (void)parse_grants(combined);
+  }
+  // Retire sheet and invocation worlds while retaining each sheet's own policy.
+  for (const auto &tab : tabs.tabs()) if (!tab->module) {
+    const auto existing = grants_["sheet:" + tab->session.project_sheet_id];
+    std::string policy;
+    for (const auto &grant : existing) { if (!policy.empty()) policy += '\n'; policy += grant; }
+    configure_grants(*tab, policy);
+  }
+  book_grants_ = std::move(grants);
 }
 
 void NotebookExecution::configure_environment(ProjectTab &tab, const std::string &directory) {

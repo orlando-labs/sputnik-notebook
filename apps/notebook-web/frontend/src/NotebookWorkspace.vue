@@ -8,10 +8,11 @@ import NotebookHistory from './NotebookHistory.vue'
 import NotebookRuns from './NotebookRuns.vue'
 import NotebookDependencies from './NotebookDependencies.vue'
 import NotebookEnvironments from './NotebookEnvironments.vue'
-import { useSources, archiveName, type FileEdit } from './sources'
+import { useSources, archiveName, moduleIDFromName, modulePathForID, type FileEdit } from './sources'
 import { documentJSON } from './document-json'
 import { download } from './rich'
 import NotebookCellOutput from './NotebookCellOutput.vue'
+import type { CodeDiagnostic } from './diagnostics'
 import NotebookParameterForm from './NotebookParameterForm.vue'
 import NotebookCellComponents from './NotebookCellComponents.vue'
 import NotebookInputDesigner from './NotebookInputDesigner.vue'
@@ -62,6 +63,12 @@ const conflictReview = ref<InstanceType<typeof NotebookSaveConflict>>()
 const sheetDialog = ref<HTMLDialogElement>(), replacementSheet = ref(''), sheetError = ref('')
 const relocateDialog = ref<HTMLDialogElement>(), relocatedPath = ref(''), relocatedModule = ref(''), relocateError = ref(''), relocating = ref(false)
 const sources = reactive(useSources(() => props.project, document, revision))
+const errorTarget = ref<{ cell: string; diagnostic: CodeDiagnostic }>()
+function revealError(cell: NotebookCell, diagnostic: CodeDiagnostic) {
+  collapsedCells.value.delete(cellKey(cell))
+  selectedCell.value = cell.id
+  errorTarget.value = { cell: cell.id, diagnostic: { ...diagnostic } }
+}
 const history = ref<InstanceType<typeof NotebookHistory>>()
 const runSnapshots = ref<InstanceType<typeof NotebookRuns>>()
 const dependencies = ref<InstanceType<typeof NotebookDependencies>>()
@@ -75,6 +82,11 @@ const resource = ref<File | null>(null)
 const fileMode = ref<'module' | 'resource'>('module')
 const transferBusy = ref(false)
 const currentModule = computed(() => document.value?.modules?.find(module => module.path === sources.selected))
+const relocatedModulePath = computed(() => {
+  const id = moduleIDFromName(relocatedModule.value)
+  if (currentModule.value && id) return modulePathForID(relocatedPath.value.trim(), id)
+  return ''
+})
 const endpoint = () => `/api/projects/${encodeURIComponent(props.project.id)}/notebook`
 const dirty = computed(() => document.value !== null && (documentJSON(document.value) !== saved.value || sources.dirty))
 const parameterMutating = ref(false), mediaMutating = ref(false)
@@ -83,6 +95,17 @@ const busy = computed(() => loading.value || saving.value || relocating.value ||
 const sheet = computed(() => document.value?.sheets.find(value => value.id === activeSheet.value))
 const validTitles = computed(() => document.value?.sheets.every(value => value.title.trim().length > 0))
 const execution = reactive(useExecution(props.accountId, () => props.project, document, revision, dirty, computed(() => busy.value || parameterMutating.value), activeSheet, activeBoardID))
+const environmentErrorTarget = computed(() => {
+  const result = execution.displayedResult
+  if (result?.error || !result?.environment_error) return null
+  for (const cell of sheet.value?.cells || []) {
+    const presentation = execution.cellPresentation(cell.id, cell.source)
+    if (presentation.diagnostics_stale ?? presentation.stale) continue
+    const diagnostic = presentation.diagnostics?.find(item => item.range && item.message && result.environment_error.includes(item.message))
+    if (diagnostic) return { cell, diagnostic }
+  }
+  return null
+})
 const inputs = reactive(useInputRuntime(props.accountId, () => props.project, document, revision, activeSheet, computed(() => execution.registry?.input_version || ''), () => execution.refresh()))
 const media = reactive(useMediaInputs(props.accountId, props.project.id, () => revision.value, () => inputState()?.version || '', async () => { accept(await api<NotebookResponse>(endpoint())); await inputs.refresh(); await execution.refresh(); await checkpoint() }))
 const designer = ref<InstanceType<typeof NotebookInputDesigner>>()
@@ -457,7 +480,7 @@ onUnmounted(() => {
       <button v-if="project.import_pending && project.import_command_id" @click="emit('resumeImport', project.import_command_id)">Resume import…</button>
       <button v-if="loaded && project.permissions.write && !project.import_pending" class="primary" :disabled="busy" @click="create"><NotebookIcon name="plus" />Create notebook</button>
     </div>
-    <div v-else class="notebook-shell">
+    <div v-else class="notebook-shell" :class="{ 'notebook-shell--file': sources.selected }">
       <aside class="notebook-sidebar" aria-label="Notebook navigation">
         <div class="notebook-identity"><div class="heading-icon"><NotebookIcon name="book" /></div>
           <div><h2>{{ project.title }}</h2><p role="status" data-testid="notebook-save-status">{{ saving ? 'Saving…' : dirty ? 'Unsaved changes' : 'All changes saved' }}</p></div>
@@ -505,7 +528,7 @@ onUnmounted(() => {
         <div v-if="inputs.error || inputs.pending" class="execution-message" role="status" data-testid="input-status"><p>{{ inputs.error || 'Checking the parameter command. Accepted values are recovered without repeating the update.' }}</p><button :disabled="inputs.busy" @click="inputs.refresh">Check parameter status</button><button v-if="inputs.pending && inputs.unknown && execution.canExecute" :disabled="inputs.busy || execution.requestBusy || !!execution.pending" @click="inputs.retry">Retry pending input command</button></div>
         <div v-if="dirty && (document.inputs?.length || sheet?.cells.some(cell => cell.cell_ui?.inputs.length))" class="source-note parameter-save-note">Save notebook changes before applying parameter values.</div>
         <div v-if="sources.error" class="source-error" role="alert">{{ sources.error }} <button class="text-button" @click="sources.selected ? sources.open(sources.selected) : sources.index()">Retry files</button></div>
-        <NotebookFileEditor v-if="sources.selected" :file="sources.view" :path="sources.selected" :module-id="currentModule?.id" :auto-import="!!document.auto_imports?.includes(currentModule?.id || '')" :loading="sources.fileBusy" :writable="project.permissions.write" :disabled="busy || !!pending || conflict" :changed="sources.changes[sources.selected] !== undefined" @text="sources.text" @auto-import="sources.autoImport" @download="downloadFile" @remove="sources.remove" @relocate="showRelocate" />
+        <NotebookFileEditor v-if="sources.selected" :key="sources.selected" :project-id="project.id" :file="sources.view" :path="sources.selected" :module-id="currentModule?.id" :auto-import="!!document.auto_imports?.includes(currentModule?.id || '')" :loading="sources.fileBusy" :writable="project.permissions.write" :disabled="busy || !!pending || conflict" :changed="sources.changes[sources.selected] !== undefined" @text="sources.text" @auto-import="sources.autoImport" @download="downloadFile" @remove="sources.remove" @relocate="showRelocate" />
         <div v-if="!sources.selected" class="execution-toolbar">
           <span class="execution-status" role="status" data-testid="execution-status"><span class="runtime-dot" :class="{ 'is-running': execution.activeRun, 'is-offline': !execution.connected }"></span>{{ execution.status }}</span>
           <div v-if="execution.canExecute" class="execution-actions">
@@ -525,7 +548,8 @@ onUnmounted(() => {
         <div v-if="execution.displayedResult?.rich_error" class="execution-note" role="alert">{{ execution.displayedResult.rich_error }}</div>
         <div v-if="execution.displayedResult?.text_limited" class="execution-note" role="status">Published text exceeds the preview limits. Values are unavailable; reduce the number or size of requested variables.</div>
         <div v-if="execution.displayedResult?.error || execution.displayedResult?.environment_error || execution.displayedResult?.task_errors.length" class="execution-failure" role="alert">
-          <p>{{ execution.displayedResult?.error || execution.displayedResult?.environment_error }}</p>
+          <p v-if="environmentErrorTarget"><button class="plain text-button" @click="revealError(environmentErrorTarget.cell, environmentErrorTarget.diagnostic)">{{ execution.displayedResult?.environment_error }}</button></p>
+          <p v-else>{{ execution.displayedResult?.error || execution.displayedResult?.environment_error }}</p>
           <button v-if="execution.displayedResult?.environment_error" class="plain" @click="dependencies?.show()">Open Dependencies…</button>
           <pre v-for="(message, index) in execution.displayedResult?.task_errors" :key="index">{{ message }}</pre>
         </div>
@@ -550,9 +574,9 @@ onUnmounted(() => {
             <label class="sr-only" :for="`cell-source-${cell.id}`">{{ cell.kind === 'text' ? 'Text' : 'Code' }} cell {{ index + 1 }}</label>
             <p v-if="canCollapse(cell) && collapsedCells.has(cellKey(cell))" class="source-collapsed" data-testid="source-collapsed">{{ cell.source.split('\n').length }} lines · {{ cell.source.split('\n').find(line => line.trim()) || 'Empty code cell' }}</p>
             <NotebookTextEditor v-if="cell.kind === 'text'" :content="{ source: cell.source, formatting: cell.formatting }" :label="`Text cell ${index + 1}`" :source-id="`cell-source-${cell.id}`" :readonly="!project.permissions.write || conflict" :disabled="busy" :variables="execution.textVariables(cell.id)" @change="updateText(cell, $event)" />
-            <NotebookCodeEditor v-else v-show="!canCollapse(cell) || !collapsedCells.has(cellKey(cell))" :source-id="`cell-source-${cell.id}`" v-model="cell.source" :label="`Code cell ${index + 1}`" :readonly="!project.permissions.write || !plainCell(cell) || conflict" :disabled="busy" :sputnik="cell.kind === 'code'" :diagnostics="execution.cellPresentation(cell.id, cell.source).diagnostics" :diagnostics-truncated="execution.cellPresentation(cell.id, cell.source).diagnostics_truncated" :stale="execution.cellPresentation(cell.id, cell.source).stale" placeholder="Write Sputnik code…" />
+            <NotebookCodeEditor v-else v-show="!canCollapse(cell) || !collapsedCells.has(cellKey(cell))" :source-id="`cell-source-${cell.id}`" v-model="cell.source" :label="`Code cell ${index + 1}`" :readonly="!project.permissions.write || !plainCell(cell) || conflict" :disabled="busy" :sputnik="cell.kind === 'code'" :diagnostics="execution.cellPresentation(cell.id, cell.source).diagnostics" :diagnostics-truncated="execution.cellPresentation(cell.id, cell.source).diagnostics_truncated" :reveal-diagnostic="errorTarget?.cell === cell.id ? errorTarget.diagnostic : undefined" :stale="execution.cellPresentation(cell.id, cell.source).diagnostics_stale" placeholder="Write Sputnik code…" />
             <p v-if="!['code', 'text'].includes(cell.kind)" class="cell-preserved">This content is preserved and read-only in this editor.</p>
-            <NotebookCellOutput v-if="cell.kind === 'code'" :presentation="execution.cellPresentation(cell.id, cell.source)" :components="[...(cell.cell_ui?.pre || []), ...(cell.cell_ui?.post || [])]" />
+            <NotebookCellOutput v-if="cell.kind === 'code'" :presentation="execution.cellPresentation(cell.id, cell.source)" :components="[...(cell.cell_ui?.pre || []), ...(cell.cell_ui?.post || [])]" @reveal-error="revealError(cell, $event)" />
             <NotebookCellComponents v-if="cell.cell_ui" :key="cell.id + '-post-' + inputEpoch" :cell-id="cell.id" :components="cell.cell_ui.post" :definitions="cell.cell_ui.inputs" :state="inputState(cell.id)" :presentation="execution.cellPresentation(cell.id, cell.source)" :disabled="!canApply(cell.id) || inputState(cell.id)?.can_apply !== true" :on-apply="(values, version) => inputs.apply(cell.id, values, version)" @dirty="inputs.dirtyForm" />
           </article>
           <p v-if="!sheet.cells.length" class="sheet-empty">This sheet is empty. Add a code or text cell below.</p>
@@ -599,6 +623,7 @@ onUnmounted(() => {
       <div class="dialog-heading"><h2 id="relocate-title">Rename or move {{ currentModule ? 'module' : 'file' }}</h2><button type="button" class="plain icon-button" aria-label="Close rename or move" :disabled="relocating" @click="relocateDialog?.close()">×</button></div>
       <template v-if="currentModule"><label for="relocated-module">New module name</label><input id="relocated-module" v-model="relocatedModule" maxlength="64" required :disabled="relocating"></template>
       <label for="relocated-path">Destination path</label><input id="relocated-path" v-model="relocatedPath" required :disabled="relocating">
+      <p v-if="relocatedModulePath">The renamed module will be saved as <code>{{ relocatedModulePath }}</code>.</p>
       <p>File contents move with the path. {{ currentModule ? 'Module metadata, its package declaration, auto-imports and board actions follow the new name.' : '' }} References inside other source code and resource paths must be updated manually. Save notebook commits all changes together.</p>
       <p v-if="relocateError" class="source-error" role="alert">{{ relocateError }}</p><div class="dialog-actions"><button type="button" :disabled="relocating" @click="relocateDialog?.close()">Cancel</button><button class="primary" :disabled="relocating">{{ relocating ? 'Reading file…' : 'Update notebook draft' }}</button></div>
     </form></dialog>

@@ -11,7 +11,9 @@
 
 namespace sputnik::notebook::worker {
 namespace {
-constexpr const char *schema = "sputnik.notebook.presentation.v15";
+constexpr const char *schema = "sputnik.notebook.presentation.v17";
+constexpr const char *preparation_schema = "sputnik.notebook.presentation.v16";
+constexpr const char *telemetry_schema = "sputnik.notebook.presentation.v15";
 constexpr const char *media_schema = "sputnik.notebook.presentation.v14";
 constexpr const char *audio_previous_schema = "sputnik.notebook.presentation.v13";
 constexpr const char *execution_schema = "sputnik.notebook.presentation.v12";
@@ -198,7 +200,7 @@ template<class A, class T> void cell(A &a, T &v) {
   for (const auto &series : v.images) for (const auto &image : series.images) display_bytes += image.storage_bytes();
   if (display_bytes > 64U * 1024U * 1024U) throw ProtocolError("oversized notebook figure");
 }
-template<class A, class T> void presentation(A &a, T &v, unsigned version = 15) {
+template<class A, class T> void presentation(A &a, T &v, unsigned version = 17) {
   a.number(v.cancelled); a.str(v.status); a.str(v.environment_error); a.number(v.environment_stale);
   a.items(v.environment_output, [](auto &a, auto &v) { text_event(a, v); });
   std::set<std::uint64_t> failure_ids;
@@ -294,6 +296,23 @@ template<class A, class T> void presentation(A &a, T &v, unsigned version = 15) 
     if (t.tasks.size() > 512 || t.active > t.total || (!v.telemetry_updated && (!t.tasks.empty() || cpu || memory)))
       throw ProtocolError("invalid runtime telemetry snapshot");
   }
+  if (version >= 16) for (auto &entry : v.cells) {
+    bool rebuilt = entry.environment_rebuild_ms.has_value();
+    std::uint64_t milliseconds = entry.environment_rebuild_ms.value_or(0);
+    a.number(rebuilt); a.number(milliseconds);
+    if (milliseconds > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()) || (rebuilt && !entry.elapsed_ms))
+      throw ProtocolError("invalid environment rebuild time");
+    if constexpr (std::is_same_v<A, Reader>) { if (rebuilt) entry.environment_rebuild_ms = milliseconds; }
+  }
+  if (version >= 17) {
+    a.items(v.module_errors, [](auto &a, auto &error) {
+      a.str(error.module_id); a.str(error.source); a.str(error.message);
+      a.items(error.ranges, [](auto &a, auto &value) { range(a, value); });
+      if (error.module_id.empty() || error.ranges.size() > 100)
+        throw ProtocolError("invalid module diagnostic");
+    });
+    if (v.module_errors.size() > 100) throw ProtocolError("too many module diagnostics");
+  }
   std::size_t chart_points = 0;
   for (const auto &entry : v.cells)
     {
@@ -343,7 +362,10 @@ void merge_live_presentation(Presentation &target, Presentation update) {
         }
         found->audio_updated = true;
       }
-      if (value.elapsed_ms) { found->elapsed_ms = value.elapsed_ms; found->timing_running = value.timing_running; }
+      if (value.elapsed_ms) {
+        found->elapsed_ms = value.elapsed_ms; found->timing_running = value.timing_running;
+        found->environment_rebuild_ms = value.environment_rebuild_ms;
+      }
       if (value.stopwatches_updated) { found->stopwatches = std::move(value.stopwatches); found->stopwatches_updated = true; }
       if (value.charts_updated) {
         if (value.charts_reset || value.charts.empty()) found->charts.clear();
@@ -372,6 +394,7 @@ Presentation presentation_from_session(const Session &session,
   Presentation result; result.telemetry = session.run_telemetry;
   result.cancelled = cancelled; result.status = session.status;
   result.environment_error = session.environment_error;
+  result.module_errors = session.module_errors;
   result.environment_stale = session.environment_stale;
   result.environment_output = session.environment_output;
   for (const auto &cell : session.cells) {
@@ -385,7 +408,8 @@ Presentation presentation_from_session(const Session &session,
     v.progress = cell.progress;
     v.charts = cell.charts;
     v.images = cell.images; v.audio = cell.audio; v.audio_controls = cell.audio_controls;
-    v.elapsed_ms = cell.elapsed_ms; v.stopwatches = cell.stopwatches; v.stopwatches_updated = true;
+    v.elapsed_ms = cell.elapsed_ms; v.environment_rebuild_ms = cell.environment_rebuild_ms;
+    v.stopwatches = cell.stopwatches; v.stopwatches_updated = true;
     v.charts_reset = true;
     for (auto &chart : v.charts) chart.replace_chart = true;
     v.watch_epoch = cell.watch_epoch; v.watch_event_count = cell.watch_event_count;
@@ -403,8 +427,8 @@ Presentation decode_presentation(const std::string &bytes) {
   if (bytes.size() > kMaxPresentationBytes) throw ProtocolError("oversized presentation");
   Reader reader{bytes};
   std::string version; reader.str(version);
-  if (version != schema && version != media_schema && version != audio_previous_schema && version != execution_schema && version != previous_schema) throw ProtocolError("unsupported presentation schema");
-  Presentation result; presentation(reader, result, version == schema ? 15 : version == media_schema ? 14 : version == audio_previous_schema ? 13 : version == execution_schema ? 12 : 11);
+  if (version != schema && version != preparation_schema && version != telemetry_schema && version != media_schema && version != audio_previous_schema && version != execution_schema && version != previous_schema) throw ProtocolError("unsupported presentation schema");
+  Presentation result; presentation(reader, result, version == schema ? 17 : version == preparation_schema ? 16 : version == telemetry_schema ? 15 : version == media_schema ? 14 : version == audio_previous_schema ? 13 : version == execution_schema ? 12 : 11);
   if (reader.offset != bytes.size()) throw ProtocolError("trailing presentation bytes");
   return result;
 }
@@ -429,7 +453,7 @@ std::optional<Presentation> PresentationAssembler::accept(const Message &message
       throw ProtocolError("stale presentation identity");
     if (message.kind == (live_ ? Kind::LiveBegin : Kind::SnapshotBegin)) {
       if (state_ != State::Empty || message.fields.size() != 2 ||
-          (message.fields[0] != schema && message.fields[0] != media_schema && message.fields[0] != audio_previous_schema && message.fields[0] != execution_schema && message.fields[0] != previous_schema))
+          (message.fields[0] != schema && message.fields[0] != preparation_schema && message.fields[0] != telemetry_schema && message.fields[0] != media_schema && message.fields[0] != audio_previous_schema && message.fields[0] != execution_schema && message.fields[0] != previous_schema))
         throw ProtocolError("invalid presentation begin");
       expected_ = size_field(message.fields[1]);
       schema_ = message.fields[0];

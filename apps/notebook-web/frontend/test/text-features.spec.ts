@@ -101,8 +101,127 @@ test('Sputnik source keeps lexical colors, selection, Unicode diagnostics and st
   await expect(editor.locator('.syntax-string')).toHaveText('"😀"'); await runAll(page, project.id)
   const result = await runResult(page, project.id); expect(result.rich_error).toBe(''); const diagnostics = result.cells[0].diagnostics; expect(diagnostics.length).toBeGreaterThan(0); expect(diagnostics.some((item: any) => item.range !== null)).toBe(true)
   const list = cell(page, 0).getByTestId('code-diagnostics'); await expect(list).toBeVisible(); await expect(editor.locator('.code-error-range').first()).toBeVisible(); await list.getByRole('button').filter({ hasText: 'Line ' }).first().click(); await expect(source).toBeFocused(); const selected = await source.evaluate((element: HTMLTextAreaElement) => element.value.slice(element.selectionStart, element.selectionEnd)); expect(selected.length).toBeGreaterThan(0)
+  await expect(editor.locator('.code-gutter .code-line-error')).toHaveText('2')
+  await expect(editor.locator('.code-error-lines .code-line-error')).toBeVisible()
   for (const colorScheme of ['light', 'dark'] as const) { await page.emulateMedia({ colorScheme }); await page.screenshot({ path: `../build/sputnik-diagnostics-${colorScheme}.png`, fullPage: true }) }
-  await source.fill('π = 21\nπ * 2\n'); await expect(list).toContainText('Previous diagnostics'); expect(await editor.locator('.code-error-range').count()).toBe(0); await expect(list.getByRole('button').first()).toBeDisabled(); await save(page); await runAll(page, project.id); await expect(cell(page, 0).getByLabel('Cell result', { exact: true })).toHaveText('42'); await expect(list).toHaveCount(0)
+  await source.fill('π = 21\nπ * 2\n'); await expect(list).toContainText('Previous diagnostics'); await expect(editor.locator('.code-error-range, .code-line-error')).toHaveCount(0); await expect(list.getByRole('button').first()).toBeDisabled(); await save(page); await runAll(page, project.id); await expect(cell(page, 0).getByLabel('Cell result', { exact: true })).toHaveText('42'); await expect(list).toHaveCount(0)
+})
+
+test('module editor fills the viewport and marks syntax errors in a long draft', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await login(page)
+  const { project } = await book(page, [])
+  await page.goto(`/projects/${project.id}`)
+  await page.getByRole('button', { name: 'New module', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'New module', exact: true })
+  await dialog.getByLabel('Module name').fill('helpers')
+  await dialog.getByRole('button', { name: 'Add to draft', exact: true }).click()
+  const editor = page.getByTestId('project-file-editor')
+  const source = editor.getByRole('textbox', { name: 'Module helpers' })
+  const initialHeight = (await source.boundingBox())!.height
+  await page.setViewportSize({ width: 1280, height: 1040 })
+  await expect.poll(async () => (await source.boundingBox())!.height).toBeGreaterThan(initialHeight + 200)
+
+  const prefix = 'package helpers\n' + '# comment\n'.repeat(4100)
+  await source.evaluate((element: HTMLTextAreaElement, value) => {
+    element.value = value
+    element.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste' }))
+  }, prefix + 'value = "😀" + )\n')
+  const diagnostic = editor.getByRole('button', { name: /Line 4102, column 15/ })
+  await diagnostic.click()
+  await expect(editor.locator('.code-gutter .code-line-error')).toHaveText('4102')
+  await expect(editor.locator('.code-error-lines .code-line-error')).toBeVisible()
+  await expect(editor.locator('.code-error-range')).toHaveText(')')
+  expect(await source.evaluate((element: HTMLTextAreaElement) => element.value.slice(element.selectionStart, element.selectionEnd))).toBe(')')
+  const rechecked = page.waitForResponse(response => response.url().endsWith('/module-diagnostics'))
+  await page.keyboard.insertText('1')
+  await expect(editor.getByTestId('code-diagnostics')).toHaveCount(0)
+  await expect(editor.locator('.code-line-error, .code-error-range')).toHaveCount(0)
+  const response = await rechecked
+  expect(response.status()).toBe(200)
+  expect((await response.json()).diagnostics).toEqual([])
+})
+
+test('clicking a code error reveals its source and errors without a source range stay plain', async ({ page }) => {
+  await login(page)
+  const source = '# comment\n'.repeat(100) + 'value = "😀" + missing_name\n'
+  const { project } = await book(page, [code('1', source)])
+  const current = await stored(page, project.id), document = JSON.parse(current.document)
+  document.version = 4
+  document.inputs ||= []
+  document.dependencies ||= []
+  document.boards ||= []
+  document.future.exact = '__exact__'
+  document.sheets[0].cells[0].cell_ui = { inputs: [], pre: [], post: [{ id: 'value', kind: 'metric', title: 'Value', binding: 'value' }] }
+  const saved = await request(page, `/api/projects/${project.id}/notebook`, 'PUT', {
+    command_id: crypto.randomUUID(), base_revision: current.revision, document: JSON.stringify(document).replace('"__exact__"', '9223372036854775807'),
+  })
+  expect(saved.status(), await saved.text()).toBe(200)
+  await page.goto(`/projects/${project.id}`)
+  await runAll(page, project.id)
+  const input = page.getByLabel('Code cell 1', { exact: true })
+  const error = cell(page, 0).getByLabel('Cell error', { exact: true })
+  const link = error.getByRole('button').filter({ hasText: 'missing_name' }).first()
+  await expect(link).toBeVisible()
+  await page.getByRole('button', { name: 'Collapse source for cell 1' }).click()
+  await expect(input).toBeHidden()
+  await link.click()
+  await expect(input).toBeVisible()
+  await expect(input).toBeFocused()
+  expect(await input.evaluate((element: HTMLTextAreaElement) => element.value.slice(element.selectionStart, element.selectionEnd))).toBe('missing_name')
+  expect(await input.evaluate(element => element.scrollTop)).toBeGreaterThan(1000)
+  await input.evaluate(element => { element.scrollTop = 0 })
+  await link.click()
+  expect(await input.evaluate(element => element.scrollTop)).toBeGreaterThan(1000)
+
+  const preparation = await runResult(page, project.id)
+  const preparationURL = `**/execution/runs/${preparation.id}`
+  await page.route(preparationURL, async route => {
+    const response = await route.fetch(), body = await response.json()
+    body.run.environment_error = body.run.cells[0].diagnostics[0].message
+    body.run.environment_stale = true
+    body.run.cells[0].dirty = true
+    await route.fulfill({ response, json: body })
+  })
+  await page.reload()
+  const preparationLink = page.locator('.execution-failure').getByRole('button').filter({ hasText: 'missing_name' })
+  await expect(preparationLink).toContainText('missing_name')
+  await preparationLink.click()
+  expect(await input.evaluate((element: HTMLTextAreaElement) => element.value.slice(element.selectionStart, element.selectionEnd))).toBe('missing_name')
+  expect(await input.evaluate(element => element.scrollTop)).toBeGreaterThan(1000)
+  await page.unroute(preparationURL)
+  await page.reload()
+
+  await page.setViewportSize({ width: 1280, height: 600 })
+  await input.fill('missing_name\n' + '# comment\n'.repeat(100))
+  await save(page)
+  await runAll(page, project.id)
+  await input.evaluate(element => { element.style.height = '700px' })
+  await link.click()
+  const line = cell(page, 0).locator('.code-error-lines .code-line-error')
+  await expect.poll(async () => {
+    const bounds = await line.boundingBox()
+    return !!bounds && bounds.y >= 0 && bounds.y + bounds.height <= 600
+  }).toBe(true)
+
+  const result = await runResult(page, project.id)
+  const message = 'Environment preparation failed at worker:101:15'
+  await page.route(`**/execution/runs/${result.id}`, async route => {
+    const response = await route.fetch(), body = await response.json()
+    body.run.cells[0].error = message
+    body.run.cells[0].diagnostics = [{ message, truncated: false, range: null }]
+    body.run.environment_error = message
+    body.run.environment_stale = true
+    await route.fulfill({ response, json: body })
+  })
+  await page.reload()
+  await expect(error).toHaveText(message)
+  await expect(error.getByRole('button')).toHaveCount(0)
+  await expect(page.locator('.execution-failure > p').first()).toHaveText(message)
+  await expect(page.locator('.execution-failure .text-button')).toHaveCount(0)
+  await input.evaluate(element => { element.scrollTop = 0 })
+  await error.click()
+  expect(await input.evaluate(element => element.scrollTop)).toBe(0)
 })
 
 test('code editor composition, tab, Undo, scroll and module styling preserve explicit save semantics', async ({ page }) => {

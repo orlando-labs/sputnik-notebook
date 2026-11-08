@@ -231,6 +231,7 @@ static std::string figure_json(const sputnik::runtime::NotebookDisplay &d) {
 }
 static void telemetry_json(std::string &json, const CellPresentation &cell) {
   json += ",\"elapsed_ms\":" + (cell.elapsed_ms ? quote(std::to_string(*cell.elapsed_ms)) : "null") +
+      ",\"environment_rebuild_ms\":" + (cell.environment_rebuild_ms ? quote(std::to_string(*cell.environment_rebuild_ms)) : "null") +
       ",\"timing_running\":" + (cell.timing_running ? "true" : "false") + ",\"progress\":[";
   bool first = true;
   for (const auto &item : cell.progress) {

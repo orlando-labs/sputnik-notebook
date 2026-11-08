@@ -4,6 +4,7 @@ import SwiftUI
 struct NotebookServerBar: View {
     @ObservedObject var model: NotebookModel
     @ObservedObject var remote: NotebookRemoteController
+    @Binding var sidebarVisibility: NavigationSplitViewVisibility
     @State private var browse = false
     @State private var publish = false
     @State private var workerSettings: NotebookTab?
@@ -12,9 +13,23 @@ struct NotebookServerBar: View {
     private var workerTab: NotebookTab? { model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab }
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ViewThatFits(in: .horizontal) {
-                workerToolbar(compact: false)
-                workerToolbar(compact: true)
+            HStack(spacing: 8) {
+                Button {
+                    sidebarVisibility = sidebarVisibility == .detailOnly ? .all : .detailOnly
+                } label: {
+                    Image(systemName: "sidebar.left")
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut("s", modifiers: [.control, .command])
+                .help(sidebarVisibility == .detailOnly ? "Show Sidebar · ⌃⌘S" : "Hide Sidebar · ⌃⌘S")
+                .accessibilityLabel(sidebarVisibility == .detailOnly ? "Show Sidebar" : "Hide Sidebar")
+                .accessibilityIdentifier("notebook-sidebar-toggle")
+                ViewThatFits(in: .horizontal) {
+                    workerToolbar(compact: false)
+                    workerToolbar(compact: true)
+                }
             }
             if remote.conflict {
                 HStack {

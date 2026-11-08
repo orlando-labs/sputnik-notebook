@@ -28,6 +28,7 @@ class Schemas:
   attr project
   attr membership
   attr notebook
+  attr module_diagnostics
   attr empty
   attr run
   attr invocation
@@ -55,6 +56,8 @@ class Schemas:
       field(:account_id, type: Str, required: true)
       field(:role, type: Str, required: true)
     @empty = orbit.ParamSchema([], unknown: :reject)
+    @module_diagnostics = orbit.params(unknown: :reject):
+      field(:source, type: Str, required: true)
     @notebook = orbit.params(unknown: :reject):
       field(:command_id, type: Str, required: true)
       field(:base_revision, type: Str, required: true)
@@ -322,6 +325,12 @@ class Pages < oauth.Controller:
     current = require_account()
     respond:
       json: service(:sources).read(current, id, request.query("revision"), request.query("path"))
+
+  def module_diagnostics(id as Str):
+    current = require_account()
+    params = request.params.json.expect(service(:schemas).module_diagnostics)
+    respond:
+      json: service(:sources).diagnostics(current, id, params[:source])
 
   def source_download(id as Str):
     current = require_account()
@@ -638,6 +647,7 @@ routes = orbit.routes:
   put "/api/projects/:id/notebook", to: &Pages#save_notebook
   get "/api/projects/:id/notebook/files", to: &Pages#source_index
   get "/api/projects/:id/notebook/file", to: &Pages#source_file
+  post "/api/projects/:id/notebook/module-diagnostics", to: &Pages#module_diagnostics
   get "/api/projects/:id/notebook/download", to: &Pages#source_download
   get "/api/projects/:id/notebook/archive", to: &Pages#notebook_archive
   get "/api/projects/:id/notebook/revisions", to: &Pages#notebook_history

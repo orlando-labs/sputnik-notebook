@@ -33,7 +33,7 @@ export interface CellPresentation {
   result_format?: ResultFormat | null; result_table?: TableSnapshot | null; revision?: string
   result: string; error: string; output: CellResult['output']; ok: boolean; metrics: CellResult['metrics']
   stale: boolean; running: boolean; active: boolean; rich: RichCell; identity: string
-  text_values?: PublishedText[]; diagnostics?: CodeDiagnostic[]; diagnostics_truncated?: boolean
+  text_values?: PublishedText[]; diagnostics?: CodeDiagnostic[]; diagnostics_truncated?: boolean; diagnostics_stale?: boolean
 }
 export interface RunResult extends RunSummary {
   task_telemetry?: TaskTelemetry | null
@@ -280,12 +280,14 @@ export function useExecution(accountId: string, project: () => Project, document
     }
     const live = result?.live_cells.find(cell => cell.id === id)
     const media = live || value
-    const stale = dirty.value || outdated.value || result?.environment_stale || runtime.value?.needs_restart || run?.revision !== revision.value || !!registry.value?.reset_epochs.includes(run?.runtime_epoch || '') || run?.id !== currentRuns.value.at(-1)?.id
+    const sourceStale = dirty.value || outdated.value || run?.revision !== revision.value || !!registry.value?.reset_epochs.includes(run?.runtime_epoch || '') || run?.id !== currentRuns.value.at(-1)?.id
+    const stale = sourceStale || result?.environment_stale || runtime.value?.needs_restart
     return {
       result_format: value?.result_format, result_table: value?.table || null, revision: valueRun?.revision,
       result: value?.result || '', error: value?.error || '', output: live?.output.length ? live.output : value?.output || [],
       ok: value?.ok || false, metrics: value?.metrics || [],
       text_values: media?.text_values || [], diagnostics: media?.diagnostics || [], diagnostics_truncated: media?.diagnostics_truncated || false,
+      diagnostics_stale: sourceStale || (!live && previous) || media?.source !== source,
       stale: !!value && (previous || stale || value.dirty || value.source !== source),
       rich: { table: media?.table || null, displays: media?.displays || [], images: media?.images || [], rich_unsupported: media?.rich_unsupported || false,
         audio: media?.audio || [], audio_limited: media?.audio_limited || false,
@@ -293,6 +295,7 @@ export function useExecution(accountId: string, project: () => Project, document
         audio_controls: (result?.live_cells.length ? result.live_cells : result?.cells || []).flatMap(cell => cell.audio_controls || []).filter(control => control.cell === id),
         progress: media?.progress || [], stopwatches: media?.stopwatches || [], charts: media?.charts || [],
         elapsed_ms: media?.elapsed_ms ?? null, timing_running: media?.timing_running || false,
+        environment_rebuild_ms: media?.environment_rebuild_ms ?? null,
         telemetry_stale: !!media && (media.telemetry_stale || stale || media.source !== source || (!live && previous)),
         rich_stale: !!media && (media.rich_stale || stale || media.source !== source || (!live && previous)) },
       identity: `${run?.id || ''}:${id}`,

@@ -36,6 +36,7 @@ export function experimentValues(snapshot: RunSnapshot) {
   for (const cell of snapshot.result.cells) {
     for (const metric of cell.metrics) values[`Cell ${snapshot.run.sheet_id}/${cell.id} · metric · ${metric.name}`] = metric.value
     if (cell.elapsed_ms !== null) values[`Cell ${snapshot.run.sheet_id}/${cell.id} · elapsed_ms`] = cell.elapsed_ms
+    if (cell.environment_rebuild_ms != null) values[`Cell ${snapshot.run.sheet_id}/${cell.id} · environment_rebuild_ms`] = cell.environment_rebuild_ms
   }
   return values
 }

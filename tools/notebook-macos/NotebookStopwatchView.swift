@@ -19,12 +19,26 @@ struct NotebookCellTimer: View {
     }
     @ViewBuilder private var timer: some View {
         if let timing = model.cellTiming(cell, in: tab) {
-            Label(NotebookDuration.text(timing.milliseconds), systemImage: timing.running ? "stopwatch" : "clock")
-                .font(.system(size: 11, design: .monospaced)).monospacedDigit()
-                .foregroundStyle(timing.running ? NotebookPalette.sputnik : NotebookPalette.muted)
-                .help(timing.running ? "Cell execution time · running" : "Last cell execution time")
-                .accessibilityLabel("Cell execution time: \(NotebookDuration.text(timing.milliseconds))")
+            NotebookCellTimingLabel(timing: timing)
         }
+    }
+}
+
+struct NotebookCellTimingLabel: View {
+    let timing: NotebookElapsed
+    var body: some View {
+        HStack(spacing: 5) {
+            Label(NotebookDuration.text(timing.milliseconds), systemImage: timing.running ? "stopwatch" : "clock")
+            if timing.environmentRebuildMilliseconds != nil {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .accessibilityHidden(true)
+            }
+        }
+        .font(.system(size: 11, design: .monospaced)).monospacedDigit()
+        .foregroundStyle(timing.running ? NotebookPalette.sputnik : NotebookPalette.muted)
+        .help(timing.help)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(timing.help)
     }
 }
 

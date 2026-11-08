@@ -70,7 +70,11 @@ class Dependencies:
     arguments += ["--json"] unless query == "inspect"
     arguments = arguments + ["--check-host"] if query == "variants"
     checked = system.command(@compiler, *arguments).capture(timeout: if query == "inspect" then 120.0 else 20.0, check: false)
-    fail(422, checked.stderr.to_str) unless checked.success?
+    unless checked.success?:
+      message = checked.stderr.to_str.trim
+      if query == "versions" and message.contains?("HTTP 404 NOT_FOUND for "):
+        message = "Package '" + source + "' was not found in the registry."
+      fail(422, message)
     metadata = decode(checked.stdout.to_str)
     if query == "inspect":
       native = (metadata[?:native_adapter] or "none") != "none" or not (metadata[?:native_extensions] or []).empty?
@@ -125,6 +129,7 @@ class Dependencies:
     try:
       update(project, id, "running")
       fs.mkdir_p(directory)
+      progress(directory, "Waiting for workers to stop…")
       # Removal may unlink a loaded native library. Confirm worker termination first.
       loop:
         pending = @core.synchronize: @core.owners_pending?(project)
@@ -133,6 +138,7 @@ class Dependencies:
       home = @core.package_directory(project)
       result = {}
       if action == "lock_ruby":
+        progress(directory, "Resolving Ruby dependencies…")
         ["Gemfile", "Gemfile.lock", ".bundle/config"].each |name|:
           input = revision[:directory] + "/" + name
           if fs.exists?(input):
@@ -144,6 +150,7 @@ class Dependencies:
         result = {gemfile_lock: fs.read_text(directory + "/Gemfile.lock", limit: 1048576)}
       else:
         if action == "install_sputnik" and params[?:local_source] and source.ends_with?(".sputnikpkg") and fs.exists?(source) and not fs.dir?(source):
+          progress(directory, "Inspecting package archive…")
           # A chosen archive already identifies its build. Read its own selectors
           # instead of imposing the registry installer's CPU/none defaults.
           inspected = system.command(@compiler, "pkg", "inspect", source).capture(timeout: 120.0, check: false)
@@ -154,6 +161,7 @@ class Dependencies:
           backend = metadata[:target][:compute_backend]
           params[:backend] = backend if not params[?:backend] and ["cpu", "cuda", "mps", "rocm"].include?(backend)
         if action == "remove_sputnik":
+          progress(directory, "Removing package…")
           removed = installed_packages(home).filter |item|: item[:name] == source and (version == "" or item[:version] == version) and (not params[?:variant] or item[?:variant] == params[:variant])
           fail(422, "Package is not installed in this notebook.") if removed.empty?
           removed.each |item|:
@@ -163,16 +171,17 @@ class Dependencies:
               args += ["--variant", item[:variant]] if item[?:variant]
               command(directory, @compiler, args, {SPUTNIK_PKG_HOME: home})
           update_imports(home, source, null, null) unless installed_packages(home).any?: $it[:name] == source
+          progress(directory, "Package removed.")
           update(project, id, "succeeded")
           return
         arguments = ["pkg", "install", source]
+        (params[?:install_options] or {}).each |name, value|:
+          arguments += ["--option", name + "=" + value]
         arguments = arguments + ["--version", version] if version != ""
         arguments = arguments + ["--variant", params[:variant]] if params[?"variant"]
         if action == "install_sputnik":
           ["backend", "bundle", "registry"].each |key|:
             arguments = arguments + ["--" + key, params[key]] if params[?key]
-        (params[?:install_options] or {}).each |name, value|:
-          arguments += ["--option", name + "=" + value]
           {allow_native: "--allow-native", build_from_source: "--build-from-source", allow_native_large: "--allow-native-large"}.each |key, flag|:
             arguments = arguments + [flag] if params[?key]
         shared = package_home()
@@ -183,7 +192,9 @@ class Dependencies:
         # One store lock spans verification, preparation and publishing references.
         # Other books keep their workers and references while this book changes.
         lock_home = if local then fs.Path(directory).parent.to_str else shared
+        progress(directory, "Waiting for package storage…")
         fs.lock(lock_home + "/.notebook-install.lock", nonblock: false) |lease|:
+          progress(directory, "Resolving package version and build…")
           metadata = null
           cached = null
           unless params[?:local_source] or params[?:registry]:
@@ -200,6 +211,7 @@ class Dependencies:
                   fail(422, "This package exceeds 64 MiB and requires explicit size permission.") if artifact[:size] > 67108864 and not params[?:allow_native_large]
           selected = []
           if cached:
+            progress(directory, "Verifying shared package…")
             archive = fs.entries(cached[:directory]).find: $it.to_str.ends_with?(".sputnikpkg")
             fail(422, "The shared package archive is missing.") unless archive
             command(directory, @compiler, ["pkg", "verify", archive.to_str], {})
@@ -207,13 +219,15 @@ class Dependencies:
             fail(422, "Shared package cache failed verification. Repair the shared installation before retrying.") unless verified[:sha256] == cached[:digest] and verified[:name] == cached[:name] and verified[:version] == cached[:version] and verified[:variant] == cached[?:variant]
             selected = [cached]
           else:
-            command(directory, @compiler, arguments, {SPUTNIK_PKG_HOME: destination})
+            progress(directory, "Installing package and dependencies…")
+            command(directory, @compiler, arguments, {SPUTNIK_PKG_HOME: destination, SPUTNIK_PKG_PROGRESS: "1"})
             names = fs.read_text(directory + "/stdout.log").split("\n").filter: $it.starts_with?("Installed ") or $it.starts_with?("Already installed ")
             identities = names.map |line|:
               prefix = if line.starts_with?("Installed ") then "Installed " else "Already installed "
               line.split(" in ")[0].split(prefix)[1].split(" (")[0] + "\t" + line.split("/").last
             selected = installed_packages(destination).filter |item|: identities.include?(item[:name] + "@" + item[:version] + "\t" + (item[?:variant] or item[:version]))
           fail(422, "The installer did not publish a package.") if selected.empty?
+          progress(directory, "Making package available to this notebook…")
           selected.each |item|:
             relative = item[:name] + "/" + item[:version] + (if item[?:variant] then "/" + item[:variant] else "")
             if local: package_adopt(destination, home, relative)
@@ -226,6 +240,7 @@ class Dependencies:
               alias = import_alias(source, root)
               update_imports(home, root[:name], alias, root[:module_root]) if alias
       @core.remove_tree(staging) if staging and fs.exists?(staging)
+      progress(directory, "Dependency operation completed.")
       update(project, id, "succeeded", "", result)
     rescue Exception |error|:
       if staging:
@@ -257,6 +272,10 @@ class Dependencies:
       else:
         fs.mkdir_p(fs.Path(destination + "/" + name).parent)
         fs.atomic_write_bytes(destination + "/" + name, fs.read_bytes(path, limit: 16777216))
+
+  def progress(directory, message):
+    fs.File.open(directory + "/stderr.log", :append, create: true) |file|:
+      file.write_all!((message + "\n").bytes)
 
   def command(directory, program, arguments, env):
     checked = command_at(directory, program, arguments, env).capture(timeout: 900.0, check: false) with:

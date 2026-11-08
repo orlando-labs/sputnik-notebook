@@ -49,10 +49,13 @@ struct NotebookLocal: Decodable {
     }
 }
 struct NotebookCell: Decodable, Identifiable {
+    var error_ranges: [NotebookSourceRange]? = nil
+    var diagnostics: [NotebookSourceDiagnostic]? = nil
     var cell_ui: NotebookCellUI? = nil
     var cell_inputs: [NotebookProjectInput]? = nil
     var canCollapseSource: Bool { kind == "code" && cell_ui?.post.isEmpty == false }
     var elapsed_ms: UInt64? = nil
+    var environment_rebuild_ms: UInt64? = nil
     var stopwatches: [NotebookStopwatch]? = nil
     var result_format: NotebookResultFormat? = nil
     var displays: [NotebookFigurePanel]? = nil
@@ -98,6 +101,12 @@ struct NotebookStopwatch: Decodable, Identifiable {
 struct NotebookElapsed {
     let milliseconds: UInt64
     let running: Bool
+    var environmentRebuildMilliseconds: UInt64? = nil
+    var help: String {
+        let execution = "Cell execution: \(milliseconds) ms" + (running ? " · running" : "")
+        guard let preparation = environmentRebuildMilliseconds else { return execution }
+        return "Environment rebuilt before this run.\nPreparation: \(preparation) ms\n\(execution)\nPreparation is excluded from the cell execution time."
+    }
 }
 struct NotebookChartPoint: Decodable, Equatable {
     let x: Double, y: Double
@@ -140,6 +149,7 @@ struct NotebookImageInput: Decodable {
 }
 struct NotebookLiveCell: Decodable, Identifiable {
     var elapsed_ms: UInt64? = nil
+    var environment_rebuild_ms: UInt64? = nil
     var timing_running: Bool? = nil
     var stopwatches: [NotebookStopwatch]? = nil
     var stopwatches_updated: Bool? = nil
@@ -171,11 +181,19 @@ private struct NotebookLiveSnapshot: Decodable {
 struct NotebookCellLocation: Equatable {
     let tab: String, cell: String
 }
+struct NotebookExecutionIssue {
+    let title: String, message: String
+    var location: NotebookCellLocation? = nil
+    var source: String? = nil
+    var range: NotebookSourceRange? = nil
+}
 struct NotebookCellNavigation: Equatable {
     let location: NotebookCellLocation
+    var selection: NotebookSourceSelection? = nil
     let request = UUID()
 }
 struct NotebookTab: Decodable, Identifiable {
+    var module_errors: [NotebookModuleError]? = nil
     var telemetry: NotebookRuntimeTelemetry? = nil
     let id: String, kind: String, title: String
     let modified: Bool, environment_stale: Bool, auto_import: Bool
@@ -363,6 +381,10 @@ private final class NotebookWorker {
                     candidateControl = NotebookControl(pointer)
                 } else { throw NotebookFailure(message: "Notebook worker executable is unavailable.") }
                 let grants = try self.storedGrants()[initial.path] ?? [:]
+                if let book = grants["@book"] {
+                    let text = try normalizedWorkerGrants(book)
+                    guard sputnik_notebook_command(candidate, "book_worker_grants", nil, nil, text, &error) != 0 else { throw self.failure(error) }
+                }
                 for tab in initial.tabs where grants[tab.id] != nil {
                     let text = try normalizedWorkerGrants(grants[tab.id]!)
                     guard sputnik_notebook_command(candidate, "worker_grants", tab.id, nil, text, &error) != 0 else { throw self.failure(error) }
@@ -412,9 +434,9 @@ private final class NotebookWorker {
                     }
                 }
                 try self.command(action, tab: tab, cell: cell, text: text)
-                if action == "worker_grants" || action == "worker_environment" {
-                    let normalized = action == "worker_grants" ? try normalizedWorkerGrants(text) : text
-                    let settingKey = action == "worker_grants" ? tab : "@environment:" + tab
+                if action == "worker_grants" || action == "book_worker_grants" || action == "worker_environment" {
+                    let normalized = action == "worker_environment" ? text : try normalizedWorkerGrants(text)
+                    let settingKey = action == "book_worker_grants" ? "@book" : (action == "worker_grants" ? tab : "@environment:" + tab)
                     self.localGrants[settingKey] = normalized
                     var saved = try self.storedGrants()
                     saved[self.settingsPath, default: [:]][settingKey] = normalized
@@ -783,7 +805,10 @@ final class NotebookModel: ObservableObject {
                         cell.stopwatches = old.stopwatches
                         cell.stopwatches_updated = old.stopwatches_updated
                     }
-                    if cell.elapsed_ms == nil { cell.elapsed_ms = old.elapsed_ms; cell.timing_running = old.timing_running }
+                    if cell.elapsed_ms == nil {
+                        cell.elapsed_ms = old.elapsed_ms; cell.timing_running = old.timing_running
+                        cell.environment_rebuild_ms = old.environment_rebuild_ms
+                    }
                     if cell.output_updated == false { cell.output = old.output; cell.output_updated = old.output_updated }
                     if cell.displays_updated == false { cell.displays = old.displays }
                     if cell.progress_updated == false { cell.progress = old.progress }
@@ -868,9 +893,9 @@ final class NotebookModel: ObservableObject {
     func cellTiming(_ cell: NotebookCell, in tab: NotebookTab) -> NotebookElapsed? {
         if let live = liveCell(cell, in: tab), let milliseconds = live.elapsed_ms {
             let running = executingWorker && live.timing_running == true
-            return NotebookElapsed(milliseconds: elapsed(milliseconds, cellID: cell.id, running: running), running: running)
+            return NotebookElapsed(milliseconds: elapsed(milliseconds, cellID: cell.id, running: running), running: running, environmentRebuildMilliseconds: live.environment_rebuild_ms)
         }
-        return cell.elapsed_ms.map { NotebookElapsed(milliseconds: $0, running: false) }
+        return cell.elapsed_ms.map { NotebookElapsed(milliseconds: $0, running: false, environmentRebuildMilliseconds: cell.environment_rebuild_ms) }
     }
     func stopwatches(in tab: NotebookTab, channel: String) -> (items: [NotebookStopwatch], running: Bool, stale: Bool) {
         let cells = tab.cells.reversed()
@@ -923,6 +948,135 @@ final class NotebookModel: ObservableObject {
         selectTab(tab)
         selectedCellID = location.cell
         cellNavigation = NotebookCellNavigation(location: location)
+    }
+    func showSource(_ range: NotebookSourceRange, cell: NotebookCell, tab: NotebookTab) {
+        guard source(for: cell, in: tab).utf16.elementsEqual(cell.source.utf16),
+              NotebookSourceLines(cell.source).selection(for: range, in: cell.source as NSString) != nil else { return }
+        if activeTab?.id != tab.id || activeBoard != nil {
+            if executingWorker { selectTab(tab) }
+            else {
+                navigationRevision &+= 1
+                let revision = navigationRevision
+                perform("select", tab: tab) { [weak self] success in
+                    if success, self?.navigationRevision == revision {
+                        self?.selectedBoardID = nil
+                        self?.showSource(range, cell: cell, tab: tab)
+                    }
+                }
+                return
+            }
+        }
+        selectedCellID = cell.id
+        cellNavigation = NotebookCellNavigation(location: NotebookCellLocation(tab: tab.id, cell: cell.id),
+            selection: NotebookSourceSelection(source: cell.source, range: range))
+    }
+
+    func environmentErrorSource(in tab: NotebookTab) -> (tab: NotebookTab, cell: NotebookCell, range: NotebookSourceRange)? {
+        for error in tab.module_errors ?? [] {
+            if let target = moduleErrorSource(error) { return target }
+        }
+        if tab.module_errors?.isEmpty == false { return nil }
+        for cell in tab.cells where source(for: cell, in: tab).utf16.elementsEqual(cell.source.utf16) {
+            guard let diagnostic = cell.diagnostics?.first(where: {
+                $0.range != nil && !$0.message.isEmpty && tab.environment_error.contains($0.message)
+            }), let range = diagnostic.range,
+            NotebookSourceLines(cell.source).selection(for: range, in: cell.source as NSString) != nil else { continue }
+            return (tab, cell, range)
+        }
+        // Bundled module diagnostics retain their source module and location
+        // in the shared backend's summary, including across worker transport.
+        let pattern = #"^Module '([^']+)': Cannot import .+ at .+:([0-9]+):([0-9]+)$"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .anchorsMatchLines),
+              let match = regex.firstMatch(in: tab.environment_error, range: NSRange(tab.environment_error.startIndex..., in: tab.environment_error)),
+              let moduleRange = Range(match.range(at: 1), in: tab.environment_error),
+              let lineRange = Range(match.range(at: 2), in: tab.environment_error),
+              let line = Int(tab.environment_error[lineRange]), line > 0,
+              let module = snapshot?.tabs.first(where: { $0.id == "module:" + String(tab.environment_error[moduleRange]) }),
+              let cell = module.cells.first,
+              source(for: cell, in: module).utf16.elementsEqual(cell.source.utf16) else { return nil }
+        let range = NotebookSourceRange(start_line: line - 1, start_column: 0, end_line: line - 1, end_column: 0, whole_line: true)
+        guard NotebookSourceLines(cell.source).selection(for: range, in: cell.source as NSString) != nil else { return nil }
+        return (module, cell, range)
+    }
+
+    private func moduleErrorSource(_ error: NotebookModuleError) -> (tab: NotebookTab, cell: NotebookCell, range: NotebookSourceRange)? {
+        guard let tab = snapshot?.tabs.first(where: { $0.id == "module:" + error.module_id }),
+              let cell = tab.cells.first,
+              source(for: cell, in: tab).utf16.elementsEqual(error.source.utf16),
+              cell.source.utf16.elementsEqual(error.source.utf16),
+              let range = error.ranges.first(where: {
+                  NotebookSourceLines(cell.source).selection(for: $0, in: cell.source as NSString) != nil
+              }) else { return nil }
+        return (tab, cell, range)
+    }
+
+    func sourceDiagnostics(for cell: NotebookCell, in tab: NotebookTab) -> [NotebookSourceDiagnostic] {
+        var diagnostics = cell.diagnostics ?? []
+        if tab.kind == "module" {
+            for owner in snapshot?.tabs ?? [] {
+                for error in owner.module_errors ?? [] where "module:" + error.module_id == tab.id &&
+                    error.source.utf16.elementsEqual(cell.source.utf16) && source(for: cell, in: tab).utf16.elementsEqual(error.source.utf16) {
+                    let messages = error.message.split(separator: "\n").map(String.init)
+                    let additions = error.ranges.isEmpty
+                        ? [NotebookSourceDiagnostic(message: error.message, range: nil)]
+                        : error.ranges.enumerated().map { index, range in
+                            NotebookSourceDiagnostic(message: messages.count == error.ranges.count ? messages[index] : error.message, range: range)
+                        }
+                    for diagnostic in additions where !diagnostics.contains(diagnostic) { diagnostics.append(diagnostic) }
+                }
+            }
+        }
+        return diagnostics
+    }
+
+    func diagnosticSource(_ diagnostic: NotebookSourceDiagnostic, cell: NotebookCell, tab: NotebookTab) -> (tab: NotebookTab, cell: NotebookCell, range: NotebookSourceRange)? {
+        for error in tab.module_errors ?? [] where diagnostic.message.contains(error.message) || error.message.contains(diagnostic.message) {
+            if let target = moduleErrorSource(error) { return target }
+        }
+        guard let range = diagnostic.range, source(for: cell, in: tab).utf16.elementsEqual(cell.source.utf16),
+              NotebookSourceLines(cell.source).selection(for: range, in: cell.source as NSString) != nil else { return nil }
+        return (tab, cell, range)
+    }
+
+    func executionIssues(in tab: NotebookTab) -> [NotebookExecutionIssue] {
+        var issues = (tab.module_errors ?? []).map { error -> NotebookExecutionIssue in
+            let target = moduleErrorSource(error)
+            return NotebookExecutionIssue(title: "Module \(error.module_id)" + (target.map { " · Line \($0.range.start_line + 1)" } ?? ""),
+                message: error.message, location: target.map { NotebookCellLocation(tab: $0.tab.id, cell: $0.cell.id) },
+                source: target?.cell.source, range: target?.range)
+        }
+        if !tab.environment_error.isEmpty {
+            if issues.isEmpty {
+                let target = environmentErrorSource(in: tab)
+                issues.append(NotebookExecutionIssue(title: "Sheet \(tab.title) · Code error", message: notebookEnvironmentMessage(tab.environment_error),
+                    location: target.map { NotebookCellLocation(tab: $0.tab.id, cell: $0.cell.id) }, source: target?.cell.source, range: target?.range))
+            }
+            return issues
+        }
+        for cell in tab.cells {
+            var diagnostics = sourceDiagnostics(for: cell, in: tab)
+            if diagnostics.isEmpty && !cell.error.isEmpty { diagnostics = [NotebookSourceDiagnostic(message: cell.error, range: nil)] }
+            for diagnostic in diagnostics where !issues.contains(where: { diagnostic.message.contains($0.message) }) {
+                let target = diagnosticSource(diagnostic, cell: cell, tab: tab)
+                issues.append(NotebookExecutionIssue(title: tab.kind == "module" ? "Module \(tab.title)" : "Sheet \(tab.title) · \(tab.cellLabel(for: cell.id))",
+                    message: diagnostic.message, location: target.map { NotebookCellLocation(tab: $0.tab.id, cell: $0.cell.id) } ?? NotebookCellLocation(tab: tab.id, cell: cell.id),
+                    source: target?.cell.source, range: target?.range))
+            }
+        }
+        return issues
+    }
+
+    func showExecutionIssue(_ issue: NotebookExecutionIssue) {
+        guard canNavigate, let location = issue.location,
+              let tab = snapshot?.tabs.first(where: { $0.id == location.tab }),
+              let cell = tab.cells.first(where: { $0.id == location.cell }) else { return }
+        if let range = issue.range, issue.source?.utf16.elementsEqual(source(for: cell, in: tab).utf16) == true {
+            showSource(range, cell: cell, tab: tab)
+        } else {
+            selectTab(tab)
+            selectedCellID = cell.id
+            cellNavigation = NotebookCellNavigation(location: location)
+        }
     }
     private var currentRemoteRun: NotebookRemoteRun? {
         guard let sheet = remote.focusedSheet?() else { return nil }
@@ -1047,6 +1201,9 @@ final class NotebookModel: ObservableObject {
         }
         return !executingCurrentWorker && (cell == nil || tab.kind == "module" || !tab.environment_stale)
     }
+    func canCheckModule(_ tab: NotebookTab) -> Bool {
+        tab.kind == "module" && !busy && !closing && !dependencyOperationActive && !boardEditorOpen
+    }
     var onChange: (() -> Void)?
     private var drafts: [SourceKey: SourceDraft] = [:]
     private var retainedResults: [SourceKey: NotebookCellResult] = [:]
@@ -1102,7 +1259,26 @@ final class NotebookModel: ObservableObject {
         }
         let text = await withCheckedContinuation { continuation in worker.grants(tab: tab.id) { continuation.resume(returning: $0) } }
         let directory = await withCheckedContinuation { continuation in worker.grants(tab: "@environment:" + tab.id) { continuation.resume(returning: $0) } }
-        return NotebookWorkerSettings(environment_directory: directory, grants: text.isEmpty ? [] : text.components(separatedBy: "\n"), version: "", runtime_epoch: nil)
+        let own = text.isEmpty ? [] : text.components(separatedBy: "\n")
+        let book = tab.kind == "sheet" ? try await bookWorkerSettings().grants : []
+        let effective = try normalizedWorkerGrants((own + book).joined(separator: "\n"))
+        return NotebookWorkerSettings(environment_directory: directory, own_grants: own, inherited_grants: book,
+            grants: effective.isEmpty ? [] : effective.components(separatedBy: "\n"), version: "", runtime_epoch: nil)
+    }
+    @MainActor func bookWorkerSettings() async throws -> NotebookWorkerSettings {
+        if remote.isSelected { return try await remote.bookWorkerSettings() }
+        let text = await withCheckedContinuation { c in worker.grants(tab: "@book") { c.resume(returning: $0) } }
+        return NotebookWorkerSettings(grants: text.isEmpty ? [] : text.components(separatedBy: "\n"), version: "", runtime_epoch: nil)
+    }
+    @MainActor func configureBookWorkerGrants(_ grants: [String], settings: NotebookWorkerSettings) async throws {
+        let text = try normalizedWorkerGrants(grants.joined(separator: "\n"))
+        if remote.isSelected {
+            try await remote.configureBookWorkerGrants(text.components(separatedBy: "\n").filter { !$0.isEmpty }, settings: settings)
+        } else {
+            let success = await withCheckedContinuation { c in perform("book_worker_grants", text: text) { c.resume(returning: $0) } }
+            if !success { throw NotebookFailure(message: error ?? "Could not update notebook permissions.") }
+            for key in periodicStates.keys { periodicStates[key]?.pause() }
+        }
     }
     @MainActor func configureWorker(_ tab: NotebookTab, text: String, environmentDirectory: String? = nil, settings: NotebookWorkerSettings) async throws {
         let normalized = try normalizedWorkerGrants(text)
@@ -1681,7 +1857,7 @@ final class NotebookModel: ObservableObject {
 
     func perform(_ action: String, tab: NotebookTab? = nil, cell: NotebookCell? = nil,
                  text: String = "", commandCellID: String? = nil, completion: ((Bool) -> Void)? = nil) {
-        guard !dependencyOperationActive || ["restart_worker", "worker_environment", "worker_grants"].contains(action) else { completion?(false); return }
+        guard !dependencyOperationActive || ["restart_worker", "worker_environment", "worker_grants", "book_worker_grants"].contains(action) else { completion?(false); return }
         guard !busy, snapshot != nil else { completion?(false); return }
         guard editorFailures.isEmpty else {
             let message = editorFailures.sorted { ($0.key.tab, $0.key.cell) < ($1.key.tab, $1.key.cell) }.first!.value
@@ -1775,7 +1951,10 @@ final class NotebookModel: ObservableObject {
                 self.componentUpdatedAt[target.id + ":" + text] = self.componentUpdatedAt.removeValue(forKey: target.id + ":" + targetCell.id)
                 if self.selectedCellID == targetCell.id { self.selectedCellID = text }
             }
-            if error == nil && ["restart_worker", "worker_grants", "worker_environment"].contains(action), let target { self.discardResults(in: target.id) }
+            if error == nil && ["restart_worker", "worker_grants", "worker_environment", "check_module"].contains(action), let target { self.discardResults(in: target.id) }
+            if error == nil && action == "book_worker_grants" {
+                for tab in self.snapshot?.tabs ?? [] where tab.kind == "sheet" { self.discardResults(in: tab.id) }
+            }
             if state != nil && navigation == self.navigationRevision && ["select", "new_sheet", "new_module"].contains(action) {
                 self.selectedTabID = nil
                 if action == "new_sheet" || action == "new_module" { self.selectedBoardID = nil }

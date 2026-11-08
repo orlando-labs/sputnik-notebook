@@ -105,6 +105,7 @@ struct NotebookRunHistoryView: View {
             let label = "Cell \(number(output.id, record))"
             for (key, value) in output.metrics { values[label + " · " + key] = value }
             if let elapsed = output.elapsed { values[label + " · elapsed_ms"] = String(elapsed) }
+            if let preparation = output.environmentRebuildMilliseconds { values[label + " · environment_rebuild_ms"] = String(preparation) }
         }
         return values
     }
@@ -201,6 +202,9 @@ private struct NotebookRunSnapshotView: View {
                     ForEach(Array(record.outputs.enumerated()), id: \.element.id) { index, cell in
                         GroupBox("Cell \(cellNumber(cell.id))\(cell.stale ? " · stale at capture" : "")") {
                             VStack(alignment: .leading, spacing: 10) {
+                                if let elapsed = cell.elapsed {
+                                    NotebookCellTimingLabel(timing: NotebookElapsed(milliseconds: elapsed, running: false, environmentRebuildMilliseconds: cell.environmentRebuildMilliseconds))
+                                }
                                 if !cell.error.isEmpty { Text(cell.error).foregroundStyle(NotebookPalette.error) }
                                 Text(cell.pretty ?? cell.result).font(.system(.callout, design: .monospaced)).textSelection(.enabled)
                                 ForEach(Array(cell.displays.enumerated()), id: \.offset) { i, panel in media(panel, key: cell.id + ":" + String(i)) }

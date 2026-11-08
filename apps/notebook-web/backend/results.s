@@ -50,7 +50,7 @@ class RichResults:
     {id: cell[:id], source_revision: cell[:source_revision], dirty: cell[:dirty], table: table_snapshot(cell[:table_json]),
       displays: displays, images: images, audio: cell[:audio], audio_controls: cell[:audio_controls], audio_limited: cell[:audio_limited], unsupported: cell[:unsupported],
       progress: cell[:progress], stopwatches: cell[:stopwatches], charts: cell[:charts],
-      elapsed_ms: cell[:elapsed_ms], timing_running: cell[:timing_running], metrics: cell[:metrics], text_values: cell[:text_values], diagnostics: cell[:diagnostics], diagnostics_truncated: cell[:diagnostics_truncated],
+      elapsed_ms: cell[:elapsed_ms], environment_rebuild_ms: cell[?:environment_rebuild_ms], timing_running: cell[:timing_running], metrics: cell[:metrics], text_values: cell[:text_values], diagnostics: cell[:diagnostics], diagnostics_truncated: cell[:diagnostics_truncated],
       result_format: cell[:result_format]}
 
   def task_snapshot(value, sources):

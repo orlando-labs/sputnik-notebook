@@ -10,6 +10,7 @@ struct NotebookRunOutput: Codable, Identifiable {
     let log: String
     let metrics: [String: String]
     let displays: [NotebookFigurePanel]
+    var environmentRebuildMilliseconds: UInt64? = nil
 }
 struct NotebookRunRecord: Codable, Identifiable {
     var version = 1
@@ -85,7 +86,8 @@ struct NotebookRemoteHistorySnapshot: Decodable {
             let metrics = Dictionary(uniqueKeysWithValues: cell.locals.filter { $0.initialized && $0.role == "module_cell" && Double($0.text_value ?? $0.value)?.isFinite == true }.map { ($0.name, $0.text_value ?? $0.value) })
             return .init(id: cell.id, result: cell.result, error: cell.error, pretty: cell.result_format?.pretty,
                 table: cell.result_format?.table_json, ok: cell.ok, stale: cell.dirty, elapsed: cell.elapsed_ms,
-                log: String(cell.output.map { "[\($0.stream)] \($0.text)" }.joined().prefix(262144)), metrics: metrics, displays: displays)
+                log: String(cell.output.map { "[\($0.stream)] \($0.text)" }.joined().prefix(262144)), metrics: metrics, displays: displays,
+                environmentRebuildMilliseconds: cell.environment_rebuild_ms)
         }
         let sourceBytes = (try? JSONEncoder().encode(sources)) ?? Data()
         let date = Date(timeIntervalSince1970: run.created)
@@ -213,7 +215,8 @@ final class NotebookRunHistory: ObservableObject {
             }.map { ($0.name, $0.text_value ?? $0.value) })
             return NotebookRunOutput(id: cell.id, result: cell.result, error: cell.error, pretty: cell.result_format?.pretty,
                 table: cell.result_format?.table_json, ok: cell.ok, stale: cell.dirty, elapsed: cell.elapsed_ms,
-                log: String(cell.output.map { "[\($0.stream)] \($0.text)" }.joined().prefix(262144)), metrics: metrics, displays: displays)
+                log: String(cell.output.map { "[\($0.stream)] \($0.text)" }.joined().prefix(262144)), metrics: metrics, displays: displays,
+                environmentRebuildMilliseconds: cell.environment_rebuild_ms)
         }
         let selected = start.cell.map { id in outputs.filter { $0.id == id } } ?? outputs
         let failed = failure != nil || selected.contains { !$0.ok && !$0.stale }

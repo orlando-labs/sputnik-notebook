@@ -57,10 +57,14 @@ char *sputnik_notebook_config_document(const char *text, const char *format, int
 // add_cell/add_text (after cell), rich_source (JSON source+formatting payload),
 // delete_cell, move_up, move_down, save, save_all,
 // new_sheet (text = ID), new_module (text = ID), auto_import (text on/off).
+// check_module: compile/link the current module draft and imports without
+// executing code, loading native extensions, or requiring runtime grants.
 // retain_cell_results (text on/off) saves this book's result-retention option
 // independently from unsaved source buffers; it never executes user code.
 // worker_grants: text = newline-separated cap[=target]; explicitly resets the
 // selected worker. Host policy is persisted by the app, outside the notebook.
+// book_worker_grants: same policy for all existing and future sheet workers;
+// callers persist it separately from each sheet's own grants.
 // set_input (cell = input ID, text = scalar JSON), set_inputs (text = JSON map
 // of input IDs to scalar JSON strings): validate/publish one immutable batch.
 // save_cell_ui: cell = code cell ID, text = v4 cell_ui configuration JSON.

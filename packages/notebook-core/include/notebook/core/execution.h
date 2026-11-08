@@ -43,6 +43,7 @@ public:
            const std::string &runtime_key = {}, bool recover = false);
   void restart(ProjectTab &, const std::string &runtime_key = {});
   void configure_grants(ProjectTab &, const std::string &text);
+  void configure_book_grants(ProjectTabs &, const std::string &text);
   void configure_environment(ProjectTab &, const std::string &directory);
   void inputs_changed(ProjectTabs &);
   std::string pending(ProjectTabs &);
@@ -56,6 +57,7 @@ private:
   std::string executable_;
   std::map<std::string, Sheet> sheets_;
   std::map<std::string, std::vector<std::string>> grants_;
+  std::vector<std::string> book_grants_;
   std::map<std::string, std::string> environment_directories_;
   std::size_t watch_cursor_ = 0;
 };

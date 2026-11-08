@@ -53,10 +53,17 @@ The library, sort order and expanded/collapsed state persist across launches.
 Existing macOS recent documents are imported once, preserving their order;
 their opening dates are recorded from the next successful open.
 
-All GUI execution uses isolated workers by default: sheets, module Run,
+All GUI execution uses isolated workers by default: sheets,
 automatic Watch updates, board inputs and Periodic Work share live progress
 and Stop / Force Stop. No execution flag is required. Opening, editing and
 saving remain inert host operations.
+
+Module pages use **Check Module** (⌘Return) to check the current draft's syntax,
+imports and compilation. This includes imported native declarations, without
+loading native libraries, running initializers, or requiring runtime grants.
+Checks report source diagnostics or **Module check passed**, leave sheet
+environments intact, and do not create run history. Execute module functions
+through a sheet or board with the required worker permissions.
 
 You can switch between sheets, modules and boards during execution. A spinner
 and **RUNNING** badge mark the current cell. **Show Running Cell** opens its sheet,
@@ -79,6 +86,14 @@ grants for the selected sheet and execution host, for example
 **Apply and Restart Worker**; the next Run uses the new policy. Remote grants
 are stored on the server, local grants in private app settings. See the
 [worker settings guide](docs/engineering/notebook-remote-ui.md#worker-settings-и-runtime-grants).
+
+In **Dependencies**, **Package permissions** can target a selected sheet,
+**Current sheets in this notebook**, or **Entire notebook, always**. The current
+sheets option adds grants only to existing sheets. The entire notebook option
+stores a policy for current and future sheets on the execution machine and
+retains it after reopening. **Install Package and Add Grants…** confirms the
+scope and missing grants together. **Notebook Permissions…** edits or revokes
+the persistent policy without replacing individual sheet grants.
 
 The icon's vector artwork and exported PNG/ICNS live in
 `tools/notebook-macos/Assets`. To regenerate the exports on macOS, run:
@@ -181,6 +196,9 @@ source directory or archive as an alternative; remote paths refer to the server.
 Native code, source compilation and archives over 64 MiB require explicit opt-in
 when the selected build needs them. Installed variants have separate rows and
 can be removed independently. Worker FFI grants are configured separately.
+Installation opens its live log and shows the current stage and elapsed time.
+Registry downloads show a percentage bar; preparation and native builds use an
+indeterminate bar until the operation finishes.
 See [native installation and exact locks](../sputnik-lang/docs/engineering/package-native-install-v1.md).
 
 New boards use project-wide numbered names (`Board 1`, `Board 2`, …); sheets use
@@ -217,6 +235,8 @@ to an external database with read-only queries, SQL pagination, search and summa
 
 [DataTableView](docs/engineering/notebook-data-table-view.md) from `notebook.ui`
 publishes tables with `notebook.show(view)` independently from a cell's return value.
+The `notebook.ui` source helpers ship with Notebook and require no separate
+package installation or project dependency.
 Objects export CSV/Markdown, and the native table menu copies or saves visible rows.
 Try `tools/notebook-macos/Samples/Data Tables.sputnikbook`.
 

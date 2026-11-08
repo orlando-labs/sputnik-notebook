@@ -154,35 +154,54 @@ static void presentation_tests() {
   require(decoded.executing_cell == cell.id, "executing cell preserves its full 64-bit identity");
   auto timed = original;
   timed.cells[0].elapsed_ms = 1234; timed.cells[0].timing_running = true;
+  timed.cells[0].environment_rebuild_ms = 3000;
   sputnik::runtime::NotebookLiveEvent stopwatch;
   stopwatch.kind = sputnik::runtime::NotebookLiveEventKind::Stopwatch;
   stopwatch.id = "training"; stopwatch.elapsed_ms = 456; stopwatch.done = false;
   timed.cells[0].stopwatches = {stopwatch}; timed.cells[0].stopwatches_updated = true;
   const auto timed_copy = decode_presentation(encode_presentation(timed));
-  require(timed_copy.cells[0].elapsed_ms == 1234 && timed_copy.cells[0].timing_running &&
+  require(timed_copy.cells[0].elapsed_ms == 1234 && timed_copy.cells[0].environment_rebuild_ms == 3000 && timed_copy.cells[0].timing_running &&
           timed_copy.cells[0].stopwatches[0].elapsed_ms == 456 && !timed_copy.cells[0].stopwatches[0].done,
           "cell timing and running Stopwatch channels survive worker transport");
-  auto media_previous = bytes.substr(0, bytes.size() - 88 - original.cells.size() * 16);
+  auto preparation_previous = bytes.substr(0, bytes.size() - 8);
+  preparation_previous.replace(8, std::string("sputnik.notebook.presentation.v17").size(), "sputnik.notebook.presentation.v16");
+  require(decode_presentation(preparation_previous).module_errors.empty(), "v16 results remain readable without module diagnostics");
+  auto module_failure = original;
+  module_failure.module_errors.push_back({"helpers", "package helpers\ninvalid\n", "Unknown name", {{1, 0, 1, 7, false}}});
+  const auto module_copy = decode_presentation(encode_presentation(module_failure));
+  require(module_copy.module_errors[0].module_id == "helpers" && module_copy.module_errors[0].source == "package helpers\ninvalid\n" &&
+          module_copy.module_errors[0].ranges[0].start_line == 1, "module identity, executed source and coordinates survive worker transport");
+  auto telemetry_previous = preparation_previous.substr(0, preparation_previous.size() - original.cells.size() * 16);
+  telemetry_previous.replace(8, std::string("sputnik.notebook.presentation.v16").size(), "sputnik.notebook.presentation.v15");
+  require(!decode_presentation(telemetry_previous).cells[0].environment_rebuild_ms, "v15 results remain readable without rebuild metadata");
+  auto media_previous = telemetry_previous.substr(0, telemetry_previous.size() - 88 - original.cells.size() * 16);
   media_previous.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v14");
   require(decode_presentation(media_previous).telemetry.tasks.empty(), "v14 snapshots remain readable without live logs and telemetry");
-  auto audio_previous = bytes.substr(0, bytes.size() - 88 - original.cells.size() * 56);
+  auto audio_previous = telemetry_previous.substr(0, telemetry_previous.size() - 88 - original.cells.size() * 56);
   audio_previous.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v13");
   require(decode_presentation(audio_previous).cells[0].audio.empty(), "v13 snapshots remain readable without audio metadata");
-  auto previous = bytes.substr(0, bytes.size() - 88 - original.cells.size() * 96);
+  auto previous = telemetry_previous.substr(0, telemetry_previous.size() - 88 - original.cells.size() * 96);
   previous.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v12");
   require(decode_presentation(previous).executing_cell == cell.id && !decode_presentation(previous).cells[0].elapsed_ms,
           "v12 snapshots remain readable without timing metadata");
-  auto legacy = bytes.substr(0, bytes.size() - 96 - original.cells.size() * 96);
+  auto legacy = telemetry_previous.substr(0, telemetry_previous.size() - 96 - original.cells.size() * 96);
   legacy.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v11");
   require(decode_presentation(legacy).executing_cell == 0, "older saved presentations remain readable");
   auto legacy_empty = encode_presentation(Presentation{});
-  legacy_empty.resize(legacy_empty.size() - 96);
+  legacy_empty.resize(legacy_empty.size() - 104);
   legacy_empty.replace(8, std::string("sputnik.notebook.presentation.v15").size(), "sputnik.notebook.presentation.v11");
   PresentationAssembler legacy_assembler(11, 12);
   legacy_assembler.accept({Kind::SnapshotBegin, 11, 12, {"sputnik.notebook.presentation.v11", std::to_string(legacy_empty.size())}});
   legacy_assembler.accept({Kind::SnapshotChunk, 11, 12, {"0", legacy_empty}});
   require(legacy_assembler.accept({Kind::Result, 11, 12, {"sputnik.notebook.presentation.v11"}}).has_value(),
           "older remote presentation frames remain readable");
+  auto warm = timed;
+  warm.cells[0].environment_rebuild_ms.reset();
+  merge_live_presentation(timed, warm);
+  require(!timed.cells[0].environment_rebuild_ms, "warm live timing clears the preceding rebuild marker");
+  auto invalid_rebuild = original;
+  invalid_rebuild.cells[0].environment_rebuild_ms = 0;
+  rejects([&] { encode_presentation(invalid_rebuild); }, "rebuild metadata requires a cell timing");
   auto execution_only = Presentation{};
   execution_only.executing_cell = 42;
   auto retained = original;
@@ -239,12 +258,12 @@ static void presentation_tests() {
   invalid_count.replace(invalid_count.size() - 8, 8, std::string(8, '\xff'));
   rejects([&] { decode_presentation(invalid_count); }, "invalid collection count before allocation");
   // Header is one length-prefixed string; next field is a canonical Bool.
-  malformed = bytes; malformed[8 + std::string("sputnik.notebook.presentation.v15").size() + 7] = 2;
+  malformed = bytes; malformed[8 + std::string("sputnik.notebook.presentation.v17").size() + 7] = 2;
   rejects([&] { decode_presentation(malformed); }, "invalid presentation bool");
   const Message begin{Kind::SnapshotBegin, 11, 12,
-      {"sputnik.notebook.presentation.v15", std::to_string(bytes.size())}};
+      {"sputnik.notebook.presentation.v17", std::to_string(bytes.size())}};
   const Message chunk{Kind::SnapshotChunk, 11, 12, {"0", bytes.substr(0, kPresentationChunkBytes)}};
-  const Message end{Kind::Result, 11, 12, {"sputnik.notebook.presentation.v15"}};
+  const Message end{Kind::Result, 11, 12, {"sputnik.notebook.presentation.v17"}};
   PresentationAssembler incomplete(11, 12);
   require(!incomplete.accept(begin) && !incomplete.accept(chunk), "partial snapshot stays unpublished");
   rejects([&] { incomplete.accept(end); }, "premature Result");
@@ -650,6 +669,7 @@ static void environment_process_tests(const std::string &worker) {
   document.auto_imports = {"helpers"};
   std::ofstream(project.directory / "helpers.s") <<
       "package helpers\nexport answer\ndef answer(): 42\n"
+      "task.sleep(150)\n"
       "child = task.spawn:\n  task.sleep(500)\n  print(\"ENV LATE\")\n";
   save_project(&project, document);
   Process process; process.start(worker); reply(process, Kind::Ready);
@@ -658,9 +678,25 @@ static void environment_process_tests(const std::string &worker) {
   process.send(Kind::Apply, {"1"}); reply(process, Kind::Started); reply(process, Kind::Draining);
   const auto result = finish(process);
   require(result.environment_error.empty() && result.cells[0].ok, "environment applied");
+  require(result.cells[0].environment_rebuild_ms && *result.cells[0].environment_rebuild_ms >= 140,
+          "rebuild timing includes synchronous module initialization");
+  require(result.cells[0].elapsed_ms && *result.cells[0].elapsed_ms < *result.cells[0].environment_rebuild_ms,
+          "cell timing excludes module preparation");
   std::string text;
   for (const auto &event : result.environment_output) text += event.text;
   require(text == "ENV LATE\n" && result.cells[0].output.empty(), "late module output stays in the environment panel");
+  const auto cell = std::to_string(document.sheets[0].cells[0].id);
+  process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
+  const auto warm = finish(process);
+  require(warm.cells[0].ok && warm.cells[0].elapsed_ms && !warm.cells[0].environment_rebuild_ms,
+          "reusing the environment clears the rebuild marker");
+  process.send(Kind::Source, {cell, "answer()\n# changed comment\n", "1"}); finish(process);
+  process.send(Kind::Run, {cell, "1"}); reply(process, Kind::Started);
+  const auto edited = finish(process);
+  require(edited.cells[0].ok && edited.cells[0].result == "42" &&
+              !edited.cells[0].environment_rebuild_ms,
+          "a cell edit reuses the initialized module environment: " +
+              edited.environment_error + edited.cells[0].error);
   process.send(Kind::Shutdown); reply(process, Kind::Result); exited(process);
 
   std::ofstream(project.directory / "helpers.s") <<

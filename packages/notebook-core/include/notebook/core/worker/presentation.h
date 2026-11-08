@@ -8,8 +8,9 @@ namespace sputnik::notebook::worker {
 constexpr std::size_t kMaxPresentationBytes = 128U * 1024U * 1024U;
 constexpr std::size_t kPresentationChunkBytes = 1024U * 1024U;
 
-// Execution-owned, inert data only. Never contains editor source, formatting,
-// selection, project inputs or runtime Values. Hosts retain their own drafts.
+// Execution-owned, inert data only. Never contains editable source, formatting,
+// selection, project inputs or runtime Values. Diagnostic source snapshots
+// are immutable provenance; hosts retain their own drafts.
 struct CellPresentation {
   CellId id = 0;
   std::uint64_t source_revision = 0;
@@ -31,6 +32,7 @@ struct CellPresentation {
   std::vector<runtime::NotebookLiveEvent> stopwatches;
   bool stopwatches_updated = false;
   std::optional<std::uint64_t> elapsed_ms;
+  std::optional<std::uint64_t> environment_rebuild_ms;
   bool timing_running = false;
   bool images_updated = true;
   bool displays_updated = true, progress_updated = true, charts_updated = true;
@@ -48,6 +50,7 @@ struct Presentation {
   // task status never consumes a failure; wait/result/failure retrieval does.
   bool cancelled = false;
   std::string status, environment_error;
+  std::vector<ModuleErrorView> module_errors;
   bool environment_stale = false;
   std::vector<runtime::RuntimeTextOutputEvent> environment_output;
   std::vector<runtime::RuntimeRunTaskFailure> unobserved_task_failures;

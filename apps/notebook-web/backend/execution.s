@@ -76,6 +76,7 @@ class Execution:
         audio: if media then media[:audio] else [], audio_controls: if media then media[:audio_controls] else [], audio_limited: if media then media[:audio_limited] else false,
         progress: if media then media[:progress] else [], stopwatches: if media then media[:stopwatches] else [], charts: if media then media[:charts] else [],
         elapsed_ms: if media then media[:elapsed_ms] else null, timing_running: if media then media[:timing_running] else false,
+        environment_rebuild_ms: if media then media[?:environment_rebuild_ms] else null,
         metrics: if media then media[:metrics] else [],
         text_values: if media then media[:text_values] else [], diagnostics: if media then media[:diagnostics] else [], diagnostics_truncated: if media then media[:diagnostics_truncated] else false,
         telemetry_stale: if media then (finished and media[:dirty]) or media[:source_revision] != cell[:source_revision] else false,

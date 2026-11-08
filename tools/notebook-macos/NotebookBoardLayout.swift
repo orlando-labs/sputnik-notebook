@@ -13,11 +13,12 @@ struct NotebookBoardRowLayout: Layout {
     }
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let width = proposal.width ?? 720
+        if let height { return CGSize(width: width, height: height) }
         let contentHeight = subviews.map {
             $0.sizeThatFits(ProposedViewSize(width: Self.cellWidth($0[BoardColumnSpan.self], width: width, spacing: spacing),
-                                            height: height.map { CGFloat($0) })).height
+                                            height: nil)).height
         }.max() ?? 80
-        return CGSize(width: width, height: height ?? contentHeight)
+        return CGSize(width: width, height: contentHeight)
     }
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         var x = bounds.minX

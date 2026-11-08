@@ -18,6 +18,7 @@ export interface RichCell {
   table: TableSnapshot | null; displays: Figure[]; images: ImageSeries[]; rich_stale: boolean; rich_unsupported: boolean
   progress: ProgressItem[]; stopwatches: StopwatchItem[]; charts: LiveChart[]
   elapsed_ms: string | null; timing_running: boolean; telemetry_stale: boolean
+  environment_rebuild_ms?: string | null
 }
 
 export function compareValues(a: TableValue, b: TableValue) {

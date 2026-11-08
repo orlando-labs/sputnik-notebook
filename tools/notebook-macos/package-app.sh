@@ -47,7 +47,23 @@ notebook_build=$(plutil -extract notebook.build raw -o - "$build_info")
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $notebook_build" "$contents/Info.plist"
 cp "$build_info" "$contents/Resources/build-info.json"
 chmod 644 "$contents/Resources/build-info.json"
+cat > "$contents/Resources/distribution-info.json" <<'EOF'
+{
+  "schema": "sputnik.notebook.distribution.v1",
+  "signature": "ad-hoc",
+  "developerID": false,
+  "notarized": false
+}
+EOF
 cp tools/notebook-macos/Assets/AppIcon.icns "$contents/Resources/AppIcon.icns"
+
+# Notebook presentation helpers are part of the host's source import library.
+# They must work after moving the app, without a registry install or checkout.
+essentials="$contents/Resources/notebook-essentials"
+mkdir -p "$essentials/src"
+cp "$runtime_root/packages/notebook_ui/sputnik.build.yaml" "$essentials/"
+cp "$runtime_root/packages/notebook_ui/README.md" "$essentials/"
+cp "$runtime_root/packages/notebook_ui/src/"*.s "$essentials/src/"
 
 # Source/native packages compile against this compiler's extension ABI even
 # after the application is moved away from the development checkout.
@@ -132,6 +148,22 @@ cp /etc/ssl/cert.pem "$contents/Resources/ca-certificates.crt"
 if test -f "$openssl_lib/../LICENSE.txt"; then
     cp "$openssl_lib/../LICENSE.txt" "$contents/Resources/OpenSSL-LICENSE.txt"
 fi
+cat > "$contents/Resources/THIRD_PARTY_NOTICES.md" <<'EOF'
+# Third-party notices
+
+The Frameworks directory contains the non-system libraries used by this build.
+Their license texts are included in Resources, named after each library.
+Additional SDK notices are in Resources/licenses.
+
+System frameworks and system Swift libraries are supplied by macOS.
+
+Included third-party license files:
+
+EOF
+for notice in "$contents/Resources/"*-LICENSE* "$contents/Resources/"*-LICENCE* "$contents/Resources/"*-COPYING*; do
+    [[ -f "$notice" ]] || continue
+    printf -- '- `%s`\n' "${notice##*/}" >> "$contents/Resources/THIRD_PARTY_NOTICES.md"
+done
 # Ad-hoc development signature, NOT Developer ID signing/notarization.
 for (( index=1; index<${#outputs[@]}; index++ )); do
     codesign --force --sign - "${outputs[$index]}"

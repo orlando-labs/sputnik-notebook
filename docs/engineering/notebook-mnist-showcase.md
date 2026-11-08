@@ -18,6 +18,12 @@ The settings cell controls `device`, `epochs`, `batch_size`, dataset limits and
 silently restart training. The training module imports the original MNIST reader,
 SmallResNet, optimizer and scheduler from the linked sputniktorch directory.
 Neither sputniktorch nor plot sources are copied into project modules.
+`notebook.ui` presentation helpers ship with the notebook host's source import
+library. They require no registry installation or project dependency. The macOS
+app carries this library in `Contents/Resources/notebook-essentials`; the server
+image carries it in `share/sputnik-notebook/essentials` beside its `bin` directory.
+Unavailable modules or named imports are diagnosed at the importing source line,
+without inferring which registry package might provide the namespace.
 Prepared SputnikTorch dependencies now use a coherent versioned package
 snapshot; package preparation automatically updates registered projects.
 

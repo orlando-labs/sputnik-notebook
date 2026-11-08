@@ -7,6 +7,15 @@ export interface FileEdit { encoding: 'utf8' | 'base64'; data: string }
 export interface ProjectFile { path: string; size: number; digest: string; kind: 'module' | 'dependency' | 'resource'; module_id: string | null }
 export interface FileView { revision: string; path: string; size: number; text: string | null; preview: string | null; editable: boolean; truncated: boolean; draft?: boolean }
 const encoder = new TextEncoder()
+const moduleIDPattern = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/
+const moduleFilename = /[^/]*(\.(?:s|spu|sputnik))$/
+export function moduleIDFromName(name: string) {
+  const id = name.trim().replace(/[\s-]+/g, '_')
+  return moduleIDPattern.test(id) ? id : null
+}
+export function modulePathForID(path: string, id: string) {
+  return path.replace(moduleFilename, (_filename, extension: string) => id + extension)
+}
 export function memberPath(path: string) {
   return !!path && encoder.encode(path).length <= 1024 && path.toLowerCase() !== 'project.json' && !/[\x00-\x1f\x7f\\:]/.test(path) && !path.startsWith('/') && path.split('/').every(part => !!part && part !== '.' && part !== '..')
 }
@@ -85,7 +94,7 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     else changes.value[path] = { encoding: 'utf8', data: value }
   }
   function addModule(id: string) {
-    if (!document.value || !/^[A-Za-z_][A-Za-z0-9_]{0,63}$/.test(id)) throw new Error('Use a module name with letters, digits and underscores.')
+    if (!document.value || !moduleIDPattern.test(id)) throw new Error('Use a module name with letters, digits and underscores.')
     const path = `modules/${id}.s`
     if (document.value.modules?.some(module => module.id === id) || files.value.some(file => file.path.toLowerCase() === path.toLowerCase())) throw new Error('This module or file already exists.')
     document.value.modules ||= []
@@ -126,14 +135,18 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     if (enabled) values.add(module.id); else values.delete(module.id)
     document.value.auto_imports = [...values]
   }
-  async function relocate(path: string, moduleID?: string) {
+  async function relocate(path: string, moduleName?: string) {
     const from = selected.value, version = revision.value, targetDocument = document.value
     if (!targetDocument || !from || !ready.value) throw new Error('Open a file before moving it.')
-    if (!memberPath(path)) throw new Error('Use a relative project file path without traversal.')
     const linked = targetDocument.modules?.find(module => module.path === from)
-    if (linked && (!moduleID || !/^[A-Za-z_][A-Za-z0-9_]{0,63}$/.test(moduleID))) throw new Error('Use a module name with letters, digits and underscores.')
-    if (linked && !/\.(s|spu|sputnik)$/.test(path)) throw new Error('Use a .s, .spu or .sputnik path for a module.')
-    if (linked && targetDocument.modules?.some(module => module !== linked && module.id === moduleID)) throw new Error('This module name already exists.')
+    const moduleID = moduleIDFromName(moduleName ?? '')
+    if (linked) {
+      if (!moduleID) throw new Error('Use a module name that starts with a letter or underscore and contains only letters, digits, spaces, hyphens and underscores.')
+      if (!moduleFilename.test(path)) throw new Error('Use a .s, .spu or .sputnik path for a module.')
+      if (targetDocument.modules?.some(module => module !== linked && module.id === moduleID)) throw new Error('This module name already exists.')
+      path = modulePathForID(path, moduleID)
+    }
+    if (!memberPath(path)) throw new Error('Use a relative project file path without traversal.')
     const lower = path.toLowerCase()
     if (files.value.some(file => file.path !== from && (file.path.toLowerCase() === lower || file.path.toLowerCase().startsWith(lower + '/') || lower.startsWith(file.path.toLowerCase() + '/')))) throw new Error('The destination conflicts with another project file.')
     // A saved deletion at the destination would otherwise be lost on rename.
@@ -145,7 +158,7 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
       edit = { encoding: 'base64', data: await fileBase64(new File([blob], from.split('/').at(-1)!)) }
     }
     if (disposed || revision.value !== version || document.value !== targetDocument || selected.value !== from) throw new Error('The notebook changed while reading the file. Try again.')
-    if (linked && linked.id !== moduleID) {
+    if (linked && moduleID && linked.id !== moduleID) {
       const text = edit.encoding === 'utf8' ? edit.data : new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(edit.data), char => char.charCodeAt(0)))
       const renamed = text.replace(new RegExp(`^(\\s*package[ \\t]+)${linked.id}\\b`, 'm'), `$1${moduleID}`)
       if (encoder.encode(renamed).length > 1048576) throw new Error('Renaming a module requires a UTF-8 source within 1 MiB.')
@@ -158,10 +171,10 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
       delete cache.value[from]
     }
     changes.value[path] = edit
-    if (linked) {
+    if (linked && moduleID) {
       const old = linked.id
-      linked.path = path; linked.id = moduleID!
-      targetDocument.auto_imports = targetDocument.auto_imports?.map(id => id === old ? moduleID! : id)
+      linked.path = path; linked.id = moduleID
+      targetDocument.auto_imports = targetDocument.auto_imports?.map(id => id === old ? moduleID : id)
       const visit = (components: import('./boards').BoardComponent[]) => {
         for (const component of components) {
           if (['action', 'periodic_work'].includes(component.kind) && component.module_id === old) component.module_id = moduleID
@@ -169,6 +182,9 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
         }
       }
       for (const board of targetDocument.boards || []) visit(board.components)
+      for (const sheet of targetDocument.sheets) for (const cell of sheet.cells) {
+        if (cell.cell_ui) { visit(cell.cell_ui.pre); visit(cell.cell_ui.post) }
+      }
     }
     selected.value = path
   }

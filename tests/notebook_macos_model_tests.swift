@@ -47,6 +47,10 @@ private struct NotebookModelRegressionTests {
             try await testExecutionNavigation(url: root.appendingPathComponent("navigation.sputnikbook"))
             try await testRetainedResults(root: root)
             try await testStopwatch(root: root)
+            try await testEnvironmentTiming(root: root)
+            try await testImportDiagnostics(root: root)
+            try await testCompileOnlyModuleCheck(root: root)
+            try await testModuleErrorsFromBoards(root: root)
             try await testDefaultModuleAndWatch(url: root.appendingPathComponent("unified.sputnikbook"))
             try await testWorkerGrants(root: root)
             try await testCellIDs(root: root)
@@ -285,6 +289,18 @@ private struct NotebookModelRegressionTests {
         let reopened = await open(model, url: url)
         try require(reopened && model.nextSheetTitle == "Sheet 3" && model.nextSheetIdentifier == "sheet_3", "sheet numbering survives reopening")
         try require(NotebookBoard.empty(sheet: "sheet_2", existing: model.snapshot?.boards ?? []).title == "Board 8", "board numbering spans controller sheets and skips existing numbered titles")
+        let moduleCreated = await perform(model, "new_module", text: "training")
+        try require(moduleCreated, model.error ?? "create rename fixture")
+        let module = model.activeTab!, cell = module.cells[0]
+        model.editSource("package training\n# unsaved source\n", cell: cell, tab: module)
+        let moduleRenamed = await perform(model, "rename_module", tab: module, text: "digit-recognizer")
+        try require(moduleRenamed && model.activeTab?.id == "module:digit_recognizer" &&
+                    model.activeTab?.cells[0].id == cell.id && !model.hasUnsavedChanges,
+                    model.error ?? "module rename keeps selection and consumes the submitted draft")
+        let renamedSource = try String(contentsOf: url.appendingPathComponent("modules/digit_recognizer.s"), encoding: .utf8)
+        try require(renamedSource == "package digit_recognizer\n# unsaved source\n" &&
+                    !FileManager.default.fileExists(atPath: url.appendingPathComponent("modules/training.s").path),
+                    "module rename saves the draft under its matching filename")
     }
 
     @MainActor
@@ -319,6 +335,47 @@ private struct NotebookModelRegressionTests {
             let reopened = await open(model, url: url)
             try require(reopened && model.activeTab?.cells.first?.id == "9102" && model.activeTab?.cells.first?.source == "answer = 42\nanswer\n",
                         "save/reopen lost the new ID or source")
+            await shutdown(model)
+        } catch { await shutdown(model); throw error }
+    }
+
+    @MainActor
+    private static func testEnvironmentTiming(root: URL) async throws {
+        let model = NotebookModel()
+        let url = root.appendingPathComponent("environment-timing.sputnikbook")
+        try writeProject(url, title: "Environment timing", cellIDs: ["671"])
+        let manifest = url.appendingPathComponent("project.json")
+        var document = try JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as! [String: Any]
+        document["version"] = 3
+        document["inputs"] = []
+        document["dependencies"] = []
+        document["boards"] = [["id": "history", "title": "History", "sheet": "main", "columns": 1,
+                               "components": [["id": "history", "kind": "run_history", "title": "Runs"]]]]
+        document["modules"] = [["id": "helpers", "path": "helpers.s"]]
+        document["auto_imports"] = ["helpers"]
+        try JSONSerialization.data(withJSONObject: document).write(to: manifest)
+        try "package helpers\nexport answer\ndef answer(): 42\ntask.sleep(150)\n".write(to: url.appendingPathComponent("helpers.s"), atomically: true, encoding: .utf8)
+        do {
+            let opened = await open(model, url: url)
+            try require(opened, "open environment timing fixture")
+            var tab = model.snapshot!.tabs.first { $0.kind == "sheet" }!
+            model.editSource("answer()\n", cell: tab.cells[0], tab: tab)
+            let first = await perform(model, "run", tab: tab, cell: tab.cells[0])
+            tab = model.snapshot!.tabs.first { $0.kind == "sheet" }!
+            guard first, tab.cells[0].ok, let timing = model.cellTiming(tab.cells[0], in: tab) else {
+                throw ModelTestFailure(description: "no environment timing: \(model.error ?? "") \(tab.environment_error) \(tab.cells[0].error)")
+            }
+            try require((timing.environmentRebuildMilliseconds ?? 0) >= 140 && timing.help.contains("Preparation:") && timing.help.contains("excluded"), "rebuilt run explains preparation separately from execution")
+            guard let run = model.runHistory.runs.first else {
+                throw ModelTestFailure(description: model.runHistory.error ?? "no retained environment timing run")
+            }
+            let saved = try model.runHistory.load(run.id)
+            try require(saved.outputs.first?.environmentRebuildMilliseconds == timing.environmentRebuildMilliseconds, "run history retains rebuild context")
+            let second = await perform(model, "run", tab: tab, cell: tab.cells[0])
+            tab = model.snapshot!.tabs.first { $0.kind == "sheet" }!
+            let warm = model.cellTiming(tab.cells[0], in: tab)
+            try require(second && warm?.environmentRebuildMilliseconds == nil && warm?.help.contains("rebuilt") == false,
+                        "warm run removes the previous rebuild badge")
             await shutdown(model)
         } catch { await shutdown(model); throw error }
     }
@@ -1092,8 +1149,23 @@ private struct NotebookModelRegressionTests {
         try require(moduleCreated, "new module should be created")
         let module = try requireTab("module:scratch", in: requireSnapshot(model))
         let moduleCell = try requireCell(module.cells.first?.id ?? "", in: module)
+        model.editSource("package scratch\nvalue = )\n", cell: moduleCell, tab: module)
+        _ = await perform(model, "run", tab: module, cell: moduleCell)
+        let failedModule = try requireTab("module:scratch", in: requireSnapshot(model))
+        let failedCell = try requireCell(moduleCell.id, in: failedModule)
+        try require(failedCell.error_ranges?.contains { $0.start_line == 1 && $0.start_column == 8 } == true,
+                    "module diagnostics should publish source ranges in snapshots")
+        guard let diagnostic = failedCell.diagnostics?.first(where: { $0.range != nil }) else {
+            throw ModelTestFailure(description: "source diagnostic missing")
+        }
+        model.showSource(diagnostic.range!, cell: failedCell, tab: failedModule)
+        try require(model.cellNavigation?.selection?.range == diagnostic.range,
+                    "source errors should request navigation to their own range")
         let moduleSource = "package scratch\nvalue = 7\n"
         model.editSource(moduleSource, cell: moduleCell, tab: module)
+        let previousNavigation = model.cellNavigation
+        model.showSource(diagnostic.range!, cell: failedCell, tab: failedModule)
+        try require(model.cellNavigation == previousNavigation, "stale diagnostic must not navigate into an edited source")
         let selectedFromModule = await perform(model, "select", tab: selectedMain)
         try require(selectedFromModule,
                     "module-to-sheet selection should succeed")
@@ -1304,6 +1376,156 @@ private struct NotebookModelRegressionTests {
                         model.snapshot?.tabs.first(where: { $0.id == main.id })?.cells
                             .first(where: { $0.id == cell.id })?.source == "local = 5\n",
                     "failed Save All must retain the source in the draft or backend")
+    }
+
+    @MainActor
+    private static func testCompileOnlyModuleCheck(root: URL) async throws {
+        let url = root.appendingPathComponent("module-check.sputnikbook")
+        try writeProject(url, title: "Compile only module check", cellIDs: ["741"])
+        let package = url.appendingPathComponent("native")
+        try FileManager.default.createDirectory(at: package, withIntermediateDirectories: false)
+        try "schema: \"sputnik.build.v1\"\nname: native_check\nversion: \"1.0.0\"\nsource_root: \".\"\nroot: native_check\nfiles: [main.s]\nmodule_names: {main.s: native_check}\nprofiles: {required: [core.v1, ffi.v1]}\n"
+            .write(to: package.appendingPathComponent("sputnik.build.yaml"), atomically: true, encoding: .utf8)
+        try "package native_check\nexport answer\nnative def answer() -> Int from \"unregistered_native_thunk\"\nraise \"dependency must not execute\"\n"
+            .write(to: package.appendingPathComponent("main.s"), atomically: true, encoding: .utf8)
+        let manifest = url.appendingPathComponent("project.json")
+        var document = try JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as! [String: Any]
+        document["version"] = 3; document["inputs"] = []; document["boards"] = []
+        document["modules"] = [["id": "checked", "path": "checked.s"], ["id": "unfinished", "path": "unfinished.s"]]
+        document["auto_imports"] = ["unfinished"]
+        document["dependencies"] = [["path": "native", "auto_import": false, "native_library": "not-loaded.dylib", "native_sha256": String(repeating: "0", count: 64)]]
+        try JSONSerialization.data(withJSONObject: document).write(to: manifest)
+        try "package checked\n42\n".write(to: url.appendingPathComponent("checked.s"), atomically: true, encoding: .utf8)
+        try "package unfinished\nvalue = )\n".write(to: url.appendingPathComponent("unfinished.s"), atomically: true, encoding: .utf8)
+        let marker = url.appendingPathComponent("must-not-exist")
+        let model = NotebookModel()
+        do {
+            let opened = await open(model, url: url)
+            try require(opened && model.snapshot?.dependencies?.first?.native == true, "open native module check fixture: \(model.error ?? "")")
+            let module = model.snapshot!.tabs.first { $0.id == "module:checked" }!
+            let cell = module.cells[0]
+            let historyCount = model.runHistory.runs.count
+            let source = "package checked\nfrom native_check import answer\nimport fs\nfs.atomic_write_text(\"\(marker.path)\", \"executed\")\nanswer()\nraise \"module must not execute\"\n"
+            model.editSource(source, cell: cell, tab: module)
+            try require(model.canCheckModule(module), "checking does not depend on runtime grants")
+            let completed = await perform(model, "check_module", tab: module, cell: cell)
+            let checked = model.snapshot!.tabs.first { $0.id == module.id }!
+            try require(completed && checked.cells[0].ok && checked.status == "module check passed; code not executed",
+                        "native imports compile without loading libraries or running init: \(model.error ?? checked.cells[0].error)")
+            try require(!model.hasNativeWorkerTrust && !model.executingWorker && model.runHistory.runs.count == historyCount,
+                        "checking requests no native trust and creates no execution or run history")
+            try require(!FileManager.default.fileExists(atPath: marker.path) && checked.cells[0].elapsed_ms == nil && checked.cells[0].output.isEmpty && checked.cells[0].result.isEmpty,
+                        "checks publish no runtime side effects, output, timings or results")
+            let savedSource = try String(contentsOf: url.appendingPathComponent("checked.s"), encoding: .utf8)
+            try require(savedSource == "package checked\n42\n",
+                        "checking an unsaved draft does not save it")
+            model.editSource("package checked\nfrom native_check import missing\n", cell: checked.cells[0], tab: checked)
+            _ = await perform(model, "check_module", tab: checked, cell: checked.cells[0])
+            let failed = model.snapshot!.tabs.first { $0.id == module.id }!
+            try require(!failed.cells[0].ok && failed.cells[0].error.contains("Cannot import 'missing'") && failed.cells[0].error_ranges?.first?.start_line == 1,
+                        "checks validate native exports and retain source coordinates")
+            await shutdown(model)
+        } catch { await shutdown(model); throw error }
+    }
+
+    @MainActor
+    private static func testImportDiagnostics(root: URL) async throws {
+        let url = root.appendingPathComponent("import-diagnostics.sputnikbook")
+        try writeProject(url, title: "Import diagnostics", cellIDs: ["721"])
+        let manifest = url.appendingPathComponent("project.json")
+        var document = try JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as! [String: Any]
+        document["modules"] = [["id": "training", "path": "training.s"]]
+        document["auto_imports"] = ["training"]
+        try JSONSerialization.data(withJSONObject: document).write(to: manifest)
+        try "package training\n# Header\nfrom notebook.ui import unavailable_function\n"
+            .write(to: url.appendingPathComponent("training.s"), atomically: true, encoding: .utf8)
+        let model = NotebookModel()
+        do {
+            let opened = await open(model, url: url)
+            try require(opened, "open import diagnostic fixture")
+            _ = await perform(model, "run_all")
+            let sheet = model.snapshot!.tabs.first { $0.kind == "sheet" }!
+            try require(sheet.environment_error.contains("Cannot import 'unavailable_function' from 'notebook.ui'") &&
+                        sheet.environment_error.contains("training.s:3:"), "import failure must identify its source line")
+            guard let target = model.environmentErrorSource(in: sheet) else {
+                throw ModelTestFailure(description: "import failure must link to the module's source")
+            }
+            try require(target.tab.id == "module:training" && target.range.start_line == 2,
+                        "import failure selected the wrong module or line")
+            model.showSource(target.range, cell: target.cell, tab: target.tab)
+            let deadline = Date().addingTimeInterval(5)
+            while model.cellNavigation?.location.tab != target.tab.id && Date() < deadline {
+                try await Task.sleep(nanoseconds: 10_000_000)
+            }
+            try require(model.activeTab?.id == target.tab.id && model.cellNavigation?.selection?.range.start_line == 2,
+                        "import error link must open the module and select line 3")
+            model.editSource("package training\n42\n", cell: target.cell, tab: target.tab)
+            try require(model.environmentErrorSource(in: sheet) == nil,
+                        "an import error must not navigate into a modified module draft")
+            await shutdown(model)
+        } catch { await shutdown(model); throw error }
+    }
+
+    @MainActor
+    private static func testModuleErrorsFromBoards(root: URL) async throws {
+        let fixtures: [(String, String, String, Int)] = [
+            ("syntax", "package training\n# Header\ndef answer(:\n", "42\n", 2),
+            ("init", "package training\n# Header\nraise \"module init failed\"\n", "42\n", 2),
+            ("call", "package training\nexport answer\ndef answer():\n  raise \"module call failed\"\n", "answer()\n", 3)
+        ]
+        for (name, source, sheetSource, line) in fixtures {
+            let url = root.appendingPathComponent("board-module-error-\(name).sputnikbook")
+            try writeProject(url, title: "Board module error", cellIDs: ["731"])
+            let manifest = url.appendingPathComponent("project.json")
+            var document = try JSONSerialization.jsonObject(with: Data(contentsOf: manifest)) as! [String: Any]
+            document["version"] = 3
+            document["inputs"] = []
+            document["dependencies"] = []
+            document["modules"] = [["id": "training", "path": "training.s"]]
+            document["auto_imports"] = ["training"]
+            document["boards"] = [["id": "dashboard", "title": "Dashboard", "sheet": "main", "columns": 1, "components": []]]
+            try JSONSerialization.data(withJSONObject: document).write(to: manifest)
+            try source.write(to: url.appendingPathComponent("training.s"), atomically: true, encoding: .utf8)
+            let model = NotebookModel()
+            do {
+                let opened = await open(model, url: url)
+                try require(opened && model.isolatedExecution, "open \(name) diagnostic fixture with a real worker: \(model.error ?? "no error")")
+                let controller = model.activeTab!
+                model.editSource(sheetSource, cell: controller.cells[0], tab: controller)
+                model.selectBoard(model.snapshot!.boards![0])
+                _ = await perform(model, "run_all", tab: controller)
+                let sheet = model.snapshot!.tabs.first { $0.id == controller.id }!
+                let module = model.snapshot!.tabs.first { $0.id == "module:training" }!
+                let issues = model.executionIssues(in: sheet)
+                try require(model.activeBoard != nil && !issues.isEmpty, "\(name): failed Run Sheet remains visible on the board")
+                guard let issue = issues.first(where: { $0.location?.tab == module.id }),
+                      let range = issue.range else {
+                    throw ModelTestFailure(description: "\(name): failure has no module source target: \(sheet.environment_error), \(sheet.cells[0].error), \(sheet.module_errors?.map(\.message) ?? [])")
+                }
+                try require(range.start_line == line, "\(name): wrong module source line \(range.start_line)")
+                let diagnostics = model.sourceDiagnostics(for: module.cells[0], in: module)
+                try require(diagnostics.contains { $0.range?.start_line == line }, "\(name): module page shows the sheet's error and highlights its source")
+                model.showExecutionIssue(issue)
+                let deadline = Date().addingTimeInterval(5)
+                while (model.activeBoard != nil || model.cellNavigation?.selection?.range != range) && Date() < deadline {
+                    try await Task.sleep(nanoseconds: 10_000_000)
+                }
+                try require(model.activeBoard == nil && model.activeTab?.id == module.id && model.cellNavigation?.selection?.range == range,
+                            "\(name): board error opens the module and requests its source line")
+                let corrected = "package training\nexport answer\ndef answer():\n  42\n"
+                model.editSource(corrected, cell: module.cells[0], tab: module)
+                try require(model.sourceDiagnostics(for: module.cells[0], in: module).isEmpty && model.environmentErrorSource(in: sheet) == nil,
+                            "\(name): stale errors never decorate or navigate into a new module draft")
+                let saved = await perform(model, "save_all")
+                try require(saved, "save corrected module")
+                _ = await perform(model, "apply", tab: sheet)
+                let fixedSheet = model.snapshot!.tabs.first { $0.id == sheet.id }!
+                let fixedModule = model.snapshot!.tabs.first { $0.id == module.id }!
+                try require(model.executionIssues(in: fixedSheet).isEmpty && model.sourceDiagnostics(for: fixedModule.cells[0], in: fixedModule).isEmpty,
+                            "\(name): successful Apply clears errors on both pages")
+                await shutdown(model)
+            } catch { await shutdown(model); throw error }
+        }
     }
 
     @MainActor

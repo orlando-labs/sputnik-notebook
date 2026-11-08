@@ -56,7 +56,8 @@ class Environments:
     value = @notebooks.call("worker.settings", {project_id: project[:core_project_id], sheet_id: sheet})
     records = @notebooks.call("environment.list", {project_id: project[:core_project_id]})[:environments]
     selected = records.find |record|: record[:state] == "ready" and record[:directory] == value[:environment_directory]
-    editable = value[:grants].filter: @grants.include?($it)
+    own = value[?:own_grants] or value[:grants]
+    editable = own.filter: @grants.include?($it)
     {revision: head[:head], sheet_id: sheet, version: value[:version], runtime_epoch: value[:runtime_epoch],
       grants: editable, preserved_grants: value[:grants].count - editable.count,
       allowed_grants: @grants, environment_id: if selected then selected[:id] else null,
@@ -76,7 +77,7 @@ class Environments:
       record = @notebooks.call("environment.get", {project_id: project[:core_project_id], environment_id: command_id(choice)})
       raise InvalidInput("Select a ready environment from this notebook.") unless record[:project] == project[:core_project_id] and record[:state] == "ready"
       directory = record[:directory]
-    preserved = previous[:grants].filter: not @grants.include?($it)
+    preserved = (previous[?:own_grants] or previous[:grants]).filter: not @grants.include?($it)
     @notebooks.call("worker.configure", {project_id: project[:core_project_id], command_id: command_id(params[:command_id]), revision: params[:revision],
       sheet_id: sheet, base_version: params[:base_version], runtime_epoch: params[:runtime_epoch], grants: (preserved + grants).uniq.sorted, environment_directory: directory}, execution: true)
     {state: "reset"}

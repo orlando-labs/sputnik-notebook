@@ -1,6 +1,6 @@
 package notebook.remote.local_dependencies
 
-from notebook.core.common import decode, fail
+from notebook.core.common import APIError, decode, fail
 from notebook.core import Core
 
 export local_dependencies
@@ -8,6 +8,15 @@ export local_dependencies
 # A local explicit operation uses the same installers as an agent. The helper
 # stays alive until completion; no background command is replayed on opening.
 def local_dependencies(args):
+  try: execute(args)
+  rescue APIError |error|:
+    if args[?:json_errors]: print Json.generate({remote_error: {status: error.status, message: error.message}})
+    else: raise IOError(error.message)
+  rescue Exception |error|:
+    if args[?:json_errors]: print Json.generate({remote_error: {status: 0, message: error.message}})
+    else: raise error
+
+def execute(args):
   directory = fs.Path(args[:directory]).normalize.to_str
   fail(400, "notebook directory must be absolute") unless fs.Path(directory).absolute?
   fail(400, "project.json is missing") unless fs.exists?(directory + "/project.json")

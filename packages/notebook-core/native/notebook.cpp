@@ -461,6 +461,15 @@ void append_image_series(std::string *out, const std::vector<sputnik::runtime::N
   out->push_back(']');
 }
 
+void append_source_range(std::string *out, const CodeErrorRange &range) {
+  *out += "{\"start_line\":" + std::to_string(range.start_line) +
+      ",\"start_column\":" + std::to_string(range.start_column) +
+      ",\"end_line\":" + std::to_string(range.end_line) +
+      ",\"end_column\":" + std::to_string(range.end_column) + ",\"whole_line\":";
+  append_bool(out, range.whole_line);
+  *out += '}';
+}
+
 void append_cell(std::string *out, const Cell &cell) {
   out->append("{\"id\":");
   append_json_string(out, std::to_string(cell.id));
@@ -487,6 +496,22 @@ void append_cell(std::string *out, const Cell &cell) {
   out->append("}");
   out->append(",\"error\":");
   append_json_string(out, cell.error);
+  out->append(",\"error_ranges\":[");
+  for (std::size_t i = 0; i < std::min<std::size_t>(100, cell.error_ranges.size()); ++i) {
+    if (i) *out += ',';
+    append_source_range(out, cell.error_ranges[i]);
+  }
+  out->append("],\"diagnostics\":[");
+  for (std::size_t i = 0; i < std::min<std::size_t>(100, cell.errors.size()); ++i) {
+    if (i) *out += ',';
+    const auto &error = cell.errors[i];
+    out->append("{\"message\":"); append_json_string(out, error.message);
+    out->append(",\"range\":");
+    if (error.has_range) append_source_range(out, error.range);
+    else out->append("null");
+    *out += '}';
+  }
+  *out += ']';
   out->append(",\"output\":");
   append_output(out, cell.output_events);
   out->append(",\"displays\":"); append_displays(out, cell.displays);
@@ -496,6 +521,7 @@ void append_cell(std::string *out, const Cell &cell) {
   out->append(",\"audio\":"); append_audio_streams(out, cell.audio);
   out->append(",\"audio_controls\":"); append_audio_controls(out, cell.audio_controls);
   out->append(",\"elapsed_ms\":"); out->append(cell.elapsed_ms ? std::to_string(*cell.elapsed_ms) : "null");
+  out->append(",\"environment_rebuild_ms\":"); out->append(cell.environment_rebuild_ms ? std::to_string(*cell.environment_rebuild_ms) : "null");
   out->append(",\"stopwatches\":[");
   for (std::size_t i = 0; i < cell.stopwatches.size(); ++i) {
     if (i) *out += ',';
@@ -660,6 +686,21 @@ std::string snapshot_json(const SputnikNotebook &notebook) {
     append_json_string(&out, session.status);
     out.append(",\"environment_error\":");
     append_json_string(&out, session.environment_error);
+    out.append(",\"module_errors\":[");
+    for (std::size_t i = 0; i < std::min<std::size_t>(100, session.module_errors.size()); ++i) {
+      if (i) out += ',';
+      const auto &error = session.module_errors[i];
+      out.append("{\"module_id\":"); append_json_string(&out, error.module_id);
+      out.append(",\"source\":"); append_json_string(&out, error.source);
+      out.append(",\"message\":"); append_json_string(&out, error.message);
+      out.append(",\"ranges\":[");
+      for (std::size_t j = 0; j < std::min<std::size_t>(100, error.ranges.size()); ++j) {
+        if (j) out += ',';
+        append_source_range(&out, error.ranges[j]);
+      }
+      out.append("]}");
+    }
+    out += ']';
     out.append(",\"environment_output\":");
     append_output(&out, session.environment_output);
     out += ",\"telemetry\":"; append_telemetry(&out, session.run_telemetry);
@@ -790,10 +831,15 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
     throw std::invalid_argument("notebook handle is null");
   const std::string action = require_text(action_raw, "action");
   if (notebook->external && (action == "run" || action == "run_all" || action == "watch_run" || action == "apply" ||
-      action == "restart_worker" || action == "worker_grants" || action == "worker_environment" || action == "set_input" || action == "set_inputs" ||
+      action == "restart_worker" || action == "worker_grants" || action == "book_worker_grants" || action == "worker_environment" || action == "set_input" || action == "set_inputs" ||
       action == "action_run" || action == "periodic_run" || action == "periodic_tick" || action == "periodic_dispose" || action == "watch_run"))
     throw std::runtime_error("This operation must be handled by the remote backend.");
   notebook->commands_started = true;
+  if (action == "book_worker_grants") {
+    if (!notebook->execution) throw std::runtime_error("Worker settings require isolated execution.");
+    notebook->execution->configure_book_grants(notebook->tabs, text_raw ? text_raw : "");
+    return;
+  }
   if (action == "resource_policy") {
     const auto json = require_text(text_raw, "resource policy");
     if (json.size() > 8192 || json.empty() || json.front() != '{' || json.back() != '}')
@@ -1043,9 +1089,21 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
   ProjectTab &tab = *notebook->tabs.tabs()[tab_index];
   Session &session = tab.session;
 
+  if (action == "check_module") {
+    if (!tab.module) throw std::invalid_argument("Check Module requires a module tab");
+    if (cell_raw && *cell_raw) (void)find_cell_index(session, cell_raw);
+    check_module_source(&session, load_project_bundled_sources(notebook->tabs.project(), true));
+    return;
+  }
+
   if (action == "rename_sheet") {
     if (tab.module) throw std::invalid_argument("Choose a sheet to rename.");
     notebook->tabs.rename_sheet(session.project_sheet_id, require_text(text_raw, "Sheet name"));
+    return;
+  }
+  if (action == "rename_module") {
+    if (!tab.module) throw std::invalid_argument("Choose a module to rename.");
+    notebook->tabs.rename_module(tab.module->id, require_text(text_raw, "Module name"));
     return;
   }
 
@@ -1414,6 +1472,7 @@ static char *presentation_live_json(const sputnik::notebook::worker::Presentatio
       json += ",\"audio_updated\":"; append_bool(&json, cell.audio_updated);
       json += ",\"audio_reset\":"; append_bool(&json, cell.audio_reset);
       json += ",\"elapsed_ms\":" + (cell.elapsed_ms ? std::to_string(*cell.elapsed_ms) : "null");
+      json += ",\"environment_rebuild_ms\":" + (cell.environment_rebuild_ms ? std::to_string(*cell.environment_rebuild_ms) : "null");
       json += ",\"timing_running\":"; append_bool(&json, cell.timing_running);
       json += ",\"stopwatches_updated\":"; append_bool(&json, cell.stopwatches_updated);
       json += ",\"stopwatches\":[";
@@ -1511,6 +1570,10 @@ int sputnik_notebook_restore_document(SputnikNotebook *notebook, const char *doc
       for (const auto &saved : sheet->cells) {
         const auto original = std::find_if(tab->session.cells.begin(), tab->session.cells.end(), [&](const auto &c) { return c.id == saved.id; });
         Cell cell = original == tab->session.cells.end() ? Cell{} : *original;
+        if (cell.source != saved.source) {
+          cell.error_ranges.clear();
+          cell.errors.clear();
+        }
         cell.id = saved.id; cell.kind = saved.kind; cell.source = saved.source;
         cell.watch = saved.mode == sputnik::notebook::CellMode::Watch; cell.formatting = saved.formatting;
         cell.cursor = cell.source.size(); cell.dirty = cell.kind == "code";
@@ -1569,6 +1632,7 @@ char *sputnik_notebook_remote_history(const char *sheet, const char *document,
         cell.result_format = value.result_format; cell.locals = value.locals; cell.output_events = value.output;
         cell.displays = value.displays; cell.images = value.images; cell.audio = value.audio;
         cell.audio_controls = value.audio_controls; cell.elapsed_ms = value.elapsed_ms;
+        cell.environment_rebuild_ms = value.environment_rebuild_ms;
       }
       if (i) json += ',';
       append_cell(&json, cell);
@@ -1637,21 +1701,27 @@ int sputnik_notebook_remote_result(SputnikNotebook *notebook, const char *sheet,
     auto cells = session.cells;
     for (auto &cell : cells) {
       const auto value = std::find_if(presentation.cells.begin(), presentation.cells.end(), [&](const auto &c) { return c.id == cell.id; });
-      if (value == presentation.cells.end()) continue;
+      if (value == presentation.cells.end()) { cell.error_ranges.clear(); cell.errors.clear(); continue; }
       const auto index = static_cast<size_t>(value - presentation.cells.begin());
       cell.dirty = value->dirty || stale || cell.source != origin->cells[index].source;
       cell.ok = value->ok; cell.result = value->result; cell.error = value->error;
       cell.result_format = value->result_format; cell.locals = value->locals;
       cell.output_events = value->output; cell.displays = value->displays;
       cell.progress = value->progress; cell.charts = value->charts; cell.images = value->images; cell.audio = value->audio; cell.audio_controls = value->audio_controls;
-      cell.elapsed_ms = value->elapsed_ms; cell.stopwatches = value->stopwatches;
-      cell.error_ranges = value->error_ranges; cell.errors = value->errors; cell.selected_error = 0;
+      cell.elapsed_ms = value->elapsed_ms; cell.environment_rebuild_ms = value->environment_rebuild_ms;
+      cell.stopwatches = value->stopwatches;
+      if (stale || cell.source != origin->cells[index].source) cell.error_ranges.clear();
+      else cell.error_ranges = value->error_ranges;
+      cell.errors = value->errors; cell.selected_error = 0;
+      if (stale || cell.source != origin->cells[index].source)
+        for (auto &diagnostic : cell.errors) diagnostic.has_range = false;
       cell.watch_epoch = value->watch_epoch; cell.watch_event_count = value->watch_event_count;
     }
     session.run_telemetry = presentation.telemetry;
     session.cells.swap(cells);
     session.status = presentation.status;
     session.environment_error = presentation.environment_error;
+    session.module_errors = presentation.module_errors;
     session.environment_output = presentation.environment_output;
     session.environment_stale = presentation.environment_stale || stale;
     return 1;

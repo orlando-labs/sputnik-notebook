@@ -149,6 +149,8 @@ class Core:
   attr worker_path
 
   def init(@root, @worker_path, python: "python3", ruby: "ruby", compiler: "sputnik", package_directory: null, storage_policy: {}, allow_book_policy_overrides: false):
+    @compiler = compiler
+    @checking_module = false
     @ruby_executable = ruby
     @package_directory_override = package_directory
     created = []
@@ -883,13 +885,65 @@ class Core:
     record = @environments.record(id, environment_id)
     {id: environment_id, fingerprint: environment_id, directory: if record then record[:directory] else ""}
 
+  def book_worker_grants(id):
+    record = row("SELECT grants FROM worker_settings WHERE project=? AND sheet='@book'", [id])
+    if record then decode(record[:grants]) else []
+
+  def book_worker_settings(id):
+    grants = book_worker_grants(id)
+    {project_id: id, grants: grants, version: digest(grants), runtime_epoch: null}
+
+  def merged_worker_grants(own, inherited):
+    grants = (own + inherited).uniq
+    fail(400, "combined sheet and notebook grants exceed worker limits") if grants.count > 128 or grants.join("\n").bytes.count > 32768
+    grants
+
+  def normalize_worker_grants(grants):
+    fail(400, "grants must be a list of at most 128 strings") unless Array === grants and grants.count <= 128 and grants.all? |g|: Str === g
+    fail(400, "invalid worker grant") if grants.any? |g|: g.contains?("\n") or g.contains?("\r") or g.contains?("\u{0}")
+    text = grants.join("\n")
+    fail(400, "worker grants exceed 32 KiB") if text.bytes.count > 32768
+    checked = system.command(@worker_path, "--check-grants", text).capture(timeout: 15.0, check: false)
+    fail(400, checked.stderr.to_str) unless checked.success?
+    normalized = checked.stdout.to_str
+    if normalized == "" then [] else normalized.split("\n")
+
+  def configure_book_worker(params):
+    id = identifier(params[?:project_id])
+    command = receipt(id, params, "worker.configure_book")
+    return command[2] if command[2]
+    fail(409, "project deleted") unless project(id)[:state] == "active"
+    settings = book_worker_settings(id)
+    fail(409, "notebook permissions changed; reload settings") unless params[?:base_version] == settings[:version]
+    worlds = @runtimes.values.filter: $it.project == id
+    fail(409, "stop active runs before changing notebook permissions") if worlds.any?: $it.active != null
+    grants = normalize_worker_grants(params[?:grants])
+    rows("SELECT grants FROM worker_settings WHERE project=? AND sheet<>'@book'", [id]).each |record|:
+      merged_worker_grants(decode(record[:grants]), grants)
+    @storage.check_space(id, grants.join("\n").bytes.count * 3 + 4096)
+    response = {project_id: id, grants: grants, version: digest(grants), runtime_epoch: null, state: "reset"}
+    @db.transaction(mode: :immediate):
+      sql("INSERT OR REPLACE INTO worker_settings VALUES(?,?,?)", [id, "@book", Json.generate(grants)])
+      worlds.each |world|:
+        sql("UPDATE runtime_records SET state='terminating' WHERE id=?", [world.id]) unless world.dead
+        sql("INSERT OR IGNORE INTO dependency_resets VALUES(?,?)", [id, world.epoch])
+      @services.pause_project(id)
+      remember(id, command, response)
+      event(id, {type: "book_worker_settings", grants: grants})
+    worlds.each |world|:
+      world.close!()
+      @runtimes.delete!(key(id, world.sheet))
+    response
+
   def worker_settings(id, sheet):
     record = row("SELECT grants FROM worker_settings WHERE project=? AND sheet=?", [id, sheet])
-    grants = if record then decode(record[:grants]) else []
+    own = if record then decode(record[:grants]) else []
+    inherited = book_worker_grants(id)
+    grants = merged_worker_grants(own, inherited)
     config = row("SELECT directory FROM worker_environments WHERE project=? AND sheet=?", [id, sheet])
     directory = if config then config[:directory] else ""
     runtime = @runtimes[?key(id, sheet)]
-    {project_id: id, sheet_id: sheet, grants: grants, environment_directory: directory, version: digest([grants, directory]), runtime_epoch: if runtime then runtime.epoch else null}
+    {project_id: id, sheet_id: sheet, grants: grants, own_grants: own, inherited_grants: inherited, environment_directory: directory, version: digest([own, inherited, directory]), runtime_epoch: if runtime then runtime.epoch else null}
 
   def configure_worker(params):
     id = identifier(params[?:project_id])
@@ -913,17 +967,11 @@ class Core:
         inspect_environment(directory)
       rescue Exception |error|:
         fail(400, error.message)
-    grants = params[?:grants]
-    fail(400, "grants must be a list of at most 128 strings") unless Array === grants and grants.count <= 128 and grants.all? |g|: Str === g
-    fail(400, "invalid worker grant") if grants.any? |g|: g.contains?("\n") or g.contains?("\r") or g.contains?("\u{0}")
-    text = grants.join("\n")
-    fail(400, "worker grants exceed 32 KiB") if text.bytes.count > 32768
-    checked = system.command(@worker_path, "--check-grants", text).capture(timeout: 15.0, check: false)
-    fail(400, checked.stderr.to_str) unless checked.success?
-    normalized = checked.stdout.to_str
-    grants = if normalized == "" then [] else normalized.split("\n")
-    @storage.check_space(id, normalized.bytes.count * 3 + directory.bytes.count * 2 + 4096)
-    response = {project_id: id, sheet_id: sheet, grants: grants, environment_directory: directory, version: digest([grants, directory]), runtime_epoch: null, state: "reset", reset_epoch: if runtime then runtime.epoch else null}
+    grants = normalize_worker_grants(params[?:grants])
+    inherited = book_worker_grants(id)
+    effective = merged_worker_grants(grants, inherited)
+    @storage.check_space(id, grants.join("\n").bytes.count * 3 + directory.bytes.count * 2 + 4096)
+    response = {project_id: id, sheet_id: sheet, grants: effective, own_grants: grants, inherited_grants: inherited, environment_directory: directory, version: digest([grants, inherited, directory]), runtime_epoch: null, state: "reset", reset_epoch: if runtime then runtime.epoch else null}
     @db.transaction(mode: :immediate):
       sql("INSERT OR REPLACE INTO worker_settings VALUES(?,?,?)", [id, sheet, Json.generate(grants)])
       sql("INSERT OR REPLACE INTO worker_environments VALUES(?,?,?)", [id, sheet, directory])
@@ -963,6 +1011,7 @@ class Core:
     response
 
   def handle(method, params):
+    return module_diagnostics(params) if method == "module.diagnostics"
     if method == "dependency.catalog":
       @mutex.synchronize:
         id = identifier(params[?:project_id])
@@ -971,6 +1020,36 @@ class Core:
       # A registry request must not hold the core lock or delay running cells.
       return @dependencies.catalog(params)
     @mutex.synchronize: dispatch(method, params)
+
+  def module_diagnostics(params):
+    source = params[?:source]
+    fail(400, "invalid module source") unless Str === source and source.bytes.count <= 1048576
+    @mutex.synchronize:
+      id = identifier(params[?:project_id])
+      fail(409, "project deleted") unless project(id)[:state] == "active"
+      fail(429, "module syntax checker is busy") if @checking_module
+      @checking_module = true
+    try:
+      # Lint parses stdin without resolving imports, compiling macros, or running the module.
+      checked = system.command(@compiler, "lint", "/dev/stdin").capture(input: source, timeout: 3.0, limit: 1048576, check: false)
+      return {diagnostics: [], diagnostics_truncated: false} if checked.success?
+      report = decode(checked.stderr.to_str)
+      raise ValueError("invalid syntax report") unless report[:format] == "sputnik.diag.v1"
+      errors = report[:diagnostics].filter: $it[:severity] == "error"
+      diagnostics = errors.take(100).map |error|:
+        start = error[:primary_span][:start]
+        stop = error[:primary_span][:end]
+        message = error[:message]
+        truncated = message.length > 4096
+        {message: if truncated then message.chars.take(4096).join("") else message, truncated: truncated,
+          range: {start_line: start[:line] - 1, start_column: start[:col] - 1,
+            end_line: stop[:line] - 1, end_column: stop[:col] - 1, whole_line: false}}
+      {diagnostics: diagnostics, diagnostics_truncated: errors.count > 100}
+    rescue Exception:
+      fail(503, "module syntax checker unavailable")
+    ensure:
+      @mutex.synchronize:
+        @checking_module = false
 
   def admit_environment_receipt(id, description):
     @storage.check_space(id, (if description then Json.generate(description).bytes.count * 2 else 0) + 8192)
@@ -1035,8 +1114,11 @@ class Core:
       when "worker.configure":
         fail(403, "temporary sessions cannot change worker grants") if @policies.temporary?(params[:project_id])
         return configure_worker(params)
+      when "worker.configure_book":
+        fail(403, "temporary sessions cannot change notebook grants") if @policies.temporary?(params[:project_id])
+        return configure_book_worker(params)
       when "project.delete": return delete_project(params)
-      when "health": return {protocol: 1, agent_pid: pid(), implementation: "sputnik", allow_book_policy_overrides: @policies.allow_book_policy_overrides, capabilities: ["sheet_run", "bundled_modules", "project_revisions", "reattach", "stop", "force_stop", "gui_reconnect", "live_presentation", "revision_document", "compact_registry", "worker_grants", "worker_environment", "managed_environments", "orphan_gc", "dependency_management", "package_catalog", "cell_inputs", "run_document", "project_inputs", "idle_watch", "board_actions", "server_periodic", "bounded_registry", "run_history", "storage_retention", "hierarchical_policy", "temporary_sessions", "execution_budgets", "desktop_policy", "targeted_restart", "desktop_history"]}
+      when "health": return {protocol: 1, agent_pid: pid(), implementation: "sputnik", allow_book_policy_overrides: @policies.allow_book_policy_overrides, capabilities: ["sheet_run", "bundled_modules", "project_revisions", "reattach", "stop", "force_stop", "gui_reconnect", "live_presentation", "revision_document", "compact_registry", "worker_grants", "book_worker_grants", "worker_environment", "managed_environments", "orphan_gc", "dependency_management", "package_catalog", "cell_inputs", "run_document", "project_inputs", "idle_watch", "board_actions", "server_periodic", "bounded_registry", "run_history", "storage_retention", "hierarchical_policy", "temporary_sessions", "execution_budgets", "desktop_policy", "targeted_restart", "desktop_history"]}
       when "project.list":
         projects = @db.query("SELECT p.*,r.document FROM projects p JOIN revisions r ON r.id=p.head ORDER BY p.id")
         projects.each |project|:
@@ -1068,6 +1150,7 @@ class Core:
       when "service.list": return {services: @services.snapshot(id)}
       when "service.history": return @services.history(id, params)
       when "worker.settings": return worker_settings(id, identifier(params[?:sheet_id]))
+      when "worker.book_settings": return book_worker_settings(id)
       when "project.get":
         current[:document] = revision(current[:head])[:document]
         current

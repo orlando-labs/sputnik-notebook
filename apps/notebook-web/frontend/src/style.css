@@ -348,6 +348,7 @@ button.sheet-link.active { background: var(--surface); }
 .cell-console { color: var(--slate); font-size: 11px; }
 .cell-console + .cell-value, .cell-console + .cell-output-error { border-top: 1px solid color-mix(in srgb, var(--rule) 25%, transparent); }
 .cell-output-error, .stderr-output { color: var(--error); }
+.cell-output-error .text-button { color: inherit; font: inherit; white-space: pre-wrap; text-align: left; }
 .previous-result .cell-value, .previous-result .cell-console { opacity: .65; }
 .cell-actions .cell-run-button { color: var(--accent); margin-right: 5px; }
 .run-history { padding: 0 22px 16px; color: var(--muted); font-size: 11px; }
@@ -524,12 +525,22 @@ button.sheet-link.active { background: var(--surface); }
 .source-error { color: var(--error); padding: 10px 14px; margin: 0; overflow-wrap: anywhere; }
 .notebook-transfer-toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--rule); background: var(--surface); }
 .notebook-transfer-toolbar button { min-height: 25px; font-size: 11px; }
-.project-file-editor { padding: 22px; border-bottom: 1px solid var(--rule); background: var(--editor); }
+.workspace:has(.notebook-shell--file) { height: 100dvh; min-height: 580px; }
+.project-screen:has(.notebook-shell--file), .notebook-section:has(.notebook-shell--file) {
+  display: flex; flex-direction: column; flex: 1; min-height: 0;
+}
+.project-screen:has(.notebook-shell--file) { overflow: auto; }
+.project-screen:has(.notebook-shell--file) > .back { align-self: flex-start; }
+.project-screen:has(.notebook-shell--file) .notebook-section { min-height: 320px; }
+.notebook-shell--file { flex: 1; min-height: 0; grid-template-rows: minmax(0, 1fr); }
+.notebook-shell--file > :is(.notebook-sidebar, .notebook-detail) { overflow: auto; }
+.notebook-shell--file > :is(.notebook-sidebar, .notebook-detail) > * { flex-shrink: 0; }
+.project-file-editor { display: flex; flex-direction: column; flex: 1; min-height: min-content; padding: 22px; background: var(--editor); }
 .file-editor-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .file-editor-heading p { margin: 3px 0 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
 .file-draft-label { margin-left: auto; color: var(--accent); font-size: 11px; }
-.module-source, .file-preview { width: 100%; min-height: 300px; padding: 14px; border: 1px solid var(--rule); border-radius: 7px; color: var(--ink); background: var(--editor); font: 12px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace; tab-size: 2; resize: vertical; }
-.file-preview { max-height: 500px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.module-source, .file-preview { width: 100%; border: 1px solid var(--rule); border-radius: 7px; }
+.file-preview { flex: 1; min-height: 100px; max-height: 500px; padding: 14px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace; tab-size: 2; }
 .file-preview span { display: block; color: var(--muted); }
 .file-binary { padding: 40px 20px; text-align: center; color: var(--muted); border: 1px dashed var(--rule); border-radius: 8px; }
 .file-editor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
@@ -566,6 +577,7 @@ button.sheet-link.active { background: var(--surface); }
 .import-summary dt { color: var(--muted); font-size: 11px; }
 .import-summary dd { margin: 0; overflow-wrap: anywhere; }
 @media (max-width: 760px) {
+  .notebook-shell--file { grid-template-rows: minmax(0, min(23dvh, 180px)) minmax(0, 1fr); }
   .project-file-list { flex-direction: row; flex-wrap: wrap; max-height: 170px; }
   .project-file-list .sheet-link { width: auto; max-width: 100%; }
   .project-file-editor { padding: 14px; }
@@ -769,23 +781,28 @@ button.sheet-link.active { background: var(--surface); }
 .notebook-markdown .markdown-align-left { text-align: left; }.notebook-markdown .markdown-align-center { text-align: center; }.notebook-markdown .markdown-align-right { text-align: right; }
 .sputnik-editor-host { min-width: 0; }
 .sputnik-code-editor { display: flex; min-width: 0; overflow: hidden; background: var(--editor); }
-.code-gutter { position: relative; flex: 0 0 44px; overflow: hidden; border-right: 1px solid color-mix(in srgb, var(--rule) 45%, transparent); text-align: right; color: var(--muted); user-select: none; font: 11px/20px 'SFMono-Regular', Consolas, monospace; }
-.code-gutter > div { position: absolute; top: 14px; left: 4px; right: 8px; }
-.code-gutter span { display: block; height: 20px; }
+.code-gutter { position: relative; flex: 0 0 calc(var(--line-digits) * 1ch + 21px); overflow: hidden; border-right: 1px solid color-mix(in srgb, var(--rule) 45%, transparent); text-align: right; color: var(--muted); user-select: none; font: 11px/20px 'SFMono-Regular', Consolas, monospace; }
+.code-gutter span { position: absolute; inset-inline: 0; height: 20px; padding-inline-end: 8px; }
+.code-line-error { background: color-mix(in srgb, var(--error) 13%, transparent); }
 .code-gutter .code-line-error { color: var(--error); font-weight: 700; }
 .code-editor-surface { position: relative; flex: 1; min-width: 0; }
+.code-error-lines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.code-error-lines .code-line-error { position: absolute; inset-inline: 0; height: 20px; }
 .sputnik-code-editor .code-input, .sputnik-code-editor .code-highlight { box-sizing: border-box; margin: 0; padding: 14px 16px; width: 100%; border: 0; border-radius: 0; font: 12px/20px 'SFMono-Regular', Consolas, monospace; tab-size: 2; white-space: pre; overflow-wrap: normal; letter-spacing: normal; }
-.sputnik-code-editor .code-highlight { position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--ink); background: var(--editor); }
+.sputnik-code-editor .code-highlight { position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--ink); }
 .sputnik-code-editor .code-input { position: relative; display: block; min-height: 100px; max-height: 700px; resize: vertical; overflow: auto; background: transparent; color: transparent; caret-color: var(--ink); -webkit-text-fill-color: transparent; outline-offset: -3px; }
 .sputnik-code-editor .code-input::placeholder { color: var(--muted); -webkit-text-fill-color: var(--muted); }
 .sputnik-code-editor .code-input::selection { background: color-mix(in srgb, var(--selection) 32%, transparent); }
 .sputnik-code-editor.syntax-plain .code-input { color: var(--ink); -webkit-text-fill-color: var(--ink); }
-.module-source.sputnik-editor-host { padding: 0; min-height: 0; overflow: hidden; }
+.module-source.sputnik-editor-host { display: flex; flex-direction: column; flex: 1; min-height: 100px; overflow: hidden; }
+.module-source .sputnik-code-editor { flex: 1; min-height: 100px; }
+.module-source .code-input { height: 100%; min-height: 0; max-height: none; resize: none; }
+.module-source .code-diagnostics { max-height: 120px; overflow: auto; }
 .code-editor-notice { padding: 6px 16px; }
 .code-diagnostics { padding: 8px 16px; border-top: 1px solid var(--rule); color: var(--error); font-size: 12px; overflow-wrap: anywhere; }
 .code-diagnostics ul { margin: 0; padding-left: 16px; }
 .code-diagnostics button { text-align: left; white-space: pre-wrap; }
-.code-error-range { text-decoration: underline wavy var(--error); text-decoration-skip-ink: none; text-underline-offset: 3px; background: color-mix(in srgb, var(--error) 7%, transparent); }
+.code-error-range { text-decoration: underline wavy var(--error); text-decoration-skip-ink: none; text-underline-offset: 3px; background: color-mix(in srgb, var(--error) 22%, transparent); }
 .syntax-keyword, .syntax-constant { color: var(--accent); }.syntax-className { color: #4a5268; }.syntax-number { color: #86523e; }.syntax-string { color: #54594d; }.syntax-comment { color: #686570; }.syntax-variable { color: #7d536b; }.syntax-operator, .syntax-punctuation { color: #555460; }
 @media (prefers-color-scheme: dark) { .syntax-className { color: #bfc1d4; }.syntax-number { color: #d7b1a1; }.syntax-string { color: #cacbb5; }.syntax-comment { color: #a6a1b0; }.syntax-variable { color: #c4a4b3; }.syntax-operator, .syntax-punctuation { color: #b9b6c2; } }
 @media (forced-colors: active) { .sputnik-code-editor .code-highlight { display: none; }.sputnik-code-editor .code-input { color: CanvasText; -webkit-text-fill-color: CanvasText; } }

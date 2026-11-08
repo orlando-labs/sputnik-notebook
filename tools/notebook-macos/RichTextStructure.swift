@@ -15,13 +15,48 @@ enum RichTextLayout {
 }
 
 final class RichTextScrollView: NSScrollView {
+    private weak var measuredStorage: NSTextStorage?
+    private var storageObserver: NSObjectProtocol?
+    private var measuredHeights: [CGFloat: CGFloat] = [:]
+
+    deinit {
+        if let storageObserver { NotificationCenter.default.removeObserver(storageObserver) }
+    }
+
+    func textHeight(width: CGFloat) -> CGFloat {
+        guard let storage = (documentView as? NSTextView)?.textStorage else { return 120 }
+        if measuredStorage !== storage {
+            if let storageObserver { NotificationCenter.default.removeObserver(storageObserver) }
+            measuredStorage = storage
+            measuredHeights.removeAll(keepingCapacity: true)
+            storageObserver = NotificationCenter.default.addObserver(
+                forName: NSTextStorage.didProcessEditingNotification, object: storage, queue: nil
+            ) { [weak self] _ in
+                // Formatting and Undo can change the height without changing
+                // the source string. Observe the native storage for both.
+                self?.measuredHeights.removeAll(keepingCapacity: true)
+            }
+        }
+        if let height = measuredHeights[width] { return height }
+        let height = RichTextLayout.height(storage, width: width)
+        // Keep SwiftUI's alternate width proposals bounded per text view.
+        if measuredHeights.count == 8 { measuredHeights.removeAll(keepingCapacity: true) }
+        measuredHeights[width] = height
+        return height
+    }
+
     override func layout() {
         super.layout()
         guard let view = documentView as? NSTextView else { return }
         let width = contentSize.width
         if width > 0 {
-            view.setFrameSize(NSSize(width: width, height: max(contentSize.height, view.frame.height)))
-            view.textContainer?.containerSize = NSSize(width: max(1, width - 2 * view.textContainerInset.width), height: CGFloat.greatestFiniteMagnitude)
+            let size = NSSize(width: width, height: max(contentSize.height, view.frame.height))
+            if view.frame.size != size { view.setFrameSize(size) }
+            let containerSize = NSSize(width: max(1, width - 2 * view.textContainerInset.width),
+                                       height: CGFloat.greatestFiniteMagnitude)
+            if view.textContainer?.containerSize != containerSize {
+                view.textContainer?.containerSize = containerSize
+            }
         }
     }
 }

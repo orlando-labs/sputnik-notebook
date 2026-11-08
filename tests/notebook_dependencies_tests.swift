@@ -20,6 +20,120 @@ struct NotebookDependencyTests {
             try bitmap.representation(using: .png, properties: [:])?.write(to: build.appendingPathComponent(name + ".png"))
         }
     }
+    @MainActor static func testWorkerSheetSelection(_ model: NotebookModel) async throws {
+        let original = model.snapshot!
+        defer { model.snapshot = original; model.selectedBoardID = nil }
+        let main = original.tabs.first { $0.id == "sheet:main" }!
+        let module = original.tabs.first { $0.kind == "module" }!
+        let required = NotebookDependencyController.nativeWorkerGrants
+        try require(NotebookDependencyController(model: model).executionTab?.id == main.id, "default to the active sheet")
+        model.selectedBoardID = "dashboard"
+        try require(NotebookDependencyController(model: model).executionTab?.id == "sheet:other", "default to the active board's controller sheet")
+        model.selectedBoardID = nil
+        func focusModule(in tabs: [NotebookTab]) {
+            model.snapshot = NotebookSnapshot(title: original.title, path: original.path, selected_tab: module.id,
+                modified_count: original.modified_count, environment_generation: original.environment_generation, tabs: tabs)
+        }
+        focusModule(in: [main, module])
+        let single = NotebookDependencyController(model: model)
+        try require(single.executionTab?.id == main.id, "opening from a module selects the notebook's only sheet")
+        await single.refreshWorkerGrants()
+        try require(single.missingPackageGrants(required) != nil, "check the only sheet's permissions without closing Dependencies")
+        focusModule(in: original.tabs)
+        let multiple = NotebookDependencyController(model: model)
+        try require(multiple.executionTab == nil && multiple.packageGrantIssue(required)?.contains("Choose a sheet") == true,
+            "opening from a module with multiple sheets explains the required choice")
+        multiple.workerSheetID = main.id
+        await multiple.refreshWorkerGrants()
+        try require(multiple.packageGrantIssue(required) == nil, "choosing a sheet checks its permissions")
+        multiple.workerSheetID = "sheet:other"
+        try require(multiple.missingPackageGrants(required) == nil, "changing the sheet immediately invalidates its permission snapshot")
+        await multiple.refreshWorkerGrants()
+        try require(multiple.executionTab?.id == "sheet:other" && multiple.packageGrantIssue(required) == nil,
+            "check the chosen sheet independently of the active editor")
+        multiple.workerSheetID = module.id
+        try require(multiple.executionTab == nil, "a module cannot be used as the permission target")
+        focusModule(in: [module])
+        let empty = NotebookDependencyController(model: model)
+        try require(empty.packageGrantIssue(required)?.contains("Create a sheet") == true, "explain how to continue when the notebook has no sheets")
+        try require(empty.packageGrantIssue([]) == nil && empty.missingPackageGrants([]) == [], "packages without runtime permissions do not require a sheet")
+    }
+    @MainActor static func testGrantScopes(book: URL, build: URL, root: URL) async throws {
+        let copy = root.appendingPathComponent("permission-scopes.sputnikbook")
+        try FileManager.default.copyItem(at: book, to: copy)
+        let storage = root.appendingPathComponent("scope-settings")
+        let model = NotebookModel(workerExecutable: build.appendingPathComponent("sputnik-notebook-worker").path,
+            remoteExecutable: build.appendingPathComponent("notebook-macos/sputnik-notebook-remote").path, remoteStorage: storage)
+        func action(_ name: String, tab: NotebookTab? = nil, text: String = "") async -> Bool {
+            await withCheckedContinuation { c in model.perform(name, tab: tab, text: text) { c.resume(returning: $0) } }
+        }
+        do {
+            let opened = await withCheckedContinuation { c in model.open(url: copy) { c.resume(returning: $0) } }
+            try require(opened, model.error ?? "open permission scopes fixture")
+            let controller = NotebookDependencyController(model: model)
+            await controller.load()
+            let main = model.activeTab!
+            let initial = try await model.workerSettings(for: main)
+            try await model.configureWorker(main, text: "time.now=*", settings: initial)
+            let required = ["process.spawn=/usr/bin/printf"]
+            controller.grantScope = .currentSheets
+            await controller.refreshWorkerGrants()
+            let currentApproval = controller.grantApproval(required)!
+            controller.grantScope = .entireBook
+            await controller.addPackageGrants(approval: currentApproval)
+            try require(controller.error != nil, "a current-sheets confirmation cannot authorize persistent notebook grants")
+            controller.grantScope = .currentSheets
+            await controller.refreshWorkerGrants()
+            await controller.addPackageGrants(approval: controller.grantApproval(required)!)
+            try require(controller.error == nil, controller.error ?? "grant current sheets")
+            for tab in controller.workerSheets {
+                let settings = try await model.workerSettings(for: tab)
+                try require(settings.grants.contains(required[0]), "grant every existing sheet")
+            }
+            let noDefaults = try await model.bookWorkerSettings()
+            try require(noDefaults.grants.isEmpty, "current-sheets scope does not save future defaults")
+            try await capture(model, controller, build, name: "dependency-editor-current-sheets")
+            let created = await action("new_sheet", text: "future")
+            try require(created, model.error ?? "create a future sheet")
+            let future = model.activeTab!
+            let futureSettings = try await model.workerSettings(for: future)
+            try require(futureSettings.grants.isEmpty, "current-sheets scope does not grant a later sheet")
+            let source = "from system import cmd\ncmd\"/usr/bin/printf book-permission\".output\n"
+            model.editSource(source, cell: future.cells[0], tab: future)
+            _ = await action("run_all", tab: future)
+            try require(model.activeTab?.cells[0].ok == false, "future sheet cannot spawn under current-sheets scope")
+            controller.grantScope = .entireBook
+            await controller.refreshWorkerGrants()
+            await controller.addPackageGrants(approval: controller.grantApproval(required)!)
+            try require(controller.error == nil, controller.error ?? "save persistent notebook grants")
+            let persistent = try await model.bookWorkerSettings()
+            try require(persistent.grants == required, "save book defaults independently of individual grants")
+            let nextCreated = await action("new_sheet", text: "future_always")
+            try require(nextCreated, model.error ?? "create a sheet after saving book permissions")
+            let next = model.activeTab!
+            model.editSource(source, cell: next.cells[0], tab: next)
+            let ran = await action("run_all", tab: next)
+            try require(ran && model.activeTab?.cells[0].ok == true && model.activeTab?.cells[0].result.contains("book-permission") == true,
+                "new workers actually execute with inherited notebook permissions")
+            let saved = await action("save_all")
+            try require(saved, model.error ?? "save future sheets")
+            try await capture(model, controller, build, name: "dependency-editor-entire-book")
+            let reopened = await withCheckedContinuation { c in model.open(url: copy) { c.resume(returning: $0) } }
+            try require(reopened, model.error ?? "reopen notebook permission fixture")
+            let inherited = try await model.workerSettings(for: model.snapshot!.tabs.first { $0.id == next.id }!)
+            try require(inherited.inherited_grants == required && inherited.own_grants == [], "book grants survive reopening and remain inherited")
+            let defaults = try await model.bookWorkerSettings()
+            try await model.configureBookWorkerGrants([], settings: defaults)
+            let revoked = try await model.workerSettings(for: model.snapshot!.tabs.first { $0.id == next.id }!)
+            try require(revoked.grants.isEmpty, "revoking book defaults removes inherited access")
+            let preserved = try await model.workerSettings(for: main)
+            try require(Set(preserved.grants) == ["time.now=*", required[0]], "book defaults preserve grants added to the original current sheets")
+            await withCheckedContinuation { c in model.shutdown { c.resume() } }
+        } catch {
+            await withCheckedContinuation { c in model.shutdown { c.resume() } }
+            throw error
+        }
+    }
     @MainActor static func testCatalog(_ controller: NotebookDependencyController, model: NotebookModel, build: URL) async throws {
         controller.packageName = "editor-probe"
         await controller.findPackageVersions()
@@ -30,7 +144,18 @@ struct NotebookDependencyTests {
         try require(controller.selectedPackageVariant?.install_options?.first?.name == "fixture-directory",
             "package manifest describes the parameter form")
         try require(controller.registryPackageGrants == ["fs.read=/package-fixture"], "show the declared package grant")
-        let tab = model.activeTab!
+        let active = model.activeTab!
+        let activeSettings = try await model.workerSettings(for: active)
+        controller.workerSheetID = ""
+        try require(controller.registryInstallIssue?.contains("Choose a sheet") == true, "explain why install is unavailable without a permission target")
+        try await capture(model, controller, build, name: "dependency-editor-choose-sheet")
+        let tab = model.snapshot!.tabs.first { $0.id == "sheet:other" }!
+        controller.workerSheetID = tab.id
+        await controller.refreshWorkerGrants()
+        try require(controller.registryInstallIssue == nil && model.activeTab?.id == active.id,
+            "choose the permission target inside Dependencies without changing the editor tab")
+        await controller.installRegistryPackage(approval: .init(tab: active, missing: controller.registryPackageGrants))
+        try require(controller.error != nil && controller.inventory.packages.isEmpty, "a confirmation for another sheet cannot authorize installation")
         let previous = try await model.workerSettings(for: tab)
         try await model.configureWorker(tab, text: "time.now=*", settings: previous)
         await controller.addPackageGrants(controller.registryPackageGrants, to: tab)
@@ -56,25 +181,48 @@ struct NotebookDependencyTests {
         try await model.configureWorker(tab, text: "time.now=*", settings: updated)
         await controller.refreshWorkerGrants()
         try require(controller.missingPackageGrants(controller.registryPackageGrants) == ["fs.read=/package-fixture"], "show the missing scoped grant")
+        try await capture(model, controller, build, name: "dependency-editor-add-grants")
         await controller.installRegistryPackage()
         try require(controller.error != nil && controller.inventory.packages.isEmpty, "do not install with unconfirmed missing grants")
-        await controller.installRegistryPackage(approval: .init(tab: tab, missing: ["fs.read=/package-fixture"]))
+        let installing = Task { await controller.installRegistryPackage(approval: .init(tab: tab, missing: ["fs.read=/package-fixture"])) }
+        for _ in 0..<80 {
+            if controller.progress.fraction == 0 { break }
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+        try require(controller.busy && model.dependencyOperationActive && controller.operationStartedAt != nil,
+                    "installation keeps UI ownership and exposes elapsed time while downloading")
+        try require(controller.progress.fraction == 0 && controller.log.contains("Downloading test/editor-probe@1.0.0"),
+                    "piped SDK progress reaches the dependency editor before installation completes")
+        try await capture(model, controller, build, name: "dependency-editor-installing")
+        await installing.value
         try require(controller.error == nil, controller.error ?? "install selected registry build")
+        try require(controller.log.contains("100%") && controller.log.contains("Dependency operation completed."), "retain final download and installation output")
+        try require(!controller.busy && controller.operationStartedAt == nil, "completed install clears progress ownership")
         try require(controller.missingPackageGrants(controller.registryPackageGrants) == [], "combined install adds the grant and refreshes the status")
         let combined = try await model.workerSettings(for: tab)
         try require(Set(combined.grants) == ["time.now=*", "fs.read=/package-fixture"], "combined install preserves the worker's other grants")
+        let unchanged = try await model.workerSettings(for: active)
+        try require(unchanged.grants == activeSettings.grants, "combined install only adds grants to the selected sheet")
         try require(controller.inventory.packages.first?.name == "test/editor-probe" && controller.inventory.packages.first?.version == "1.0.0" && controller.inventory.packages.first?.variant == "source", "install exact selected version and variant")
         await controller.findPackageVariants()
         try require(controller.reusesSharedPackage, "catalog offers the already installed shared build")
         await controller.installRegistryPackage()
         try require(controller.error == nil, controller.error ?? "reuse the shared registry build")
         await controller.removePackage(controller.inventory.packages.first!)
-        try require(controller.error == nil && controller.inventory.packages.isEmpty, "remove registry installation")
+        try require(controller.error == nil && controller.inventory.packages.isEmpty,
+            controller.error ?? "remove registry installation; remaining packages: \(controller.inventory.packages.map(\.id))")
         controller.chooseLocalPackage("")
         controller.packageName = "missing"
         try require(controller.packageCatalog == nil && controller.packageBuilds == nil && !controller.canInstallRegistryPackage, "changing name invalidates catalog")
         await controller.findPackageVersions()
-        try require(controller.catalogError != nil && controller.packageCatalog == nil, "display registry lookup errors")
+        try require(controller.catalogError == "Package 'missing' was not found in the registry." && controller.packageCatalog == nil,
+            "display the missing package message instead of an internal APIError: \(controller.catalogError ?? "no error")")
+        try require(controller.packageBuilds == nil && controller.packageVersion.isEmpty && !controller.catalogBusy && !controller.canInstallRegistryPackage,
+            "failed lookup leaves no installable selection and releases the search button")
+        controller.packageName = "unavailable"
+        await controller.findPackageVersions()
+        try require(controller.catalogError?.contains("HTTP 503 UNAVAILABLE") == true,
+            "preserve registry service failures instead of reporting a missing package: \(controller.catalogError ?? "no error")")
         controller.packageName = "empty"
         await controller.findPackageVersions()
         try require(controller.catalogError != nil && controller.packageVersion.isEmpty, "handle an empty release index")
@@ -93,10 +241,21 @@ struct NotebookDependencyTests {
         let model = NotebookModel(workerExecutable: build.appendingPathComponent("sputnik-notebook-worker").path,
             remoteExecutable: build.appendingPathComponent("notebook-macos/sputnik-notebook-remote").path, remoteStorage: root.appendingPathComponent("settings"))
         do {
+            try require(NotebookDependencyProgress(log: "\n", fallback: "Starting…").detail == "Starting…", "blank log has a visible starting state")
+            let progress = NotebookDependencyProgress(log: "old output\nDownloading test/pkg@1.0.0   42% (16 MiB)\n", fallback: "")
+            try require(progress.fraction == 0.42, "parse the current download percentage")
+            try require(NotebookDependencyProgress(log: "Downloading test/pkg@1.0.0  100% (16 MiB)\nPreparing test/pkg@1.0.0…\n", fallback: "").fraction == nil,
+                        "verification and builds do not keep a completed download bar")
+            try require(NotebookDependencyProgress(log: "Downloading test/pkg@1.0.0  101% (16 MiB)", fallback: "").fraction == nil,
+                        "reject invalid download percentages")
             try FileManager.default.createDirectory(at: book, withIntermediateDirectories: true)
-            let document: [String: Any] = ["format": "sputnik-notebook", "version": 1, "title": "Dependency Editor", "active_sheet": "main", "modules": [], "auto_imports": [],
-                "sheets": [["id": "main", "title": "Main", "cells": [["id": "1", "kind": "code", "source": "42\n", "mode": "manual"]]]]]
+            let document: [String: Any] = ["format": "sputnik-notebook", "version": 2, "title": "Dependency Editor", "active_sheet": "main",
+                "modules": [["id": "helpers", "path": "helpers.s"]], "auto_imports": [], "inputs": [],
+                "sheets": [["id": "main", "title": "Main", "cells": [["id": "1", "kind": "code", "source": "42\n", "mode": "manual"]]],
+                           ["id": "other", "title": "Other", "cells": [["id": "2", "kind": "code", "source": "21 * 2\n", "mode": "manual"]]]],
+                "boards": [["id": "dashboard", "title": "Dashboard", "sheet": "other", "columns": 1, "components": []]]]
             try JSONSerialization.data(withJSONObject: document).write(to: book.appendingPathComponent("project.json"))
+            try Data("42\n".utf8).write(to: book.appendingPathComponent("helpers.s"))
             var files = try NotebookDependencyFiles(directory: book)
             try files.save(["requirements.txt": "numpy==2.3.0\n"])
             try require(files.text("requirements.txt") == "numpy==2.3.0\n", "save dependency declaration")
@@ -114,6 +273,8 @@ struct NotebookDependencyTests {
             try FileManager.default.removeItem(at: book.appendingPathComponent("requirements.txt"))
             let opened = await withCheckedContinuation { c in model.open(url: book) { c.resume(returning: $0) } }
             try require(opened, model.error ?? "open fixture")
+            try await testWorkerSheetSelection(model)
+            try await testGrantScopes(book: book, build: build, root: root)
             let controller = NotebookDependencyController(model: model)
             try require(controller.packageScope == "shared", "shared package storage is the default")
             await controller.load()

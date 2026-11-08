@@ -73,6 +73,7 @@ def dispatch(root, token, request):
       method = {GET: "project.get", PUT: "project.put", DELETE: "project.delete"}[?verb]
     elif route.count == 4:
       if route[3] == "dependencies": method = {GET: "dependency.status", POST: "dependency.change"}[?verb]
+      elif route[3] == "book-worker-settings": method = {GET: "worker.book_settings", PUT: "worker.configure_book"}[?verb]
       elif route[3] == "package-catalog" and verb == "POST": method = "dependency.catalog"
       elif route[3] == "environments": method = {GET: "environment.list", POST: "environment.prepare"}[?verb]
       elif route[3] == "runs": method = {GET: "run.list", POST: "run.start"}[?verb]

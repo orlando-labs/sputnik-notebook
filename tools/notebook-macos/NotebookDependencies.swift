@@ -29,6 +29,25 @@ struct NotebookDependencyInventory: Decodable {
     var ready: Ready?
 }
 
+struct NotebookDependencyProgress {
+    let detail: String
+    let fraction: Double?
+
+    init(log: String, fallback: String) {
+        let line = log.components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.last { !$0.isEmpty }
+        detail = line ?? fallback
+        // Only the current download has a measurable total. Subsequent stages
+        // return to an indeterminate bar, including verification and builds.
+        let pattern = #"^Downloading .+\s+(\d{1,3})% \([^\n]+\)$"#
+        if let line, let match = line.range(of: pattern, options: .regularExpression),
+           let percent = line[match].split(separator: "%").first?.split(separator: " ").last.flatMap({ Double($0) }),
+           (0...100).contains(percent) {
+            fraction = percent / 100
+        } else { fraction = nil }
+    }
+}
+
 struct NotebookPackageRelease: Decodable, Identifiable {
     let version: String
     let yanked: Bool
@@ -43,6 +62,11 @@ struct NotebookPackageVersions: Decodable {
     var available: [NotebookPackageRelease] { versions.filter { !$0.yanked } }
     var latest: String? { available.first(where: \.stable)?.version ?? available.first?.version }
 }
+struct NotebookPackageInstallOption: Decodable, Identifiable {
+    let name: String, type: String, description: String, env: String
+    let choices: [String]?
+    var id: String { name }
+}
 struct NotebookPackageVariant: Decodable, Identifiable {
     struct Selection: Decodable {
         let compatible: Bool, reason: String, backend: String, bundle: String
@@ -56,17 +80,13 @@ struct NotebookPackageVariant: Decodable, Identifiable {
     let shared_installed: Bool?
     let host_selection: Selection
     let runtime_grants: [String]?
+    var install_options: [NotebookPackageInstallOption]? = nil
     var id: String { variant }
     var detail: String {
         var parts = [target?.os, target?.arch].compactMap { $0 }.filter { $0 != "any" }
         if let minimum = target?.min_os, !minimum.isEmpty { parts.append("OS ≥ " + minimum) }
         if host_selection.backend != "cpu" || target?.compute_backend == "cpu" { parts.append(host_selection.backend.uppercased()) }
         if native_mode == "prebuilt" { parts.append("Prebuilt") }
-struct NotebookPackageInstallOption: Decodable, Identifiable {
-    let name: String, type: String, description: String, env: String
-    let choices: [String]?
-    var id: String { name }
-}
         if host_selection.build_from_source { parts.append("Build from source") }
         if host_selection.bundle != "none" { parts.append(host_selection.bundle.capitalized + " bundle") }
         if let size { parts.append(ByteCountFormatter.string(fromByteCount: Int64(clamping: size), countStyle: .file)) }
@@ -80,7 +100,6 @@ struct NotebookPackageVariants: Decodable {
     let artifacts: [NotebookPackageVariant]
     let recommended_variant: String?
     let host: Host
-    var install_options: [NotebookPackageInstallOption]? = nil
 }
 
 // Only these authored inputs can be changed by the editor. Byte comparisons
@@ -121,8 +140,34 @@ struct NotebookDependencyFiles {
 
 @MainActor
 final class NotebookDependencyController: ObservableObject {
+    enum GrantScope: String, CaseIterable {
+        case selectedSheet, currentSheets, entireBook
+        var title: String {
+            switch self {
+            case .selectedSheet: return "Selected sheet"
+            case .currentSheets: return "Current sheets in this notebook"
+            case .entireBook: return "Entire notebook, always"
+            }
+        }
+    }
     struct GrantApproval {
-        let tab: NotebookTab
+        let scope: GrantScope
+        let tabs: [NotebookTab]
+        let missing: [String]
+        var selectionID: String { scope.rawValue + ":" + tabs.map(\.id).sorted().joined(separator: ",") }
+        var targetDescription: String {
+            switch scope {
+            case .selectedSheet: return tabs.first?.title ?? "selected sheet"
+            case .currentSheets: return "all \(tabs.count) current sheets"
+            case .entireBook: return "the entire notebook, including future sheets"
+            }
+        }
+        init(scope: GrantScope, tabs: [NotebookTab], missing: [String]) { self.scope = scope; self.tabs = tabs; self.missing = missing }
+        init(tab: NotebookTab, missing: [String]) { self.init(scope: .selectedSheet, tabs: [tab], missing: missing) }
+    }
+    private struct GrantUpdate {
+        let tab: NotebookTab?
+        let settings: NotebookWorkerSettings
         let missing: [String]
     }
     @Published var inventory = NotebookDependencyInventory()
@@ -145,8 +190,19 @@ final class NotebookDependencyController: ObservableObject {
         }
     }
     @Published private(set) var workerGrantsError: String?
-    @Published private var workerGrantSnapshot: (tabID: String, grants: [String])?
+    @Published private var workerGrantSnapshot: (selectionID: String, grants: [[String]])?
+    @Published var grantScope: GrantScope = .selectedSheet {
+        didSet { if grantScope != oldValue { workerGrantSnapshot = nil; workerGrantsError = nil } }
+    }
+    @Published var workerSheetID = "" {
+        didSet {
+            if workerSheetID != oldValue { workerGrantSnapshot = nil; workerGrantsError = nil }
+        }
+    }
     @Published private(set) var localPackageGrants: [String]?
+    @Published private(set) var localInstallOptions: [NotebookPackageInstallOption] = []
+    @Published var registryInstallValues: [String: String] = [:]
+    @Published var localInstallValues: [String: String] = [:]
     @Published private(set) var localGrantError: String?
     @Published var packageScope = "shared"
     @Published var packageVersion = "" {
@@ -169,23 +225,37 @@ final class NotebookDependencyController: ObservableObject {
     @Published var python = "python3"
     @Published var ruby = "ruby"
     @Published var busy = false
-    @Published private(set) var localInstallOptions: [NotebookPackageInstallOption] = []
-    @Published var registryInstallValues: [String: String] = [:]
-    @Published var localInstallValues: [String: String] = [:]
     @Published var message = ""
     @Published var error: String?
     @Published var log = ""
+    @Published private(set) var operationStartedAt: Date?
+    var progress: NotebookDependencyProgress { .init(log: log, fallback: message) }
     private let model: NotebookModel
     private let document: UUID
     private let execution: String?
     private var files: NotebookDependencyFiles?
-    private var logTask: Task<Void, Never>?
     private var catalogGeneration = UUID()
     private var catalogName = ""
     var isRemote: Bool { execution != nil }
     var supportsLocalPackageScope: Bool { inventory.package_scopes?.contains("local") == true }
-    var executionTab: NotebookTab? { model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab }
-    private var executionSheet: NotebookTab? { executionTab.flatMap { $0.kind == "sheet" ? $0 : nil } }
+    var workerSheets: [NotebookTab] { model.snapshot?.tabs.filter { $0.kind == "sheet" } ?? [] }
+    var executionTab: NotebookTab? { workerSheets.first { $0.id == workerSheetID } }
+    private var grantTabs: [NotebookTab] {
+        switch grantScope {
+        case .selectedSheet: return executionTab.map { [$0] } ?? []
+        case .currentSheets: return workerSheets
+        case .entireBook: return []
+        }
+    }
+    var grantSelectionID: String { GrantApproval(scope: grantScope, tabs: grantTabs, missing: []).selectionID }
+    var grantTargetDescription: String { GrantApproval(scope: grantScope, tabs: grantTabs, missing: []).targetDescription }
+    var grantScopeDetail: String {
+        switch grantScope {
+        case .selectedSheet: return "Add missing permissions only to the selected sheet."
+        case .currentSheets: return "Add missing permissions to all \(workerSheets.count) existing sheets. New sheets will keep their own permissions."
+        case .entireBook: return "Save permissions for this notebook on \(isRemote ? "the server" : "this Mac"). They apply to all current and future sheets, including after reopening the notebook."
+        }
+    }
     var current: Bool { model.documentIdentity == document && model.remote.selected == execution }
     var canChange: Bool { current && !busy && !catalogBusy && !model.busy && !model.executingWorker && !model.remote.busy && !model.remote.active && !inventory.jobs.contains(where: \.active) }
     var manifestChanged: Bool { requirements != files?.text(requirementFile) || gemfile != files?.text("Gemfile") }
@@ -193,6 +263,10 @@ final class NotebookDependencyController: ObservableObject {
 
     init(model: NotebookModel) {
         self.model = model; document = model.documentIdentity; execution = model.remote.selected
+        let focused = model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab
+        let sheets = model.snapshot?.tabs.filter { $0.kind == "sheet" } ?? []
+        if let focused, focused.kind == "sheet" { workerSheetID = focused.id }
+        else if sheets.count == 1 { workerSheetID = sheets[0].id }
         // A GUI launch does not inherit shell activation. Explicit executable
         // paths are available in this editor and passed only to preparation.
         python = ProcessInfo.processInfo.environment["SPUTNIK_PYTHON_EXECUTABLE"].flatMap { $0.isEmpty ? nil : $0 } ?? "python3"
@@ -232,6 +306,7 @@ final class NotebookDependencyController: ObservableObject {
         if packageBundle != "none" { options["bundle"] = packageBundle }
         let variant = packageVariant.trimmingCharacters(in: .whitespacesAndNewlines)
         if !variant.isEmpty { options["variant"] = variant }
+        options["install_options"] = localInstallValues.filter { !$0.value.isEmpty }
         await change(action: "install_sputnik", source: packageSource.trimmingCharacters(in: .whitespacesAndNewlines),
                      version: "", options: options, required: localPackageGrants ?? [], approval: approval)
     }
@@ -251,21 +326,36 @@ final class NotebookDependencyController: ObservableObject {
     }
     func refreshWorkerGrants() async {
         workerGrantSnapshot = nil; workerGrantsError = nil
-        guard current, let tab = executionSheet else { return }
-        options["install_options"] = localInstallValues.filter { !$0.value.isEmpty }
+        guard current, grantScope == .entireBook || !grantTabs.isEmpty else { return }
+        let selection = grantSelectionID
         do {
-            let settings = try await model.workerSettings(for: tab)
-            guard current, !Task.isCancelled, executionSheet?.id == tab.id else { return }
-            workerGrantSnapshot = (tab.id, settings.grants)
+            var grants: [[String]] = []
+            if grantScope == .entireBook { grants = [try await model.bookWorkerSettings().grants] }
+            else {
+                for tab in grantTabs { grants.append(try await model.workerSettings(for: tab).grants) }
+            }
+            guard current, !Task.isCancelled, grantSelectionID == selection else { return }
+            workerGrantSnapshot = (selection, grants)
         } catch {
-            if current, !Task.isCancelled, executionSheet?.id == tab.id { workerGrantsError = error.localizedDescription }
+            if current, !Task.isCancelled, grantSelectionID == selection { workerGrantsError = error.localizedDescription }
         }
     }
     func missingPackageGrants(_ required: [String]) -> [String]? {
         if required.isEmpty { return [] }
-        guard let snapshot = workerGrantSnapshot, snapshot.tabID == executionSheet?.id else { return nil }
-        do { return try missingWorkerGrants(required, from: effectiveGrants(snapshot.grants)) }
+        guard let snapshot = workerGrantSnapshot, snapshot.selectionID == grantSelectionID else { return nil }
+        do {
+            var missing = Set<String>()
+            for grants in snapshot.grants {
+                let existing = grantScope == .entireBook ? grants : try effectiveGrants(grants)
+                missing.formUnion(try missingWorkerGrants(required, from: existing))
+            }
+            return missing.sorted()
+        }
         catch { return nil }
+    }
+    func grantApproval(_ required: [String]) -> GrantApproval? {
+        guard let missing = missingPackageGrants(required), !missing.isEmpty else { return nil }
+        return GrantApproval(scope: grantScope, tabs: grantTabs, missing: missing)
     }
     var reusesSharedPackage: Bool {
         packageScope == "shared" && selectedPackageVariant?.shared_installed == true &&
@@ -276,10 +366,41 @@ final class NotebookDependencyController: ObservableObject {
         packageBuilds?.version == packageVersion && packageBuilds?.yanked == false &&
         selectedPackageVariant?.host_selection.compatible == true
     }
+    func packageGrantIssue(_ required: [String]) -> String? {
+        guard !required.isEmpty else { return nil }
+        if grantScope != .entireBook && grantTabs.isEmpty {
+            return workerSheets.isEmpty
+                ? "Create a sheet in this notebook to install packages that require runtime permissions."
+                : "Choose a sheet for package permissions above to continue."
+        }
+        if let error = workerGrantsError { return "Could not check permissions for \(grantTargetDescription). " + error }
+        return missingPackageGrants(required) == nil ? "Checking permissions for \(grantTargetDescription)…" : nil
+    }
+    var registryInstallIssue: String? {
+        if !canChange {
+            if model.executingWorker || model.remote.active { return "Stop active runs before installing packages." }
+            return "Wait for the current operation to finish before installing packages."
+        }
+        guard canInstallRegistryPackage else {
+            if packageBuilds?.yanked == true { return "This release has been withdrawn. Choose another version." }
+            return "Choose a compatible package version and build to continue."
+        }
+        if let issue = packageGrantIssue(registryPackageGrants) { return issue }
+        guard let build = selectedPackageVariant else { return nil }
+        if build.host_selection.allow_native && !packageAllowNative { return "Enable Allow native code above to continue." }
+        if !reusesSharedPackage && build.host_selection.build_from_source && !packageBuildFromSource {
+            return "Enable Build native code from source above to continue."
+        }
+        if !reusesSharedPackage && (build.size ?? 0) > 67_108_864 && !packageAllowNativeLarge {
+            return "Enable Allow packages up to 2 GiB above to continue."
+        }
+        return nil
+    }
     private func clearPackageCatalog() {
         catalogGeneration = UUID(); catalogName = ""; packageCatalog = nil; packageBuilds = nil
         packageVersion = ""; registryVariant = ""; catalogError = nil
         packageAllowNative = false; packageAllowNativeLarge = false; packageBuildFromSource = false
+        registryInstallValues = [:]
     }
     func findPackageVersions() async {
         guard current, !busy, !catalogBusy else { return }
@@ -300,7 +421,6 @@ final class NotebookDependencyController: ObservableObject {
     }
     func findPackageVariants() async {
         guard current, !busy, !catalogBusy, let catalog = packageCatalog,
-        registryInstallValues = [:]
               catalog.available.contains(where: { $0.version == packageVersion }) else { return }
         catalogGeneration = UUID()
         let generation = catalogGeneration
@@ -332,6 +452,7 @@ final class NotebookDependencyController: ObservableObject {
         guard reusesSharedPackage || (build.size ?? 0) <= 67_108_864 || packageAllowNativeLarge else { error = "Allow packages up to 2 GiB to install this build."; return }
         await change(action: "install_sputnik", source: catalogName, version: packageVersion,
             options: ["scope": packageScope, "variant": build.variant, "backend": selection.backend, "bundle": selection.bundle,
+                "install_options": registryInstallValues.filter { !$0.value.isEmpty },
                 "allow_native": packageAllowNative, "build_from_source": selection.build_from_source && packageBuildFromSource,
                 "allow_native_large": packageAllowNativeLarge], required: registryPackageGrants, approval: approval)
     }
@@ -344,15 +465,23 @@ final class NotebookDependencyController: ObservableObject {
             guard current else { return }
             let missing = try missingWorkerGrants(required, from: effectiveGrants(settings.grants))
             guard !missing.isEmpty else { message = "This worker already has the package grants."; return }
-            try await model.configureWorker(tab, text: (settings.grants + missing).joined(separator: "\n"), settings: settings)
+            try await model.configureWorker(tab, text: ((settings.own_grants ?? settings.grants) + missing).joined(separator: "\n"), settings: settings)
             message = "Package grants added to \(tab.title). Run cells when ready."
         } catch { if current { self.error = error.localizedDescription } }
         await refreshWorkerGrants()
     }
+    func addPackageGrants(approval: GrantApproval) async {
+        await perform("Adding package permissions…") {
+            let updates = try await self.checkedPackageGrants(approval.missing, approval: approval)
+            try await self.applyPackageGrants(updates)
+            self.message = "Package permissions added to \(approval.targetDescription). Run cells when ready."
+        }
+        await refreshWorkerGrants()
+    }
     func chooseLocalPackage(_ path: String) {
         packageSource = path; packageVariant = ""; packageBackend = "cpu"; packageBundle = "none"
+        localInstallOptions = []; localInstallValues = [:]
     }
-                "install_options": registryInstallValues.filter { !$0.value.isEmpty },
     func inspectLocalPackageGrants() async {
         let path = packageSource.trimmingCharacters(in: .whitespacesAndNewlines)
         localPackageGrants = nil; localGrantError = nil
@@ -362,6 +491,10 @@ final class NotebookDependencyController: ObservableObject {
             let value = try await catalog(query: "inspect", source: path)
             guard !Task.isCancelled, current, packageSource.trimmingCharacters(in: .whitespacesAndNewlines) == path else { return }
             localPackageGrants = value["runtime_grants"] as? [String] ?? []
+            if let definitions = value["install_options"] {
+                localInstallOptions = try JSONDecoder().decode([NotebookPackageInstallOption].self,
+                    from: JSONSerialization.data(withJSONObject: definitions))
+            }
         } catch {
             if !Task.isCancelled, current, packageSource.trimmingCharacters(in: .whitespacesAndNewlines) == path {
                 localGrantError = error.localizedDescription
@@ -372,7 +505,6 @@ final class NotebookDependencyController: ObservableObject {
         await change(action: "remove_sputnik", source: package.name, version: package.version,
             options: package.variant.map { ["variant": $0] } ?? [:])
     }
-        localInstallOptions = []; localInstallValues = [:]
     func resolveRuby() async {
         await perform("Resolving Gemfile.lock…") {
             try self.saveInputs()
@@ -383,10 +515,6 @@ final class NotebookDependencyController: ObservableObject {
             guard try files.read("Gemfile") == files.baseline["Gemfile"] else { throw NotebookFailure(message: "Gemfile changed while resolving. Reload and resolve again.") }
             try files.save(["Gemfile.lock": lock]); self.files = files
             self.message = "Gemfile.lock saved. Prepare the environment to install it."
-            if let definitions = value["install_options"] {
-                localInstallOptions = try JSONDecoder().decode([NotebookPackageInstallOption].self,
-                    from: JSONSerialization.data(withJSONObject: definitions))
-            }
         }
     }
     func prepare() async {
@@ -411,7 +539,7 @@ final class NotebookDependencyController: ObservableObject {
             let directory = self.isRemote ? "" : (result["directory"] as? String ?? "")
             for tab in self.model.snapshot?.tabs ?? [] where !self.isRemote || tab.kind == "sheet" {
                 let settings = try await self.model.workerSettings(for: tab)
-                try await self.model.configureWorker(tab, text: settings.grants.joined(separator: "\n"), environmentDirectory: directory, settings: settings)
+                try await self.model.configureWorker(tab, text: (settings.own_grants ?? settings.grants).joined(separator: "\n"), environmentDirectory: directory, settings: settings)
             }
             self.message = "Environment ready. Workers restarted; run cells when ready."
         }
@@ -422,7 +550,7 @@ final class NotebookDependencyController: ObservableObject {
             // action/Periodic Work invocation worlds before changing libraries.
             let settings = try await model.workerSettings(for: tab)
             let success = await withCheckedContinuation { c in
-                model.perform("worker_grants", tab: tab, text: settings.grants.joined(separator: "\n")) { c.resume(returning: $0) }
+                model.perform("worker_grants", tab: tab, text: (settings.own_grants ?? settings.grants).joined(separator: "\n")) { c.resume(returning: $0) }
             }
             guard success else { throw NotebookFailure(message: model.error ?? "Could not restart worker.") }
         }
@@ -430,20 +558,16 @@ final class NotebookDependencyController: ObservableObject {
     private func change(action: String, source: String, version: String, options: [String: Any] = [:],
                         required: [String] = [], approval: GrantApproval? = nil) async {
         await perform(action == "remove_sputnik" ? "Removing package…" : "Installing package…") {
-            let tab = self.executionSheet
             if !required.isEmpty {
-                guard let tab, approval == nil || approval?.tab.id == tab.id else {
-                    throw NotebookFailure(message: "Select the sheet that will use this package.")
-                }
-                _ = try await self.checkedPackageGrants(required, tab: tab, approval: approval)
+                _ = try await self.checkedPackageGrants(required, approval: approval)
             }
             _ = try await self.changeRequest(action: action, source: source, version: version, options: options)
-            if let tab, !required.isEmpty {
+            if !required.isEmpty {
                 do {
-                    let (settings, missing) = try await self.checkedPackageGrants(required, tab: tab, approval: approval)
-                    if !missing.isEmpty {
-                        try await self.model.configureWorker(tab, text: (settings.grants + missing).joined(separator: "\n"), settings: settings)
-                        self.message = "Package ready on \(tab.title). Run cells when ready."
+                    let updates = try await self.checkedPackageGrants(required, approval: approval)
+                    if updates.contains(where: { !$0.missing.isEmpty }) {
+                        try await self.applyPackageGrants(updates)
+                        self.message = "Package ready for \(self.grantTargetDescription). Run cells when ready."
                         return
                     }
                 } catch {
@@ -455,16 +579,38 @@ final class NotebookDependencyController: ObservableObject {
         }
         await refreshWorkerGrants()
     }
-    private func checkedPackageGrants(_ required: [String], tab: NotebookTab,
-                                      approval: GrantApproval?) async throws -> (NotebookWorkerSettings, [String]) {
-        guard current, executionSheet?.id == tab.id else { throw CancellationError() }
-        let settings = try await model.workerSettings(for: tab)
-        guard current, executionSheet?.id == tab.id else { throw CancellationError() }
-        let missing = try missingWorkerGrants(required, from: effectiveGrants(settings.grants))
-        guard Set(missing).isSubset(of: Set(approval?.missing ?? [])) else {
-            throw NotebookFailure(message: "Worker grants changed. Review and confirm the missing grants.")
+    private func checkedPackageGrants(_ required: [String], approval: GrantApproval?) async throws -> [GrantUpdate] {
+        guard current, grantScope == .entireBook || !grantTabs.isEmpty else {
+            throw NotebookFailure(message: "Choose which sheets will receive package permissions.")
         }
-        return (settings, missing)
+        let selection = grantSelectionID
+        if let approval, approval.selectionID != selection {
+            throw NotebookFailure(message: "The permission scope changed. Review and confirm it again.")
+        }
+        var targets: [(NotebookTab?, NotebookWorkerSettings)] = []
+        if grantScope == .entireBook { targets.append((nil, try await model.bookWorkerSettings())) }
+        else {
+            for tab in grantTabs { targets.append((tab, try await model.workerSettings(for: tab))) }
+        }
+        guard current, grantSelectionID == selection else { throw CancellationError() }
+        return try targets.map { tab, settings in
+            let existing = tab == nil ? settings.grants : try effectiveGrants(settings.grants)
+            let missing = try missingWorkerGrants(required, from: existing)
+            guard Set(missing).isSubset(of: Set(approval?.missing ?? [])) else {
+                throw NotebookFailure(message: "Worker grants changed. Review and confirm the missing grants.")
+            }
+            return GrantUpdate(tab: tab, settings: settings, missing: missing)
+        }
+    }
+    private func applyPackageGrants(_ updates: [GrantUpdate]) async throws {
+        for update in updates where !update.missing.isEmpty {
+            let grants = (update.settings.own_grants ?? update.settings.grants) + update.missing
+            if let tab = update.tab {
+                try await model.configureWorker(tab, text: grants.joined(separator: "\n"), settings: update.settings)
+            } else {
+                try await model.configureBookWorkerGrants(grants, settings: update.settings)
+            }
+        }
     }
     private func changeRequest(action: String, source: String, version: String, options: [String: Any] = [:]) async throws -> [String: Any] {
         if options["scope"] as? String == "local" && !supportsLocalPackageScope {
@@ -509,9 +655,10 @@ final class NotebookDependencyController: ObservableObject {
         guard current, !busy, !catalogBusy, !model.busy, !model.remote.busy else { return }
         guard !mutation || canChange else { error = "Stop active runs and wait for dependency operations to finish."; return }
         busy = true; error = nil; message = title
+        if mutation { log = ""; operationStartedAt = Date() }
         if mutation { model.pauseForDependencyChanges() }
         model.dependencyOperationActive = true; model.remote.dependencyOperationActive = true
-        defer { busy = false; model.dependencyOperationActive = false; model.remote.dependencyOperationActive = false }
+        defer { busy = false; operationStartedAt = nil; model.dependencyOperationActive = false; model.remote.dependencyOperationActive = false }
         do {
             try await operation()
             inventory = try decode(await status())
@@ -522,35 +669,51 @@ final class NotebookDependencyController: ObservableObject {
         isRemote ? try await model.remote.dependencyRequest("dependencies") : try await local("status")
     }
     private func decode<T: Decodable>(_ value: [String: Any]) throws -> T { try JSONDecoder().decode(T.self, from: JSONSerialization.data(withJSONObject: value)) }
-    private func logs(_ value: [String: Any]) -> String { [value["stdout"] as? String, value["stderr"] as? String].compactMap { $0 }.joined(separator: "\n") }
+    private func logs(_ value: [String: Any]) -> String {
+        [value["stdout"] as? String, value["stderr"] as? String].compactMap { $0 }
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.joined(separator: "\n")
+    }
     private func local(_ command: String, body: [String: Any]? = nil) async throws -> [String: Any] {
         guard current, let path = model.snapshot?.path else { throw CancellationError() }
         let helper = model.remote.executable
         let compiler = ProcessInfo.processInfo.environment["SPUTNIK_COMPILER"] ?? URL(fileURLWithPath: helper).deletingLastPathComponent().appendingPathComponent("sputnik").path
-        var arguments = ["--mode", "dependencies", "--directory", path, "--command", command, "--python", python, "--ruby", ruby, "--sputnik", compiler]
+        var arguments = ["--mode", "dependencies", "--json-errors", "--directory", path, "--command", command, "--python", python, "--ruby", ruby, "--sputnik", compiler]
         let file = FileManager.default.temporaryDirectory.appendingPathComponent("sputnik-dependency-\(UUID().uuidString).json")
         defer { try? FileManager.default.removeItem(at: file) }
         if let body { try JSONSerialization.data(withJSONObject: body).write(to: file); arguments += ["--request-file", file.path] }
-        if command != "status" && command != "catalog" {
+        let directory = URL(fileURLWithPath: path)
+        let previousAttempts = Set(Self.localLogAttempts(directory: directory))
+        let streamsLogs = command != "status" && command != "catalog"
+        var logTask: Task<Void, Never>?
+        if streamsLogs {
             log = ""
             logTask = Task { [weak self] in
                 while !Task.isCancelled {
-                    try? await Task.sleep(nanoseconds: 750_000_000)
-                    guard !Task.isCancelled, let self else { return }
-                    self.log = Self.localLog(directory: URL(fileURLWithPath: path))
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                    guard !Task.isCancelled, let self, self.current else { return }
+                    self.log = Self.localLog(directory: directory, excluding: previousAttempts)
                 }
             }
         }
-        defer { logTask?.cancel(); logTask = nil }
+        defer {
+            logTask?.cancel()
+            if streamsLogs, current { log = Self.localLog(directory: directory, excluding: previousAttempts) }
+        }
         let data = try await NotebookRemoteClient.process(helper, arguments, timeout: 3600)
-        guard current, let value = try JSONSerialization.jsonObject(with: data) as? [String: Any] else { throw NotebookFailure(message: "Invalid dependency helper response.") }
-        return value
+        guard current else { throw CancellationError() }
+        return try NotebookRemoteClient.response(data, invalidMessage: "Invalid dependency helper response.")
     }
-    private static func localLog(directory: URL) -> String {
+    private static func localLogAttempts(directory: URL) -> [URL] {
         let root = directory.appendingPathComponent(".sputnik/dependencies/projects/local")
         let manager = FileManager.default
         func children(_ url: URL) -> [URL] { (try? manager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.contentModificationDateKey])) ?? [] }
-        let attempts = children(root.appendingPathComponent("operations")) + children(root.appendingPathComponent("environments")).flatMap(children)
+        return children(root.appendingPathComponent("operations")) + children(root.appendingPathComponent("environments")).flatMap(children)
+    }
+    private static func localLog(directory: URL, excluding previousAttempts: Set<URL>) -> String {
+        let manager = FileManager.default
+        // Never show an earlier installation's success/error while a new job
+        // is still starting or has not produced output yet.
+        let attempts = localLogAttempts(directory: directory).filter { !previousAttempts.contains($0) }
         let logs = attempts.flatMap { [$0.appendingPathComponent("stdout.log"), $0.appendingPathComponent("stderr.log")] }
         guard let newest = logs.filter({ manager.fileExists(atPath: $0.path) }).max(by: {
             ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast) <
@@ -562,6 +725,6 @@ final class NotebookDependencyController: ObservableObject {
             let size = (try? handle.seekToEnd()) ?? 0
             try? handle.seek(toOffset: size > 65536 ? size - 65536 : 0)
             return String(decoding: (try? handle.readToEnd()) ?? Data(), as: UTF8.self)
-        }.joined(separator: "\n")
+        }.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.joined(separator: "\n")
     }
 }

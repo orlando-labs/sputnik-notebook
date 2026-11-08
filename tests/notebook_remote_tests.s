@@ -12,7 +12,7 @@ export main
 
 def equal(left, right, message): check(digest(left) == digest(right), message)
 
-def catalog(h):
+def catalog(h, origin):
   project = "catalog"
   saved, run, _result = h.value(project, "42\n")
   route = "/v1/projects/" + project + "/package-catalog"
@@ -31,6 +31,7 @@ def catalog(h):
     query = if value == "install" then "install" else "versions"
     reply = h.request("POST", route, {query: query, source: value})
     check(reply[0] == (if value == "missing" then 422 else 400), "catalog rejects invalid requests")
+    check(reply[1][:error] == "Package 'missing' was not found in the registry.", "remote catalog preserves the missing package message") if value == "missing"
   inventory = h.call("GET", "/v1/projects/" + project + "/dependencies")
   check(inventory[:packages].empty? and inventory[:jobs].empty?, "catalog never installs")
   again = h.start(project, saved[:revision])
@@ -42,6 +43,22 @@ def catalog(h):
   checked = system.command(h.args[:core], "--mode", "cli", "--url", "http://127.0.0.1:" + h.port.to_str,
     "--token-file", h.root + "/token", "--command", "package_catalog", "--project", project, "--request-file", request).capture(timeout: 30.0)
   check(checked.success? and Json.parse(checked.stdout.to_str)[:recommended_variant] == "source", "native CLI catalog")
+  # The desktop's local helper must preserve API messages across the native boundary.
+  local = h.directory + "/local.sputnikbook"
+  fs.mkdir_p(local)
+  fs.atomic_write_text(local + "/project.json", Json.generate(document()))
+  arguments = ["--mode", "dependencies", "--directory", local, "--command", "catalog",
+    "--sputnik", h.args[:compiler], "--request-file", request]
+  [{query: "versions", source: "missing"}, {query: "install", source: "editor-probe"}].each |params|:
+    fs.atomic_write_text(request, Json.generate(params))
+    checked = system.command(h.args[:core], *arguments, "--json-errors", env: {SPUTNIK_PKG_REGISTRY: origin, SPUTNIK_PKG_CREDENTIALS: ""}).capture(timeout: 30.0, check: false)
+    check(checked.success? and checked.stderr.to_str == "", "local helper returns structured errors")
+    error = Json.parse(checked.stdout.to_str)[:remote_error]
+    missing = params[:source] == "missing"
+    check(error[:status] == (if missing then 422 else 400), "local helper preserves API status")
+    check(error[:message] == (if missing then "Package 'missing' was not found in the registry." else "unsupported package query"), "local helper preserves API message")
+  checked = system.command(h.args[:core], *arguments).capture(timeout: 30.0, check: false)
+  check(not checked.success? and checked.stderr.to_str.contains?("unsupported package query") and not checked.stderr.to_str.contains?("<instance"), "plain helper errors preserve their text")
   h.delete(project)
   print "PASS package catalog: authentication, versions, compatibility, CLI, no installation or worker retirement"
 
@@ -228,6 +245,53 @@ def grants(h):
   h.delete(project)
   print "PASS worker settings: deny, scoped grant, stale version and durable settings"
 
+def book_grants(h):
+  project = "book-grants"
+  source = "from system import cmd\ncmd\"/usr/bin/printf inherited\".output\n"
+  doc = document(source)
+  saved = h.upload(project, doc)
+  route = "/v1/projects/" + project + "/book-worker-settings"
+  sheet_route = "/v1/projects/" + project + "/worker-settings/main"
+  state = h.call("GET", sheet_route)
+  h.call("PUT", sheet_route, {command_id: "own-grants", grants: ["time.now=*"], base_version: state[:version], runtime_epoch: null})
+  state = h.call("GET", route)
+  body = {command_id: "book-grant", grants: ["process.spawn=/usr/bin/printf"], base_version: state[:version]}
+  check(h.request("PUT", route, body, authenticated: false)[0] == 401, "book permissions require authentication")
+  changed = h.call("PUT", route, body)
+  equal(h.call("PUT", route, body), changed, "book permission command is idempotent")
+  check(h.request("PUT", route, body.merge({command_id: "stale-book-grant", grants: []}))[0] == 409, "stale book permission version")
+  effective = h.call("GET", sheet_route)
+  equal(effective[:own_grants], ["time.now=*"], "book permissions preserve individual grants")
+  equal(effective[:inherited_grants], body[:grants], "sheet reports inherited book permissions")
+  run = h.start(project, saved[:revision])
+  check(h.wait_run(run[:run_id])[:state] == "succeeded", "existing sheet executes with inherited permissions")
+  doc[:sheets].push!({id: "future", title: "Future", cells: [{id: "2", kind: "code", source: source, mode: "manual"}]})
+  saved = h.upload(project, doc, {}, saved[:revision])
+  run = h.start(project, saved[:revision], null, {sheet_id: "future", cell_id: "2"})
+  check(h.wait_run(run[:run_id])[:state] == "succeeded", "future sheet executes with inherited permissions")
+  h.restart_agent()
+  equal(h.call("GET", route)[:grants], body[:grants], "book permissions survive agent restart")
+  effective = h.call("GET", "/v1/projects/" + project + "/worker-settings/future")
+  equal(effective[:own_grants], [], "future sheet has no copied explicit grants")
+  # Updating its own policy must not make inherited grants permanent.
+  h.call("PUT", "/v1/projects/" + project + "/worker-settings/future", {command_id: "own-future", grants: [], base_version: effective[:version], runtime_epoch: effective[:runtime_epoch]})
+  state = h.call("GET", route)
+  h.call("PUT", route, {command_id: "revoke-book-grant", grants: [], base_version: state[:version]})
+  run = h.start(project, saved[:revision], null, {sheet_id: "future", cell_id: "2"})
+  check(h.wait_run(run[:run_id])[:state] == "failed", "revoking book grants removes access from future sheets")
+  equal(h.call("GET", sheet_route)[:grants], ["time.now=*"], "revocation preserves unrelated individual grants")
+  checked = system.command(h.args[:core], "--mode", "cli", "--url", "http://127.0.0.1:" + h.port.to_str,
+    "--token-file", h.root + "/token", "--command", "book_worker_settings", "--project", project).capture(timeout: 30.0)
+  check(checked.success? and Json.parse(checked.stdout.to_str)[:grants].empty?, "native CLI reads notebook permissions")
+  request = h.directory + "/book-worker-settings.json"
+  state = h.call("GET", route)
+  fs.atomic_write_text(request, Json.generate({command_id: "cli-book-grants", base_version: state[:version], grants: body[:grants]}))
+  checked = system.command(h.args[:core], "--mode", "cli", "--url", "http://127.0.0.1:" + h.port.to_str,
+    "--token-file", h.root + "/token", "--command", "configure_book_worker", "--project", project, "--request-file", request).capture(timeout: 30.0)
+  check(checked.success? and h.call("GET", route)[:grants] == body[:grants], "native CLI writes persistent notebook permissions")
+  h.delete(project)
+  print "PASS notebook permissions: existing and future workers, preservation, receipts, stale versions, restart, revocation and CLI"
+
 def interrupted(h):
   project = "interrupted"
   saved = h.upload(project, document("import task\ntask.sleep(60000)\n42\n"))
@@ -297,7 +361,7 @@ def main():
   parser.arg("--worker", required: true)
   parser.arg("--compiler", required: true)
   parser.arg("--root", required: true)
-  parser.arg("--mode", default: "remote", choices: ["remote", "serve", "catalog", "catalog-ui", "command", "restart", "desktop-actions"])
+  parser.arg("--mode", default: "remote", choices: ["remote", "serve", "catalog", "catalog-ui", "command", "restart", "desktop-actions", "grants"])
   parser.arg("--ui-test")
   args = parser.parse_or_raise
   root = args[:root]
@@ -316,23 +380,31 @@ def main():
     try: durable_restart(h)
     ensure: h.close!()
     return 0
+  if args[:mode] == "grants":
+    h = Harness(args, root + "/grants")
+    try:
+      grants(h)
+      book_grants(h)
+    ensure: h.close!()
+    return 0
   fixture = PackageCatalogFixture(args[:compiler], root + "/registry")
   try:
     if args[:mode] == "catalog-ui":
-      checked = system.command(args[:ui_test], args[:core], env: {SPUTNIK_PKG_REGISTRY: fixture.origin, SPUTNIK_TEST_PACKAGE_CATALOG: "1", SPUTNIK_PKG_CREDENTIALS: ""}).capture(timeout: 180.0)
+      checked = system.command(args[:ui_test], args[:core], env: {SPUTNIK_PKG_REGISTRY: fixture.origin, SPUTNIK_TEST_PACKAGE_CATALOG: "1", SPUTNIK_PKG_CREDENTIALS: ""}).capture(timeout: 180.0, check: false)
       check(checked.success?, checked.stdout.to_str + checked.stderr.to_str)
       equal(fixture.downloads, ["1.0.0"], "editor downloads only its selected version")
       print checked.stdout.to_str
     else:
       h = Harness(args, root + "/remote", fixture.origin)
       try:
-        catalog(h)
+        catalog(h, fixture.origin)
         unless args[:mode] == "catalog":
           snapshots(h)
           execution(h)
           cancellation(h)
           dependencies(h, fixture)
           grants(h)
+          book_grants(h)
           inputs(h)
           actions(h)
           durable_restart(h)

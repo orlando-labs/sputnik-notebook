@@ -5,6 +5,12 @@ import { download, type RichCell, type LiveChart } from './rich'
 import { chartCSV, chartFigure, duration, progressNumber } from './telemetry'
 const props = defineProps<{ rich: RichCell; active: boolean; identity: string }>()
 const current = computed(() => props.active && !props.rich.telemetry_stale)
+const timingHelp = computed(() => {
+  const execution = `Cell execution: ${props.rich.elapsed_ms} ms`
+  return props.rich.environment_rebuild_ms != null
+    ? `Environment rebuilt before this run.\nPreparation: ${props.rich.environment_rebuild_ms} ms\n${execution}\nPreparation is excluded from the cell execution time.`
+    : execution
+})
 const charts = computed(() => props.rich.charts.map(chart => ({ chart, figure: chartFigure(chart) })))
 const complete = (item: RichCell['progress'][number]) => item.done && (item.total === 0 || item.current >= item.total)
 const saveChart = (chart: LiveChart) => download(new Blob([chartCSV(chart)], { type: 'text/csv;charset=utf-8' }), 'chart.csv')
@@ -12,7 +18,13 @@ const saveChart = (chart: LiveChart) => download(new Blob([chartCSV(chart)], { t
 <template>
   <div v-if="rich.progress.length || rich.stopwatches.length || rich.charts.length || rich.elapsed_ms !== null" class="runtime-telemetry" :class="{ 'telemetry-stale': rich.telemetry_stale }" data-testid="runtime-telemetry">
     <p v-if="rich.telemetry_stale" class="rich-stale-note">Previous measurements · stale</p>
-    <p v-if="rich.elapsed_ms !== null" class="cell-duration"><span>Cell execution time</span><output aria-label="Cell execution time">{{ duration(rich.elapsed_ms) }}</output><span v-if="current && rich.timing_running">Running</span></p>
+    <p v-if="rich.elapsed_ms !== null" class="cell-duration" :title="timingHelp">
+      <span>Cell execution time</span>
+      <output aria-label="Cell execution time">{{ duration(rich.elapsed_ms) }}</output>
+      <span v-if="current && rich.timing_running">Running</span>
+      <span v-if="rich.environment_rebuild_ms != null" role="note" tabindex="0" :title="timingHelp"
+            :aria-label="timingHelp" data-testid="environment-rebuilt">↻ Environment rebuilt</span>
+    </p>
     <section v-for="item in rich.progress" :key="item.id" class="runtime-progress" :class="{ complete: complete(item) }" :aria-label="item.description || item.id" data-testid="runtime-progress" :data-channel="item.id">
       <div class="runtime-heading"><h3>{{ item.description || 'Progress' }}</h3><span>{{ complete(item) ? 'Finished' : item.done || !current ? 'Stopped' : 'Running' }}</span></div>
       <progress v-if="item.total > 0" :value="Math.min(item.current, item.total)" :max="item.total" :aria-label="item.description || item.id" />

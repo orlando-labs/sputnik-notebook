@@ -29,6 +29,10 @@ struct NotebookBoardView: View {
                 }.buttonStyle(.borderedProminent).tint(NotebookPalette.sputnik).disabled(model.busy)
             }.padding(18)
             Divider()
+            if let tab = model.controller(for: board), !model.executionIssues(in: tab).isEmpty {
+                NotebookExecutionErrorsView(model: model, tab: tab).padding(18)
+                Divider()
+            }
             if board.components.isEmpty {
                 ContentUnavailableView("An empty canvas", systemImage: "square.grid.2x2",
                                        description: Text("Choose Design to add inputs, text, figures and run buttons."))

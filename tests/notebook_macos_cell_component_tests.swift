@@ -14,6 +14,9 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
         var active: NotebookModel?
         do {
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+            let moduleModel = NotebookModel(); active = moduleModel
+            try await moduleEditorHeight(moduleModel, project: root.appendingPathComponent("module-layout.sputnikbook"))
+            await shutdown(moduleModel); active = nil
             let original = URL(fileURLWithPath: "tools/notebook-macos/Samples/Cell Components.sputnikbook").standardizedFileURL
             for isolated in [false, true] {
                 guard !isolated || option("--worker") != nil else { continue }
@@ -32,6 +35,87 @@ private func check(_ condition: @autoclosure () throws -> Bool, _ message: Strin
             if let active { await shutdown(active) }
             fputs("Cell UI tests failed: \(error)\n", stderr); exit(1)
         }
+    }
+    @MainActor private static func moduleEditorHeight(_ model: NotebookModel, project: URL) async throws {
+        let opened = await withCheckedContinuation { c in
+            model.open(url: project, create: true) { c.resume(returning: $0) }
+        }
+        try check(opened, model.error ?? "create module layout fixture failed")
+        let created = await withCheckedContinuation { c in
+            model.perform("new_module", text: "training") { c.resume(returning: $0) }
+        }
+        try check(created, model.error ?? "create module failed")
+        let tab = model.activeTab!, cell = tab.cells[0]
+        let source = "package training\n" + String(repeating: "# Module source\n", count: 120)
+        model.editSource(source, cell: cell, tab: tab)
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1200, height: 950),
+                              styleMask: [.titled, .closable, .resizable], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        defer { window.close() }
+        let workspace = NSHostingView(rootView: NotebookView(model: model))
+        workspace.sizingOptions = []
+        window.contentView = workspace
+        window.makeKeyAndOrderFront(nil)
+        func findEditor(_ view: NSView) -> NSTextView? {
+            if let text = view as? FocusTrackingTextView { return text }
+            return view.subviews.lazy.compactMap(findEditor).first
+        }
+        for height: CGFloat in [700, 950, 1200] {
+            window.setContentSize(NSSize(width: 1200, height: height))
+            workspace.frame = NSRect(x: 0, y: 0, width: 1200, height: height)
+            try await Task.sleep(nanoseconds: 150_000_000)
+            workspace.layoutSubtreeIfNeeded()
+            try check(abs(workspace.bounds.height - height) <= 1, "module workspace did not resize to \(height)")
+            guard let editor = findEditor(workspace), let scroll = editor.enclosingScrollView else {
+                throw CellComponentFailure(message: "module source editor missing")
+            }
+            let frame = scroll.convert(scroll.bounds, to: workspace)
+            let bottomGap = workspace.isFlipped ? workspace.bounds.maxY - frame.maxY : frame.minY
+            // Only the module/card padding and inter-view spacing may remain.
+            try check(bottomGap <= 44, "module editor leaves \(bottomGap) points below source at window height \(height)")
+        }
+        try capture(workspace, name: "module-full-height.png")
+        let failingSource = source + "value = \"😀\" + )\n"
+        model.editSource(failingSource, cell: cell, tab: tab)
+        let ran = await withCheckedContinuation { c in
+            model.perform("run", tab: tab, cell: cell) { c.resume(returning: $0) }
+        }
+        try check(ran, model.error ?? "run module fixture failed")
+        try await Task.sleep(nanoseconds: 150_000_000)
+        workspace.layoutSubtreeIfNeeded()
+        guard let current = model.activeTab?.cells.first,
+              let index = current.diagnostics?.firstIndex(where: { $0.range != nil }),
+              let range = current.diagnostics?[index].range else {
+            throw CellComponentFailure(message: "module source diagnostic missing")
+        }
+        try capture(workspace, name: "module-source-error.png")
+        for _ in 0..<2 {
+            guard let editor = findEditor(workspace) else { throw CellComponentFailure(message: "module editor missing") }
+            editor.setSelectedRange(NSRange(location: 0, length: 0))
+            editor.scrollRangeToVisible(editor.selectedRange())
+            model.showSource(range, cell: current, tab: model.activeTab!)
+            try await Task.sleep(nanoseconds: 150_000_000)
+            try check((editor.string as NSString).substring(with: editor.selectedRange()) == ")", "source navigation did not select its characters")
+            // Rendering tests can run without a WindowServer, where AppKit
+            // reports an empty visibleRect and cannot scroll a visible region.
+            if !editor.visibleRect.isEmpty {
+                try check(editor.visibleRect.minY > 0, "source navigation did not scroll to its line")
+            }
+        }
+        func collapseButton(_ view: NSView) -> NSButton? {
+            if let button = view as? NSButton, button.accessibilityIdentifier() == "cell-collapse-\(current.id)" { return button }
+            return view.subviews.lazy.compactMap(collapseButton).first
+        }
+        guard let collapse = collapseButton(workspace) else { throw CellComponentFailure(message: "module collapse button missing") }
+        collapse.performClick(nil)
+        try await Task.sleep(nanoseconds: 100_000_000)
+        try check(findEditor(workspace) == nil, "module source did not collapse")
+        model.showSource(range, cell: current, tab: model.activeTab!)
+        try await Task.sleep(nanoseconds: 150_000_000)
+        guard let revealed = findEditor(workspace) else { throw CellComponentFailure(message: "error click did not expand the module source") }
+        try check((revealed.string as NSString).substring(with: revealed.selectedRange()) == ")", "expanded source did not reveal its diagnostic")
+        try check(range.start_line == 121, "fixture must diagnose an offscreen line")
+        try capture(workspace, name: "module-error-navigation.png")
     }
     @MainActor private static func exercise(_ model: NotebookModel, project: URL, render: Bool) async throws {
         let opened = await withCheckedContinuation { c in model.open(url: project) { c.resume(returning: $0) } }

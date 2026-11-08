@@ -56,7 +56,6 @@ int main(int argc, char **argv) {
     auto document = make_project_document("DataTableView tests"); document.version = 3;
     document.sheets[0].cells.resize(1);
     document.sheets[0].cells[0].id = 1; document.sheets[0].cells[0].source = source;
-    document.dependencies.push_back({(std::filesystem::path(SPUTNIK_SOURCE_ROOT) / "packages/notebook_ui").string(), false, {}});
     document.boards.push_back(parse_project_board(R"({"id":"tables","title":"Tables","sheet":"main","components":[{"id":"table","kind":"table","title":"Table","cell":"1","table_id":"frozen"}]})"));
     auto invalid = document;
     invalid.boards[0].components[0].extra["table_id"] = "42";
@@ -115,12 +114,27 @@ task.sleep(250)
 42
 )";
       auto live_project = create_project(directory / "Live.sputnikbook", live_document);
-      Process process; process.start(std::filesystem::absolute(argv[1]).string());
+      // Exercise a moved host with its own source library. The sentinel export
+      // proves this worker reads the shipped copy rather than the checkout.
+      const auto relocated = directory / "Moved.app/Contents";
+      std::filesystem::create_directories(relocated / "MacOS");
+      const auto worker = relocated / "MacOS/sputnik-notebook-worker";
+      std::filesystem::copy_file(std::filesystem::absolute(argv[1]), worker);
+      const auto essentials = relocated / "Resources/notebook-essentials";
+      std::filesystem::create_directories(essentials.parent_path());
+      std::filesystem::copy(std::filesystem::path(SPUTNIK_SOURCE_ROOT) / "packages/notebook_ui", essentials,
+                            std::filesystem::copy_options::recursive);
+      std::ofstream(essentials / "src/notebook_ui.s", std::ios::app)
+          << "\nexport shipped_library_probe\ndef shipped_library_probe(): 314\n";
+      live_document.sheets[0].cells[0].source += "from notebook.ui import shipped_library_probe\nshipped_library_probe()\n";
+      save_project(&live_project, live_document);
+      Process process; process.start(worker.string());
       check(process.receive(5s)->kind == Kind::Ready, "worker Ready");
       receive(process, process.send(Kind::Load, {live_project.directory.string(), "main", "0"}));
       unsigned frames = 0;
       const auto result = receive(process, process.send(Kind::Run, {"1", "1"}), &frames);
       check(result.environment_error.empty() && result.cells[0].ok, result.environment_error + result.cells[0].error);
+      check(result.cells[0].result == "314", "moved worker must use its shipped essentials library");
       check(frames >= 2 && result.cells[0].displays.size() == 1 && result.cells[0].displays[0].id == "live" && result.cells[0].displays[0].bytes.find("[2]") != std::string::npos, "worker transports intermediate tables and the final replacement");
       process.send(Kind::Shutdown);
     }

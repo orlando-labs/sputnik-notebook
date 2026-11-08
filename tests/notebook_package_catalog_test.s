@@ -62,6 +62,8 @@ class PackageCatalogFixture:
   def dispatch(request):
     path = request.path
     @mutex.synchronize: @requests.push!(path)
+    if path.starts_with?("/api/v1/packages/unavailable/"):
+      return ServerResponse.text(Json.generate({error: {code: "UNAVAILABLE"}}), status: 503)
     task.sleep(0.3) if path.starts_with?("/api/v1/packages/slow/")
     base = "/api/v1/namespaces/test/packages/editor-probe"
     route = path
@@ -72,6 +74,8 @@ class PackageCatalogFixture:
     version = route.split("/versions/")[-1].split("/")[0]
     if route.ends_with?("/artifacts/source/download") and @archives.has_key?(version):
       @mutex.synchronize: @downloads.push!(version)
+      # Leave time for the desktop to poll the real installer's piped progress.
+      task.sleep(2.0)
       bytes = @archives[version]
       return ServerResponse(body: bytes, headers: {"x-sputnik-sha256": "sha256:" + Digest.sha256(bytes).hex})
     data = null

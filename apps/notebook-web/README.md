@@ -617,7 +617,8 @@ uploads accept project-relative paths; editable UTF-8 is limited to 1 MiB,
 individual members to 16 MiB, and the bundle to 2048 members / 64 MiB of data.
 Unknown document fields and int64 metadata are retained. Rename or move keeps
 binary bytes, rejects destination collisions and stages both member changes in
-one Save. Renaming a module updates its package declaration, auto-imports and
+one Save. Renaming a module derives its filename from the new name, replacing
+spaces and hyphens with underscores. It updates its package declaration, auto-imports and
 board action/service references; imports in other source and resource paths need
 manual updates. Deleting a sheet asks for a replacement controller for linked
 boards and preserves their component bindings for review.

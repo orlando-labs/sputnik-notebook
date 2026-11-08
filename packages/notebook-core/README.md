@@ -86,11 +86,14 @@ application ACL, browser codec validation or the full artifact storage policy. T
 web adapter supplies only frozen run documents and applies its own public DTO
 and browser cache budgets.
 
-The common evaluator resolves installed source/bytecode `notebook.ui` helpers
-alongside its native namespace. The worker uses its configured project package
-home and the normal verified package resolver. This
-allows DataTableView alongside native Stopwatch without directory dependencies,
-persisted document edits, automatic installation or additional native trust.
+The common evaluator adds the host's shipped notebook essentials to its source
+import library. `notebook.ui` helpers (charts, images, DataTableView and audio)
+work alongside native Stopwatch without a registry installation or document
+dependency. The app carries the source library in
+`Contents/Resources/notebook-essentials`; server installations use
+`share/sputnik-notebook/essentials` beside `bin`. Development builds also search
+the matching checkout's `packages/notebook_ui`. Other imports continue to use
+the worker's project package home and verified package resolver.
 
 During development add only a directory override to the application's optional
 configuration; imported modules are discovered without a file inventory:

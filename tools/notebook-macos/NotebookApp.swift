@@ -52,8 +52,13 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         window.isReleasedWhenClosed = false
         window.setFrameAutosaveName("SputnikNotebookWorkspace")
         window.delegate = self
-        window.contentView = NSHostingView(rootView: NotebookAppearanceView(
+        let workspace = NSHostingView(rootView: NotebookAppearanceView(
             preferences: preferences, content: NotebookView(model: model)))
+        // NSWindow owns this view's size. Probing the entire notebook for
+        // minimum/ideal/maximum sizes on native editor geometry changes makes
+        // scrolling remeasure offscreen cells at alternate widths.
+        workspace.sizingOptions = []
+        window.contentView = workspace
         window.center()
         model.requestNew = { [weak self] in self?.newProject(nil) }
         model.requestOpen = { [weak self] in self?.openProject(nil) }
@@ -169,11 +174,16 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         guard !model.busy, !model.boardEditorOpen else { return false }
         switch item.action {
         case #selector(runAll(_:)):
-            return model.activeTab.map { model.canRun($0) } ?? false
+            let tab = model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab
+            return tab.map { $0.kind == "sheet" && model.canRun($0) } ?? false
         case #selector(save(_:)), #selector(saveAll(_:)), #selector(showDependencies(_:)):
             return model.snapshot != nil
         case #selector(runCell(_:)):
-            return model.activeBoard == nil && model.selectedCell?.kind == "code" && (model.activeTab.map { model.canRun($0, cell: model.selectedCell) } ?? false)
+            let isModule = model.activeTab?.kind == "module"
+            item.title = isModule ? "Check Module" : "Run Selected Cell"
+            return model.activeBoard == nil && model.selectedCell?.kind == "code" && (model.activeTab.map {
+                isModule ? model.canCheckModule($0) : model.canRun($0, cell: model.selectedCell)
+            } ?? false)
         case #selector(addCell(_:)), #selector(addText(_:)), #selector(applyModules(_:)):
             return model.activeBoard == nil && model.activeTab?.kind == "sheet"
         default: return true
@@ -263,10 +273,14 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         model.perform("save", tab: model.activeBoard.flatMap { model.controller(for: $0) })
     }
     @objc private func saveAll(_ sender: Any?) { model.perform("save_all") }
-    @objc private func runCell(_ sender: Any?) { model.perform("run") }
+    @objc private func runCell(_ sender: Any?) {
+        model.perform(model.activeTab?.kind == "module" ? "check_module" : "run")
+    }
     @objc private func stopExecution(_ sender: Any?) { model.stopExecution() }
     @objc private func runAll(_ sender: Any?) {
-        model.perform("run_all", tab: model.activeBoard.flatMap { model.controller(for: $0) })
+        let tab = model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab
+        guard tab?.kind == "sheet" else { return }
+        model.perform("run_all", tab: tab)
     }
     @objc private func addCell(_ sender: Any?) { model.perform("add_cell") }
     @objc private func addText(_ sender: Any?) { model.perform("add_text") }

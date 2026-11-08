@@ -8,12 +8,15 @@ import { secondsLabel, type ResourceStatus } from './resource-policy'
 import NotebookCellOutput from './NotebookCellOutput.vue'
 import NotebookTextEditor from './NotebookTextEditor.vue'
 import NotebookCodeEditor from './NotebookCodeEditor.vue'
+import type { CodeDiagnostic } from './diagnostics'
 import { textVariables as resolveTextVariables } from './text-variables'
 const props = defineProps<{ projectId?: string; publicTemplate?: string; enabled: boolean }>()
 const publicMode = computed(() => !!props.publicTemplate)
 const openingCommand = ref('')
 const dialog = ref<HTMLDialogElement>(), document = ref<NotebookDocument | null>(null), session = ref(''), revision = ref(''), saved = ref(''), activeSheet = ref('')
 const resources = ref<ResourceStatus | null>(null), runs = ref<RunSummary[]>([]), result = ref<RunResult | null>(null), error = ref(''), busy = ref(false), stale = ref(false)
+const errorTarget = ref<{ cell: string; diagnostic: CodeDiagnostic }>()
+function revealError(cell: string, diagnostic: CodeDiagnostic) { errorTarget.value = { cell, diagnostic: { ...diagnostic } } }
 type Command = { kind: 'save' | 'run' | 'stop'; path: string; method: string; body: { command_id: string; [key: string]: unknown } }
 const pending = ref<Command | null>(null), retryable = ref(false)
 let timer: ReturnType<typeof setTimeout> | undefined, generation = 0, disposed = false, refreshing = false
@@ -136,7 +139,7 @@ defineExpose({ show: open, isOpen: () => !!dialog.value?.open })
     <template v-if="document"><div class="preview-toolbar"><select v-model="activeSheet" aria-label="Preview sheet" :disabled="locked"><option v-for="sheet in document.sheets" :key="sheet.id" :value="sheet.id">{{ sheet.title }}</option></select><button :disabled="locked || !dirty" @click="save">Save preview copy</button><button :disabled="locked || dirty || !!active || resources?.remaining_ms === '0' || !sheet?.cells.some(cell => cell.kind === 'code')" @click="run">Run preview sheet</button><button :disabled="!active || busy || !!pending || stale" @click="stop()">Stop preview</button><button v-if="active" :disabled="busy || !!pending || stale" @click="stop(true)">Force Stop preview…</button></div>
       <p role="status" class="source-note">{{ dirty ? 'Preview has unsaved changes. Save this copy before running.' : 'Preview copy saved' }}</p>
       <p v-if="result?.error || result?.environment_error || result?.rich_error" class="source-error" role="alert">{{ result.error || result.environment_error || result.rich_error }}</p><pre v-for="(message, index) in result?.task_errors || []" :key="index" class="source-error">{{ message }}</pre>
-      <div class="notebook-cells"><article v-for="(cell, index) in sheet?.cells || []" :key="cell.id" class="notebook-cell"><div class="cell-toolbar">{{ index + 1 }} · {{ cell.kind }}</div><NotebookTextEditor v-if="cell.kind === 'text'" :content="cell" :label="'Preview text cell ' + (index + 1)" :disabled="locked" :variables="textVariables(cell.id)" @change="cell.source = $event.source; cell.formatting = $event.formatting" /><NotebookCodeEditor v-else v-model="cell.source" :label="'Preview code cell ' + (index + 1)" :readonly="cell.kind !== 'code'" :disabled="locked" :sputnik="cell.kind === 'code'" :diagnostics="presentation(cell.id, cell.source)?.diagnostics" :stale="presentation(cell.id, cell.source)?.stale" /><NotebookCellOutput v-if="presentation(cell.id, cell.source)" :presentation="presentation(cell.id, cell.source)!" /></article></div>
+      <div class="notebook-cells"><article v-for="(cell, index) in sheet?.cells || []" :key="cell.id" class="notebook-cell"><div class="cell-toolbar">{{ index + 1 }} · {{ cell.kind }}</div><NotebookTextEditor v-if="cell.kind === 'text'" :content="cell" :label="'Preview text cell ' + (index + 1)" :disabled="locked" :variables="textVariables(cell.id)" @change="cell.source = $event.source; cell.formatting = $event.formatting" /><NotebookCodeEditor v-else v-model="cell.source" :label="'Preview code cell ' + (index + 1)" :readonly="cell.kind !== 'code'" :disabled="locked" :sputnik="cell.kind === 'code'" :diagnostics="presentation(cell.id, cell.source)?.diagnostics" :reveal-diagnostic="errorTarget?.cell === cell.id ? errorTarget.diagnostic : undefined" :stale="presentation(cell.id, cell.source)?.stale" /><NotebookCellOutput v-if="presentation(cell.id, cell.source)" :presentation="presentation(cell.id, cell.source)!" @reveal-error="revealError(cell.id, $event)" /></article></div>
       <p class="source-note">This preview supports sheet source edits and Run All with existing bundled dependencies. Boards, parameter controls and dependency installation use the full notebook workspace.</p>
     </template>
     <div class="dialog-actions"><button :disabled="busy || !enabled" @click="open">{{ openingCommand ? 'Retry opening public copy' : 'Open fresh preview' }}</button><button @click="close">Close preview</button></div>

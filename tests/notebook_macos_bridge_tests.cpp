@@ -244,6 +244,47 @@ void test_source_watch_run_and_stable_ids_roundtrip() {
   sputnik_notebook_destroy(notebook);
 }
 
+void test_module_check_is_compile_only() {
+  TempDirectory temporary;
+  const auto path = temporary.path / "module-check.sputnikbook";
+  auto *notebook = open_new(path);
+  const auto sheet_cell = first_cell_id(snapshot(notebook), "sheet:main");
+  command(notebook, "source", "sheet:main", sheet_cell.c_str(), "42\n");
+  command(notebook, "run", "sheet:main", sheet_cell.c_str());
+  command(notebook, "new_module", nullptr, nullptr, "checked");
+  const auto module_cell = first_cell_id(snapshot(notebook), "module:checked");
+  const auto marker = temporary.path / "must-not-exist";
+  const std::string source = "package checked\nimport fs\n"
+      "native def answer() -> Int from \"unregistered_native_thunk\"\n"
+      "fs.atomic_write_text(\"" + marker.string() + "\", \"executed\")\n"
+      "answer()\nraise \"initializer must not execute\"\n";
+  command(notebook, "source", "module:checked", module_cell.c_str(), source.c_str());
+  const auto saved = sputnik::notebook::load_project_module(sputnik::notebook::load_project(path), "checked").source;
+  command(notebook, "check_module", "module:checked", module_cell.c_str());
+  const auto checked = snapshot(notebook);
+  expect(checked.find("module check passed; code not executed") != std::string::npos,
+         "Check Module compiles native declarations and capability-requiring code without grants");
+  expect(!std::filesystem::exists(marker) && checked.find("\"result\":\"42\"") != std::string::npos,
+         "checking cannot run initializers or replace sheet results");
+  expect(sputnik::notebook::load_project_module(sputnik::notebook::load_project(path), "checked").source == saved,
+         "checking the unsaved draft cannot save its source");
+  command(notebook, "source", "module:checked", module_cell.c_str(), "package checked\nvalue = )\n");
+  command(notebook, "check_module", "module:checked", module_cell.c_str());
+  const auto failed = snapshot(notebook);
+  expect(failed.find("module check failed; code not executed") != std::string::npos &&
+         failed.find("\"start_line\":1,\"start_column\":8") != std::string::npos,
+         "compile checks retain actionable source diagnostics");
+  expect(command_fails(notebook, "check_module", "sheet:main", sheet_cell.c_str(), nullptr),
+         "module checks reject sheet targets");
+  char *error = nullptr;
+  expect(sputnik_notebook_external(notebook, 1, &error) && !error, "select remote execution without starting a server");
+  command(notebook, "source", "module:checked", module_cell.c_str(), source.c_str());
+  command(notebook, "check_module", "module:checked", module_cell.c_str());
+  expect(snapshot(notebook).find("module check passed; code not executed") != std::string::npos,
+         "module checks remain local and available while remote execution is selected");
+  sputnik_notebook_destroy(notebook);
+}
+
 void test_bundled_module_save_auto_import_and_apply() {
   TempDirectory temporary;
   const auto path = temporary.path / "module-project";
@@ -291,6 +332,18 @@ void test_bundled_module_save_auto_import_and_apply() {
                  std::string::npos &&
              state.find("triple(14)\\n") != std::string::npos,
          "module and sheet source should reopen with their persisted identity and bytes");
+  command(notebook, "select", "module:triple");
+  command(notebook, "rename_module", "module:triple", nullptr, "training-model");
+  state = snapshot(notebook);
+  const auto renamed = sputnik::notebook::load_project(path);
+  expect(state.find("\"selected_tab\":\"module:training_model\"") != std::string::npos &&
+             state.find("package training_model\\ndef triple(x):") != std::string::npos &&
+             renamed.document.modules[0].path == "modules/training_model.s" &&
+             !std::filesystem::exists(path / "modules/triple.s"),
+         "the editor rename command should publish the matching module name and source filename");
+  command(notebook, "apply", "sheet:main");
+  expect(snapshot(notebook).find("\"result\":\"42\"") != std::string::npos,
+         "the renamed auto-import should remain callable from the sheet");
   sputnik_notebook_destroy(notebook);
 }
 
@@ -571,6 +624,7 @@ int main() {
   test_empty_sheet_accepts_cell_creation_without_an_anchor();
   test_source_watch_run_and_stable_ids_roundtrip();
   test_bundled_module_save_auto_import_and_apply();
+  test_module_check_is_compile_only();
   test_invalid_targets_opaque_cells_and_external_save_conflict();
   test_open_rejects_non_text_module_sources();
   test_native_text_blocks_roundtrip_without_execution();

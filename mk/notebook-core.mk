@@ -11,6 +11,7 @@ NOTEBOOK_WORKER_TRANSPORT := $(addprefix $(NOTEBOOK_CORE_DIR)/native/,protocol.c
 NOTEBOOK_CORE_SRCS := $(addprefix $(NOTEBOOK_CORE_DIR)/native/,notebook.cpp execution.cpp worker.cpp) $(NOTEBOOK_WORKER_TRANSPORT)
 NOTEBOOK_CORE_OBJS := $(patsubst %.cpp,$(BUILD_DIR)/core/obj/%.o,$(NOTEBOOK_CORE_SRCS)) $(patsubst $(SPUTNIK_DIR)/%.cpp,$(BUILD_DIR)/core/obj/sputnik/%.o,$(APP_SESSION_SRCS))
 NOTEBOOK_CORE_LIBRARY := $(BUILD_DIR)/core/libNotebookCore.a
+$(BUILD_DIR)/core/obj/sputnik/tools/isputnik/essentials.o: CPPFLAGS += '-DSPUTNIK_NOTEBOOK_ESSENTIALS_DIR="$(abspath $(SPUTNIK_DIR)/packages/notebook_ui)"'
 NOTEBOOK_CORE_HEADERS := $(wildcard $(NOTEBOOK_CORE_INCLUDE)/notebook/core/*.h) $(wildcard $(NOTEBOOK_CORE_INCLUDE)/notebook/core/worker/*.h)
 SPUTNIK_PLOT_DIR ?= ../plot
 ifneq ($(wildcard $(SPUTNIK_PLOT_DIR)/native/plot_png.c),)

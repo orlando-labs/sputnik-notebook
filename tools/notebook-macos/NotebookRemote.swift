@@ -130,8 +130,11 @@ final class NotebookRemoteClient {
     func call(_ arguments: [String]) async throws -> [String: Any] {
         let data = try await Self.process(executable, ["--mode", "cli", "--json-errors", "--url", endpoint,
                                                        "--token-file", token.path] + arguments)
+        return try Self.response(data)
+    }
+    static func response(_ data: Data, invalidMessage: String = "Invalid native remote client response.") throws -> [String: Any] {
         guard let value = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw NotebookRemoteFailure(status: 0, message: "Invalid native remote client response.")
+            throw NotebookRemoteFailure(status: 0, message: invalidMessage)
         }
         if let error = value["remote_error"] as? [String: Any] {
             let status = error["status"] as? Int ?? 0
@@ -147,6 +150,8 @@ final class NotebookRemoteClient {
 
 struct NotebookWorkerSettings: Decodable {
     var environment_directory: String? = nil
+    var own_grants: [String]? = nil
+    var inherited_grants: [String]? = nil
     let grants: [String]
     let version: String
     let runtime_epoch: String?
@@ -165,6 +170,7 @@ final class NotebookRemoteController: ObservableObject {
     @Published private(set) var resetEpochs = Set<String>()
     @Published private(set) var projects: [[String: Any]] = []
     @Published private(set) var supportsWorkerGrants = false
+    @Published private(set) var supportsBookWorkerGrants = false
     @Published private(set) var supportsCellInputs = false
     @Published private(set) var supportsProjectInputs = false
     @Published private(set) var supportsBoardActions = false
@@ -354,7 +360,7 @@ final class NotebookRemoteController: ObservableObject {
         supportsResourcePolicy = false; allowsBookPolicyOverrides = false
         supportsTargetedRestart = false; supportsHistory = false
         historyRuns = []; historyRecords = [:]; historyNext = nil; historyLoaded = false; historyBusy = false; historyError = nil
-        supportsWorkerGrants = false; supportsCellInputs = false; supportsRunDocument = false; supportsDependencyManagement = false; supportsPackageCatalog = false; frozenRunDocuments = []; cellInputVersion = "0"
+        supportsWorkerGrants = false; supportsBookWorkerGrants = false; supportsCellInputs = false; supportsRunDocument = false; supportsDependencyManagement = false; supportsPackageCatalog = false; frozenRunDocuments = []; cellInputVersion = "0"
         runs = []; runtimes = []; resetEpochs = []; services = []; invocationResults = [:]; invocationStale = [:]; projects = []; completed = []; revisionDocuments = [:]; remoteHead = nil; conflict = false
         status = isSelected ? "Disconnected · server work continues" : "Local"
         onChange?()
@@ -423,6 +429,7 @@ final class NotebookRemoteController: ObservableObject {
                         allowsBookPolicyOverrides = health["allow_book_policy_overrides"] as? Bool == true
                         appliedResourcePolicy = nil
                         supportsWorkerGrants = (health["capabilities"] as? [String])?.contains("worker_grants") == true
+                        supportsBookWorkerGrants = (health["capabilities"] as? [String])?.contains("book_worker_grants") == true
                         supportsProjectInputs = (health["capabilities"] as? [String])?.contains("project_inputs") == true
                         supportsBoardActions = (health["capabilities"] as? [String])?.contains("board_actions") == true
                         supportsServerPeriodic = (health["capabilities"] as? [String])?.contains("server_periodic") == true
@@ -865,6 +872,31 @@ final class NotebookRemoteController: ObservableObject {
         let result = try await client.call(["--command", "worker_settings", "--project", projectID, "--sheet", sheet])
         try check(stamp)
         return try JSONDecoder().decode(NotebookWorkerSettings.self, from: JSONSerialization.data(withJSONObject: result))
+    }
+    @MainActor func bookWorkerSettings() async throws -> NotebookWorkerSettings {
+        guard connected, !busy, supportsBookWorkerGrants, let client, let projectID else {
+            throw NotebookFailure(message: "Connect to an updated core with notebook permission support.")
+        }
+        let stamp = generation
+        let result = try await client.call(["--command", "book_worker_settings", "--project", projectID])
+        try check(stamp)
+        return try JSONDecoder().decode(NotebookWorkerSettings.self, from: JSONSerialization.data(withJSONObject: result))
+    }
+    @MainActor func configureBookWorkerGrants(_ grants: [String], settings: NotebookWorkerSettings) async throws {
+        guard connected, !busy, supportsBookWorkerGrants, let client, let projectID else {
+            throw NotebookFailure(message: "Reconnect to an updated core before changing notebook permissions.")
+        }
+        let stamp = generation; busy = true; onChange?()
+        defer { if stamp == generation { busy = false; onChange?() } }
+        let request = try cache(UUID().uuidString.lowercased() + ".book-worker-settings.json")
+        defer { try? FileManager.default.removeItem(at: request) }
+        let body: [String: Any] = ["command_id": UUID().uuidString.lowercased(), "base_version": settings.version, "grants": grants]
+        try Self.write(try JSONSerialization.data(withJSONObject: body, options: [.sortedKeys]), to: request)
+        _ = try await client.call(["--command", "configure_book_worker", "--project", projectID, "--request-file", request.path])
+        try check(stamp)
+        for runtime in runtimes { if let sheet = runtime["sheet_id"] as? String { onResultReset?(sheet) } }
+        try await refresh(stamp); try check(stamp)
+        status = "Notebook permissions updated · Applies to current and future sheets"
     }
     @MainActor func dependencyRequest(_ command: String, body: [String: Any]? = nil, operation: String? = nil, synchronizeFiles: Bool = false) async throws -> [String: Any] {
         guard connected, !busy, supportsDependencyManagement, let client, let projectID else {

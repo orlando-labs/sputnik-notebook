@@ -4,6 +4,7 @@ struct NotebookView: View {
     @Environment(\.greekLetterSubstitutionEnabled) private var substituteGreekLetters
     @ObservedObject var model: NotebookModel
 
+    @State private var sidebarVisibility: NavigationSplitViewVisibility = .all
     @State private var collapsedCells = Set<String>()
     @State private var structurePrompt: StructurePrompt?
     @State private var pendingDelete: DeleteTarget?
@@ -43,6 +44,11 @@ struct NotebookView: View {
         }
         .onChange(of: collapseEligibleCells) { collapsedCells.formIntersection(collapseEligibleCells) }
         .onChange(of: model.documentIdentity) { collapsedCells.removeAll() }
+        .onChange(of: model.cellNavigation) {
+            if let location = model.cellNavigation?.location {
+                collapsedCells.remove(location.tab + ":" + location.cell)
+            }
+        }
         .background(NotebookPalette.canvas)
         .foregroundStyle(NotebookPalette.ink)
         .tint(NotebookPalette.sputnik)
@@ -89,13 +95,18 @@ struct NotebookView: View {
         .sheet(isPresented: $manageInputs) { NotebookProjectInputsView(model: model) }
         .sheet(item: $renameTarget) { tab in
             VStack(alignment: .leading, spacing: 16) {
-                Text("Rename Sheet").font(.title2)
-                TextField("Sheet name", text: $sheetName).textFieldStyle(.roundedBorder)
+                Text(tab.kind == "module" ? "Rename Module" : "Rename Sheet").font(.title2)
+                TextField(tab.kind == "module" ? "Module name" : "Sheet name", text: $sheetName).textFieldStyle(.roundedBorder)
+                if tab.kind == "module" {
+                    Text("Spaces and hyphens become underscores. Renaming saves the current source with a matching filename. Update imports in other modules before running.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
                 HStack {
                     Spacer()
                     Button("Cancel", role: .cancel) { renameTarget = nil }.keyboardShortcut(.cancelAction)
                     Button("Rename") {
-                        model.perform("rename_sheet", tab: tab, text: sheetName.trimmingCharacters(in: .whitespacesAndNewlines))
+                        model.perform(tab.kind == "module" ? "rename_module" : "rename_sheet", tab: tab,
+                                      text: sheetName.trimmingCharacters(in: .whitespacesAndNewlines))
                         renameTarget = nil
                     }.disabled(sheetName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || sheetName.count > 200)
                         .keyboardShortcut(.defaultAction)
@@ -105,23 +116,28 @@ struct NotebookView: View {
     }
 
     private func notebookWorkspace(_ snapshot: NotebookSnapshot) -> some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $sidebarVisibility) {
             sidebar(snapshot)
                 .navigationSplitViewColumnWidth(min: 220, ideal: 255, max: 310)
         } detail: {
             VStack(spacing: 0) {
-                NotebookServerBar(model: model, remote: model.remote)
+                NotebookServerBar(model: model, remote: model.remote, sidebarVisibility: $sidebarVisibility)
                 if let board = model.activeBoard {
                     NotebookBoardView(model: model, board: board) { boardPrompt = board }
                 } else if let tab = activeTab {
                     actionBar(snapshot)
                     Rectangle().fill(NotebookPalette.rule).frame(height: 1)
-                    notebookContent(tab, snapshot: snapshot)
+                    if tab.kind == "module" {
+                        moduleContent(tab, snapshot: snapshot)
+                    } else {
+                        notebookContent(tab, snapshot: snapshot)
+                    }
                 } else {
                     missingTabView
                 }
             }
             .background(NotebookPalette.canvas)
+            .background(NotebookPaneSizing().frame(width: 0, height: 0))
         }
         .navigationSplitViewStyle(.balanced)
         .navigationTitle(snapshot.title)
@@ -313,6 +329,12 @@ struct NotebookView: View {
                     .lineLimit(1)
                 Spacer(minLength: 2)
 
+                if !model.executionIssues(in: tab).isEmpty {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                        .help("This page has a code error").accessibilityLabel("Code error")
+                        .accessibilityIdentifier("page-error-\(tab.id)")
+                }
+
                 if model.executingCells[tab.id] != nil {
                     ProgressView().controlSize(.mini)
                         .help("This sheet is executing")
@@ -353,6 +375,9 @@ struct NotebookView: View {
             if tab.kind == "sheet" {
                 Button("Rename Sheet…") { sheetName = tab.title; renameTarget = tab }
                     .disabled(model.busy || model.executingCurrentWorker)
+            } else {
+                Button("Rename Module…") { sheetName = tab.title; renameTarget = tab }
+                    .disabled(model.busy || model.executingCurrentWorker || model.remote.isSelected)
             }
         }
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -368,7 +393,11 @@ struct NotebookView: View {
                     }.buttonStyle(.plain).help("Rename Sheet…").accessibilityLabel("Rename Sheet · " + tab.title)
                         .disabled(model.busy || model.executingCurrentWorker)
                 } else {
-                    Text(tab.title).font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                    Button { sheetName = tab.title; renameTarget = tab } label: {
+                        Label(tab.title, systemImage: "pencil")
+                            .font(.system(size: 14, weight: .semibold)).lineLimit(1)
+                    }.buttonStyle(.plain).help("Rename Module…").accessibilityLabel("Rename Module · " + tab.title)
+                        .disabled(model.busy || model.executingCurrentWorker || model.remote.isSelected)
                 }
                 NotebookPageBadge(kind: tab.kind == "module" ? .module : .sheet, detail: tab.status)
             }
@@ -396,10 +425,10 @@ struct NotebookView: View {
             Button {
                 runSelected()
             } label: {
-                Label(isModule ? "Run Module" : "Run Selected", systemImage: "play.fill")
+                Label(isModule ? "Check Module" : "Run Selected", systemImage: isModule ? "checkmark.seal" : "play.fill")
             }
             .keyboardShortcut(.return, modifiers: .command)
-            .help(isModule ? "Run this module · ⌘Return" : "Run the selected cell · ⌘Return")
+            .help(isModule ? "Check syntax, imports and compilation without executing code · ⌘Return" : "Run the selected cell · ⌘Return")
             .buttonStyle(.borderedProminent)
             .tint(NotebookPalette.sputnik)
             .disabled(!canRunSelected)
@@ -435,6 +464,7 @@ struct NotebookView: View {
 
     private var canRunSelected: Bool {
         guard let tab = activeTab, let cell = selectedCell else { return false }
+        if tab.kind == "module" { return model.canCheckModule(tab) }
         return model.canRun(tab, cell: cell) && !hasUnsupportedCell
     }
 
@@ -445,7 +475,34 @@ struct NotebookView: View {
 
     private func runSelected() {
         guard let tab = activeTab, let cell = selectedCell, canRunSelected else { return }
-        model.perform("run", tab: tab, cell: cell)
+        model.perform(tab.kind == "module" ? "check_module" : "run", tab: tab, cell: cell)
+    }
+
+    private func moduleContent(_ tab: NotebookTab, snapshot: NotebookSnapshot) -> some View {
+        VStack(alignment: .leading, spacing: 17) {
+            pageHeader(tab, snapshot: snapshot)
+            if tab.status == "module check passed; code not executed", let cell = tab.cells.first,
+               !cell.dirty, model.source(for: cell, in: tab).utf16.elementsEqual(cell.source.utf16) {
+                noticeCard(symbol: "checkmark.circle.fill", title: "Module check passed",
+                    message: "Syntax, imports and compilation checked. Module code was not executed.", tone: .green)
+            }
+            NotebookExecutionErrorsView(model: model, tab: tab)
+            if tab.environment_stale || !tab.environment_error.isEmpty || !tab.environment_output.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        environmentNotice(tab)
+                        environmentDetails(tab)
+                    }
+                }
+                .frame(height: 100)
+            }
+            if let cell = tab.cells.first {
+                codeCellCard(cell, index: 0, tab: tab)
+            }
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .id(tab.id)
     }
 
     private func notebookContent(_ tab: NotebookTab, snapshot: NotebookSnapshot) -> some View {
@@ -454,14 +511,7 @@ struct NotebookView: View {
             VStack(alignment: .leading, spacing: 17) {
                 pageHeader(tab, snapshot: snapshot)
 
-                if tab.environment_stale {
-                    noticeCard(
-                        symbol: "arrow.triangle.2.circlepath",
-                        title: model.remote.isSelected ? "Results from an earlier server revision" : "Module environment changed",
-                        message: model.remote.isSelected ? "Run the current sources again. Restart Worker if the module environment changed." : "Apply the current modules to this sheet before running cells.",
-                        tone: .sputnik
-                    )
-                }
+                environmentNotice(tab)
 
                 if hasUnsupportedCell {
                     let kinds = Array(Set(tab.cells.filter { $0.kind != "code" && $0.kind != "text" }.map(\.kind))).sorted().joined(separator: ", ")
@@ -473,20 +523,7 @@ struct NotebookView: View {
                     )
                 }
 
-                if !tab.environment_error.isEmpty {
-                    noticeCard(
-                        symbol: "exclamationmark.triangle.fill",
-                        title: "Module environment error",
-                        message: notebookEnvironmentMessage(tab.environment_error),
-                        tone: .red
-                    )
-                    Button("Open Dependencies…") { model.showDependencies = true }
-                        .disabled(model.busy || model.remote.busy)
-                }
-
-                if !tab.environment_output.isEmpty {
-                    environmentOutputCard(tab.environment_output)
-                }
+                environmentDetails(tab)
 
                 if tab.cells.isEmpty {
                     emptySheetCard(tab)
@@ -548,6 +585,30 @@ struct NotebookView: View {
         .onChange(of: model.cellNavigation) { _, _ in revealRequestedCell(in: tab, proxy: proxy) }
         }
         .id(tab.id)
+    }
+
+    @ViewBuilder
+    private func environmentNotice(_ tab: NotebookTab) -> some View {
+        if tab.environment_stale {
+            noticeCard(
+                symbol: "arrow.triangle.2.circlepath",
+                title: model.remote.isSelected ? "Results from an earlier server revision" : "Module environment changed",
+                message: model.remote.isSelected ? "Run the current sources again. Restart Worker if the module environment changed." : "Apply the current modules to this sheet before running cells.",
+                tone: .sputnik
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func environmentDetails(_ tab: NotebookTab) -> some View {
+        if !tab.environment_error.isEmpty {
+            NotebookExecutionErrorsView(model: model, tab: tab, environmentOnly: true)
+            Button("Open Dependencies…") { model.showDependencies = true }
+                .disabled(model.busy || model.remote.busy)
+        }
+        if !tab.environment_output.isEmpty {
+            environmentOutputCard(tab.environment_output)
+        }
     }
 
     private func revealRequestedCell(in tab: NotebookTab, proxy: ScrollViewProxy) {
@@ -688,6 +749,8 @@ struct NotebookView: View {
         let collapsed = collapseAllowed && collapsedCells.contains(cellKey(tab: tab, cell: cell))
         let modified = cell.dirty || model.source(for: cell, in: tab) != cell.source
         let running = model.executingCells[tab.id] == cell.id
+        let navigation = model.cellNavigation
+        let selection = navigation?.location == NotebookCellLocation(tab: tab.id, cell: cell.id) ? navigation?.selection : nil
 
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 10) {
@@ -787,6 +850,10 @@ struct NotebookView: View {
                         ),
                         editable: model.canEdit,
                         substituteGreekLetters: substituteGreekLetters,
+                        fillsHeight: tab.kind == "module",
+                        errorRanges: model.source(for: cell, in: tab).utf16.elementsEqual(cell.source.utf16)
+                            ? (cell.error_ranges ?? []) + model.sourceDiagnostics(for: cell, in: tab).compactMap(\.range) : [],
+                        selectionRequest: selection,
                         onFocus: { model.selectedCellID = cell.id },
                         onRun: { model.selectedCellID = cell.id; runSelected() }
                     )
@@ -816,22 +883,16 @@ struct NotebookView: View {
             }
 
             if supported {
-                NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .progress)
-                evaluationOutput(cell, tab: tab)
-                NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .figure)
-                let audioComponents = cell.cell_ui.map { ($0.pre + $0.post).filter { $0.kind == "audio" } } ?? []
-                if !audioComponents.contains(where: { ($0.audio_id ?? "").isEmpty }) {
-                    NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .audio,
-                        excludedAudioIDs: Set(audioComponents.compactMap(\.audio_id)))
-                }
-                let tableComponents = cell.cell_ui.map { ($0.pre + $0.post).filter { $0.kind == "table" } } ?? []
-                if !tableComponents.contains(where: { ($0.table_id ?? "").isEmpty }) {
-                    NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .table,
-                        excludedTableIDs: Set(tableComponents.compactMap(\.table_id)), allowResultTable: false)
-                }
-                NotebookCellComponentsView(model: model, cell: cell, tab: tab, components: cell.cell_ui?.post ?? [])
-                if selected && !cell.locals.isEmpty {
-                    localsPanel(cell.locals)
+                if tab.kind == "module" {
+                    ViewThatFits(in: .vertical) {
+                        codeCellOutput(cell, tab: tab, selected: selected)
+                            .fixedSize(horizontal: false, vertical: true)
+                        ScrollView { codeCellOutput(cell, tab: tab, selected: selected) }
+                    }
+                    .frame(maxHeight: 150)
+                    .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    codeCellOutput(cell, tab: tab, selected: selected)
                 }
             }
         }
@@ -851,6 +912,28 @@ struct NotebookView: View {
         }
     }
 
+    private func codeCellOutput(_ cell: NotebookCell, tab: NotebookTab, selected: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .progress)
+            evaluationOutput(cell, tab: tab)
+            NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .figure)
+            let audioComponents = cell.cell_ui.map { ($0.pre + $0.post).filter { $0.kind == "audio" } } ?? []
+            if !audioComponents.contains(where: { ($0.audio_id ?? "").isEmpty }) {
+                NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .audio,
+                    excludedAudioIDs: Set(audioComponents.compactMap(\.audio_id)))
+            }
+            let tableComponents = cell.cell_ui.map { ($0.pre + $0.post).filter { $0.kind == "table" } } ?? []
+            if !tableComponents.contains(where: { ($0.table_id ?? "").isEmpty }) {
+                NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .table,
+                    excludedTableIDs: Set(tableComponents.compactMap(\.table_id)), allowResultTable: false)
+            }
+            NotebookCellComponentsView(model: model, cell: cell, tab: tab, components: cell.cell_ui?.post ?? [])
+            if selected && !cell.locals.isEmpty {
+                localsPanel(cell.locals)
+            }
+        }
+    }
+
     private func editCellID(_ cell: NotebookCell, tab: NotebookTab) {
         guard !model.busy, tab.kind == "sheet", cell.kind == "code" || cell.kind == "text" else { return }
         model.selectedCellID = cell.id
@@ -864,8 +947,28 @@ struct NotebookView: View {
 
     @ViewBuilder
     private func evaluationOutput(_ cell: NotebookCell, tab: NotebookTab) -> some View {
-        if !cell.error.isEmpty {
+        let diagnostics = tab.kind == "module" ? [] : model.sourceDiagnostics(for: cell, in: tab)
+        if !diagnostics.isEmpty {
+            ForEach(Array(diagnostics.enumerated()), id: \.offset) { index, diagnostic in
+                if let target = model.diagnosticSource(diagnostic, cell: cell, tab: tab) {
+                    Button {
+                        model.showSource(target.range, cell: target.cell, tab: target.tab)
+                    } label: {
+                        outputBlock(title: "Error · \(target.tab.kind == "module" ? target.tab.title + " · " : "")Line \(target.range.start_line + 1)", text: diagnostic.message,
+                                    symbol: "exclamationmark.triangle.fill", tone: .red)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Show line \(target.range.start_line + 1) in source")
+                    .accessibilityIdentifier("cell-error-\(cell.id)-\(index)")
+                } else {
+                    outputBlock(title: "Error", text: diagnostic.message, symbol: "exclamationmark.triangle.fill", tone: .red)
+                        .textSelection(.enabled)
+                }
+            }
+        } else if tab.kind != "module", !cell.error.isEmpty {
             outputBlock(title: "Error", text: cell.error, symbol: "exclamationmark.triangle.fill", tone: .red)
+                .textSelection(.enabled)
         }
 
         let events = model.output(for: cell, in: tab)
@@ -877,6 +980,7 @@ struct NotebookView: View {
                 symbol: event.stream.lowercased().contains("err") ? "exclamationmark.bubble" : "text.alignleft",
                 tone: event.stream.lowercased().contains("err") ? .red : .slate
             )
+            .textSelection(.enabled)
         }
 
         NotebookCellDisplay(model: model, cell: cell, tab: tab, kind: .result)
@@ -891,7 +995,6 @@ struct NotebookView: View {
             Text(text)
                 .font(.system(size: 12, weight: .regular, design: .monospaced))
                 .foregroundStyle(NotebookPalette.ink)
-                .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
         }
