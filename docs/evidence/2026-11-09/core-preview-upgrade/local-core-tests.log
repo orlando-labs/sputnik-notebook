@@ -1,0 +1,48 @@
+/Library/Developer/CommandLineTools/usr/bin/make -C ../sputnik-lang BUILD_DIR="build" runtime
+make[1]: Nothing to be done for `runtime'.
+build/notebook_worker_host_tests "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker"
+build/notebook_table_tests "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker"
+Audio annotation contracts passed: designer schemas and transcript policies, file/input/output sources, frame/Hz bounds, typed classes, stale identities, frozen Apply and reopen
+Audio tests passed: package API, file/PCM/stream, hard IDs, binary protocol, managed inputs and validation
+notebook board tests passed
+DataTableView tests passed: object exports, explicit show, immutable typed snapshots, channels, failures and live worker updates
+notebook_cancellation_tests: ok
+Cell component tests passed: schema, scope, exact values, atomic Apply, Watch/Manual, worker and persistence
+Component data passed: typed stable keys, immutable snapshots, inert Apply/Clear, source identities, annotations, bounds and reopen
+notebook_core_readiness_tests: ok
+notebook_image_tests: ok
+PASS notebook import diagnostics and built-in essentials
+notebook_live_tests: ok
+notebook macOS bridge tests passed
+notebook periodic tests passed
+console regression: 0/3 [0%]
+console regression: 2/3 [66%]
+console regression: 2/3 [66%]
+notebook_progress_tests: ok
+notebook_regexp_tests: ok
+notebook_result_tests: ok
+notebook_run_tasks_tests: ok
+Runtime telemetry passed: real task membership, parent isolation, failures, bounded retention, log truncation and binary presentation
+DataTableView tests passed: object exports, explicit show, immutable typed snapshots, channels, failures and live worker updates
+notebook_worker_host_tests: ok
+build/notebook_worker_tests "/Users/slowpilot/workspace/sputnik/sputnik-notebook/build/sputnik-notebook-worker" "/Users/slowpilot/workspace/sputnik/plot/src/plot.s"
+isputnik_tests ok
+isputnik project tests ok
+isputnik tabs tests ok
+isputnik_activity_tests ok
+isputnik_poll_tests ok
+isputnik_dispatch_tests ok
+isputnik_terminal_wait_tests ok
+notebook_core_tests ok
+notebook_compiler_tests ok
+notebook_kernel_tests ok
+notebook_slot_tests ok
+notebook_vm_integration_tests ok
+notebook_project_tests ok
+notebook_worker_tests: ok
+build/notebook_cancellation_tests
+notebook dependency tests passed
+package_store_tests ok
+notebook_cancellation_tests: ok
+build/notebook_run_tasks_tests
+notebook_run_tasks_tests: ok

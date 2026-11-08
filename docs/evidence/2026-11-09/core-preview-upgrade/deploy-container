@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Run on the selected GPU host from its private release directory.
+mode=$1
+backend=$2
+image=$3
+release=$4
+container=sputnik-remote-core
+state=/home/slowpilot/sputnik-remote-core/state
+kit=/tmp/sputnik-core-preview-maintenance.s
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+[[ "$mode" == candidate || "$mode" == deploy ]]
+[[ "$backend" == cuda || "$backend" == rocm ]]
+docker image inspect "$image" >/dev/null
+[[ $(docker inspect --format '{{.Config.User}}' "$container") == "$(id -u):$(id -g)" ]]
+root=$(docker inspect --format '{{range .Config.Cmd}}{{println .}}{{end}}' "$container" | awk 'wanted {print; exit} $0=="--root" {wanted=1}')
+[[ "$root" == "$state" ]]
+packages=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/lib/sputnik-packages"}}{{println .Source}}{{end}}{{end}}' "$container")
+cache=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/var/cache/sputnik"}}{{println .Source}}{{end}}{{end}}' "$container")
+task_threads=$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$container" | awk -F= '$1=="SPUTNIK_TASK_MAX_THREADS" {print $2}')
+ffi_threads=$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' "$container" | awk -F= '$1=="SPUTNIK_FFI_MAX_THREADS" {print $2}')
+[[ -d "$packages" && -d "$cache" && "$task_threads" =~ ^[1-9][0-9]*$ && "$ffi_threads" =~ ^[1-9][0-9]*$ ]]
+args=(--image "$image" --backend "$backend" --packages "$packages" --cache "$cache"
+  --task-threads "$task_threads" --ffi-threads "$ffi_threads")
+gpus=3
+if [[ "$backend" == cuda ]]; then
+  devices=$(docker inspect --format '{{range .HostConfig.DeviceRequests}}{{range .DeviceIDs}}{{println .}}{{end}}{{end}}' "$container" | awk 'NF' | paste -sd, -)
+  [[ "$devices" == GPU-* && "$devices" == *,* ]]
+  args+=(--gpu-devices "$devices")
+  gpus=2
+else
+  rocm=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/opt/rocm"}}{{println .Source}}{{end}}{{end}}' "$container")
+  tensile=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/opt/rocm-tensile"}}{{println .Source}}{{end}}{{end}}' "$container")
+  [[ -d "$rocm" ]]
+  args+=(--rocm-root "$rocm")
+  if [[ -n "$tensile" ]]; then
+    [[ -d "$tensile" ]]
+    args+=(--tensile "$tensile")
+  fi
+fi
+check() {
+  docker exec -e SPUTNIK_PKG_HOME=/tmp/maintenance-packages "$1" sputnik run "$kit" \
+    --grant fs.read --grant fs.write --grant fs.metadata --grant net.connect --grant random.secure -- \
+    --root "$2" "${@:3}"
+}
+healthy() {
+  for ((attempt=0;attempt<120;attempt++)); do
+    health=$(docker inspect --format '{{.State.Health.Status}}' "$1")
+    if [[ "$health" == healthy ]]; then return 0; fi
+    if [[ $(docker inspect --format '{{.State.Running}}' "$1") != true ]]; then docker logs --tail 20 "$1"; return 1; fi
+    sleep 1
+  done
+  docker logs --tail 30 "$1"
+  return 1
+}
+if [[ "$mode" == candidate ]]; then
+  candidate=sputnik-core-candidate-$stamp-$$
+  candidate_state=$release/candidate-state
+  mkdir -p "$candidate_state" "$release/candidate-cache"
+  chmod 700 "$candidate_state" "$release/candidate-cache"
+  trap 'docker rm -fv "$candidate" >/dev/null 2>&1 || true' EXIT
+  args+=(--name "$candidate" --port 18766 --state "$candidate_state" --root "$candidate_state")
+  # Only the candidate cache is writable by the candidate; installed package
+  # artifacts are referenced from the existing verified shared package store.
+  for ((index=0;index<${#args[@]};index++)); do
+    if [[ "${args[index]}" == --cache ]]; then args[index+1]=$release/candidate-cache; fi
+  done
+  bash "$release/run-container" "${args[@]}"
+  healthy "$candidate"
+  docker cp "$release/container-check.s" "$candidate:$kit"
+  check "$candidate" "$candidate_state" --mode gpu --gpus "$gpus" --output /tmp/tensor-preview.json
+  docker cp "$candidate:/tmp/tensor-preview.json" "$release/candidate-preview.json"
+  docker cp "$candidate:/tmp/tensor-preview.json.presentation" "$release/candidate-preview.presentation"
+  printf 'PASS candidate %s: health, desktop capabilities, native Torch on %s GPUs\n' "$backend" "$gpus"
+  exit 0
+fi
+
+backup=$release/backups/before-core-$stamp
+previous=sputnik-core-before-$stamp
+mkdir -p "$backup"
+chmod 700 "$backup"
+docker inspect "$container" > "$backup/previous-container.json"
+docker inspect --format '{{.Image}}' "$container" > "$backup/previous-image.txt"
+token_before=$(sha256sum "$state/token" | cut -d' ' -f1)
+gateway=$(docker top "$container" -eo pid,args | awk '/--mode gateway/ {print $1}')
+[[ "$gateway" =~ ^[0-9]+$ ]]
+rollback=true
+stopped=false
+renamed=false
+backed_up=false
+cleanup() {
+  result=$?
+  if "$rollback"; then
+    if "$stopped"; then
+      if "$renamed"; then
+        docker rm -f "$container" >/dev/null 2>&1 || true
+        docker rename "$previous" "$container"
+      fi
+      if "$backed_up"; then
+        mv "$state" "$backup/failed-state"
+        cp -a --reflink=auto "$backup/state" "$state"
+      fi
+      docker update --restart unless-stopped "$container" >/dev/null
+      docker start "$container" >/dev/null
+      printf 'ROLLED BACK: previous image and full state; backup=%s\n' "$backup" >&2
+    else
+      kill -CONT "$gateway" 2>/dev/null || true
+      docker update --restart unless-stopped "$container" >/dev/null
+    fi
+  fi
+  exit "$result"
+}
+trap cleanup EXIT
+docker cp "$release/container-check.s" "$container:$kit"
+docker update --restart=no "$container" >/dev/null
+kill -STOP "$gateway"
+# Any active run, environment/dependency operation or enabled schedule aborts
+# before stopping the service. Idle worlds are retired explicitly, never replayed.
+check "$container" "$state" --mode retire --output /tmp/state-before.json
+docker cp "$container:/tmp/state-before.json" "$backup/state-before.json"
+kill -TERM "$gateway"
+kill -CONT "$gateway"
+stopped=true
+docker stop "$container" >/dev/null
+cp -a --reflink=auto "$state" "$backup/state"
+backed_up=true
+docker rename "$container" "$previous"
+renamed=true
+args+=(--state "$state" --root "$state")
+bash "$release/run-container" "${args[@]}"
+healthy "$container"
+# After a healthy public gateway admits requests, restoring a pre-upgrade
+# snapshot could discard newly accepted user work. Keep live data in place if
+# a later verification fails; startup failures above still roll back atomically.
+rollback=false
+docker cp "$release/container-check.s" "$container:$kit"
+check "$container" "$state" --mode audit --output /tmp/state-after.json
+docker cp "$container:/tmp/state-after.json" "$backup/state-after.json"
+cmp "$backup/state-before.json" "$backup/state-after.json"
+[[ $(sha256sum "$state/token" | cut -d' ' -f1) == "$token_before" ]]
+check "$container" "$state" --mode gpu --gpus "$gpus" --output /tmp/tensor-preview.json
+docker cp "$container:/tmp/tensor-preview.json" "$release/production-preview.json"
+docker cp "$container:/tmp/tensor-preview.json.presentation" "$release/production-preview.presentation"
+docker exec "$container" sh -c 'if command -v python3 || command -v python; then exit 1; fi; sputnik --version'
+rollback=false
+docker inspect --format 'Image={{.Image}} Health={{.State.Health.Status}} Restarts={{.RestartCount}} RestartPolicy={{.HostConfig.RestartPolicy.Name}} Mounts={{json .Mounts}} GPUs={{json .HostConfig.DeviceRequests}}' "$container"
+printf 'PASS deployed %s: all historical runs/metadata, project heads, sheet grants, state/token and GPU configuration preserved; backup=%s previous=%s\n' "$backend" "$backup" "$previous"

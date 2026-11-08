@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+release=$1
+image=$2
+vm_revision=$3
+notebook_revision=$4
+context_sha256=$5
+trap 'result=$?; printf "%s\n" "$result" > "$release/build.exit"; exit "$result"' EXIT
+cd "$release"
+printf '%s  context.tar.gz\n' "$context_sha256" | sha256sum -c -
+mkdir -p context
+tar -xzf context.tar.gz -C context
+DOCKER_BUILDKIT=1 docker build --progress=plain --build-arg BUILD_JOBS=12 \
+  --build-arg NOTEBOOK_REVISION="$notebook_revision" \
+  --build-arg SPUTNIK_REVISION="$vm_revision" \
+  --label "io.sputnik.source-context.sha256=$context_sha256" \
+  -f context/sputnik-notebook/Dockerfile --iidfile image.id -t "$image" context
+docker image inspect --format '{{.Id}} {{json .Config.Labels}}' "$image" > image-identity.txt
+printf 'PASS image built with native remote integration and lifecycle tests: %s\n' "$image"
