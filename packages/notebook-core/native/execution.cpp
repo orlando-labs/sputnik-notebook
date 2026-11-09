@@ -291,6 +291,20 @@ void NotebookExecution::restart(ProjectTab &tab, const std::string &runtime_key)
   tab.session.status = "Worker reset; next Run starts a fresh runtime. No cells replayed.";
 }
 
+void NotebookExecution::retire_workers(const std::string &owner) {
+  for (auto it = sheets_.begin(); it != sheets_.end();) {
+    if (it->second.owner != owner) { ++it; continue; }
+    if (it->second.process && it->second.process->generation()) terminate_and_reap(*it->second.process);
+    it = sheets_.erase(it);
+  }
+}
+
+void NotebookExecution::forget_sheet(const std::string &owner) {
+  retire_workers(owner);
+  grants_.erase(owner);
+  environment_directories_.erase(owner);
+}
+
 void NotebookExecution::configure_grants(ProjectTab &tab, const std::string &text) {
   const auto parsed = parse_grants(text); // Validate before affecting any live world.
   std::vector<std::string> grants;
@@ -307,11 +321,7 @@ void NotebookExecution::configure_grants(ProjectTab &tab, const std::string &tex
   restart(tab);
   // Invocation runtimes use the controller sheet's policy too. Revocation
   // must retire those worlds before a subsequent Periodic Work tick.
-  for (auto it = sheets_.begin(); it != sheets_.end();) {
-    if (it->second.owner != owner) { ++it; continue; }
-    if (it->second.process && it->second.process->generation()) terminate_and_reap(*it->second.process);
-    it = sheets_.erase(it);
-  }
+  retire_workers(owner);
   grants_[owner] = std::move(grants);
   tab.session.status = "Worker grants updated; next Run starts a fresh runtime. No cells replayed.";
 }

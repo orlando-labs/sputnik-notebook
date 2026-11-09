@@ -613,10 +613,39 @@ void test_numbered_sheets_and_project_input_deletion() {
   sputnik_notebook_destroy(notebook);
 }
 
+void test_named_sheet_creation_and_deletion() {
+  TempDirectory temporary;
+  const auto path = temporary.path / "sheets.sputnikbook";
+  auto *book = open_new(path);
+  const auto main_cell = first_cell_id(snapshot(book), "sheet:main");
+  command(book, "source", "sheet:main", main_cell.c_str(), "42");
+  command(book, "new_named_sheet", nullptr, "training", "Результаты обучения");
+  auto saved = sputnik::notebook::load_project(path).document;
+  expect(saved.sheets.back().id == "training" && saved.sheets.back().title == "Результаты обучения",
+         "a Cyrillic display title survives save with a separate stable identifier");
+  command(book, "save_board", nullptr, nullptr,
+          R"({"id":"training_board","title":"Training","sheet":"training","columns":1,"components":[]})");
+  command(book, "delete_sheet", "sheet:training");
+  saved = sputnik::notebook::load_project(path).document;
+  expect(saved.sheets.size() == 1 && saved.boards.front().sheet == "main" &&
+         saved.sheets.front().cells.front().source.empty() && snapshot(book).find("\"source\":\"42\"") != std::string::npos,
+         "deletion reassigns boards and preserves another sheet's unsaved source");
+  command(book, "delete_sheet", "sheet:main", nullptr, "replacement");
+  saved = sputnik::notebook::load_project(path).document;
+  expect(saved.sheets.size() == 1 && saved.active_sheet != "main" && saved.boards.front().sheet == saved.active_sheet &&
+         saved.sheets.front().cells.front().source.empty(),
+         "deleting the last sheet creates a blank controller and removes its source");
+  sputnik_notebook_destroy(book);
+  book = open_existing(path);
+  expect(snapshot(book).find("sheet:main") == std::string::npos, "deleted sheet stays deleted after reopening");
+  sputnik_notebook_destroy(book);
+}
+
 } // namespace
 
 int main() {
   test_numbered_sheets_and_project_input_deletion();
+  test_named_sheet_creation_and_deletion();
   test_container_result_formats();
   test_external_directory_link_import_and_unlink();
   test_interpolation_display_values();

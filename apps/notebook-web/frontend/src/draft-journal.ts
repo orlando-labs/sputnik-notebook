@@ -29,7 +29,7 @@ export function validDraft(value: DraftRecord, account: string, project: string)
     if (!value || value.account !== account || value.project !== project || typeof value.id !== 'string' || !Number.isFinite(value.updated) || value.updated < Date.now() - lifetime || value.updated > Date.now() + 60000) return false
     if (typeof value.document !== 'string' || typeof value.base_document !== 'string' || typeof value.sheet !== 'string' || typeof value.file !== 'string' || typeof value.board !== 'string') return false
     parseNotebook({ revision: value.base_revision, document: value.document }); parseNotebook({ revision: value.base_revision, document: value.base_document })
-    const edits = (changes: Record<string, FileEdit | null>) => changes && typeof changes === 'object' && !Array.isArray(changes) && Object.entries(changes).length <= 2048 && Object.entries(changes).every(([path, edit]) =>
+    const edits = (changes: Record<string, FileEdit | null>) => changes && typeof changes === 'object' && !Array.isArray(changes) && Object.entries(changes).length <= 4096 && Object.entries(changes).every(([path, edit]) =>
       !!path && new TextEncoder().encode(path).length <= 1024 && path.toLowerCase() !== 'project.json' && !/[\x00-\x1f\x7f\\:]/.test(path) && !path.startsWith('/') && path.split('/').every(part => !!part && part !== '.' && part !== '..') &&
       (edit === null || (edit && typeof edit.data === 'string' && (edit.encoding === 'utf8' ? new TextEncoder().encode(edit.data).length <= 1048576 : edit.encoding === 'base64' && base64(edit.data)))))
     if (!edits(value.changes)) return false

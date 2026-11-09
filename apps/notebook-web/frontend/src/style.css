@@ -519,7 +519,8 @@ button.sheet-link.active { background: var(--surface); }
 .project-file-list .sheet-link { width: 100%; text-align: left; }
 .project-file-list .sheet-link span:first-of-type { overflow: hidden; text-overflow: ellipsis; }
 .notebook-sidebar > .source-note { padding: 0 20px; }
-.sidebar-add-resource { align-self: flex-start; margin: 0 20px 18px; }
+.sidebar-file-actions { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 20px 18px; }
+.markdown-view-toggle { align-self: flex-start; margin-bottom: 12px; }
 .dependencies-link { margin: 4px 12px 18px; }
 .source-note { color: var(--muted); font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
 .source-error { color: var(--error); padding: 10px 14px; margin: 0; overflow-wrap: anywhere; }
@@ -779,6 +780,19 @@ button.sheet-link.active { background: var(--surface); }
 .notebook-markdown table { width: 100%; table-layout: fixed; border-collapse: collapse; }
 .notebook-markdown th, .notebook-markdown td { border: 1px solid var(--rule); padding: 6px; overflow-wrap: anywhere; }
 .notebook-markdown .markdown-align-left { text-align: left; }.notebook-markdown .markdown-align-center { text-align: center; }.notebook-markdown .markdown-align-right { text-align: right; }
+.notebook-markdown-document { width: 100%; max-width: 920px; box-sizing: border-box; padding: 24px clamp(12px, 4vw, 40px); margin-inline: auto; font-size: 15px; }
+.notebook-markdown-document :is(h1, h2, h3, h4, h5, h6) { line-height: 1.22; margin-block: 1.35em .48em; }
+.notebook-markdown-document > :first-child { margin-top: 0; }
+.notebook-markdown-document :is(p, ul, ol, blockquote, pre, .markdown-table-scroll, .markdown-math-display) { margin: 0 0 1em; }
+.notebook-markdown-document :is(ul, ol) { padding-inline-start: 1.65em; }
+.notebook-markdown-document li + li { margin-top: .3em; }
+.notebook-markdown-document li > :is(ul, ol) { margin: .3em 0 0; }
+.notebook-markdown-document h2 { border-bottom: 1px solid var(--rule); padding-bottom: .25em; }
+.notebook-markdown-document th { background: var(--surface); }
+.notebook-markdown-document .markdown-table-scroll { overflow: auto; }
+.notebook-markdown-document table { table-layout: auto; }
+.markdown-math-display { display: block; padding: .25em 0; overflow: auto; }
+.markdown-math-error { white-space: pre-wrap; font-family: ui-monospace, monospace; color: var(--muted); }
 .sputnik-editor-host { min-width: 0; }
 .sputnik-code-editor { display: flex; min-width: 0; overflow: hidden; background: var(--editor); }
 .code-gutter { position: relative; flex: 0 0 calc(var(--line-digits) * 1ch + 21px); overflow: hidden; border-right: 1px solid color-mix(in srgb, var(--rule) 45%, transparent); text-align: right; color: var(--muted); user-select: none; font: 11px/20px 'SFMono-Regular', Consolas, monospace; }

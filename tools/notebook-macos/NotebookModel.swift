@@ -952,7 +952,7 @@ final class NotebookModel: ObservableObject {
     func showSource(_ range: NotebookSourceRange, cell: NotebookCell, tab: NotebookTab) {
         guard source(for: cell, in: tab).utf16.elementsEqual(cell.source.utf16),
               NotebookSourceLines(cell.source).selection(for: range, in: cell.source as NSString) != nil else { return }
-        if activeTab?.id != tab.id || activeBoard != nil {
+        if activeTab?.id != tab.id || activeBoard != nil || bookPage != nil {
             if executingWorker { selectTab(tab) }
             else {
                 navigationRevision &+= 1
@@ -1153,6 +1153,10 @@ final class NotebookModel: ObservableObject {
     @Published var error: String?
     @Published var selectedCellID = ""
     @Published var selectedBoardID: String?
+    @Published private(set) var bookPage: NotebookBookPage?
+    @Published private(set) var markdownPaths: [String] = []
+    @Published private(set) var markdownDrafts: [String: NotebookMarkdownDraft] = [:]
+    @Published var importingBookFiles = false
     @Published private(set) var periodicStates: [String: NotebookPeriodicState] = [:]
     var periodicBoardVisible: String?
     private var periodicTimer: Timer?
@@ -1401,6 +1405,7 @@ final class NotebookModel: ObservableObject {
     func selectBoard(_ board: NotebookBoard) {
         guard canNavigate else { return }
         navigationRevision &+= 1
+        bookPage = nil
         selectedBoardID = board.id
     }
     func setProjectInput(_ input: NotebookProjectInput, text: String) {
@@ -1599,7 +1604,67 @@ final class NotebookModel: ObservableObject {
     var selectedCell: NotebookCell? {
         activeTab?.cells.first { $0.id == selectedCellID } ?? activeTab?.cells.first
     }
-    var hasUnsavedChanges: Bool { !drafts.isEmpty || !editorFailures.isEmpty || (snapshot?.modified_count ?? 0) != 0 }
+    var hasUnsavedChanges: Bool {
+        !drafts.isEmpty || !editorFailures.isEmpty || (snapshot?.modified_count ?? 0) != 0 ||
+            markdownDrafts.values.contains(where: \.modified)
+    }
+
+    var bookFiles: NotebookBookFiles? {
+        snapshot.map { NotebookBookFiles(root: URL(fileURLWithPath: $0.path, isDirectory: true)) }
+    }
+
+    func selectBookPage(_ page: NotebookBookPage) {
+        guard canNavigate, let files = bookFiles else { return }
+        if case .markdown(let path) = page, markdownDrafts[path]?.modified != true {
+            do {
+                let source = try files.readMarkdown(path)
+                markdownDrafts[path] = NotebookMarkdownDraft(saved: source, source: source)
+            } catch { self.error = error.localizedDescription; return }
+        }
+        navigationRevision &+= 1
+        selectedBoardID = nil
+        bookPage = page
+    }
+
+    func createMarkdown(_ name: String) {
+        guard !busy, canNavigate, let files = bookFiles else { return }
+        do {
+            let path = try files.newMarkdown(name)
+            bookFilesChanged()
+            selectBookPage(.markdown(path))
+        } catch { self.error = error.localizedDescription }
+    }
+
+    func editMarkdown(_ path: String, source: String) {
+        guard markdownDrafts[path] != nil else { return }
+        markdownDrafts[path]?.source = source
+        onChange?()
+    }
+
+    func revealBookFile(_ path: String) {
+        guard let files = bookFiles else { return }
+        do {
+            let url = try files.url(path)
+            NSWorkspace.shared.activateFileViewerSelecting([FileManager.default.fileExists(atPath: url.path) ? url : files.root])
+        } catch { self.error = error.localizedDescription }
+    }
+
+    func bookFilesChanged() {
+        do { markdownPaths = try bookFiles?.markdownFiles() ?? [] }
+        catch { self.error = error.localizedDescription }
+        remote.edited()
+    }
+
+    private func saveMarkdown(_ paths: [String]) throws {
+        guard let files = bookFiles else { return }
+        for path in paths {
+            guard let draft = markdownDrafts[path], draft.modified else { continue }
+            try files.saveMarkdown(path, draft: draft)
+            markdownDrafts[path] = NotebookMarkdownDraft(saved: draft.source, source: draft.source)
+            onChange?()
+            remote.edited()
+        }
+    }
     func isModified(_ tab: NotebookTab) -> Bool {
         tab.modified || drafts.keys.contains { $0.tab == tab.id } || editorFailures.keys.contains { $0.tab == tab.id }
     }
@@ -1746,10 +1811,11 @@ final class NotebookModel: ObservableObject {
             selectedTabID = tab.id
             selectedCellID = tab.selected_cell.isEmpty ? tab.cells.first?.id ?? "" : tab.selected_cell
             selectedBoardID = nil
+            bookPage = nil
             return
         }
         perform("select", tab: tab) { [weak self] success in
-            if success { self?.selectedBoardID = nil }
+            if success { self?.selectedBoardID = nil; self?.bookPage = nil }
         }
     }
     func newProject() { requestNew?() }
@@ -1796,7 +1862,7 @@ final class NotebookModel: ObservableObject {
     }
 
     func open(url: URL, create: Bool = false, completion: ((Bool) -> Void)? = nil) {
-        guard !busy, !dependencyOperationActive else { completion?(false); return }
+        guard !busy, !dependencyOperationActive, !importingBookFiles else { completion?(false); return }
         periodicTimer?.invalidate(); periodicTimer = nil
         for key in periodicStates.keys { periodicStates[key]?.pause() }
         busy = true
@@ -1819,12 +1885,17 @@ final class NotebookModel: ObservableObject {
                 self.runHistory.open(project: state.path); self.pendingRunHistory = [:]; self.workerLastContact = nil; self.runtimeTelemetry = [:]; self.runtimeSampleDates = [:]
                 self.documentIdentity = identity
                 self.selectedBoardID = nil
+                self.bookPage = nil
+                self.markdownDrafts = [:]
+                self.markdownPaths = []
                 self.periodicStates = [:]
                 self.actionSignatures = [:]; self.componentUpdatedAt = [:]; self.executingTargetID = nil; self.executionStarted = nil
                 self.periodicBoardVisible = nil
                 self.accept(state)
                 self.scheduleWatchPolling()
                 self.remote.open(url)
+                do { self.markdownPaths = try self.bookFiles?.markdownFiles() ?? [] }
+                catch { /* Leave notebooks with an unavailable docs directory openable. */ }
                 self.library.recordOpened(url)
                 NSDocumentController.shared.noteNewRecentDocumentURL(url)
             }
@@ -1859,11 +1930,23 @@ final class NotebookModel: ObservableObject {
                  text: String = "", commandCellID: String? = nil, completion: ((Bool) -> Void)? = nil) {
         guard !dependencyOperationActive || ["restart_worker", "worker_environment", "worker_grants", "book_worker_grants"].contains(action) else { completion?(false); return }
         guard !busy, snapshot != nil else { completion?(false); return }
+        do {
+            if action == "save", case .markdown(let path) = bookPage {
+                try saveMarkdown([path])
+                error = nil
+                completion?(true)
+                return
+            }
+        } catch { self.error = error.localizedDescription; completion?(false); return }
         guard editorFailures.isEmpty else {
             let message = editorFailures.sorted { ($0.key.tab, $0.key.cell) < ($1.key.tab, $1.key.cell) }.first!.value
             error = "A text block has an unsaved editor buffer: \(message) Undo or correct that edit before saving or changing tabs."
             completion?(false)
             return
+        }
+        if action == "save_all" {
+            do { try saveMarkdown(markdownDrafts.keys.sorted()) }
+            catch { self.error = error.localizedDescription; completion?(false); return }
         }
         let target = tab ?? activeTab
         let targetCell = cell ?? (action == "select" ? nil : selectedCell)
@@ -1955,9 +2038,16 @@ final class NotebookModel: ObservableObject {
             if error == nil && action == "book_worker_grants" {
                 for tab in self.snapshot?.tabs ?? [] where tab.kind == "sheet" { self.discardResults(in: tab.id) }
             }
-            if state != nil && navigation == self.navigationRevision && ["select", "new_sheet", "new_module"].contains(action) {
+            if state != nil && navigation == self.navigationRevision && ["select", "new_sheet", "new_named_sheet", "new_module"].contains(action) {
                 self.selectedTabID = nil
-                if action == "new_sheet" || action == "new_module" { self.selectedBoardID = nil }
+                if error == nil { self.bookPage = nil }
+                if action != "select" { self.selectedBoardID = nil }
+            }
+            if action == "delete_sheet", let target, let state, !state.tabs.contains(where: { $0.id == target.id }) {
+                self.discardResults(in: target.id)
+                for board in previousState?.boards ?? [] where "sheet:" + board.sheet == target.id {
+                    for service in board.services { self.periodicStates[board.id + ":" + service.id]?.pause() }
+                }
             }
             if let state {
                 let fresh: Set<String> = !executes ? [] : ["set_input", "set_inputs", "set_cell_inputs"].contains(action)

@@ -1,0 +1,38 @@
+:root {
+  color-scheme: light dark;
+  --paper: Canvas;
+  --ink: CanvasText;
+  --muted: GrayText;
+  --accent: LinkText;
+  --rule: color-mix(in srgb, var(--ink) 20%, var(--paper));
+  --panel: color-mix(in srgb, var(--ink) 6%, var(--paper));
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+body { margin: 0; }
+main { max-width: 920px; box-sizing: border-box; margin-inline: auto; padding: 30px clamp(18px, 5vw, 52px) 52px; overflow-wrap: anywhere; }
+main > :first-child { margin-top: 0; }
+h1, h2, h3, h4, h5, h6 { margin: 1.35em 0 .48em; line-height: 1.22; }
+h1 { font-size: 2em; letter-spacing: -.02em; }
+h2 { font-size: 1.55em; border-bottom: 1px solid var(--rule); padding-bottom: .25em; }
+h3 { font-size: 1.25em; }
+p, ul, ol, blockquote, pre, .table-scroll, .math-display { margin: 0 0 1em; }
+li + li { margin-top: .3em; }
+li > :is(ol, ul) { margin: .3em 0 0; }
+li > p:last-child { margin-bottom: 0; }
+ul, ol { padding-inline-start: 1.65em; }
+a { color: var(--accent); text-decoration: underline; text-underline-offset: .15em; }
+blockquote { padding: .25em 1em; border-inline-start: 3px solid var(--accent); background: var(--panel); color: var(--muted); }
+blockquote > :last-child { margin-bottom: 0; }
+pre, code { font: .9em/1.6 ui-monospace, monospace; background: var(--panel); border-radius: 5px; }
+code { padding: .12em .3em; }
+pre { padding: .75em 1em; overflow-x: auto; }
+pre > code { font-size: inherit; background: none; padding: 0; }
+hr { margin: 1.6em 0; border: 0; border-bottom: 1px solid var(--rule); }
+.table-scroll { overflow: auto; }
+table { width: max-content; min-width: 100%; max-width: 100%; border-collapse: collapse; font-size: .93em; }
+th, td { padding: .48em .7em; border: 1px solid var(--rule); vertical-align: top; }
+th, tbody tr:nth-child(even) { background: var(--panel); }
+.math-display { display: block; overflow: auto; padding: .25em 0; }
+.math-error { color: var(--muted); white-space: pre-wrap; font-family: ui-monospace, monospace; }

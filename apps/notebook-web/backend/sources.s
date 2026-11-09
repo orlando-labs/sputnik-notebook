@@ -28,7 +28,8 @@ def file_bytes(value):
   Base64.decode(value)
 
 def apply_changes(original, changes):
-  raise InvalidInput("Invalid project file changes.") unless Map === changes and changes.count <= 2048
+  # A move can replace every member, with a deletion and an addition per file.
+  raise InvalidInput("Invalid project file changes.") unless Map === changes and changes.count <= 4096
   files = {}
   original.each |path, data|:
     files[path] = data

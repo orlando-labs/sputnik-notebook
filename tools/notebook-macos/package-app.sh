@@ -56,6 +56,7 @@ cat > "$contents/Resources/distribution-info.json" <<'EOF'
 }
 EOF
 cp tools/notebook-macos/Assets/AppIcon.icns "$contents/Resources/AppIcon.icns"
+cp -R "$(dirname "$binary")/MarkdownPreview" "$contents/Resources/"
 
 # Notebook presentation helpers are part of the host's source import library.
 # They must work after moving the app, without a registry install or checkout.

@@ -4,11 +4,12 @@ import { api, apiBlob, APIError, type Project } from './api'
 import { newCell, newId, parseNotebook, plainCell, type NotebookCell, type NotebookDocument, type NotebookResponse } from './notebook'
 import NotebookIcon from './NotebookIcon.vue'
 import NotebookFileEditor from './NotebookFileEditor.vue'
+import NotebookFileExplorer from './NotebookFileExplorer.vue'
 import NotebookHistory from './NotebookHistory.vue'
 import NotebookRuns from './NotebookRuns.vue'
 import NotebookDependencies from './NotebookDependencies.vue'
 import NotebookEnvironments from './NotebookEnvironments.vue'
-import { useSources, archiveName, moduleIDFromName, modulePathForID, type FileEdit } from './sources'
+import { useSources, archiveName, attachment, markdownDocument, moduleIDFromName, modulePathForID, type FileEdit } from './sources'
 import { documentJSON } from './document-json'
 import { download } from './rich'
 import NotebookCellOutput from './NotebookCellOutput.vue'
@@ -77,11 +78,18 @@ const resourceLimits = ref<InstanceType<typeof NotebookResourceLimits>>()
 const resourceDraftDirty = ref(false)
 const preview = ref<InstanceType<typeof NotebookPreview>>()
 const fileDialog = ref<HTMLDialogElement>()
+const explorer = ref<InstanceType<typeof NotebookFileExplorer>>()
 const moduleName = ref(''), resourcePath = ref(''), fileError = ref('')
 const resource = ref<File | null>(null)
-const fileMode = ref<'module' | 'resource'>('module')
+const folderFiles = ref<File[]>([])
+const fileMode = ref<'module' | 'document' | 'resource' | 'folder'>('module')
+const addingFile = ref(false)
+const fileDialogTitle = computed(() => ({ module: 'New module', document: 'New Markdown document', resource: 'Add resource', folder: 'Attach folder' })[fileMode.value])
 const transferBusy = ref(false)
 const currentModule = computed(() => document.value?.modules?.find(module => module.path === sources.selected))
+const markdownFiles = computed(() => sources.files.filter(file => file.kind !== 'module' && markdownDocument(file.path)))
+const otherFiles = computed(() => sources.files.filter(file => file.kind === 'module' || !markdownDocument(file.path)))
+const currentAttachment = computed(() => sources.files.some(file => file.path === sources.selected && attachment(file)))
 const relocatedModulePath = computed(() => {
   const id = moduleIDFromName(relocatedModule.value)
   if (currentModule.value && id) return modulePathForID(relocatedPath.value.trim(), id)
@@ -91,9 +99,10 @@ const endpoint = () => `/api/projects/${encodeURIComponent(props.project.id)}/no
 const dirty = computed(() => document.value !== null && (documentJSON(document.value) !== saved.value || sources.dirty))
 const parameterMutating = ref(false), mediaMutating = ref(false)
 const mediaDrafts = ref<Record<string, boolean>>({})
-const busy = computed(() => loading.value || saving.value || relocating.value || recovering.value || mediaMutating.value)
+const busy = computed(() => loading.value || saving.value || relocating.value || recovering.value || mediaMutating.value || addingFile.value)
 const sheet = computed(() => document.value?.sheets.find(value => value.id === activeSheet.value))
 const validTitles = computed(() => document.value?.sheets.every(value => value.title.trim().length > 0))
+const fileChangesDisabled = computed(() => busy.value || !!pending.value || conflict.value || !sources.ready)
 const execution = reactive(useExecution(props.accountId, () => props.project, document, revision, dirty, computed(() => busy.value || parameterMutating.value), activeSheet, activeBoardID))
 const environmentErrorTarget = computed(() => {
   const result = execution.displayedResult
@@ -366,6 +375,10 @@ function addSheet() {
   sources.selected = ''
   activeBoardID.value = ''
   activeSheet.value = added.id
+  void nextTick(() => {
+    const title = window.document.querySelector<HTMLInputElement>('#sheet-title')
+    title?.focus(); title?.select()
+  })
 }
 function addCell(kind: 'code' | 'text') {
   if (!sheet.value) return
@@ -409,18 +422,28 @@ async function transfer(draft = false) {
   } catch (cause) { failure(cause) }
   finally { transferBusy.value = false }
 }
-function showFile(mode: 'module' | 'resource') {
+function showFile(mode: typeof fileMode.value) {
   if (!discardParameterDrafts()) return
-  fileMode.value = mode; moduleName.value = ''; resourcePath.value = ''; resource.value = null; fileError.value = ''; fileDialog.value?.showModal()
+  fileMode.value = mode; moduleName.value = ''; resourcePath.value = ''; resource.value = null; folderFiles.value = []; fileError.value = ''; fileDialog.value?.showModal()
 }
 async function addFile() {
-  if (busy.value || pending.value || conflict.value || !props.project.permissions.write) return
+  if (fileChangesDisabled.value || !props.project.permissions.write) return
   fileError.value = ''
+  addingFile.value = true
   try {
     if (fileMode.value === 'module') sources.addModule(moduleName.value.trim())
+    else if (fileMode.value === 'document') sources.addDocument(moduleName.value.trim())
+    else if (fileMode.value === 'folder') await sources.uploadFolder(folderFiles.value, 'resources')
     else { if (!resource.value) throw new Error('Choose a file.'); if (!await sources.upload(resource.value, resourcePath.value.trim())) return }
+    if (fileMode.value !== 'folder') activeBoardID.value = ''
     fileDialog.value?.close()
   } catch (cause) { fileError.value = cause instanceof Error ? cause.message : 'Could not add this file.' }
+  finally { addingFile.value = false }
+}
+async function moveFolder(from: string, to: string) {
+  if (fileChangesDisabled.value || !props.project.permissions.write) return
+  relocating.value = true
+  try { await sources.moveFolder(from, to) } finally { relocating.value = false }
 }
 async function downloadFile() { try { await sources.downloadFile() } catch (cause) { sources.error = cause instanceof Error ? cause.message : 'Could not download file.' } }
 function beforeUnload(event: BeforeUnloadEvent) {
@@ -491,11 +514,20 @@ onUnmounted(() => {
             <NotebookIcon name="sheet" /><span>{{ item.title || 'Untitled sheet' }}</span><span class="sheet-cell-count">{{ item.cells.length }}</span>
           </button>
         </nav>
-        <div class="sidebar-section-title"><h3>Modules &amp; Files</h3><button v-if="project.permissions.write" class="plain icon-button" aria-label="New module" :disabled="busy || !!pending || conflict || !sources.ready" @click="showFile('module')"><NotebookIcon name="plus" /></button></div>
-        <nav class="project-file-list" aria-label="Project files"><button v-for="file in sources.files" :key="file.path" class="plain sheet-link" :class="{ active: sources.selected === file.path }" :aria-current="sources.selected === file.path ? 'page' : undefined" :title="file.path" @click="openFile(file.path)"><NotebookIcon :name="file.kind === 'module' ? 'sheet' : 'folder'" /><span>{{ file.module_id || file.path }}</span><span v-if="sources.changes[file.path] !== undefined" aria-label="Unsaved file">•</span></button></nav>
+        <div class="sidebar-section-title"><h3>Documentation</h3><button v-if="project.permissions.write" class="plain icon-button" aria-label="New Markdown document" title="New Markdown document" :disabled="fileChangesDisabled" @click="showFile('document')"><NotebookIcon name="plus" /></button></div>
+        <nav class="project-file-list" aria-label="Documentation"><button v-for="file in markdownFiles" :key="file.path" class="plain sheet-link" :class="{ active: sources.selected === file.path }" :aria-current="sources.selected === file.path ? 'page' : undefined" :title="file.path" @click="openFile(file.path)"><NotebookIcon name="sheet" /><span>{{ file.path.slice('docs/'.length) }}</span><span v-if="sources.changes[file.path] !== undefined" aria-label="Unsaved file">•</span></button></nav>
+        <p v-if="sources.ready && !markdownFiles.length" class="source-note">No Markdown documents yet</p>
+        <div class="sidebar-section-title"><h3>Modules &amp; Files</h3><button v-if="project.permissions.write" class="plain icon-button" aria-label="New module" :disabled="fileChangesDisabled" @click="showFile('module')"><NotebookIcon name="plus" /></button></div>
+        <nav class="project-file-list" aria-label="Project files"><button v-for="file in otherFiles" :key="file.path" class="plain sheet-link" :class="{ active: sources.selected === file.path }" :aria-current="sources.selected === file.path ? 'page' : undefined" :title="file.path" @click="openFile(file.path)"><NotebookIcon :name="file.kind === 'module' ? 'sheet' : 'folder'" /><span>{{ file.module_id || file.path }}</span><span v-if="sources.changes[file.path] !== undefined" aria-label="Unsaved file">•</span></button></nav>
         <p v-if="sources.indexBusy" class="source-note">Loading files…</p>
         <p v-else-if="sources.ready && !sources.files.length" class="source-note">No bundled files</p>
-        <button v-if="project.permissions.write" class="plain text-button sidebar-add-resource" :disabled="busy || !!pending || conflict || !sources.ready" @click="showFile('resource')">Add resource…</button>
+        <div class="sidebar-file-actions">
+          <button class="plain text-button" :disabled="!sources.ready" @click="explorer?.show()">File Explorer…</button>
+          <template v-if="project.permissions.write">
+            <button class="plain text-button" :disabled="fileChangesDisabled" @click="showFile('resource')">Add resource…</button>
+            <button class="plain text-button" :disabled="fileChangesDisabled" @click="showFile('folder')">Attach folder…</button>
+          </template>
+        </div>
         <button class="plain sheet-link" :disabled="!project.permissions.write || busy || conflict" @click="showInputs()"><NotebookIcon name="sheet" /><span>Project Inputs…</span></button>
         <button class="plain sheet-link environments-link" @click="environments?.show()"><NotebookIcon name="folder" /><span>Environments…</span></button>
         <button class="plain sheet-link dependencies-link" @click="dependencies?.show()"><NotebookIcon name="folder" /><span>Dependencies…</span></button>
@@ -519,7 +551,7 @@ onUnmounted(() => {
           <button :disabled="busy || conflict" @click="changeSheet('copy')">Duplicate sheet</button>
           <button :disabled="busy || conflict || document.sheets[0]?.id === activeSheet" @click="changeSheet('up')">Move sheet up</button>
           <button :disabled="busy || conflict || document.sheets.at(-1)?.id === activeSheet" @click="changeSheet('down')">Move sheet down</button>
-          <button :disabled="busy || conflict || document.sheets.length <= 1" @click="showDeleteSheet">Delete sheet…</button>
+          <button :disabled="busy || conflict" @click="showDeleteSheet">Delete sheet…</button>
         </div>
         <p v-if="pending" class="execution-note" role="status" data-testid="pending-save">A Save response was not confirmed. Retrying checks the original command. Newer notebook edits are kept; resolve this Save before editing bundled files. <button :disabled="busy || conflict" @click="save">Retry original save</button></p>
         <div v-if="execution.registry?.resources" class="resource-summary" data-testid="resource-summary"><span>Execution: {{ secondsLabel(execution.registry.resources.spent_ms) }} used<span v-if="execution.registry.resources.remaining_ms !== null"> · {{ secondsLabel(execution.registry.resources.remaining_ms) }} remaining</span></span><span v-if="execution.registry.resources.effective.run_seconds">One run: {{ execution.registry.resources.effective.run_seconds }} s</span><button class="plain text-button" @click="resourceLimits?.show()">Limits &amp; storage…</button><p v-if="execution.registry.resources.remaining_ms === '0'" role="status">Execution budget exhausted. Stop and saved results remain available.</p></div>
@@ -528,7 +560,7 @@ onUnmounted(() => {
         <div v-if="inputs.error || inputs.pending" class="execution-message" role="status" data-testid="input-status"><p>{{ inputs.error || 'Checking the parameter command. Accepted values are recovered without repeating the update.' }}</p><button :disabled="inputs.busy" @click="inputs.refresh">Check parameter status</button><button v-if="inputs.pending && inputs.unknown && execution.canExecute" :disabled="inputs.busy || execution.requestBusy || !!execution.pending" @click="inputs.retry">Retry pending input command</button></div>
         <div v-if="dirty && (document.inputs?.length || sheet?.cells.some(cell => cell.cell_ui?.inputs.length))" class="source-note parameter-save-note">Save notebook changes before applying parameter values.</div>
         <div v-if="sources.error" class="source-error" role="alert">{{ sources.error }} <button class="text-button" @click="sources.selected ? sources.open(sources.selected) : sources.index()">Retry files</button></div>
-        <NotebookFileEditor v-if="sources.selected" :key="sources.selected" :project-id="project.id" :file="sources.view" :path="sources.selected" :module-id="currentModule?.id" :auto-import="!!document.auto_imports?.includes(currentModule?.id || '')" :loading="sources.fileBusy" :writable="project.permissions.write" :disabled="busy || !!pending || conflict" :changed="sources.changes[sources.selected] !== undefined" @text="sources.text" @auto-import="sources.autoImport" @download="downloadFile" @remove="sources.remove" @relocate="showRelocate" />
+        <NotebookFileEditor v-if="sources.selected" :key="sources.selected" :project-id="project.id" :file="sources.view" :path="sources.selected" :module-id="currentModule?.id" :auto-import="!!document.auto_imports?.includes(currentModule?.id || '')" :loading="sources.fileBusy" :writable="project.permissions.write" :disabled="fileChangesDisabled" :changed="sources.changes[sources.selected] !== undefined" :attachment="currentAttachment" @text="sources.text" @auto-import="sources.autoImport" @download="downloadFile" @remove="sources.remove" @relocate="showRelocate" @reveal="explorer?.show(sources.selected)" />
         <div v-if="!sources.selected" class="execution-toolbar">
           <span class="execution-status" role="status" data-testid="execution-status"><span class="runtime-dot" :class="{ 'is-running': execution.activeRun, 'is-offline': !execution.connected }"></span>{{ execution.status }}</span>
           <div v-if="execution.canExecute" class="execution-actions">
@@ -615,9 +647,12 @@ onUnmounted(() => {
     <dialog ref="sheetDialog" class="notebook-dialog" aria-labelledby="delete-sheet-title"><form @submit.prevent="removeSheet">
       <div class="dialog-heading"><h2 id="delete-sheet-title">Delete sheet {{ sheet?.title }}</h2><button type="button" class="plain icon-button" aria-label="Close delete sheet" @click="sheetDialog?.close()">×</button></div>
       <p>The sheet and its cells will be removed from your draft. Save notebook commits the deletion. Existing run history stays available.</p>
-      <label for="replacement-sheet">Replacement controller sheet</label><select id="replacement-sheet" v-model="replacementSheet"><option v-for="item in document?.sheets.filter(item => item.id !== activeSheet)" :key="item.id" :value="item.id">{{ item.title }}</option></select>
-      <p>{{ document?.boards?.filter(board => board.sheet === activeSheet).length || 0 }} linked boards will use this controller. Their component bindings are preserved; review them before running.</p>
-      <p v-if="sheetError" class="source-error" role="alert">{{ sheetError }}</p><div class="dialog-actions"><button type="button" @click="sheetDialog?.close()">Cancel</button><button class="primary" :disabled="busy || !replacementSheet">Delete from draft</button></div>
+      <template v-if="document && document.sheets.length > 1">
+        <label for="replacement-sheet">Replacement sheet</label><select id="replacement-sheet" v-model="replacementSheet"><option v-for="item in document.sheets.filter(item => item.id !== activeSheet)" :key="item.id" :value="item.id">{{ item.title }}</option></select>
+      </template>
+      <p v-else>A new blank sheet will replace this sheet.</p>
+      <p v-if="document?.boards?.some(board => board.sheet === activeSheet)">Linked boards will use the replacement sheet. Review their component bindings before running.</p>
+      <p v-if="sheetError" class="source-error" role="alert">{{ sheetError }}</p><div class="dialog-actions"><button type="button" @click="sheetDialog?.close()">Cancel</button><button class="primary" :disabled="busy">Delete from draft</button></div>
     </form></dialog>
     <dialog ref="relocateDialog" class="notebook-dialog" aria-labelledby="relocate-title" @cancel="relocating && $event.preventDefault()"><form @submit.prevent="relocate">
       <div class="dialog-heading"><h2 id="relocate-title">Rename or move {{ currentModule ? 'module' : 'file' }}</h2><button type="button" class="plain icon-button" aria-label="Close rename or move" :disabled="relocating" @click="relocateDialog?.close()">×</button></div>
@@ -627,11 +662,14 @@ onUnmounted(() => {
       <p>File contents move with the path. {{ currentModule ? 'Module metadata, its package declaration, auto-imports and board actions follow the new name.' : '' }} References inside other source code and resource paths must be updated manually. Save notebook commits all changes together.</p>
       <p v-if="relocateError" class="source-error" role="alert">{{ relocateError }}</p><div class="dialog-actions"><button type="button" :disabled="relocating" @click="relocateDialog?.close()">Cancel</button><button class="primary" :disabled="relocating">{{ relocating ? 'Reading file…' : 'Update notebook draft' }}</button></div>
     </form></dialog>
-    <dialog ref="fileDialog" class="notebook-dialog" aria-labelledby="file-dialog-title"><form @submit.prevent="addFile">
-      <div class="dialog-heading"><h2 id="file-dialog-title">{{ fileMode === 'module' ? 'New module' : 'Add resource' }}</h2><button type="button" class="plain icon-button" aria-label="Close file dialog" @click="fileDialog?.close()">×</button></div>
+    <NotebookFileExplorer v-if="document" ref="explorer" :files="sources.files" :writable="project.permissions.write" :disabled="fileChangesDisabled" :move-folder="moveFolder" :remove-folder="sources.removeFolder" @open="openFile" />
+    <dialog ref="fileDialog" class="notebook-dialog" aria-labelledby="file-dialog-title" @cancel="addingFile && $event.preventDefault()"><form @submit.prevent="addFile">
+      <div class="dialog-heading"><h2 id="file-dialog-title">{{ fileDialogTitle }}</h2><button type="button" class="plain icon-button" aria-label="Close file dialog" :disabled="addingFile" @click="fileDialog?.close()">×</button></div>
       <template v-if="fileMode === 'module'"><label for="module-name">Module name</label><input id="module-name" v-model="moduleName" required maxlength="64" placeholder="helpers"><p class="source-note">Source will be saved in modules/{{ moduleName || 'helpers' }}.s</p></template>
-      <template v-else><label for="resource-file">Resource file</label><input id="resource-file" type="file" required @change="resource = ($event.target as HTMLInputElement).files?.[0] || null; resourcePath = resource ? 'resources/' + resource.name : ''"><label for="resource-path">Project path</label><input id="resource-path" v-model="resourcePath" required placeholder="resources/data.csv"><p class="source-note">Up to 16 MiB per file. Text up to 1 MiB can be edited here.</p></template>
-      <p v-if="fileError" class="source-error" role="alert">{{ fileError }}</p><div class="dialog-actions"><button type="button" @click="fileDialog?.close()">Cancel</button><button class="primary">Add to draft</button></div>
+      <template v-else-if="fileMode === 'document'"><label for="markdown-name">Document name</label><input id="markdown-name" v-model="moduleName" required maxlength="200" placeholder="README.md"><p class="source-note">Markdown documents are stored in docs/.</p></template>
+      <template v-else-if="fileMode === 'folder'"><label for="resource-folder">Folder to attach</label><input id="resource-folder" type="file" webkitdirectory multiple required :disabled="addingFile" @change="folderFiles = Array.from(($event.target as HTMLInputElement).files || [])"><p class="source-note">Files are copied into resources/ with their folder structure. Up to 16 MiB per file and 64 MiB per book.</p></template>
+      <template v-else><label for="resource-file">Resource file</label><input id="resource-file" type="file" required :disabled="addingFile" @change="resource = ($event.target as HTMLInputElement).files?.[0] || null; resourcePath = resource ? 'resources/' + resource.name : ''"><label for="resource-path">Project path</label><input id="resource-path" v-model="resourcePath" required :disabled="addingFile" placeholder="resources/data.csv"><p class="source-note">Up to 16 MiB per file. Text up to 1 MiB can be edited here.</p></template>
+      <p v-if="fileError" class="source-error" role="alert">{{ fileError }}</p><div class="dialog-actions"><button type="button" :disabled="addingFile" @click="fileDialog?.close()">Cancel</button><button class="primary" :disabled="fileChangesDisabled">{{ addingFile ? 'Reading files…' : 'Add to draft' }}</button></div>
     </form></dialog>
   </section>
 </template>

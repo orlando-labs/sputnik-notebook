@@ -29,9 +29,10 @@ def scan_packages(directory, result, depth):
   paths = fs.entries(directory).map: $it.to_str
   paths.sorted.each |name|:
     path = fs.Path(name)
-    next if path.basename.starts_with?(".") or not fs.dir?(path)
+    next if path.basename.starts_with?(".")
+    metadata = fs.metadata(path)
     # Only core-managed links into the shared store are traversed.
-    next if fs.metadata(path).symlink? and not package_reference?(path.to_str)
+    next unless metadata.dir? or (metadata.symlink? and package_reference?(name))
     scan_packages(path, result, depth + 1)
 
 def matching_package(packages, metadata, artifact):

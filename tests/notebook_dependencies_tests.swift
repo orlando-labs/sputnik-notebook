@@ -184,6 +184,12 @@ struct NotebookDependencyTests {
         try await capture(model, controller, build, name: "dependency-editor-add-grants")
         await controller.installRegistryPackage()
         try require(controller.error != nil && controller.inventory.packages.isEmpty, "do not install with unconfirmed missing grants")
+        // A book copied from another Mac can contain shared references to its old store.
+        let book = URL(fileURLWithPath: model.snapshot!.path)
+        let staleReference = book.appendingPathComponent("packages/previous-owner/previous-package/1.0.0/source")
+        let missingPackage = book.deletingLastPathComponent().appendingPathComponent("old-store/previous-owner/previous-package/1.0.0/source")
+        try FileManager.default.createDirectory(at: staleReference.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(at: staleReference, withDestinationURL: missingPackage)
         let installing = Task { await controller.installRegistryPackage(approval: .init(tab: tab, missing: ["fs.read=/package-fixture"])) }
         for _ in 0..<80 {
             if controller.progress.fraction == 0 { break }

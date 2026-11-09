@@ -18,12 +18,35 @@ private enum NotebookMacOSSyntaxTests {
         try regexpTagsAndSymmetricOperator()
         try macroSplicesUseSputnikHashRules()
         try applyingColorPreservesText()
+        try markdownRanges()
         try editorDiagnosticRanges()
         try editorCoordinatorPreservesSelectionUndoAndIME()
         try greekLetterTokenReplacement()
         try editorGreekLetterReplacement()
         try editorSmartIndentation()
         print("notebook macOS syntax tests passed")
+    }
+
+    private static func markdownRanges() throws {
+        let source = #"""
+        # Данные 😀
+        - **Вес**: $x_i^2$ и `$literal$`
+        $$
+        \frac{a}{b}
+        $$
+        ```text
+        **literal**
+        ```
+        """#
+        let text = source as NSString
+        let tokens = NotebookMarkdownSyntax.tokens(in: source)
+        func has(_ content: String, _ category: SputnikSyntaxCategory) -> Bool {
+            tokens.contains { $0.category == category && text.substring(with: $0.range) == content }
+        }
+        require(has("# Данные 😀", .keyword) && has("**Вес**", .keyword), "Markdown headings and emphasis are highlighted")
+        require(has("$x_i^2$", .variable) && has(#"\frac{a}{b}"#, .variable), "inline and display math are highlighted")
+        require(has("`$literal$`", .string) && has("**literal**", .string),
+                "code keeps literal Markdown and TeX")
     }
 
     private static func regexpTagsAndSymmetricOperator() throws {

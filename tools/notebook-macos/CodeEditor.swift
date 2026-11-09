@@ -2,8 +2,9 @@ import AppKit
 import SwiftUI
 
 enum NotebookEditorLanguage {
-    case sputnik, json, yaml, toml
+    case sputnik, markdown, json, yaml, toml
     var configTitle: String { self == .yaml ? "YAML" : self == .toml ? "TOML" : "JSON" }
+    var isConfig: Bool { self != .sputnik && self != .markdown }
 }
 
 /// A small AppKit-backed source editor. Keeping NSTextView alive across SwiftUI
@@ -66,9 +67,9 @@ struct CodeEditor: NSViewRepresentable {
         if let storage = textView.textStorage {
             applySyntax(to: storage)
         }
-        textView.showsLineNumbers = language == .sputnik
+        textView.showsLineNumbers = !language.isConfig
         textView.updateDecorations(errorRanges)
-        textView.setAccessibilityLabel(language != .sputnik ? "\(language.configTitle) config editor" : editable ? "Sputnik source editor" : "Read-only Sputnik source")
+        textView.setAccessibilityLabel(editorLabel)
         scrollView.documentView = textView
         context.coordinator.revealSelection(in: textView)
         return scrollView
@@ -79,7 +80,7 @@ struct CodeEditor: NSViewRepresentable {
         guard let textView = scrollView.documentView as? FocusTrackingTextView else { return }
 
         textView.isEditable = editable
-        textView.setAccessibilityLabel(language != .sputnik ? "\(language.configTitle) config editor" : editable ? "Sputnik source editor" : "Read-only Sputnik source")
+        textView.setAccessibilityLabel(editorLabel)
         textView.onFocus = onFocus
 
         // Runtime snapshots arrive frequently. Assign only when the source
@@ -96,7 +97,7 @@ struct CodeEditor: NSViewRepresentable {
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
         let width = max(240, proposal.width ?? 640)
-        if language != .sputnik { return CGSize(width: width, height: max(150, proposal.height ?? 220)) }
+        if language.isConfig { return CGSize(width: width, height: max(150, proposal.height ?? 220)) }
         if fillsHeight, let height = proposal.height { return CGSize(width: width, height: max(96, height)) }
         let inset = (nsView.documentView as? NSTextView)?.textContainerInset.width ?? 40
         let usableWidth = max(160, width - 2 * inset - 10)
@@ -108,6 +109,12 @@ struct CodeEditor: NSViewRepresentable {
         }
         let height = min(320, max(96, CGFloat(visualLineCount) * 19 + 30))
         return CGSize(width: width, height: height)
+    }
+
+    private var editorLabel: String {
+        if language == .markdown { return "Markdown source" }
+        if language.isConfig { return "\(language.configTitle) config editor" }
+        return editable ? "Sputnik source editor" : "Read-only Sputnik source"
     }
 
     final class Coordinator: NSObject, NSTextViewDelegate {
@@ -162,7 +169,7 @@ struct CodeEditor: NSViewRepresentable {
             let newLength = (source as NSString).length
             let undoManager = textView.undoManager
             guard let storage = textView.textStorage else { return }
-            if parent.language != .sputnik {
+            if parent.language.isConfig {
                 // Format, Import and Reset are ordinary undoable draft edits.
                 textView.breakUndoCoalescing()
                 let range = NSRange(location: 0, length: storage.length)
@@ -333,7 +340,13 @@ struct CodeEditor: NSViewRepresentable {
     ]
 
     private func applySyntax(to storage: NSTextStorage) {
-        if language != .sputnik {
+        if language == .markdown {
+            let source = storage.string
+            storage.setAttributes(Self.editorTypingAttributes, range: NSRange(location: 0, length: storage.length))
+            for token in NotebookMarkdownSyntax.tokens(in: source) {
+                storage.addAttribute(.foregroundColor, value: SputnikSyntax.color(for: token.category), range: token.range)
+            }
+        } else if language.isConfig {
             let source = storage.string as NSString
             storage.setAttributes(Self.editorTypingAttributes, range: NSRange(location: 0, length: source.length))
             // Lexical highlighting also works with an unfinished document.
@@ -349,6 +362,67 @@ struct CodeEditor: NSViewRepresentable {
         } else {
             SputnikSyntax.apply(to: storage, font: Self.editorFont, baseColor: Self.editorColor)
         }
+    }
+}
+
+enum NotebookMarkdownSyntax {
+    private static let inlineRules: [(NSRegularExpression, SputnikSyntaxCategory)] = [
+        (#"`+[^`]+?`+"#, .string),
+        (#"(?<!\\)(?:\$\$[^$]+?\$\$|\$[^$]+?\$|\\\(.+?\\\))"#, .variable),
+        (#"!?\[[^\]\r\n]+\]\([^\r\n)]+\)"#, .className),
+        (#"(?<!\\)(?:\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|(?<!\w)_[^_]+_(?!\w)|~~[^~]+~~)"#, .keyword)
+    ].compactMap { pattern, kind in
+        (try? NSRegularExpression(pattern: pattern)).map { ($0, kind) }
+    }
+    private static let block = try? NSRegularExpression(pattern: #"^ {0,3}(?:#{1,6}(?:\s|$).*|>+|[-+*](?=\s)|\d{1,9}[.)](?=\s)|[-*_]{3,}\s*$|\|)"#)
+    private static let fence = try? NSRegularExpression(pattern: #"^ {0,3}(`{3,}|~{3,})(.*)$"#)
+
+    static func tokens(in source: String) -> [SputnikSyntaxToken] {
+        let text = source as NSString
+        guard text.length <= 262144 else { return [] }
+        var tokens: [SputnikSyntaxToken] = []
+        var openFence: String?
+        var displayMath: String?
+        text.enumerateSubstrings(in: NSRange(location: 0, length: text.length), options: [.byLines]) { line, range, _, stop in
+            if tokens.count >= 20000 { stop.pointee = true; return }
+            guard let line else { return }
+            let lineRange = NSRange(location: 0, length: range.length)
+            func add(_ selection: NSRange, _ kind: SputnikSyntaxCategory) {
+                tokens.append(.init(range: NSRange(location: range.location + selection.location, length: selection.length), category: kind))
+            }
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if let closer = displayMath {
+                add(lineRange, .variable)
+                if trimmed.contains(closer) { displayMath = nil }
+                return
+            }
+            if let match = fence?.firstMatch(in: line, range: lineRange) {
+                let value = line as NSString
+                let mark = value.substring(with: match.range(at: 1))
+                let suffix = value.substring(with: match.range(at: 2)).trimmingCharacters(in: .whitespaces)
+                if let opened = openFence {
+                    if mark.first == opened.first && mark.count >= opened.count && suffix.isEmpty { openFence = nil }
+                } else { openFence = mark }
+                add(lineRange, .comment)
+                return
+            }
+            if openFence != nil { add(lineRange, .string); return }
+            for (start, end) in [("$$", "$$"), ("\\[", "\\]")] where trimmed.hasPrefix(start) {
+                if !trimmed.dropFirst(start.count).contains(end) { displayMath = end }
+                add(lineRange, .variable)
+                return
+            }
+            if let match = block?.firstMatch(in: line, range: lineRange) { add(match.range, .keyword) }
+            guard lineRange.length <= 16384 else { return }
+            var occupied: [NSRange] = []
+            for (rule, kind) in inlineRules {
+                for match in rule.matches(in: line, range: lineRange) where !occupied.contains(where: { NSIntersectionRange($0, match.range).length > 0 }) {
+                    occupied.append(match.range)
+                    add(match.range, kind)
+                }
+            }
+        }
+        return tokens
     }
 }
 

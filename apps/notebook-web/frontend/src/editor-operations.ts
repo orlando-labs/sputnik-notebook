@@ -27,8 +27,15 @@ export function moveSheet(document: NotebookDocument, id: string, direction: -1 
 }
 
 export function deleteSheet(document: NotebookDocument, id: string, replacement: string) {
-  if (document.sheets.length <= 1) throw new Error('Keep at least one sheet in the notebook.')
-  if (!document.sheets.some(sheet => sheet.id === replacement && sheet.id !== id)) throw new Error('Choose a replacement controller sheet.')
+  const removed = document.sheets.find(sheet => sheet.id === id)
+  if (!removed) throw new Error('Select a sheet to delete.')
+  if (document.sheets.length === 1) {
+    const blank = { id: newId('sheet'), title: 'Main', cells: [newCell('code', new Set(removed.cells.map(cell => cell.id)))] }
+    document.sheets.push(blank)
+    replacement = blank.id
+  } else if (!document.sheets.some(sheet => sheet.id === replacement && sheet.id !== id)) {
+    throw new Error('Choose a replacement controller sheet.')
+  }
   document.sheets = document.sheets.filter(sheet => sheet.id !== id)
   for (const board of document.boards || []) if (board.sheet === id) board.sheet = replacement
   if (document.active_sheet === id) document.active_sheet = replacement

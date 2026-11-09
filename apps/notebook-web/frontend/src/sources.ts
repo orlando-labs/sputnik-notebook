@@ -9,6 +9,11 @@ export interface FileView { revision: string; path: string; size: number; text: 
 const encoder = new TextEncoder()
 const moduleIDPattern = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/
 const moduleFilename = /[^/]*(\.(?:s|spu|sputnik))$/
+const memberLimit = 16 * 1024 * 1024
+const bundleLimit = 64 * 1024 * 1024
+export const markdownDocument = (path: string) => path.startsWith('docs/') && /\.md$/i.test(path)
+export const attachment = (file: ProjectFile) => file.kind === 'resource' && !markdownDocument(file.path)
+const encodedSize = (data: string) => data.length * 3 / 4 - (data.endsWith('==') ? 2 : data.endsWith('=') ? 1 : 0)
 export function moduleIDFromName(name: string) {
   const id = name.trim().replace(/[\s-]+/g, '_')
   return moduleIDPattern.test(id) ? id : null
@@ -46,7 +51,7 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     for (const [path, edit] of Object.entries(changes.value)) {
       if (edit === null) { values.delete(path); continue }
       const module = document.value?.modules?.find(module => module.path === path)
-      values.set(path, { path, size: edit.encoding === 'utf8' ? encoder.encode(edit.data).length : Math.floor(edit.data.length * .75), digest: '',
+      values.set(path, { path, size: edit.encoding === 'utf8' ? encoder.encode(edit.data).length : encodedSize(edit.data), digest: '',
         kind: module ? 'module' : ['requirements.txt', 'requirements.lock', 'Gemfile', 'Gemfile.lock'].includes(path) ? 'dependency' : 'resource', module_id: module?.id || null })
     }
     return [...values.values()].map(file => {
@@ -58,11 +63,14 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     const original = cache.value[selected.value]
     const edit = changes.value[selected.value]
     if (edit?.encoding === 'utf8') return { revision: revision.value, path: selected.value, size: encoder.encode(edit.data).length, text: edit.data, preview: edit.data, editable: true, truncated: false }
-    if (edit?.encoding === 'base64' && !original) {
-      const bytes = Uint8Array.from(atob(edit.data), char => char.charCodeAt(0))
+    if (edit?.encoding === 'base64') {
+      const size = encodedSize(edit.data)
       let text: string | null = null
-      if (bytes.length <= 1048576) try { const decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes); if (!decoded.includes('\0')) text = decoded } catch { /* Binary member. */ }
-      return { revision: revision.value, path: selected.value, size: bytes.length, text, preview: text, editable: text !== null, truncated: false, draft: true }
+      if (size <= 1048576) try {
+        const decoded = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(edit.data), char => char.charCodeAt(0)))
+        if (!decoded.includes('\0')) text = decoded
+      } catch { /* Binary member. */ }
+      return { revision: revision.value, path: selected.value, size, text, preview: text, editable: text !== null, truncated: false, draft: true }
     }
     return original || null
   })
@@ -102,19 +110,50 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     changes.value[path] = { encoding: 'utf8', data: `package ${id}\n\n` }
     selected.value = path
   }
+  function verifyMembers(incoming: { path: string; size: number }[], excluded = new Set<string>()) {
+    const existing = files.value.filter(file => !excluded.has(file.path))
+    if (existing.length + incoming.length > 2048 || [...existing, ...incoming].reduce((sum, file) => sum + file.size, 0) > bundleLimit)
+      throw new Error('A notebook accepts up to 2048 files and 64 MiB of bundled data.')
+    const paths = new Set(existing.map(file => file.path.toLowerCase()))
+    for (const { path, size } of incoming) {
+      if (!memberPath(path)) throw new Error('Use a relative project file path without traversal.')
+      if (size > memberLimit) throw new Error('Files are limited to 16 MiB.')
+      const lower = path.toLowerCase()
+      if ([...paths].some(other => other === lower || other.startsWith(lower + '/') || lower.startsWith(other + '/')))
+        throw new Error(`The destination conflicts with a project file: ${path}`)
+      paths.add(lower)
+    }
+  }
+  function addDocument(name: string) {
+    const path = 'docs/' + (/\.md$/i.test(name) ? name : name + '.md')
+    if (!name || name.includes('/') || name === '.' || name === '..') throw new Error('Enter a Markdown filename.')
+    verifyMembers([{ path, size: 0 }])
+    changes.value[path] = { encoding: 'utf8', data: '' }
+    selected.value = path
+  }
   async function upload(file: File, path: string) {
-    if (!memberPath(path)) throw new Error('Use a relative project file path without traversal.')
-    if (file.size > 16 * 1024 * 1024) throw new Error('Files are limited to 16 MiB.')
     const similar = files.value.find(item => item.path.toLowerCase() === path.toLowerCase())
-    if (similar && similar.path !== path) throw new Error('A file already exists with a different letter case.')
+    verifyMembers([{ path, size: file.size }], new Set([path]))
     if (similar && !window.confirm(`Replace ${path} in your draft?`)) return false
     const data = await fileBase64(file)
     changes.value[path] = { encoding: 'base64', data }
-    let text: string | null = null
-    if (file.size <= 1048576) try { const value = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer()); if (!value.includes('\0')) text = value } catch { /* Binary file. */ }
-    cache.value[path] = { revision: revision.value, path, size: file.size, text, preview: text, editable: text !== null, truncated: false, draft: true }
     selected.value = path
     return true
+  }
+  async function uploadFolder(items: File[], parent: string) {
+    if (!items.length) throw new Error('Choose a folder containing files.')
+    const root = items[0]!.webkitRelativePath.split('/')[0]
+    if (!root || items.some(item => !item.webkitRelativePath.startsWith(root + '/'))) throw new Error('Choose one folder to attach.')
+    const incoming = items.map(file => ({ file, path: parent + '/' + file.webkitRelativePath, size: file.size }))
+    verifyMembers(incoming)
+    const staged: Record<string, FileEdit> = Object.create(null)
+    for (const { file, path } of incoming) staged[path] = { encoding: 'base64', data: await fileBase64(file) }
+    if (!disposed) Object.assign(changes.value, staged)
+  }
+  function stageRemoval(path: string) {
+    if (entries.value.some(entry => entry.path === path)) changes.value[path] = null
+    else delete changes.value[path]
+    delete cache.value[path]
   }
   function remove() {
     if (!document.value || !selected.value) return
@@ -124,9 +163,8 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
       document.value.modules = document.value.modules!.filter(module => module.path !== path)
       document.value.auto_imports = document.value.auto_imports?.filter(id => id !== linked.id)
     }
-    if (entries.value.some(entry => entry.path === path)) changes.value[path] = null
-    else delete changes.value[path]
-    delete cache.value[path]; selected.value = ''
+    stageRemoval(path)
+    selected.value = ''
   }
   function autoImport(enabled: boolean) {
     const module = document.value?.modules?.find(module => module.path === selected.value)
@@ -147,6 +185,7 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
       path = modulePathForID(path, moduleID)
     }
     if (!memberPath(path)) throw new Error('Use a relative project file path without traversal.')
+    if (markdownDocument(from) && !markdownDocument(path)) throw new Error('Keep Markdown documents in docs/ with a .md extension.')
     const lower = path.toLowerCase()
     if (files.value.some(file => file.path !== from && (file.path.toLowerCase() === lower || file.path.toLowerCase().startsWith(lower + '/') || lower.startsWith(file.path.toLowerCase() + '/')))) throw new Error('The destination conflicts with another project file.')
     // A saved deletion at the destination would otherwise be lost on rename.
@@ -165,11 +204,7 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
       edit = { encoding: 'utf8', data: renamed }
     }
     if (path === from && (!linked || linked.id === moduleID)) return
-    if (path !== from) {
-      if (entries.value.some(entry => entry.path === from)) changes.value[from] = null
-      else delete changes.value[from]
-      delete cache.value[from]
-    }
+    if (path !== from) stageRemoval(from)
     changes.value[path] = edit
     if (linked && moduleID) {
       const old = linked.id
@@ -187,6 +222,40 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
       }
     }
     selected.value = path
+  }
+  function folderMembers(path: string) {
+    const members = files.value.filter(file => file.path.startsWith(path + '/'))
+    if (!path || !members.length || members.some(file => !attachment(file))) throw new Error('Choose a folder containing only attachments.')
+    return members
+  }
+  function removeFolder(path: string) {
+    const members = folderMembers(path)
+    if (!window.confirm(`Remove ${path} and its ${members.length} files from this notebook?`)) return
+    for (const file of members) stageRemoval(file.path)
+    if (selected.value.startsWith(path + '/')) selected.value = ''
+  }
+  async function moveFolder(from: string, to: string) {
+    if (from === to) return
+    if (!memberPath(to) || to.toLowerCase().startsWith(from.toLowerCase() + '/'))
+      throw new Error('Choose a destination outside the folder.')
+    const members = folderMembers(from), version = revision.value
+    const moved = members.map(file => ({ ...file, path: to + file.path.slice(from.length), original: file.path }))
+    if (moved.some(file => !attachment(file) || changes.value[file.path] !== undefined))
+      throw new Error('The destination conflicts with documentation or an existing draft.')
+    verifyMembers(moved, new Set(moved.map(file => file.original)))
+    const staged: Record<string, FileEdit> = Object.create(null)
+    for (const file of moved) {
+      const edit = changes.value[file.original]
+      if (edit) staged[file.path] = edit
+      else {
+        const blob = await apiBlob(`${base}/download?revision=${version}&path=${encodeURIComponent(file.original)}`)
+        staged[file.path] = { encoding: 'base64', data: await fileBase64(new File([blob], file.path.split('/').at(-1)!)) }
+      }
+    }
+    if (disposed || revision.value !== version) throw new Error('The notebook changed while reading the folder. Try again.')
+    for (const file of moved) stageRemoval(file.original)
+    Object.assign(changes.value, staged)
+    if (selected.value.startsWith(from + '/')) selected.value = to + selected.value.slice(from.length)
   }
   function restore(edits: Record<string, FileEdit | null>, path = '') {
     reset(); changes.value = Object.assign(Object.create(null), JSON.parse(JSON.stringify(edits))); selected.value = path
@@ -207,5 +276,5 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
   async function archive(target = revision.value) { download(await apiBlob(`${base}/archive?revision=${target}`), archiveName(project().title)) }
   watch(revision, () => { cache.value = Object.create(null); void index(); if (selected.value && changes.value[selected.value] === undefined) void open(selected.value) })
   onUnmounted(() => { disposed = true; controller.abort() })
-  return { selected, entries, files, changes, view, dirty, indexBusy, fileBusy, ready, error, index, open, text, addModule, upload, remove, autoImport, relocate, restore, reset, downloadFile, archive }
+  return { selected, entries, files, changes, view, dirty, indexBusy, fileBusy, ready, error, index, open, text, addModule, addDocument, upload, uploadFolder, remove, removeFolder, moveFolder, autoImport, relocate, restore, reset, downloadFile, archive }
 }

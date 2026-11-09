@@ -13,6 +13,9 @@ struct NotebookView: View {
     @State private var cellIDTarget: CellIDTarget?
     @State private var manageInputs = false
     @State private var renameTarget: NotebookTab?
+    @State private var deleteSheetTarget: NotebookTab?
+    @State private var newMarkdown = false
+    @State private var markdownName = ""
     @State private var sheetName = ""
 
     private var activeTab: NotebookTab? {
@@ -80,9 +83,12 @@ struct NotebookView: View {
             Text("The cell and its source will be removed from this sheet.")
         }
         .sheet(item: $structurePrompt) { prompt in
-            StructurePromptSheet(prompt: prompt) { identifier in
-                let action = prompt.kind == .sheet ? "new_sheet" : "new_module"
-                model.perform(action, tab: activeTab, text: identifier)
+            StructurePromptSheet(prompt: prompt) { name in
+                if prompt.kind == .sheet {
+                    model.perform("new_named_sheet", text: name, commandCellID: newSheetID())
+                } else {
+                    model.perform("new_module", text: name)
+                }
                 structurePrompt = nil
             } onCancel: {
                 structurePrompt = nil
@@ -93,6 +99,42 @@ struct NotebookView: View {
         }
         .sheet(isPresented: $model.showDependencies) { NotebookDependenciesView(model: model) }
         .sheet(isPresented: $manageInputs) { NotebookProjectInputsView(model: model) }
+        .sheet(isPresented: $newMarkdown) {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("New Markdown Document").font(.headline)
+                TextField("Document name", text: $markdownName).textFieldStyle(.roundedBorder)
+                HStack {
+                    Spacer()
+                    Button("Cancel", role: .cancel) { newMarkdown = false }.keyboardShortcut(.cancelAction)
+                    Button("Create") {
+                        model.createMarkdown(markdownName.trimmingCharacters(in: .whitespacesAndNewlines))
+                        newMarkdown = false
+                    }.keyboardShortcut(.defaultAction)
+                        .disabled(markdownName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }.padding(24).frame(width: 420)
+        }
+        .sheet(item: $deleteSheetTarget) { tab in
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Delete Sheet").font(.headline)
+                Text("Delete “\(tab.title)” and its cells from this notebook?")
+                if model.snapshot?.tabs.filter({ $0.kind == "sheet" }).count == 1 {
+                    Text("A new blank sheet will replace this sheet.").foregroundStyle(NotebookPalette.muted)
+                }
+                if model.snapshot?.boards?.contains(where: { "sheet:" + $0.sheet == tab.id }) == true {
+                    Text("Linked boards will use another sheet. Review their component bindings before running.")
+                        .foregroundStyle(NotebookPalette.muted)
+                }
+                HStack {
+                    Spacer()
+                    Button("Cancel", role: .cancel) { deleteSheetTarget = nil }.keyboardShortcut(.cancelAction)
+                    Button("Delete Sheet", role: .destructive) {
+                        model.perform("delete_sheet", tab: tab, text: newSheetID())
+                        deleteSheetTarget = nil
+                    }.disabled(model.busy || model.executingCurrentWorker)
+                }
+            }.padding(24).frame(width: 420)
+        }
         .sheet(item: $renameTarget) { tab in
             VStack(alignment: .leading, spacing: 16) {
                 Text(tab.kind == "module" ? "Rename Module" : "Rename Sheet").font(.title2)
@@ -115,6 +157,10 @@ struct NotebookView: View {
         }
     }
 
+    private func newSheetID() -> String {
+        "sheet_" + UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+    }
+
     private func notebookWorkspace(_ snapshot: NotebookSnapshot) -> some View {
         NavigationSplitView(columnVisibility: $sidebarVisibility) {
             sidebar(snapshot)
@@ -122,7 +168,12 @@ struct NotebookView: View {
         } detail: {
             VStack(spacing: 0) {
                 NotebookServerBar(model: model, remote: model.remote, sidebarVisibility: $sidebarVisibility)
-                if let board = model.activeBoard {
+                if let page = model.bookPage {
+                    switch page {
+                    case .markdown(let path): NotebookMarkdownPage(model: model, path: path).id(path)
+                    case .attachments: NotebookAttachmentsPage(model: model)
+                    }
+                } else if let board = model.activeBoard {
                     NotebookBoardView(model: model, board: board) { boardPrompt = board }
                 } else if let tab = activeTab {
                     actionBar(snapshot)
@@ -152,7 +203,8 @@ struct NotebookView: View {
     }
 
     private func sidebar(_ snapshot: NotebookSnapshot) -> some View {
-        let modifiedTabCount = snapshot.tabs.filter { model.isModified($0) }.count
+        let modifiedTabCount = snapshot.tabs.filter { model.isModified($0) }.count +
+            model.markdownDrafts.values.filter(\.modified).count
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 11) {
                 ZStack {
@@ -185,7 +237,7 @@ struct NotebookView: View {
                         actionLabel: "New sheet",
                         tabs: snapshot.tabs.filter { $0.kind == "sheet" }
                     ) {
-                        structurePrompt = StructurePrompt(kind: .sheet, identifier: model.nextSheetIdentifier, title: model.nextSheetTitle)
+                        structurePrompt = StructurePrompt(kind: .sheet, title: model.nextSheetTitle)
                     }
 
                     tabSection(
@@ -196,6 +248,7 @@ struct NotebookView: View {
                     ) {
                         structurePrompt = StructurePrompt(kind: .module)
                     }
+                    bookFilesSection
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text("BOARDS").font(.system(size: 10, weight: .bold)).foregroundStyle(NotebookPalette.muted)
@@ -313,7 +366,7 @@ struct NotebookView: View {
     }
 
     private func sidebarRow(_ tab: NotebookTab) -> some View {
-        let selected = model.activeBoard == nil && activeTab?.id == tab.id
+        let selected = model.bookPage == nil && model.activeBoard == nil && activeTab?.id == tab.id
         let modified = model.isModified(tab)
         return Button {
             model.selectTab(tab)
@@ -375,11 +428,45 @@ struct NotebookView: View {
             if tab.kind == "sheet" {
                 Button("Rename Sheet…") { sheetName = tab.title; renameTarget = tab }
                     .disabled(model.busy || model.executingCurrentWorker)
+                Button("Delete Sheet…", role: .destructive) { deleteSheetTarget = tab }
+                    .disabled(model.busy || model.executingCurrentWorker)
             } else {
                 Button("Rename Module…") { sheetName = tab.title; renameTarget = tab }
                     .disabled(model.busy || model.executingCurrentWorker || model.remote.isSelected)
             }
         }
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private var bookFilesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("DOCUMENTATION").font(.system(size: 10, weight: .bold)).foregroundStyle(NotebookPalette.muted)
+                Spacer()
+                Button { markdownName = ""; newMarkdown = true } label: { Image(systemName: "plus") }
+                    .help("New Markdown document").accessibilityLabel("New Markdown document")
+                    .disabled(model.busy || !model.canNavigate)
+            }.padding(.horizontal, 8)
+            if model.markdownPaths.isEmpty {
+                Text("No Markdown documents yet").font(.system(size: 12)).foregroundStyle(NotebookPalette.muted)
+                    .padding(.horizontal, 9).padding(.vertical, 6)
+            }
+            ForEach(model.markdownPaths, id: \.self) { path in
+                bookFileRow(String(path.dropFirst("docs/".count)), icon: "doc.text", page: .markdown(path))
+                    .contextMenu { Button("Show in Finder") { model.revealBookFile(path) } }
+            }
+            bookFileRow("Attachments", icon: "folder", page: .attachments)
+        }
+    }
+
+    private func bookFileRow(_ title: String, icon: String, page: NotebookBookPage) -> some View {
+        let selected = model.bookPage == page
+        return Button { model.selectBookPage(page) } label: {
+            Label(title, systemImage: icon).font(.system(size: 13)).lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading).padding(9)
+                .background(selected ? NotebookPalette.sidebarSelection : .clear, in: RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain).disabled(!model.canNavigate)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
@@ -1210,7 +1297,6 @@ private enum BadgeTone {
 private struct StructurePrompt: Identifiable {
     enum Kind { case sheet, module }
     let kind: Kind
-    var identifier = ""
     var title = ""
     var id: String { kind == .sheet ? "sheet" : "module" }
 }
@@ -1229,28 +1315,27 @@ private struct StructurePromptSheet: View {
 
     init(prompt: StructurePrompt, onCreate: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
         self.prompt = prompt; self.onCreate = onCreate; self.onCancel = onCancel
-        _identifier = State(initialValue: prompt.identifier)
+        _identifier = State(initialValue: prompt.title)
     }
 
     private var kindName: String { prompt.kind == .sheet ? "sheet" : "module" }
-    private var validIdentifier: Bool {
-        identifier.range(of: "^[A-Za-z_][A-Za-z0-9_]*$", options: .regularExpression) != nil
+    private var validName: Bool {
+        if prompt.kind == .sheet {
+            return !identifier.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && identifier.unicodeScalars.count <= 200
+        }
+        return identifier.range(of: "^[A-Za-z_][A-Za-z0-9_]*$", options: .regularExpression) != nil
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(prompt.kind == .sheet ? prompt.title : "New \(kindName)")
+            Text("New \(kindName)")
                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                 .foregroundStyle(NotebookPalette.ink)
-            Text("Choose a short identifier. It becomes the \(kindName)'s stable project name.")
-                .font(.system(size: 12))
-                .foregroundStyle(NotebookPalette.muted)
-                .fixedSize(horizontal: false, vertical: true)
-            TextField("Identifier", text: $identifier)
+            TextField(prompt.kind == .sheet ? "Sheet name" : "Identifier", text: $identifier)
                 .textFieldStyle(.roundedBorder)
                 .font(.system(size: 13, design: .monospaced))
                 .onSubmit(create)
-                .accessibilityLabel("New \(kindName) identifier")
+                .accessibilityLabel(prompt.kind == .sheet ? "New sheet name" : "New module identifier")
 
             if prompt.kind == .module {
                 Label("Modules start outside the sheet environment. Save and apply them when you are ready.", systemImage: "info.circle")
@@ -1267,7 +1352,7 @@ private struct StructurePromptSheet: View {
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.borderedProminent)
                     .tint(NotebookPalette.sputnik)
-                    .disabled(!validIdentifier)
+                    .disabled(!validName)
             }
             .padding(.top, 4)
         }
@@ -1277,7 +1362,7 @@ private struct StructurePromptSheet: View {
     }
 
     private func create() {
-        guard validIdentifier else { return }
-        onCreate(identifier)
+        guard validName else { return }
+        onCreate(identifier.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 }

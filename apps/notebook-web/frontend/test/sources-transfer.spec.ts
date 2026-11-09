@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 async function login(page: Page, user = 'Alice') {
   await page.goto('/'); await page.getByRole('button', { name: 'Continue with GitHub' }).click(); await page.getByRole('button', { name: `Sign in as ${user}` }).click(); await expect(page.getByTestId('account-name')).toHaveText(user)
@@ -20,6 +21,97 @@ function zip(entries: Record<string, string | Buffer>, symlink = false) {
   return execFileSync('python3', ['-c', 'import sys,json,base64,io,zipfile\nv=json.load(sys.stdin); b=io.BytesIO()\nwith zipfile.ZipFile(b,"w",zipfile.ZIP_DEFLATED) as z:\n for name,data in v["entries"].items():\n  info=zipfile.ZipInfo(name); info.external_attr=(0o120777 if v["symlink"] else 0o100644)<<16; z.writestr(info,base64.b64decode(data))\nsys.stdout.buffer.write(b.getvalue())'], { input: JSON.stringify({ entries: Object.fromEntries(Object.entries(entries).map(([path, data]) => [path, Buffer.from(data).toString('base64')])), symlink }) })
 }
 async function bundle(page: Page) { const p = await project(page); return { p, document: (await stored(page, p.id)).document } }
+
+test('documentation, nested attachments and Unicode sheets persist through notebook saves', async ({ page }, info) => {
+  await login(page)
+  const p = await project(page)
+  await page.goto(`/projects/${p.id}`)
+
+  await page.getByRole('button', { name: 'New Markdown document', exact: true }).click()
+  await page.getByLabel('Document name').fill('Описание')
+  await page.getByRole('button', { name: 'Add to draft' }).click()
+  await expect(page.getByTestId('markdown-preview')).toBeVisible()
+  await page.getByRole('button', { name: 'Edit Markdown', exact: true }).click()
+  const source = [
+    '# Данные', '', '**Содержимое** книги с $x_i^2$ и \\(y\\).', '',
+    '- Первый уровень', '  - Второй уровень', '',
+    '| Метка | Значение |', '| --- | --- |', '| Дробь | $a/b$ |', '',
+    '$$', '\\frac{a}{b}', '$$', '',
+    '\\[', 'x+y', '\\]', '',
+    '```text', '$literal$', '```',
+  ].join('\n')
+  const markdownSource = page.getByRole('textbox', { name: 'File docs/Описание.md', exact: true })
+  await markdownSource.fill(source)
+  const editor = page.getByTestId('project-file-editor')
+  await expect(editor.locator('.syntax-keyword').filter({ hasText: '# Данные' })).toBeVisible()
+  await expect(editor.locator('.syntax-variable').filter({ hasText: '$x_i^2$' })).toBeVisible()
+  await page.getByRole('button', { name: 'Preview Markdown' }).click()
+  const preview = page.getByTestId('markdown-preview')
+  await expect(preview.getByRole('heading', { name: 'Данные' })).toBeVisible()
+  await expect(preview.locator('strong')).toHaveText('Содержимое')
+  await expect(preview.locator('ul ul li')).toHaveText('Второй уровень')
+  await expect(preview.getByRole('table')).toBeVisible()
+  await expect(preview.locator('math')).toHaveCount(5)
+  await expect(preview.locator('math[display="block"]')).toHaveCount(2)
+  await expect(preview.locator('pre')).toContainText('$literal$')
+
+  const dataset = info.outputPath('dataset'), payload = Buffer.from([0, 255, 1])
+  await mkdir(join(dataset, 'nested'), { recursive: true })
+  await writeFile(join(dataset, 'nested', 'data.bin'), payload)
+  await page.getByRole('button', { name: 'Attach folder…', exact: true }).click()
+  await page.getByLabel('Folder to attach').setInputFiles(dataset)
+  await page.getByRole('button', { name: 'Add to draft' }).click()
+  await save(page)
+  await page.reload()
+  await page.getByRole('navigation', { name: 'Documentation', exact: true }).getByRole('button', { name: 'Описание.md' }).click()
+  await expect(preview.getByRole('heading', { name: 'Данные' })).toBeVisible()
+  await page.getByRole('button', { name: 'Edit Markdown', exact: true }).click()
+  await expect(markdownSource).toHaveValue(source)
+
+  await page.getByRole('button', { name: 'File Explorer…', exact: true }).click()
+  const explorer = page.getByRole('dialog', { name: 'File Explorer', exact: true })
+  await explorer.getByRole('button', { name: 'resources/', exact: true }).click()
+  await explorer.getByRole('button', { name: 'dataset/', exact: true }).click()
+  await explorer.getByRole('button', { name: 'Rename or move folder…' }).click()
+  await explorer.getByLabel('Destination folder path').fill('resources/measurements')
+  await explorer.getByRole('button', { name: 'Move folder', exact: true }).click()
+  await explorer.getByRole('button', { name: 'nested/', exact: true }).click()
+  await explorer.getByRole('button', { name: /^data\.bin/ }).click()
+  await expect(page.getByTestId('project-file-editor')).toContainText('resources/measurements/nested/data.bin')
+  const download = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download file', exact: true }).click()
+  expect(await readFile((await (await download).path())!)).toEqual(payload)
+
+  await page.getByRole('button', { name: 'New sheet', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Sheet title', exact: true }).fill('Обучение модели')
+  await save(page)
+  await page.reload()
+  await expect(page.getByRole('textbox', { name: 'Sheet title', exact: true })).toHaveValue('Обучение модели')
+  for (const title of ['Обучение модели', 'Main']) {
+    await page.getByRole('button', { name: 'Delete sheet…' }).click()
+    const dialog = page.getByRole('dialog', { name: `Delete sheet ${title}`, exact: true })
+    await dialog.getByRole('button', { name: 'Delete from draft' }).click()
+    await save(page)
+  }
+  const saved = await stored(page, p.id)
+  const doc = JSON.parse(saved.document)
+  expect(doc.sheets).toHaveLength(1)
+  expect(doc.sheets[0].id).not.toBe('main')
+  const paths = await request(page, `${base(p.id)}/files?revision=${saved.revision}`)
+  expect((await paths.json()).entries.map((file: any) => file.path)).toEqual(['docs/Описание.md', 'resources/measurements/nested/data.bin'])
+
+  await page.getByRole('button', { name: 'File Explorer…', exact: true }).click()
+  await explorer.getByRole('button', { name: 'resources/', exact: true }).click()
+  await explorer.getByRole('button', { name: 'measurements/', exact: true }).click()
+  page.once('dialog', dialog => dialog.accept())
+  await explorer.getByRole('button', { name: 'Delete folder…', exact: true }).click()
+  await expect(explorer.getByText('No attachments in this folder.')).toBeVisible()
+  await explorer.getByRole('button', { name: 'Close file explorer' }).click()
+  await save(page)
+  const latest = await stored(page, p.id)
+  const afterDelete = await request(page, `${base(p.id)}/files?revision=${latest.revision}`)
+  expect((await afterDelete.json()).entries.map((file: any) => file.path)).toEqual(['docs/Описание.md'])
+})
 
 test('module and binary file changes save atomically, preserve hidden resources and execute imported helper', async ({ page }) => {
   await login(page); const p = await project(page); await page.goto(`/projects/${p.id}`)

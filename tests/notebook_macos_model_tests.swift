@@ -35,6 +35,7 @@ private struct NotebookModelRegressionTests {
             try testFigurePanels()
             try testNumericChartSampling()
             try await testNumberedStructures(model, url: root.appendingPathComponent("numbered.sputnikbook"))
+            try await testBookFiles(model, root: root)
             try await testBoards(model, url: root.appendingPathComponent("board.sputnikbook"))
             try await testDraftsTabsAndStructures(model, first: first)
             try await testTextFormattingDrafts(model)
@@ -301,6 +302,39 @@ private struct NotebookModelRegressionTests {
         try require(renamedSource == "package digit_recognizer\n# unsaved source\n" &&
                     !FileManager.default.fileExists(atPath: url.appendingPathComponent("modules/training.s").path),
                     "module rename saves the draft under its matching filename")
+    }
+
+    @MainActor
+    private static func testBookFiles(_ model: NotebookModel, root: URL) async throws {
+        let book = root.appendingPathComponent("files.sputnikbook")
+        let opened = await open(model, url: book, create: true)
+        try require(opened, "open book files fixture")
+        model.createMarkdown("Описание")
+        let path = "docs/Описание.md", source = "# Набор данных\n\nПервая версия.\n"
+        try require(model.bookPage == .markdown(path) && model.markdownPaths == [path], "new Markdown is discoverable")
+        model.editMarkdown(path, source: source)
+        try require(model.hasUnsavedChanges, "Markdown participates in unsaved changes")
+        let saved = await perform(model, "save")
+        try require(saved && !model.hasUnsavedChanges, "Save Current Tab commits Markdown")
+        let files = model.bookFiles!
+        let contents = try files.readMarkdown(path)
+        try require(contents == source, "Markdown round trips as UTF-8")
+
+        let dataset = root.appendingPathComponent("Dataset")
+        let nested = dataset.appendingPathComponent("nested")
+        try FileManager.default.createDirectory(at: nested, withIntermediateDirectories: true)
+        let bytes = Data([0, 255, 41])
+        try bytes.write(to: nested.appendingPathComponent("data.bin"))
+        try files.importItem(dataset, into: "resources")
+        try files.move("resources/Dataset", to: "resources/Measurements")
+        let imported = try Data(contentsOf: files.url("resources/Measurements/nested/data.bin"))
+        try require(imported == bytes && FileManager.default.fileExists(atPath: nested.path), "folder import copies nested binary files")
+        let link = book.appendingPathComponent("resources/unsafe")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: dataset)
+        try require((try? files.url("resources/unsafe/nested/data.bin")) == nil, "attachment paths cannot cross symlinks")
+        let reopened = await open(model, url: book)
+        model.selectBookPage(.markdown(path))
+        try require(reopened && model.markdownDrafts[path]?.source == source, "saved Markdown reopens with the book")
     }
 
     @MainActor

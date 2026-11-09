@@ -42,6 +42,7 @@ public:
   bool run(ProjectTabs &, ProjectTab &, const std::string &action, std::size_t index,
            const std::string &runtime_key = {}, bool recover = false);
   void restart(ProjectTab &, const std::string &runtime_key = {});
+  void forget_sheet(const std::string &owner);
   void configure_grants(ProjectTab &, const std::string &text);
   void configure_book_grants(ProjectTabs &, const std::string &text);
   void configure_environment(ProjectTab &, const std::string &directory);
@@ -49,6 +50,7 @@ public:
   std::string pending(ProjectTabs &);
   bool native_trusted = false;
 private:
+  void retire_workers(const std::string &owner);
   struct Sheet {
     std::shared_ptr<sputnik::notebook::worker::Process> process;
     bool interrupted = false;

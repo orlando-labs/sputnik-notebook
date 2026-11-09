@@ -1,8 +1,12 @@
 import MarkdownIt, { type Token } from 'markdown-it'
 import { interpolateInline, type TextVariable } from './text-variables'
 import { sputnikTokens } from './sputnik-syntax'
-export interface MarkdownNode { tag?: string; text?: string; attrs?: Record<string, string>; children?: MarkdownNode[] }
-const parser = new MarkdownIt({ html: false, linkify: false, typographer: false, maxNesting: 16 })
+export interface MarkdownNode {
+  tag?: string; text?: string; attrs?: Record<string, string>; children?: MarkdownNode[]
+  formula?: { source: string; display: boolean; block: boolean; number?: string }
+}
+export const createMarkdownParser = () => new MarkdownIt({ html: false, linkify: false, typographer: false, maxNesting: 16 })
+const parser = createMarkdownParser()
 const allowed = new Set('p h1 h2 h3 h4 h5 h6 blockquote ul ol li em strong s a table thead tbody tr th td'.split(' '))
 export function safeMarkdownLink(value: string): string | null {
   // Explicit http(s), mail and fragment links only. No automatic image requests,
@@ -10,7 +14,7 @@ export function safeMarkdownLink(value: string): string | null {
   if (/^#[a-zA-Z][\w-]*$/.test(value)) return value
   try { const url = new URL(value); return ['http:', 'https:', 'mailto:'].includes(url.protocol) && !/[\u0000-\u001f\u007f]/.test(value) ? url.href : null } catch { return null }
 }
-export function markdownNodes(source: string, variables: TextVariable[] = []): MarkdownNode[] {
+export function markdownNodes(source: string, variables: TextVariable[] = [], documentParser?: ReturnType<typeof createMarkdownParser>): MarkdownNode[] {
   if (source.length > 262144 || source.split(/\r\n|[\r\n]/).length > 4000) throw new Error('Markdown preview is limited to 256 Ki UTF-16 units and 4000 lines. Complete source is saved intact.')
   const budget = { remaining: 262144, tokens: 4096 }; let count = 0
   const text = (value: string): MarkdownNode[] => [{ text: value }]
@@ -22,6 +26,11 @@ export function markdownNodes(source: string, variables: TextVariable[] = []): M
       const target = stack.at(-1)!
       if (token.nesting === -1) { if (stack.length > 1) stack.pop(); continue }
       if (token.type === 'inline') { target.push(...nodes(token.children || [], depth + 1)); continue }
+      if (token.type.startsWith('math_')) {
+        target.push({ formula: { source: token.content, display: token.block || token.type === 'math_inline_double', block: token.block,
+          number: token.type === 'math_block_eqno' ? token.info : undefined } })
+        continue
+      }
       if (token.type === 'text' || token.type === 'code_inline') { const children = text(token.content); if (token.type === 'code_inline') target.push({ tag: 'code', children }); else target.push(...children); continue }
       if (token.type === 'softbreak' || token.type === 'hardbreak') { target.push(token.type === 'hardbreak' ? { tag: 'br' } : { text: '\n' }); continue }
       if (token.type === 'hr') { target.push({ tag: 'hr' }); continue }
@@ -45,7 +54,7 @@ export function markdownNodes(source: string, variables: TextVariable[] = []): M
     }
     return root
   }
-  const root = nodes(parser.parse(source, {}))
+  const root = nodes((documentParser ?? parser).parse(source, {}))
   function interpolate(node: MarkdownNode) {
     if (['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th', 'td', 'pre'].includes(node.tag || '')) {
       const leaves: MarkdownNode[] = []
@@ -58,6 +67,6 @@ export function markdownNodes(source: string, variables: TextVariable[] = []): M
       leaves.forEach((leaf, index) => { delete leaf.text; leaf.tag ||= 'span'; leaf.children = grouped.get(index) || [] })
     } else for (const child of node.children || []) interpolate(child)
   }
-  root.forEach(interpolate)
+  if (!documentParser) root.forEach(interpolate)
   return root
 }

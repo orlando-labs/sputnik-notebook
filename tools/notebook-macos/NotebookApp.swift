@@ -174,18 +174,21 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         guard !model.busy, !model.boardEditorOpen else { return false }
         switch item.action {
         case #selector(runAll(_:)):
+            guard model.bookPage == nil else { return false }
             let tab = model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab
             return tab.map { $0.kind == "sheet" && model.canRun($0) } ?? false
-        case #selector(save(_:)), #selector(saveAll(_:)), #selector(showDependencies(_:)):
+        case #selector(save(_:)):
+            return model.snapshot != nil && model.bookPage != .attachments
+        case #selector(saveAll(_:)), #selector(showDependencies(_:)):
             return model.snapshot != nil
         case #selector(runCell(_:)):
             let isModule = model.activeTab?.kind == "module"
             item.title = isModule ? "Check Module" : "Run Selected Cell"
-            return model.activeBoard == nil && model.selectedCell?.kind == "code" && (model.activeTab.map {
+            return model.bookPage == nil && model.activeBoard == nil && model.selectedCell?.kind == "code" && (model.activeTab.map {
                 isModule ? model.canCheckModule($0) : model.canRun($0, cell: model.selectedCell)
             } ?? false)
         case #selector(addCell(_:)), #selector(addText(_:)), #selector(applyModules(_:)):
-            return model.activeBoard == nil && model.activeTab?.kind == "sheet"
+            return model.bookPage == nil && model.activeBoard == nil && model.activeTab?.kind == "sheet"
         default: return true
         }
     }
@@ -201,6 +204,10 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
             model.error = "Save or cancel the board designer before closing or replacing this project."
             return
         }
+        guard !model.importingBookFiles else {
+            model.error = "Wait for attachments to finish copying before closing or replacing this project."
+            return
+        }
         guard !model.busy else {
             model.error = "An evaluation is still running. Wait for it to finish before closing or replacing this project."
             return
@@ -208,7 +215,7 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         guard model.hasUnsavedChanges else { continuation(); return }
         let alert = NSAlert()
         alert.messageText = "Save changes to this notebook?"
-        alert.informativeText = "Some tabs have unsaved source, text or formatting changes. Project structure changes that were already saved will remain."
+        alert.informativeText = "Some tabs or Markdown documents have unsaved edits."
         alert.addButton(withTitle: "Save All")
         alert.addButton(withTitle: "Cancel")
         alert.addButton(withTitle: "Discard Changes")

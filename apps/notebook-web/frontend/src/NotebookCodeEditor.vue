@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { sputnikTokens } from './sputnik-syntax'
+import { markdownTokens } from './markdown-syntax'
 import { diagnosticSelection, sourceLines, type CodeDiagnostic } from './diagnostics'
-const props = defineProps<{ modelValue: string; label: string; sourceId?: string; rows?: number; readonly?: boolean; disabled?: boolean; diagnostics?: CodeDiagnostic[]; stale?: boolean; diagnosticsTruncated?: boolean; placeholder?: string; sputnik?: boolean; maxBytes?: number; revealDiagnostic?: CodeDiagnostic }>()
+const props = defineProps<{ modelValue: string; label: string; sourceId?: string; rows?: number; readonly?: boolean; disabled?: boolean; diagnostics?: CodeDiagnostic[]; stale?: boolean; diagnosticsTruncated?: boolean; placeholder?: string; sputnik?: boolean; markdown?: boolean; maxBytes?: number; revealDiagnostic?: CodeDiagnostic }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string]; keydown: [event: KeyboardEvent] }>()
 const rowHeight = 20, topPadding = 14
 const normalize = (source: string) => source.replace(/\r\n?/g, '\n')
@@ -12,8 +13,10 @@ const error = ref('')
 const lines = computed(() => sourceLines(buffer.value))
 const lineCount = computed(() => lines.value.starts.length)
 const sizeBounded = computed(() => buffer.value.length <= 262144 && lineCount.value <= 4000)
-const tokens = computed(() => sizeBounded.value && props.sputnik !== false ? sputnikTokens(buffer.value) : [])
-const bounded = computed(() => sizeBounded.value && !tokens.value.some(token => token.limited))
+const highlighting = computed(() => props.markdown || props.sputnik !== false)
+const tokens = computed<{ start: number; end: number; kind: string; limited?: boolean }[]>(() =>
+  sizeBounded.value && highlighting.value ? (props.markdown ? markdownTokens(buffer.value) : sputnikTokens(buffer.value)) : [])
+const bounded = computed(() => sizeBounded.value && tokens.value.length <= 20000 && !tokens.value.some(token => token.limited))
 const annotations = computed(() => {
   if (props.stale || composing.value || buffer.value !== normalize(props.modelValue)) return []
   return (props.diagnostics || []).flatMap(({ range }) => {
@@ -38,12 +41,12 @@ const visibleRows = computed(() => {
   })
 })
 const errorSelections = computed(() => annotations.value.filter(({ range, selection }) => !range.whole_line && selection.start < selection.end).map(({ selection }) => selection))
-const paintText = computed(() => (bounded.value && props.sputnik !== false) || errorSelections.value.length > 0)
+const paintText = computed(() => (bounded.value && highlighting.value) || errorSelections.value.length > 0)
 const segments = computed(() => {
   if (!paintText.value) return []
   const points = [...new Set(errorSelections.value.flatMap(({ start, end }) => [start, end]))].sort((a, b) => a - b)
   const result: { text: string; kind: string; error: boolean }[] = []
-  const parts = bounded.value && props.sputnik !== false ? tokens.value : [{ start: 0, end: buffer.value.length, kind: 'plain' }]
+  const parts = bounded.value && highlighting.value ? tokens.value : [{ start: 0, end: buffer.value.length, kind: 'plain' }]
   let boundary = 0
   for (const token of parts) {
     let at = token.start

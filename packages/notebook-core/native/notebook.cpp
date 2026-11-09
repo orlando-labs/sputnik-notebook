@@ -1066,6 +1066,14 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
     notebook->tabs.create_sheet(require_text(text_raw, "text"), "Sheet " + std::to_string(number + 1));
     return;
   }
+  if (action == "new_named_sheet") {
+    const auto title = require_text(text_raw, "Sheet name");
+    const auto characters = std::count_if(title.begin(), title.end(), [](unsigned char c) { return (c & 0xc0) != 0x80; });
+    if (characters > 200 || title.find_first_not_of(" \t\r\n") == std::string::npos)
+      throw std::invalid_argument("Enter a sheet name (up to 200 characters).");
+    notebook->tabs.create_sheet(require_text(cell_raw, "Sheet ID"), title);
+    return;
+  }
   if (action == "new_module") {
     notebook->tabs.create_module(require_text(text_raw, "text"));
     return;
@@ -1099,6 +1107,26 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
   if (action == "rename_sheet") {
     if (tab.module) throw std::invalid_argument("Choose a sheet to rename.");
     notebook->tabs.rename_sheet(session.project_sheet_id, require_text(text_raw, "Sheet name"));
+    return;
+  }
+  if (action == "delete_sheet") {
+    if (tab.module) throw std::invalid_argument("Choose a sheet to delete.");
+    const auto id = session.project_sheet_id;
+    const auto cleanup = [&] {
+      if (notebook->execution) notebook->execution->forget_sheet("sheet:" + id);
+      for (auto it = notebook->periodic.begin(); it != notebook->periodic.end();) {
+        if (it->second && it->second->session.project_sheet_id == id) it = notebook->periodic.erase(it);
+        else ++it;
+      }
+    };
+    try {
+      notebook->tabs.delete_sheet(id, text_raw ? text_raw : "");
+    } catch (...) {
+      const auto &sheets = notebook->tabs.project().document.sheets;
+      if (std::none_of(sheets.begin(), sheets.end(), [&](const auto &sheet) { return sheet.id == id; })) cleanup();
+      throw;
+    }
+    cleanup();
     return;
   }
   if (action == "rename_module") {
