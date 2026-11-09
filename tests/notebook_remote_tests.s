@@ -209,7 +209,10 @@ def dependencies(h, fixture):
   check(other_result[:state] == "succeeded" and other_result[:result][:cells][0][:result] == "42", "removing a book reference preserves another book's short import")
   missing = h.start(project, saved[:revision])
   missing_result = h.wait_run(missing[:run_id])
-  check(missing_result[:state] == "failed" and missing_result[:result][:environment_error].starts_with?("Package module 'editor_probe'") and not missing_result[:result][:environment_error].contains?(h.root), "missing import explains the package action without server paths")
+  check(missing_result[:state] == "failed", "the removed package can no longer be imported")
+  error = missing_result[:result][:environment_error]
+  check(error.contains?("Cannot import module 'editor_probe': module is not available in this notebook.") and not error.contains?(h.root),
+    "missing import identifies the unavailable module without server paths: " + error)
   damaged = "packages-damaged-cache"
   h.upload(damaged)
   other_inventory = h.call("GET", second_route)[:packages]
