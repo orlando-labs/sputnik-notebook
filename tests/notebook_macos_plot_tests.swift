@@ -28,6 +28,7 @@ private enum NotebookPlotTests {
         precondition(panels.count == 2)
         let panel = panels[0]
         let scene = NotebookPlotScene.decode(panel.plot_scene, width: panel.width, height: panel.height)!
+        precondition(scene.version == 2 && scene.paper?.width == 80 && scene.paper?.tile != nil && scene.fontSize == 16)
         let view = PlotViewport([1, 0, 3, 10])!
         precondition(scene.initialViewport.values == [0, 0, 4, 16])
         precondition(NotebookPlotScene.decode(panels[1].plot_scene, width: 800, height: 540)!.initialViewport == view)
@@ -70,6 +71,32 @@ private enum NotebookPlotTests {
         let equalFrame = equal.plotFrame(view: view, size: size)
         near(equalFrame.width / equalFrame.height, 2.0 / 10)
         precondition(changed { $0["version"] = 99 } == nil)
+        let legacy = changed {
+            $0["version"] = 1; $0.removeValue(forKey: "paper"); $0.removeValue(forKey: "typography"); $0.removeValue(forKey: "ticks")
+        }!
+        precondition(legacy.version == 1 && legacy.paper == nil && legacy.fontSize == 11)
+        precondition(changed { $0["typography"] = ["size": 0, "color": "#000000"] } == nil)
+        precondition(changed { $0["ticks"] = ["x_step": -1] } == nil)
+        precondition(changed { $0["paper"] = ["ink": "#cc8653", "spacing": 4, "width": 1000000, "height": 40, "rgba": ""] } == nil)
+        precondition(changed { $0["paper"] = ["ink": "#cc8653", "spacing": 4, "width": 40, "height": 40, "rgba": "https://invalid.example/"] } == nil)
+        for candidate in [scene, down, equal] {
+            for range in [scene.initialViewport, view, PlotViewport([-1, -2, 3, 5])!] {
+                let f = candidate.plotFrame(view: range, size: size), lines = candidate.paperGridLines(view: range, frame: f)
+                for axis in ["x", "y"] {
+                    let ticks = candidate.axisTicks(view: range, frame: f, axis: axis).values
+                    let major = lines.filter { $0.axis == axis && $0.level == 10 }
+                    precondition(major.map(\.value) == ticks, "major grid and tick values agree")
+                    for line in major {
+                        let p = candidate.screenPoint(axis == "x" ? CGPoint(x: line.value, y: range.yMin) : CGPoint(x: range.xMin, y: line.value), view: range, frame: f)
+                        near(line.position, axis == "x" ? p.x : p.y)
+                    }
+                }
+            }
+        }
+        let fixed = changed { $0["ticks"] = ["x_step": 1, "y_step": 1] }!
+        precondition(fixed.axisTicks(view: view, frame: frame, axis: "x").step == 1)
+        let far = PlotViewport([-1e12, -1e12, 1e12, 1e12])!
+        precondition(fixed.paperGridLines(view: far, frame: fixed.plotFrame(view: far, size: size)).count < 4096)
         precondition(changed { $0["bounds"] = [0, 0, 0, 0] } == nil)
         precondition(changed { $0["frame"] = [0, 0, 100000, 10] } == nil)
         precondition(changed { $0["layers"] = [["kind": "line", "commands": [[99]]]] } == nil)
@@ -96,7 +123,8 @@ private enum NotebookPlotTests {
         precondition(bitmap.pixelsWide == 800 && bitmap.pixelsHigh == 540)
         // The line starts outside the zoom. Clipping must not paint the margin.
         let pixel = bitmap.colorAt(x: 40, y: 460)!.usingColorSpace(.deviceRGB)!
-        precondition(pixel.redComponent > 0.98 && pixel.greenComponent > 0.98 && pixel.blueComponent > 0.98)
+        let originalPixel = NSBitmapImageRep(data: originalPNG)!.colorAt(x: 40, y: 460)!.usingColorSpace(.deviceRGB)!
+        near(pixel.redComponent, originalPixel.redComponent); near(pixel.greenComponent, originalPixel.greenComponent); near(pixel.blueComponent, originalPixel.blueComponent)
         try originalPNG.write(to: fixture.deletingLastPathComponent().appendingPathComponent("plot-native-original.png"))
         try zoomPNG.write(to: fixture.deletingLastPathComponent().appendingPathComponent("plot-native-view.png"))
 

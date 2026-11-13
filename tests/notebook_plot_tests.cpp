@@ -121,7 +121,7 @@ static void scoped_plot_tests(const std::filesystem::path &directory,
               panels.find("Scoped figure") != std::string::npos &&
               panels.find("Scoped PNG") != std::string::npos &&
               panels.find("Scoped surface") != std::string::npos &&
-              panels.find("\\\"version\\\":1") != std::string::npos,
+              panels.find("\\\"version\\\":2") != std::string::npos,
           "display recognizes the scoped classes reached through import plot: " + json.substr(0, 1600));
   command(host, "source", "import plot\nfrom other.plot import Figure\nnotebook.show(Figure())\n");
   command(host, "run_all");
@@ -175,7 +175,7 @@ int main(int argc, char **argv) {
   require(json.find("\"result\":\"42\"") != std::string::npos && baseline.find("iVBOR") != std::string::npos,
           "real plot Figure must render PNG through notebook.show");
   require(baseline.find("early") < baseline.find("equal") && baseline.find("equal") < baseline.find("late"), "ordered subfigures");
-  require(baseline.find("\\\"version\\\":1") != std::string::npos && baseline.find("plot_scene") != std::string::npos,
+  require(baseline.find("\\\"version\\\":2") != std::string::npos && baseline.find("plot_scene") != std::string::npos,
           "real Figure exports an immutable interactive scene through JSON");
   command(host, "run_all");
   require(displays(state(host)) == baseline, "rerun replaces, never appends duplicate panels");
@@ -218,12 +218,12 @@ int main(int argc, char **argv) {
   command(host, "run_all");
   const auto live = displays(state(host));
   require(live.find("latest live frame") != std::string::npos && live.find("first live frame") == std::string::npos &&
-              live.find("\\\"version\\\":1") != std::string::npos,
+              live.find("\\\"version\\\":2") != std::string::npos,
           "live replacements retain the latest interactive scene: " + state(host).substr(0, 1200));
   command(host, "source", "42\n"); command(host, "run_all");
   require(displays(state(host)) == "\"displays\":[]", "successful empty display clears previous figure");
   command(host, "source",
-      "p = figure(width: 800, height: 540).title(\"Viewport regression\").axes(x_label: \"Step\", y_label: \"Loss\")\n"
+      "p = figure(width: 800, height: 540, background: graph_paper(style: :amber)).title(\"Viewport regression\").axes(x_label: \"Step\", y_label: \"Loss\")\n"
       "p = p.line([[0, 0], [1, 1], [2, 4], [3, 9], [4, 16]]).vline(2, label: \"x=2\", dy: 8)\n"
       "p = p.annotate([2, 4], \"visible\").annotate([4, 16], \"outside\")\n"
       "q = p.view(x: [1, 3], y: [0, 10])\n"
@@ -231,9 +231,12 @@ int main(int argc, char **argv) {
       "p.domain_value == null and q.domain_value == [1, 0, 3, 10] and q.layers.count() == p.layers.count()\n");
   command(host, "run_all");
   const auto views = state(host);
-  require(views.find("\"result\":\"true\"") != std::string::npos && displays(views).find("Data view") != std::string::npos,
-          "view preserves original figure, layers, axes and annotations: " + views.substr(0, 1600));
   if (argc == 3) std::ofstream(argv[2]) << views;
+  require(views.find("\"result\":\"true\"") != std::string::npos && displays(views).find("Data view") != std::string::npos,
+          "view preserves original figure, layers, axes and annotations: " + views.substr(views.size() > 2000 ? views.size() - 2000 : 0));
+  require(displays(views).find("\\\"paper\\\":") != std::string::npos &&
+              displays(views).find("\\\"rgba\\\":") != std::string::npos,
+          "graph paper transports a bounded inert grain tile with its interactive scene");
   command(host, "source", "figure().line([[0, 0], [3, 9]]).view(x: [3, 1])\n"); command(host, "run_all");
   require(state(host).find("maximum must exceed minimum") != std::string::npos, "reversed limits rejected");
   command(host, "source", "figure().view(x: [1])\n"); command(host, "run_all");

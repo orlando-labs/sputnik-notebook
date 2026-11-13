@@ -208,7 +208,7 @@ test('real plot scene supports zoom, pan, reset and PNG export in responsive the
   try {
     const result = await run(page, project.id)
     expect(result.state).toBe('succeeded')
-    expect(result.cells[0].displays[0].plot_scene).toContain('"version":1')
+    expect(result.cells[0].displays[0].plot_scene).toContain('"version":2')
     const plot = page.getByTestId('rich-plot')
     await expect(plot).toBeVisible()
     const canvas = plot.getByRole('img', { name: 'Training loss' })
@@ -315,6 +315,37 @@ test('raster image collections, downloads, read-only sharing and corrupt artifac
     expect((await request(bob, `${execution(project.id)}/runs/${result.id}`)).status()).toBe(404)
     expect((await (await request(page, execution(project.id))).json()).runs).toHaveLength(1)
   } finally { await viewer.close(); await release(page, project.id) }
+})
+
+test('graph paper redraws its data grid through zoom, reset, and PNG export', async ({ page }) => {
+  await login(page)
+  const source = 'import plot\np = plot.figure(width: 800, height: 540, background: plot.graph_paper(style: :blue)).title("Graph paper").axes(x_label: "Voltage / V", y_label: "Current / mA")\np = p.line([[0, 0], [2, 0.4], [4, 0.9], [6, 1.3], [8, 1.7], [10, 2.1]])\nnotebook.show(p, caption: "Interactive graph paper")\n42\n'
+  const { project } = await book(page, source, ['plot'])
+  try {
+    const result = await run(page, project.id)
+    expect(result.state).toBe('succeeded')
+    const scene = JSON.parse(result.cells[0].displays[0].plot_scene)
+    expect(scene.version).toBe(2)
+    expect(scene.paper.width).toBe(80)
+    expect(scene.typography).toEqual({ size: 16, color: '#1f2937' })
+    const plot = page.getByTestId('rich-plot'), canvas = plot.getByRole('img', { name: 'Graph paper' })
+    await expect(canvas).toBeVisible()
+    const png = () => canvas.evaluate((c: HTMLCanvasElement) => c.toDataURL('image/png'))
+    await expect.poll(png).toMatch(/^data:image\/png;base64,/)
+    const initial = await png(), bounds = await canvas.getAttribute('data-viewport')
+    await plot.getByRole('button', { name: 'Zoom in', exact: true }).click()
+    await expect(canvas).not.toHaveAttribute('data-viewport', bounds!)
+    await expect.poll(png).not.toBe(initial)
+    await plot.screenshot({ path: '../build/graph-paper-web-zoom.png' })
+    const download = page.waitForEvent('download')
+    await plot.getByRole('button', { name: 'Save PNG…' }).click()
+    const saved = await download
+    expect((await readFile((await saved.path())!)).subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a')
+    await plot.getByRole('button', { name: 'Reset view', exact: true }).click()
+    await expect(canvas).toHaveAttribute('data-viewport', bounds!)
+    await expect.poll(png).toBe(initial)
+    await plot.screenshot({ path: '../build/graph-paper-web-original.png' })
+  } finally { await release(page, project.id) }
 })
 
 test('live progress, stopwatch and chart survive reload, preserve zoom and retain run history', async ({ page }) => {

@@ -329,8 +329,8 @@ test-notebook-themes: notebook-macos $(BUILD_DIR)/notebook_macos_theme_tests
 $(BUILD_DIR)/notebook_macos_result_tests: tests/notebook_macos_result_tests.swift tools/notebook-macos/NotebookResultView.swift tools/notebook-macos/NotebookObjectMenu.swift tools/notebook-macos/NotebookPalette.swift
 	xcrun swiftc -swift-version 5 -O -target $(MAC_NOTEBOOK_TARGET) -module-cache-path $(BUILD_DIR)/notebook-macos/swift-cache $^ -framework AppKit -framework SwiftUI -o $@
 
-$(BUILD_DIR)/notebook_macos_plot_tests: tests/notebook_macos_plot_tests.swift tools/notebook-macos/NotebookPlotScene.swift tools/notebook-macos/NotebookPlotView.swift tools/notebook-macos/NotebookFigure.swift tools/notebook-macos/NotebookAudio.swift tools/notebook-macos/NotebookRunHistory.swift tools/notebook-macos/NotebookResourcePolicy.swift tools/notebook-macos/NotebookRuntimeTelemetry.swift tools/notebook-macos/NotebookFigureView.swift tools/notebook-macos/NotebookObjectMenu.swift tools/notebook-macos/NotebookPalette.swift
-	xcrun swiftc -swift-version 5 -O -target $(MAC_NOTEBOOK_TARGET) -module-cache-path $(BUILD_DIR)/notebook-macos/swift-cache $^ -framework AppKit -framework SwiftUI -o $@
+$(BUILD_DIR)/notebook_macos_plot_tests: tests/notebook_macos_plot_tests.swift $(BOARD_LAYOUT_TEST_SWIFT) packages/notebook-core/include/notebook/core/notebook.h $(NOTEBOOK_CORE_LIBRARY)
+	xcrun swiftc -swift-version 5 -Onone -target $(MAC_NOTEBOOK_TARGET) -module-cache-path $(BUILD_DIR)/notebook-macos/swift-cache -import-objc-header packages/notebook-core/include/notebook/core/notebook.h $< $(BOARD_LAYOUT_TEST_SWIFT) $(NOTEBOOK_CORE_LIBRARY) -framework AppKit -framework SwiftUI -framework WebKit -lc++ $(LDFLAGS) -o $@
 
 test-notebook-results: $(BUILD_DIR)/notebook_macos_result_tests $(BUILD_DIR)/notebook-macos/notebook_result_tests
 	$(BUILD_DIR)/notebook_macos_result_tests
