@@ -57,7 +57,10 @@ class Catalog:
     identity = Identity.where({account_id: current[:id], provider: "github"}).first.or_raise
     {id: current[:id], name: current[:name], provider: identity[:provider], uid: identity[:uid], login: identity[:login]}
 
+  def guest?(current): Map === current and current[?:guest_project] != null
+
   def role(current, project):
+    return (if current[:guest_project][:id] == project[:id] then "editor" else null) if guest?(current)
     return "owner" if project[:owner_account_id] == current[:id]
     member = optional(Membership.where({project_id: project[:id], account_id: current[:id]}).first)
     if member then member[:role] else null
@@ -67,6 +70,11 @@ class Catalog:
       execute: ["owner", "editor"].include?(role), manage: role == "owner"}
 
   def require_project(current, id, capability: :read):
+    if guest?(current):
+      project = current[:guest_project]
+      raise NotFound() unless project[:id] == id
+      raise Forbidden() unless permissions("editor")[?capability]
+      return project
     account(current[:id])
     project = optional(Project.find(id))
     raise NotFound() unless project

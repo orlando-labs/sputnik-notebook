@@ -10,6 +10,8 @@ struct NotebookView: View {
     @State private var pendingDelete: DeleteTarget?
     @State private var boardPrompt: NotebookBoard?
     @State private var componentCell: NotebookCell?
+    @State private var exportCell: NotebookCell?
+    @State private var showSheetImports = false
     @State private var cellIDTarget: CellIDTarget?
     @State private var manageInputs = false
     @State private var renameTarget: NotebookTab?
@@ -58,7 +60,7 @@ struct NotebookView: View {
         .accentColor(NotebookPalette.sputnik)
         .frame(minWidth: 930, minHeight: 640)
         .alert("Notebook", isPresented: Binding(
-            get: { model.error != nil },
+            get: { model.error != nil && !model.boardWindowFocused },
             set: { if !$0 { model.clearError() } }
         )) {
             Button("OK", role: .cancel) { model.clearError() }
@@ -174,7 +176,7 @@ struct NotebookView: View {
                     case .attachments: NotebookAttachmentsPage(model: model)
                     }
                 } else if let board = model.activeBoard {
-                    NotebookBoardView(model: model, board: board) { boardPrompt = board }
+                    NotebookBoardView(model: model, board: board) { boardPrompt = board }.id(board.id)
                 } else if let tab = activeTab {
                     actionBar(snapshot)
                     Rectangle().fill(NotebookPalette.rule).frame(height: 1)
@@ -192,12 +194,23 @@ struct NotebookView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .navigationTitle(snapshot.title)
+        .disabled(model.boardEditorOpen && model.boardWindowSheetID != nil)
         .sheet(item: $boardPrompt) { board in
             NotebookBoardEditor(model: model, board: board, document: model.documentIdentity)
         }
         .sheet(item: $componentCell) { cell in
             if let tab = activeTab {
                 NotebookCellComponentEditor(model: model, cell: cell, tab: tab)
+            }
+        }
+        .sheet(item: $exportCell) { cell in
+            if let tab = activeTab {
+                NotebookCellExportsEditor(model: model, tab: tab, cell: cell)
+            }
+        }
+        .sheet(isPresented: $showSheetImports) {
+            if let tab = activeTab {
+                NotebookSheetImportsEditor(model: model, tab: tab, tabs: snapshot.tabs)
             }
         }
     }
@@ -261,12 +274,13 @@ struct NotebookView: View {
                                 .help("New board").accessibilityLabel("New board").disabled(model.busy)
                         }.padding(.horizontal, 8)
                         ForEach(snapshot.boards ?? []) { board in
+                            let selected = (model.detachedBoard?.id ?? model.selectedBoardID) == board.id
                             Button { model.selectBoard(board) } label: {
                                 Label(board.title, systemImage: "square.grid.2x2")
                                     .frame(maxWidth: .infinity, alignment: .leading).padding(9)
-                                    .background(model.selectedBoardID == board.id ? NotebookPalette.sidebarSelection : .clear, in: RoundedRectangle(cornerRadius: 8))
+                                    .background(selected ? NotebookPalette.sidebarSelection : .clear, in: RoundedRectangle(cornerRadius: 8))
                                     .overlay {
-                                        if model.selectedBoardID == board.id && NotebookPalette.currentPreset != .sputnik {
+                                        if selected && NotebookPalette.currentPreset != .sputnik {
                                             RoundedRectangle(cornerRadius: 8)
                                                 .stroke(NotebookPalette.sidebarSelectionOutline, lineWidth: 1)
                                         }
@@ -487,6 +501,16 @@ struct NotebookView: View {
                         .disabled(model.busy || model.executingCurrentWorker || model.remote.isSelected)
                 }
                 NotebookPageBadge(kind: tab.kind == "module" ? .module : .sheet, detail: tab.status)
+                if tab.kind == "sheet" {
+                    if model.showsBoardWindowToggle { NotebookBoardWindowButton(model: model) }
+                    Button { showSheetImports = true } label: {
+                        Label("Imports", systemImage: "square.and.arrow.down")
+                    }.disabled(model.busy)
+                    if tab.cyclic_imports == true {
+                        Label("Cyclic imports", systemImage: "arrow.trianglehead.clockwise.rotate.90")
+                            .font(.caption).help(tab.status)
+                    }
+                }
             }
 
             Spacer(minLength: 10)
@@ -539,7 +563,7 @@ struct NotebookView: View {
                 }
                 .help(model.remote.isSelected ? "Sync modules and restart the server worker to use a new environment" : "Build and apply the saved module environment to this sheet")
                 .buttonStyle(.bordered)
-                .disabled(model.busy || activeTab == nil || model.remote.isSelected)
+                .disabled(!(activeTab.map { model.canApplyModules($0) } ?? false))
             }
         }
         .padding(.horizontal, 19)
@@ -891,14 +915,21 @@ struct NotebookView: View {
                 }
 
                 if supported && tab.kind == "sheet" {
-                    Button("Components…", systemImage: "square.grid.2x2") { componentCell = cell }
-                        .font(.caption).disabled(model.busy)
+                    iconAction("square.grid.2x2", label: "Components", disabled: model.busy) { componentCell = cell }
                         .accessibilityIdentifier("cell-components-\(cell.id)")
+                    iconAction("square.and.arrow.up", label: "Exports", disabled: model.busy) { exportCell = cell }
+                        .accessibilityIdentifier("cell-exports-\(cell.id)")
                     if running && model.executingWorker {
-                        Button("Stop", systemImage: "stop.fill") { model.stopExecution() }.font(.caption)
+                        iconAction("stop.fill", label: "Stop", disabled: false) { model.stopExecution() }
+                    } else if model.iterationReady(tab, cell: cell) {
+                        Button("Run next iteration", systemImage: "arrow.clockwise") {
+                            model.perform("run", tab: tab, cell: cell)
+                        }.font(.caption).disabled(!model.canRun(tab, cell: cell))
+                            .help("Cycle completed · ready for the next manual iteration")
                     } else {
-                        Button("Run", systemImage: "play.fill") { model.perform("run", tab: tab, cell: cell) }
-                            .font(.caption).disabled(!model.canRun(tab, cell: cell))
+                        iconAction("play.fill", label: "Run", disabled: !model.canRun(tab, cell: cell)) {
+                            model.perform("run", tab: tab, cell: cell)
+                        }
                     }
                 }
                 if supported && collapseAllowed {

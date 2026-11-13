@@ -31,7 +31,8 @@ class Visitor:
         equal = pair.index("=")
         @cookies[pair.slice(0...equal)] = pair.slice(equal + 1...pair.length) if equal
       text = response.body_text(limit: 1048576)
-      check(response.status == status, method + " " + path.split("/")[1] + " returned " + response.status.to_str)
+      if response.status != status:
+        raise ValueError("deployment acceptance: " + method + " " + path.split("/")[1] + " returned " + response.status.to_str)
       if text.present? then Json.parse(text, duplicate_keys: :reject) else null
     ensure:
       response.close!
@@ -62,36 +63,45 @@ def main():
     check(visitor.request("/health/ready")[:ready] == true, "Core readiness")
     visitor.request("/api/projects", status: 401)
     copy = visitor.open()
-    base = "/api/public/sessions/" + copy[:session_id]
-    resources = copy[:resources]
+    lease = "/api/public/sessions/" + copy[:session_id]
+    base = "/api/projects/guest_" + copy[:session_id]
+    resources = visitor.request(base + "/execution")[:resources]
     if args[:phase] == "begin":
-      notebook = visitor.request(base)[:notebook]
+      ip_before = resources[:ip_remaining_ms].to_int
+      before[:ip_day] = Time.now.unix_milliseconds // 86400000
+      notebook = visitor.request(base + "/notebook")[:notebook]
       document = Json.parse(notebook[:document])
+      check(document[:sheets].count > 1 and document[:boards].present?, "public starter is a full notebook with a board")
       document[:sheets][0][:cells][0][:source] = "import task\ntask.sleep(300)\n42\n"
       saved = visitor.request(base + "/notebook", method: "PUT", data: {command_id: "save_" + SecureRandom.hex(16), base_revision: notebook[:revision], document: Json.generate(document)})[:notebook]
-      run = visitor.request(base + "/runs", method: "POST", data: {command_id: "run_" + SecureRandom.hex(16), revision: saved[:revision], sheet_id: "main", cell_id: "1", action: "run_all"})[:run]
+      run = visitor.request(base + "/execution/runs", method: "POST", data: {command_id: "run_" + SecureRandom.hex(16), revision: saved[:revision], sheet_id: "main", cell_id: "1", action: "run_all"})[:run]
       final = null
       200.times:
-        final = visitor.request(base + "/runs/" + run[:id])[:run]
+        final = visitor.request(base + "/execution/runs/" + run[:id])[:run]
         break if ["succeeded", "failed", "force-stopped", "interrupted", "cancelled"].include?(final[:state])
-        visitor.request(base + "/lease", method: "POST", data: {})
+        visitor.request(lease + "/lease", method: "POST", data: {})
         task.sleep(0.1)
       check(final[:state] == "succeeded" and final[:cells][0][:result] == "42", "explicit real-worker result")
-      resources = visitor.request(base)[:resources]
+      resources = visitor.request(base + "/resources")[:resources]
       check(resources[:spent_ms].to_int > 0 and resources[:remaining_ms].to_int < 60000, "real execution is charged")
       before[:charged_ms] = resources[:spent_ms]
-      visitor.request(base, method: "DELETE")
+      before[:ip_remaining_ms] = resources[:ip_remaining_ms]
+      if before[:ip_day] == Time.now.unix_milliseconds // 86400000:
+        check(ip_before - resources[:ip_remaining_ms].to_int >= resources[:spent_ms].to_int, "real execution is charged to the shared IP")
+      visitor.request(lease, method: "DELETE")
       fs.File.open(args[:state], :write, create: true, exclusive: true, permissions: 384) |file|:
         file.write_all!(Json.generate(before).bytes)
         file.sync!()
     else:
       resources = copy[:resources]
       check(resources[:spent_ms].to_int >= before[:charged_ms].to_int and resources[:remaining_ms].to_int < 60000, "restart/restore must retain anonymous charged time")
-      visitor.request(base, method: "DELETE")
+      if before[?:ip_day] == Time.now.unix_milliseconds // 86400000:
+        check(resources[:ip_remaining_ms].to_int <= before[:ip_remaining_ms].to_int, "restart/restore must retain same-day IP usage")
+      visitor.request(lease, method: "DELETE")
     check(resources[:effective][:total_run_seconds] == "60" and resources[:effective][:project_bytes] == "67108864", "public time/storage ceilings")
     fs.write_text(args[:report], Json.generate({phase: args[:phase], origin: origin, ready: true, account_created: false,
       charged_before_ms: before[:charged_ms], charged_after_ms: resources[:spent_ms], remaining_ms: resources[:remaining_ms],
-      quota_seconds: resources[:effective][:total_run_seconds], storage_bytes: resources[:effective][:project_bytes]}))
+      quota_seconds: resources[:effective][:total_run_seconds], storage_bytes: resources[:effective][:project_bytes], ip_remaining_ms: resources[:ip_remaining_ms]}))
     print "PASS deployed public session " + args[:phase] + ": Core ready, no account, real execution and preserved anonymous quota"
   ensure:
     visitor.close!()

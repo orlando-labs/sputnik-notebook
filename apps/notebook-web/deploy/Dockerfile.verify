@@ -2,6 +2,7 @@ ARG CANDIDATE_IMAGE
 FROM ${CANDIDATE_IMAGE} AS verification
 COPY sputnik-notebook/apps/notebook-web/test/deployment_probe.s /opt/notebook-verification/deployment_probe.s
 COPY sputnik-notebook/apps/notebook-web/deploy/verify-runtime /opt/notebook-verification/verify-runtime
+COPY sputnik-notebook/apps/notebook-web/deploy/core-policy.json /opt/notebook-verification/core-policy.json
 RUN sh /opt/notebook-verification/verify-runtime
 
 # Test programs, cookie state and temporary services are not in the release.

@@ -57,6 +57,16 @@ private enum BoardLayoutTests {
             try inputBindingTests()
             try await rangeSliderUITests()
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+            window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1120, height: 740),
+                              styleMask: [.titled, .closable], backing: .buffered, defer: false)
+            guard let window else { throw BoardLayoutFailure(message: "window missing") }
+            window.isReleasedWhenClosed = false
+            window.title = "Board Designer Verification"
+            window.center()
+            try await boardModuleApplyTests(root: root, window: window)
+            print("Board Apply Modules test passed")
+            try await boardWindowTests(root: root, workspace: window)
+            print("Detached board window test passed")
             try await inputAuthoringTests(root: root)
             let project = root.appendingPathComponent("Designer.sputnikbook")
             let opened = await withCheckedContinuation { continuation in
@@ -82,13 +92,6 @@ private enum BoardLayoutTests {
                 model.saveBoard(board) { continuation.resume(returning: $0) }
             }
             try check(saved, model.error ?? "save row fixture")
-            window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1120, height: 740),
-                              styleMask: [.titled, .closable], backing: .buffered, defer: false)
-            guard let window else { throw BoardLayoutFailure(message: "window missing") }
-            window.isReleasedWhenClosed = false
-            window.title = "Board Designer Verification"
-            window.center()
-
             let measurements = CellMeasurements()
             let layout = NSHostingView(rootView: NotebookBoardRowLayout(height: 180) {
                 MeasuredCell(index: 0, measurements: measurements).layoutValue(key: BoardColumnSpan.self, value: 4)
@@ -141,6 +144,151 @@ private enum BoardLayoutTests {
             exit(1)
         }
     }
+
+    @MainActor private static func boardModuleApplyTests(root: URL, window: NSWindow) async throws {
+        let project = root.appendingPathComponent("Apply.sputnikbook")
+        try FileManager.default.createDirectory(at: project, withIntermediateDirectories: false)
+        try #"""
+        {"format":"sputnik-notebook","version":3,"title":"Board Apply","active_sheet":"main",
+         "sheets":[{"id":"main","title":"Main","cells":[{"id":"1","kind":"code","source":"0\n","mode":"watch"}]},
+                   {"id":"controller","title":"Controller","cells":[{"id":"2","kind":"code","source":"answer()\n","mode":"manual"}]}],
+         "modules":[{"id":"training","path":"training.s"}],"auto_imports":["training"],
+         "inputs":[],"dependencies":[],"boards":[{"id":"dashboard","title":"Dashboard","sheet":"controller","columns":1,"components":[]}]}
+        """#.write(to: project.appendingPathComponent("project.json"), atomically: true, encoding: .utf8)
+        try "package training\nexport answer\ndef answer(): 1\n"
+            .write(to: project.appendingPathComponent("training.s"), atomically: true, encoding: .utf8)
+
+        let model = NotebookModel(remoteStorage: root.appendingPathComponent("Apply-settings"))
+        func perform(_ action: String, tab: NotebookTab) async -> Bool {
+            await withCheckedContinuation { c in model.perform(action, tab: tab) { c.resume(returning: $0) } }
+        }
+        func tab(_ id: String) -> NotebookTab? { model.snapshot?.tabs.first { $0.id == id } }
+        let opened = await withCheckedContinuation { c in model.open(url: project) { c.resume(returning: $0) } }
+        guard opened, let board = model.snapshot?.boards?.first,
+              let controller = model.controller(for: board), let module = tab("module:training"),
+              let main = tab("sheet:main") else {
+            throw BoardLayoutFailure(message: model.error ?? "open board module fixture")
+        }
+        let initial = await perform("run_all", tab: controller)
+        try check(initial && model.controller(for: board)?.cells.first?.result == "1", model.error ?? "run initial controller")
+        model.editSource("package training\nexport answer\ndef answer(): 42\n", cell: module.cells[0], tab: module)
+        let saved = await perform("save", tab: module)
+        try check(saved, model.error ?? "save updated module")
+        let appliedElsewhere = await perform("apply", tab: main)
+        try check(appliedElsewhere && model.controller(for: board)?.environment_stale == true,
+                  model.error ?? "applying to a different sheet leaves the board's controller stale")
+
+        model.selectBoard(board)
+        let host = NSHostingView(rootView: NotebookBoardView(model: model, board: board, onDesign: {}))
+        window.contentView = host
+        window.makeKeyAndOrderFront(nil)
+        try await Task.sleep(nanoseconds: 150_000_000)
+        host.layoutSubtreeIfNeeded()
+        try click(host, window: window, x: host.bounds.width - 62, fromTop: 29)
+        try check(!model.busy && model.controller(for: board)?.environment_stale == true,
+                  "Run Sheet is disabled while modules are stale")
+
+        try click(host, window: window, x: host.bounds.width - 175, fromTop: 29)
+        for _ in 0..<250 where model.busy { try await Task.sleep(nanoseconds: 20_000_000) }
+        try check(model.controller(for: board)?.environment_stale == false &&
+                  model.controller(for: board)?.cells.first?.dirty == true &&
+                  tab("sheet:main")?.cells.first?.result == "0" && model.activeBoard?.id == board.id &&
+                  model.activeTab?.id == "sheet:main", model.error ?? "Apply updates only the board's controller and preserves navigation")
+
+        try await Task.sleep(nanoseconds: 100_000_000)
+        try click(host, window: window, x: host.bounds.width - 62, fromTop: 29)
+        for _ in 0..<250 where model.busy { try await Task.sleep(nanoseconds: 20_000_000) }
+        try check(model.controller(for: board)?.cells.first?.result == "42", model.error ?? "Run Sheet uses the newly applied modules")
+        await withCheckedContinuation { continuation in model.shutdown { continuation.resume() } }
+    }
+
+    @MainActor private static func boardWindowTests(root: URL, workspace: NSWindow) async throws {
+        let project = root.appendingPathComponent("BoardWindows.sputnikbook")
+        try FileManager.default.createDirectory(at: project, withIntermediateDirectories: false)
+        try #"""
+        {"format":"sputnik-notebook","version":3,"title":"Board windows","active_sheet":"main",
+         "sheets":[{"id":"main","title":"Main","cells":[{"id":"1","kind":"code","source":"11\n","mode":"manual"}]},
+                   {"id":"other","title":"Other","cells":[{"id":"2","kind":"code","source":"42\n","mode":"manual"}]},
+                   {"id":"empty","title":"Without board","cells":[{"id":"3","kind":"code","source":"0\n","mode":"manual"}]}],
+         "modules":[],"auto_imports":[],"inputs":[],"dependencies":[],
+         "boards":[{"id":"overview","title":"Overview","sheet":"main","columns":1,"components":[]},
+                   {"id":"details","title":"Details","sheet":"main","columns":1,"components":[]},
+                   {"id":"results","title":"Results","sheet":"other","columns":1,"components":[]}]}
+        """#.write(to: project.appendingPathComponent("project.json"), atomically: true, encoding: .utf8)
+
+        let model = NotebookModel(remoteStorage: root.appendingPathComponent("BoardWindows-settings"))
+        let detached = NotebookBoardWindow(model: model, preferences: NotebookPreferences(defaults: nil), workspace: workspace)
+        let opened = await withCheckedContinuation { c in model.open(url: project) { c.resume(returning: $0) } }
+        guard opened, let boards = model.snapshot?.boards,
+              let details = boards.first(where: { $0.id == "details" }),
+              let results = boards.first(where: { $0.id == "results" }),
+              let main = model.controller(for: details),
+              let empty = model.snapshot?.tabs.first(where: { $0.id == "sheet:empty" }) else {
+            throw BoardLayoutFailure(message: model.error ?? "open board window fixture")
+        }
+        func waitFor(_ message: String, _ ready: () -> Bool) async throws {
+            for _ in 0..<200 {
+                if ready() { return }
+                try await Task.sleep(nanoseconds: 20_000_000)
+            }
+            throw BoardLayoutFailure(message: model.error ?? message)
+        }
+
+        model.selectBoard(results)
+        model.toggleBoardWindow()
+        try await waitFor("detaching a board reveals its controller in the workspace") {
+            detached.window?.isVisible == true && model.activeBoard == nil &&
+                model.activeTab?.id == "sheet:other" && model.detachedBoard?.id == results.id
+        }
+        guard let companion = detached.window, let host = companion.contentView else {
+            throw BoardLayoutFailure(message: "separate window missing")
+        }
+        try check(companion !== workspace, "board owns a separate native window")
+
+        model.selectTab(main)
+        try await waitFor("selecting a sheet selects its first board") {
+            detached.window === companion && model.detachedBoard?.id == "overview" && companion.title == "Overview"
+        }
+        model.selectBoard(details)
+        try await waitFor("selecting another board updates the same window") { companion.title == details.title }
+        model.selectTab(empty)
+        try await waitFor("sheets without boards keep the companion window open") {
+            detached.window === companion && model.boardWindowSheet?.id == empty.id && model.detachedBoard == nil
+        }
+        model.selectTab(main)
+        try await waitFor("returning to a sheet restores its selected board") {
+            model.detachedBoard?.id == details.id && companion.title == details.title
+        }
+
+        model.selectBoard(results)
+        try await waitFor("selecting a board switches the workspace controller") {
+            model.activeTab?.id == "sheet:other" && companion.title == results.title
+        }
+        host.layoutSubtreeIfNeeded()
+        try click(host, window: companion, x: host.bounds.width - 62, fromTop: 29)
+        try await waitFor("Run Sheet in the companion runs the paired sheet") {
+            model.controller(for: results)?.cells.first?.result == "42"
+        }
+        try await waitFor("the companion run completes") { !model.busy }
+        companion.performClose(nil)
+        try await waitFor("closing the companion docks the board") {
+            detached.window == nil && model.boardWindowSheetID == nil && model.activeBoard?.id == results.id
+        }
+
+        model.selectTab(main)
+        try await waitFor("the workspace returns to a sheet") { model.activeTab?.id == main.id && model.activeBoard == nil }
+        model.toggleBoardWindow()
+        try await waitFor("a board can be detached directly from its sheet") {
+            detached.window?.isVisible == true && model.detachedBoard?.id == details.id
+        }
+        let replaced = await withCheckedContinuation { c in
+            model.open(url: root.appendingPathComponent("AfterBoardWindows.sputnikbook"), create: true) { c.resume(returning: $0) }
+        }
+        try check(replaced, model.error ?? "open another notebook")
+        try await waitFor("switching notebooks closes the old companion window") { detached.window == nil }
+        await withCheckedContinuation { continuation in model.shutdown { continuation.resume() } }
+    }
+
     @MainActor private static func dragTests() async throws {
         let session = UUID()
         var board = NotebookBoard(id: "drag", title: "Drag", sheet: "main", columns: 2, components: [

@@ -15,7 +15,8 @@ Optional anonymous public mode publishes an operator-selected, revision-pinned
 template on the welcome page. A visitor edits/runs a disposable copy without a
 GitHub account. Its encrypted browser session shares a **60-second cumulative
 computation budget across copies**, with the same per-run ceiling. Book and
-operator quotas may be stricter; storage, lease and admission are bounded.
+operator quotas may be stricter. Anonymous visitors at the same IP also share
+an operator-configurable daily budget, 300 seconds by default.
 See the [operator setup](deploy/README.md#anonymous-public-notebooks) and
 [Stage 4i.3 acceptance](../../docs/evidence/2026-11-01/notebook-web-public/README.md).
 
@@ -736,9 +737,10 @@ copy; reconnect requires Open fresh preview. Tokens are kept only in memory,
 and a short independent Core lease cleans abandoned data. Opening a new copy
 does not reset persistent owner/Core counters.
 
-This preview uses the current authenticated template ACL. Stage 4i.3 adds a
-separate anonymous entry using the operator's pinned publication allowlist and
-a visitor-wide cumulative budget; see the operator setup linked above.
+This preview uses the current authenticated template ACL. The public entry
+opens the full notebook editor on a temporary copy of an operator-pinned
+publication. Guest copies share cookie and IP budgets and can be exported
+before closing. See the operator setup linked above.
 See [policy configuration and API](../../docs/engineering/notebook-resource-policies.md).
 Run `node tools/preview_test.mjs` and `node tools/preview_test.mjs --native` for the
 real-core authorization, isolation, template preservation and visitor quota tests.

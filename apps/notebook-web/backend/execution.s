@@ -40,9 +40,10 @@ class Execution:
     runs.each_with_index |record, index|:
       visible.push!(run_summary(record)) if index >= start or not terminal?(record[:state]) or latest.values.include?(record[:id])
     {revision: source[:project][:head], input_version: source[:cell_inputs][:version], reset_epochs: source[:reset_epochs], dependency_busy: source[?:dependency_busy] or false, can_execute: @catalog.permissions(@catalog.role(current, project))[:execute],
-      runs: visible, services: public_services(source[:services], board_id), resources: Resources(@catalog, @notebooks).summary(project[:core_project_id]),
+      runs: visible, services: public_services(source[:services], board_id), resources: Resources(@catalog, @notebooks).summary(project[:core_project_id], aggregate_user: @catalog.guest?(current)),
       runtimes: (source[:runtimes].filter |runtime|: not runs.any? |run|: run[?:board] and run[:epoch] == runtime[:epoch]).map |runtime|:
-        {sheet_id: runtime[:sheet_id], runtime_epoch: runtime[:epoch], state: runtime[:state], needs_restart: runtime[:needs_restart]}
+        {sheet_id: runtime[:sheet_id], runtime_epoch: runtime[:epoch], state: runtime[:state], needs_restart: runtime[:needs_restart],
+          iteration_ready: runtime[?:iteration_ready] or [], iteration_running: runtime[?:iteration_running] or false}
     }
 
   def history(current, id, before = null):

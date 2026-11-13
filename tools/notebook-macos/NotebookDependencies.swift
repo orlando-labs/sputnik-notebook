@@ -8,8 +8,10 @@ struct NotebookInstalledPackage: Decodable, Identifiable {
     let variant: String?
     let digest: String?
     let scope: String?
+    private let missing: Bool?
     var id: String { name + "@" + version + (variant.map { "/" + $0 } ?? "") }
     var displayName: String { display_name ?? name.split(separator: "/").last.map(String.init) ?? name }
+    var isMissing: Bool { missing == true }
 }
 struct NotebookDependencyEnvironment: Decodable, Identifiable {
     let id: String, state: String, directory: String
@@ -402,8 +404,9 @@ final class NotebookDependencyController: ObservableObject {
         packageAllowNative = false; packageAllowNativeLarge = false; packageBuildFromSource = false
         registryInstallValues = [:]
     }
-    func findPackageVersions() async {
+    func findPackageVersions(for package: NotebookInstalledPackage? = nil) async {
         guard current, !busy, !catalogBusy else { return }
+        if let package { packageName = package.name }
         let name = packageName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
         clearPackageCatalog(); error = nil
@@ -414,7 +417,7 @@ final class NotebookDependencyController: ObservableObject {
             let catalog: NotebookPackageVersions = try decode(await catalog(query: "versions", source: name))
             guard current, generation == catalogGeneration else { return }
             packageCatalog = catalog; catalogName = name
-            packageVersion = catalog.latest ?? ""
+            packageVersion = catalog.available.first { $0.version == package?.version }?.version ?? catalog.latest ?? ""
             if packageVersion.isEmpty { catalogError = "No available releases in this registry."; return }
             try await fetchPackageVariants(generation: generation)
         } catch { if current && generation == catalogGeneration { catalogError = error.localizedDescription } }

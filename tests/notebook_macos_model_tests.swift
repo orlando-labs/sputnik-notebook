@@ -58,6 +58,7 @@ private struct NotebookModelRegressionTests {
             try await testResourcePolicies(root: root)
             try await testRemoteCallbacksCannotEditAnotherDocument(root: root)
             try await testRemoteAmbiguousRepliesAndTerminalFailures(root: root)
+            try await testExportDraft(model, url: root.appendingPathComponent("exports.sputnikbook"))
 
             await shutdown(model)
             // Completion must mean the old borrowed-fd source has been
@@ -74,6 +75,24 @@ private struct NotebookModelRegressionTests {
             exit(1)
         }
 
+    }
+
+    @MainActor
+    private static func testExportDraft(_ model: NotebookModel, url: URL) async throws {
+        try writeProject(url, title: "Exports", cellIDs: ["1"])
+        let opened = await open(model, url: url)
+        try require(opened, "open export fixture")
+        let tab = model.activeTab!, cell = tab.cells[0]
+        let draft = "dataset = [1, 2]\nlabels = [3, 4]\n"
+        model.editSource(draft, cell: cell, tab: tab)
+        let source = draft + "export dataset, labels as categories\n"
+        let applied = await perform(model, "source", tab: tab, cell: cell, text: source)
+        let current = model.activeTab!, updated = current.cells[0]
+        try require(applied && model.source(for: updated, in: current) == source, "export edit replaces the unsaved editor buffer")
+        try require(updated.exports?.map(\.name) == ["categories", "dataset"], "export choices are available to the imports editor")
+        let saved = await perform(model, "save_all")
+        let reloaded = await open(model, url: url)
+        try require(saved && reloaded && model.activeTab?.cells[0].source == source, "saving keeps the updated declarations")
     }
 
     @MainActor

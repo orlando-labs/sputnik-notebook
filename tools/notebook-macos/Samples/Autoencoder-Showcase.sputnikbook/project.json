@@ -1,0 +1,351 @@
+{
+  "format": "sputnik-notebook",
+  "version": 5,
+  "title": "Автоэнкодер · полоски и кольца",
+  "active_sheet": "main",
+  "sheets": [
+    {
+      "id": "dataset",
+      "title": "Датасет",
+      "cells": [
+        {
+          "id": "3",
+          "kind": "text",
+          "source": "Синтетический датасет\nУ полоски меняются угол и смещение; у кольца — диаметр (до 8 px), положение центра, поворот и отношение полуосей b/a от 0.01 до 1. Сильное сжатие превращает кольцо почти в прямую линию, сохраняя толщину контура. Мягкие края позволяют видеть субпиксельные сдвиги даже на сетке 8×8. Seed фиксирует выборку. В каждой карусели на доске доступны все семплы своего семейства.\n"
+        },
+        {
+          "id": "14",
+          "kind": "code",
+          "source": "dataset_seed = 7\nper_class = 24\ndataset = generate_samples(per_class:, seed: dataset_seed)\nexport dataset\nsample_count = publish_samples(dataset)\nsample_count\n",
+          "mode": "watch"
+        }
+      ]
+    },
+    {
+      "id": "main",
+      "title": "Автоэнкодер",
+      "cells": [
+        {
+          "id": "1",
+          "kind": "text",
+          "source": "Автоэнкодер / Из пикселей в две координаты\nИмпортируем набор изображений 8×8 с листа «Датасет». Учим сеть восстанавливать изображение через код из двух чисел и используем их как координаты семпла.\nЗапустите Run All на листе или Run Sheet на доске. Доска «Датасет» показывает изображения, а доска «Автоэнкодер» — обучение и карты кодов.\n"
+        },
+        {
+          "id": "2",
+          "kind": "code",
+          "source": "seed = 7\ndevice = \"cpu\"\nepochs = 3000\nbatch_size = 32\nlearning_rate = 0.003\nmarker_size = 24\n",
+          "mode": "manual"
+        },
+        {
+          "id": "4",
+          "kind": "code",
+          "source": "samples = prepare_samples(training_dataset)\nsample_count = samples.count\nsample_count\n",
+          "mode": "watch"
+        },
+        {
+          "id": "5",
+          "kind": "text",
+          "source": "2. Обучение через узкое горлышко\nЭнкодер: 192 → 64 → 16 → 2. Декодер: 2 → 16 → 64 → 192. Вход — 8×8×3 канала RGB в диапазоне [0, 1]. В скрытых слоях используется ReLU, а линейный выход предсказывает значения RGB. Adam минимизирует среднюю квадратичную ошибку (MSE). Метки семейства и параметры генерации в обучение не передаются.\n",
+          "formatting": {
+            "version": 2,
+            "runs": [],
+            "paragraphs": [
+              {
+                "start": 0,
+                "length": 33,
+                "style": "heading2"
+              }
+            ],
+            "tables": []
+          }
+        },
+        {
+          "id": "6",
+          "kind": "code",
+          "source": "model = Autoencoder(seed:, device:)\nmetrics = train_autoencoder(model, samples, device:, epochs:, batch_size:, learning_rate:, seed:)\ninitial_loss = metrics[:initial_loss]\nfinal_loss = metrics[:final_loss]\nseconds = metrics[:seconds]\nmetrics\n",
+          "mode": "manual"
+        },
+        {
+          "id": "7",
+          "kind": "text",
+          "source": "3. Карта двумерных кодов\nMSE до обучения: {{initial_loss}} · после обучения: {{final_loss}} · время: {{seconds}} с\nДля каждого исходного изображения вычисляем z = encoder(x) и наносим само изображение в точку (z₁, z₂).\n",
+          "formatting": {
+            "paragraphs": [
+              {
+                "length": 25,
+                "start": 0,
+                "style": "heading2"
+              }
+            ],
+            "runs": [
+              {
+                "bold": false,
+                "italic": false,
+                "length": 25,
+                "start": 0,
+                "style": "heading2",
+                "underline": false
+              }
+            ],
+            "tables": [],
+            "version": 2
+          }
+        },
+        {
+          "id": "8",
+          "kind": "code",
+          "source": "codes = encode_samples(model, samples, device:)\nembedding = embedding_plot(samples, codes, marker_size:)\nnotebook.show(embedding, id: \"embedding-map\", live: false, caption: \"Исходные изображения в координатах кода (z₁, z₂)\")\ncode_count = codes.count\ncode_dimensions = codes[0].count\n{samples: code_count, code_dimensions:}\n",
+          "mode": "manual"
+        },
+        {
+          "id": "9",
+          "kind": "text",
+          "source": "4. Карта Кохонена · косинусное сходство\nОбучаем гексагональную карту Кохонена по двумерным кодам изображений. Каждая миниатюра находится в ячейке с ближайшим по косинусной метрике прототипом. Цвет ячейки показывает среднее косинусное сходство её прототипа с соседними.\n",
+          "formatting": {
+            "version": 2,
+            "runs": [],
+            "paragraphs": [
+              {
+                "start": 0,
+                "length": 40,
+                "style": "heading2"
+              }
+            ],
+            "tables": []
+          }
+        },
+        {
+          "id": "10",
+          "kind": "code",
+          "source": "som_plot = embedding_som_plot(samples, codes, seed:)\nnotebook.show(som_plot, id: \"cosine-som\", live: false, caption: \"Исходные изображения в ячейках SOM · цвет показывает сходство соседних прототипов\")\n",
+          "mode": "manual"
+        },
+        {
+          "id": "12",
+          "kind": "text",
+          "source": "5. Карта Кохонена · евклидово расстояние\nОбучаем вторую карту на тех же кодах и помещаем каждое изображение в ячейку с ближайшим по евклидову расстоянию прототипом. Цвет показывает среднее евклидово расстояние до соседних прототипов. Чем светлее ячейка, тем больше расстояние.\n",
+          "formatting": {
+            "version": 2,
+            "runs": [],
+            "paragraphs": [
+              {
+                "start": 0,
+                "length": 41,
+                "style": "heading2"
+              }
+            ],
+            "tables": []
+          }
+        },
+        {
+          "id": "13",
+          "kind": "code",
+          "source": "euclidean_som = embedding_som_plot(samples, codes, seed:, metric: :euclidean)\nnotebook.show(euclidean_som, id: \"euclidean-som\", live: false, caption: \"Исходные изображения в ячейках SOM · цвет показывает среднее евклидово расстояние до соседних прототипов\")\n",
+          "mode": "manual"
+        }
+      ],
+      "imports": [
+        {
+          "name": "training_dataset",
+          "sheet": "dataset",
+          "cell": "14",
+          "export": "dataset"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "autoencoder_model",
+      "path": "modules/autoencoder_model.s"
+    },
+    {
+      "id": "synthetic_images",
+      "path": "modules/synthetic_images.s"
+    },
+    {
+      "id": "autoencoder_training",
+      "path": "modules/autoencoder_training.s"
+    },
+    {
+      "id": "embedding_view",
+      "path": "modules/embedding_view.s"
+    }
+  ],
+  "auto_imports": [
+    "autoencoder_model",
+    "synthetic_images",
+    "autoencoder_training",
+    "embedding_view"
+  ],
+  "inputs": [],
+  "boards": [
+    {
+      "id": "dataset",
+      "title": "Датасет",
+      "sheet": "dataset",
+      "columns": 2,
+      "rows": [
+        {
+          "id": "summary"
+        },
+        {
+          "id": "samples",
+          "height": 360
+        }
+      ],
+      "components": [
+        {
+          "id": "summary",
+          "kind": "text",
+          "title": "Изображений в наборе",
+          "row": "summary",
+          "span": 12,
+          "cell": "14",
+          "binding": "sample_count"
+        },
+        {
+          "id": "stripes",
+          "kind": "image_carousel",
+          "title": "Светло-бордовые полоски",
+          "row": "samples",
+          "span": 6,
+          "h_align": "stretch",
+          "v_align": "top",
+          "caption": "Меняются наклон и смещение",
+          "image_allow_save": true,
+          "image_id": "stripes",
+          "image_mode": "fit"
+        },
+        {
+          "id": "rings",
+          "kind": "image_carousel",
+          "title": "Оранжеватые кольца и эллипсы",
+          "row": "samples",
+          "span": 6,
+          "h_align": "stretch",
+          "v_align": "top",
+          "caption": "Диаметр до 8 px; меняются центр, поворот и сжатие вплоть до линии",
+          "image_allow_save": true,
+          "image_id": "rings",
+          "image_mode": "fit"
+        }
+      ]
+    },
+    {
+      "id": "autoencoder",
+      "title": "Автоэнкодер",
+      "sheet": "main",
+      "columns": 2,
+      "components": [
+        {
+          "id": "intro",
+          "kind": "rich_text",
+          "title": "Автоэнкодер · 8×8 → 2",
+          "row": "intro",
+          "span": 12,
+          "h_align": "stretch",
+          "v_align": "top",
+          "text_content": {
+            "source": "# Из пикселей в две координаты\n\nЗапустите **Run Sheet**. Просмотрите два семейства семплов, наблюдайте обучение и исследуйте получившуюся карту кодов."
+          },
+          "text_mode": "markdown"
+        },
+        {
+          "id": "training_progress",
+          "kind": "progress",
+          "title": "Обучение автоэнкодера",
+          "cell": "6",
+          "row": "progress",
+          "span": 12,
+          "h_align": "stretch",
+          "v_align": "top",
+          "progress_id": "autoencoder-training"
+        },
+        {
+          "id": "loss",
+          "kind": "live_chart",
+          "title": "Ошибка восстановления",
+          "row": "loss",
+          "span": 12,
+          "h_align": "stretch",
+          "v_align": "top",
+          "caption": "Начальная MSE всей выборки и MSE каждого минибатча до обновления весов",
+          "chart_id": "reconstruction-loss",
+          "stroke": "#be5a78",
+          "x_label": "Шаг Adam",
+          "y_label": "MSE",
+          "y_min": 0
+        },
+        {
+          "id": "metrics",
+          "kind": "rich_text",
+          "title": "Результат обучения",
+          "row": "metrics",
+          "span": 12,
+          "h_align": "stretch",
+          "v_align": "top",
+          "text_content": {
+            "source": "MSE: **{{initial_loss}} → {{final_loss}}** · Обучение: **{{seconds}} с**\n\nЭнкодер: 192 → 64 → 16 → **2** · Декодер: **2** → 16 → 64 → 192"
+          },
+          "text_mode": "markdown"
+        },
+        {
+          "id": "embedding_map",
+          "kind": "plot",
+          "title": "Карта кодов · исходные изображения",
+          "cell": "8",
+          "row": "embedding",
+          "span": 12,
+          "h_align": "stretch",
+          "v_align": "top"
+        },
+        {
+          "id": "cosine_som",
+          "kind": "plot",
+          "title": "Карта Кохонена · косинусное сходство",
+          "cell": "10",
+          "row": "similarity",
+          "span": 12,
+          "h_align": "stretch",
+          "v_align": "top"
+        },
+        {
+          "id": "euclidean_som",
+          "kind": "plot",
+          "title": "Карта Кохонена · евклидово расстояние",
+          "cell": "13",
+          "row": "euclidean",
+          "span": 12,
+          "h_align": "stretch",
+          "v_align": "top"
+        }
+      ],
+      "rows": [
+        {
+          "id": "intro"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "loss",
+          "height": 310
+        },
+        {
+          "id": "metrics"
+        },
+        {
+          "id": "embedding"
+        },
+        {
+          "id": "similarity"
+        },
+        {
+          "id": "euclidean"
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}

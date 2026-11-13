@@ -48,6 +48,16 @@ TCP port. Web publishes only `192.168.1.97:18197`; it trusts forwarded provenanc
 from the exact nginx address `192.168.1.155/32` and its own loopback health check.
 The default listener/proxy configuration remains loopback for other installations.
 
+The demo policy admits up to three active guest workers through
+`core.public_max_active_workers`, including preparation and cancellation.
+Saturated starts return HTTP 429 before accepting the command. Compose uses
+`notebook-demo-worker` for this dedicated Core. Each execution worker runs on
+one logical CPU and has hard limits of 30 CPU seconds over its process lifetime
+and 192 MiB of virtual address space. Override the two limits with
+`NOTEBOOK_DEMO_WORKER_CPU_SECONDS` and `NOTEBOOK_DEMO_WORKER_MEMORY_BYTES` in the
+Core container environment. The container-wide limits also cover the Core
+process and workers retained between runs.
+
 | Host path | Container use |
 | --- | --- |
 | /md0/sputnik-notebook/core | Core state / Unix socket; web mounts it read-only |
@@ -78,14 +88,18 @@ servers in production.
 image's `frontend/dist/assets/` into `/srv/sputnik-notebook/public/assets/` on
 22155. Preserve previously published hashed assets when updating. The Vite
 manifest, sources, migrations and binaries are not public files. Set the
-SELinux content context for this public directory. TLS keys stay on 22155;
-Certbot uses the existing `/var/www/letsencrypt` webroot, renewal timer and nginx
-reload hook. Run `nginx -t` before every reload.
+SELinux content context for this public directory. The `sputnik-lang.online`
+certificate on 22155 covers both `sputnik-lang.online` and
+`notebook.sputnik-lang.online`. Certbot uses the existing `/var/www/letsencrypt`
+webroot, renewal timer and nginx reload hook. Run `nginx -t` before every reload.
 
-The proxy preserves Host, overwrites forwarded provenance, has the matching
-112 MiB body envelope, disables caching and automatic upstream retries, and
+The proxy preserves Host, overwrites forwarded provenance, caps request bodies
+at 2 MiB for the public demo, disables caching and automatic upstream retries, and
 omits query strings from its access log. These controls follow the
 [nginx proxy documentation](https://nginx.org/en/docs/http/ngx_http_proxy_module.html).
+It also limits dynamic traffic to 10 requests/s per peer IP and 80 requests/s
+per virtual host, with immediate bursts of 20 and 80 respectively. Excess
+requests receive HTTP 429. Cached assets have their own location.
 
 Restart only web with `docker compose restart --no-deps web` when updating HTTP.
 Core retains its workers and charged time. Core maintenance interrupts work;

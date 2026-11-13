@@ -23,7 +23,8 @@ export ORBIT_CSRF_SECRET=image-only-csrf-secret-with-no-production-authority
 mkdir -p /tmp/notebook-runtime-evidence
 start_core() {
   /usr/local/bin/sputnik-notebook-remote --mode agent --root "$verify_root/core" \
-    --worker /usr/local/bin/sputnik-notebook-worker --sputnik /usr/local/bin/sputnik > "$verify_root/core.log" 2>&1 &
+    --worker /usr/local/bin/notebook-demo-worker --sputnik /usr/local/bin/sputnik \
+    --policy-file /opt/notebook-verification/core-policy.json > "$verify_root/core.log" 2>&1 &
   verify_core=$!
   verify_try=0
   until /usr/local/bin/notebook-public-template --core-root "$verify_root/core" --health-only >/dev/null 2>&1; do
@@ -36,8 +37,8 @@ start_web() {
     > "$verify_root/web.log" 2>&1 &
   verify_web=$!
   verify_try=0
-  until sh /usr/local/bin/notebook-web-healthcheck >/dev/null 2>&1; do
-    verify_try=$((verify_try + 1)); test "$verify_try" -lt 100 || { cat "$verify_root/web.log"; exit 1; }; sleep 0.1
+  until sh /usr/local/bin/notebook-web-healthcheck > "$verify_root/health.log" 2>&1; do
+    verify_try=$((verify_try + 1)); test "$verify_try" -lt 100 || { cat "$verify_root/web.log" "$verify_root/health.log" >&2; exit 1; }; sleep 0.1
   done
 }
 probe() {
@@ -59,5 +60,6 @@ if sh /usr/local/bin/notebook-web-healthcheck >/dev/null 2>&1; then echo 'readin
 start_core
 probe verify
 cp /tmp/notebook-runtime-evidence/verify.json /tmp/notebook-runtime-evidence/core-restart.json
-sha256sum /opt/notebook-verification/deployment_probe.s /opt/notebook-verification/verify-runtime > /tmp/notebook-runtime-evidence/verification-sources.sha256
+sha256sum /opt/notebook-verification/deployment_probe.s /opt/notebook-verification/verify-runtime \
+  /opt/notebook-verification/core-policy.json > /tmp/notebook-runtime-evidence/verification-sources.sha256
 echo 'PASS Python/Node-free runtime: real anonymous execution, HTTP/Core restart, fail-closed readiness and retained quota'

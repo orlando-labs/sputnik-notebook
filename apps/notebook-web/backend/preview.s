@@ -14,7 +14,9 @@ export PreviewSessions
 class PreviewSessions:
   def init(@catalog, @notebooks, @database): @execution = Execution(@catalog, @notebooks)
 
-  def summary(project): Resources(@catalog, @notebooks).summary(project)
+  def aggregate_user?(): false
+
+  def resources(policy): Resources(@catalog, @notebooks).present(policy, aggregate_user: aggregate_user?())
 
   def open(current, id):
     project = @catalog.require_project(current, id, capability: :execute)
@@ -23,7 +25,7 @@ class PreviewSessions:
     @database.with_connection |db|:
       db.execute("DELETE FROM preview_sessions WHERE expires<?", params: [Time.now.unix_milliseconds])
       db.execute("INSERT INTO preview_sessions VALUES(?,?,?,?,?)", params: [session, current[:id], id, accepted[:project_id], Time.now.unix_milliseconds + accepted[:policy][:effective][:lease_seconds] * 1000])
-    {session_id: session, revision: accepted[:revision], policy: accepted[:policy][:effective], spent_ms: 0, resources: Resources(@catalog, @notebooks).summary(accepted[:project_id])}
+    {session_id: session, revision: accepted[:revision], policy: accepted[:policy][:effective], spent_ms: 0, resources: resources(accepted[:policy]), lease_seconds: accepted[:policy][:effective][:lease_seconds]}
 
   def owned(current, session):
     raise NotFound() unless Str === session and session.length == 64 and session.chars.all? |c|: "0123456789abcdef".contains?(c)
@@ -42,14 +44,21 @@ class PreviewSessions:
     policy = @notebooks.call("policy.get", {project_id: row[:core_project_id]}, execution: true)
     source = @notebooks.call("run.registry", {project_id: row[:core_project_id]}, execution: true)
     values = source[:runs].map: @execution.run_summary($it)
-    {notebook: @notebooks.present(document), policy: policy[:effective], spent_ms: policy[:spent_ms], runs: values, resources: summary(row[:core_project_id])}
+    {notebook: @notebooks.present(document), policy: policy[:effective], spent_ms: policy[:spent_ms], runs: values, resources: resources(policy)}
 
-  def touch(current, session):
+  def touch(current, session, status: false):
     row = owned(current, session)
-    renewed = @notebooks.call("session.touch", {project_id: row[:core_project_id]}, execution: true)
+    renewed = @notebooks.call("session.touch", {project_id: row[:core_project_id], status: status}, execution: true)
+    renew_expiry(session, renewed[:expires_at])
+    return {renewed: true} unless status
+    policy = renewed[?:policy]
+    raise WebError(503, "preview_status_unavailable", "The preview status is unavailable.") unless policy
+    runs = renewed[:runs].map: @execution.run_summary($it)
+    {renewed: true, lease_seconds: policy[:effective][:lease_seconds], resources: resources(policy), runs: runs}
+
+  def renew_expiry(session, expires):
     @database.with_connection |db|:
-      db.execute("UPDATE preview_sessions SET expires=? WHERE id=?", params: [renewed[:expires_at], session])
-    {renewed: true}
+      db.execute("UPDATE preview_sessions SET expires=? WHERE id=?", params: [expires, session])
 
   def close(current, session):
     row = owned(current, session)
@@ -58,7 +67,9 @@ class PreviewSessions:
     result
 
   def start(current, session, params):
-    row = owned(current, session)
+    start_owned(owned(current, session), params)
+
+  def start_owned(row, params):
     raise InvalidInput("Preview accepts Run or Run All.") unless ["run", "run_all"].include?(params[:action])
     accepted = @notebooks.call("run.start", {project_id: row[:core_project_id], command_id: params[:command_id], revision: params[:revision], sheet_id: params[:sheet_id], cell_id: params[:cell_id], action: params[:action]}, execution: true)
     {run: @execution.run_summary(@notebooks.call("run.get", {run_id: accepted[:run_id]}, execution: true))}

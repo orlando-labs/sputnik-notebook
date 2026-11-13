@@ -34,6 +34,7 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
             ? nil : UserDefaults.standard)
     private var settingsWindow: NSWindow?
     private var window: NSWindow!
+    private var boardWindow: NotebookBoardWindow?
     private var allowClose = false
     private var terminating = false
     private var pendingOpen: URL?
@@ -68,6 +69,7 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
             self?.showSettings(nil)
         }
         model.onChange = { [weak self] in self?.refreshWindow() }
+        boardWindow = NotebookBoardWindow(model: model, preferences: preferences, workspace: window)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         let arguments = CommandLine.arguments
@@ -144,11 +146,16 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         add("Add Text Block", action: #selector(addText(_:)), key: "t", to: notebook).keyEquivalentModifierMask = [.command, .option]
         notebook.addItem(.separator())
         add("Apply Saved Modules", action: #selector(applyModules(_:)), key: "a", to: notebook).keyEquivalentModifierMask = [.command, .shift]
+        add("Detach Board", action: #selector(toggleBoardWindow(_:)), key: "b", to: notebook).keyEquivalentModifierMask = [.command, .shift]
         add("Dependencies…", action: #selector(showDependencies(_:)), key: "", to: notebook)
         notebook.addItem(.separator())
         add("Stop Execution", action: #selector(stopExecution(_:)), key: ".", to: notebook)
         attach("Notebook", submenu: notebook, to: menu)
+        let windows = NSMenu(title: "Window")
+        windows.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        attach("Window", submenu: windows, to: menu)
         NSApp.mainMenu = menu
+        NSApp.windowsMenu = windows
     }
 
     @discardableResult
@@ -166,17 +173,35 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         menu.addItem(item)
     }
 
+    private var boardWindowIsKey: Bool {
+        boardWindow?.window?.isKeyWindow == true
+    }
+
+    private var activeSheet: NotebookTab? {
+        if boardWindowIsKey { return model.boardWindowSheet }
+        if let board = model.activeBoard { return model.controller(for: board) }
+        return model.activeTab.flatMap { $0.kind == "sheet" ? $0 : nil }
+    }
+
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
         if item.action == #selector(showAbout(_:)) { return true }
         if item.action == #selector(showSettings(_:)) { return true }
-        if let settingsWindow, item.action == #selector(closeWindow(_:)), NSApp.keyWindow === settingsWindow { return true }
+        if item.action == #selector(closeWindow(_:)) {
+            if boardWindowIsKey { return model.canToggleBoardWindow }
+            if let settingsWindow, NSApp.keyWindow === settingsWindow { return true }
+        }
+        if item.action == #selector(toggleBoardWindow(_:)) {
+            item.title = model.boardWindowSheetID == nil ? "Detach Board" : "Attach Board"
+            return model.canToggleBoardWindow
+        }
         if item.action == #selector(stopExecution(_:)) { return model.canStop }
         guard !model.busy, !model.boardEditorOpen else { return false }
         switch item.action {
         case #selector(runAll(_:)):
-            guard model.bookPage == nil else { return false }
-            let tab = model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab
-            return tab.map { $0.kind == "sheet" && model.canRun($0) } ?? false
+            guard boardWindowIsKey || model.bookPage == nil else { return false }
+            guard let tab = activeSheet else { return false }
+            return model.canRun(tab) &&
+                ((!boardWindowIsKey && model.activeBoard == nil) || model.remote.isSelected || !tab.environment_stale)
         case #selector(save(_:)):
             return model.snapshot != nil && model.bookPage != .attachments
         case #selector(saveAll(_:)), #selector(showDependencies(_:)):
@@ -184,11 +209,13 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         case #selector(runCell(_:)):
             let isModule = model.activeTab?.kind == "module"
             item.title = isModule ? "Check Module" : "Run Selected Cell"
-            return model.bookPage == nil && model.activeBoard == nil && model.selectedCell?.kind == "code" && (model.activeTab.map {
+            return !boardWindowIsKey && model.bookPage == nil && model.activeBoard == nil && model.selectedCell?.kind == "code" && (model.activeTab.map {
                 isModule ? model.canCheckModule($0) : model.canRun($0, cell: model.selectedCell)
             } ?? false)
-        case #selector(addCell(_:)), #selector(addText(_:)), #selector(applyModules(_:)):
-            return model.bookPage == nil && model.activeBoard == nil && model.activeTab?.kind == "sheet"
+        case #selector(applyModules(_:)):
+            return (boardWindowIsKey || model.bookPage == nil) && (activeSheet.map { model.canApplyModules($0) } ?? false)
+        case #selector(addCell(_:)), #selector(addText(_:)):
+            return !boardWindowIsKey && model.bookPage == nil && model.activeBoard == nil && model.activeTab?.kind == "sheet"
         default: return true
         }
     }
@@ -277,21 +304,26 @@ final class NotebookAppDelegate: NSObject, NSApplicationDelegate, NSWindowDelega
         }
     }
     @objc private func save(_ sender: Any?) {
-        model.perform("save", tab: model.activeBoard.flatMap { model.controller(for: $0) })
+        model.perform("save", tab: boardWindowIsKey ? model.boardWindowSheet : model.activeBoard.flatMap { model.controller(for: $0) })
     }
     @objc private func saveAll(_ sender: Any?) { model.perform("save_all") }
     @objc private func runCell(_ sender: Any?) {
         model.perform(model.activeTab?.kind == "module" ? "check_module" : "run")
     }
-    @objc private func stopExecution(_ sender: Any?) { model.stopExecution() }
+    @objc private func stopExecution(_ sender: Any?) {
+        model.stopExecution(tab: boardWindowIsKey ? model.boardWindowSheet : nil)
+    }
     @objc private func runAll(_ sender: Any?) {
-        let tab = model.activeBoard.flatMap { model.controller(for: $0) } ?? model.activeTab
-        guard tab?.kind == "sheet" else { return }
+        guard let tab = activeSheet else { return }
         model.perform("run_all", tab: tab)
     }
     @objc private func addCell(_ sender: Any?) { model.perform("add_cell") }
     @objc private func addText(_ sender: Any?) { model.perform("add_text") }
-    @objc private func applyModules(_ sender: Any?) { model.perform("apply") }
+    @objc private func applyModules(_ sender: Any?) {
+        guard let tab = activeSheet, model.canApplyModules(tab) else { return }
+        model.perform("apply", tab: tab)
+    }
+    @objc private func toggleBoardWindow(_ sender: Any?) { model.toggleBoardWindow() }
     @objc private func closeWindow(_ sender: Any?) { (NSApp.keyWindow ?? window).performClose(sender) }
 
     @objc private func showSettings(_ sender: Any?) {

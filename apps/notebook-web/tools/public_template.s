@@ -1,6 +1,7 @@
 package public_template
 
 from notebook.core.client import Client
+from starter import starter_document
 
 export main
 
@@ -16,8 +17,6 @@ def main():
     core.handle("health", {})
     print Json.generate({ready: true})
     return null
-  document = {format: "sputnik-notebook", version: 4, title: "Getting started", active_sheet: "main",
-    sheets: [{id: "main", title: "Main", cells: [{id: "1", kind: "code", mode: "manual", source: "message = \"Hello, Sputnik!\"\nmessage\n"}]}],
-    modules: [], auto_imports: [], dependencies: [], inputs: [], boards: []}
-  saved = core.handle("project.put", {project_id: "web_public_starter", command_id: "publish-starter-v1", base_revision: null, document: Json.generate(document), files: {}})
-  print Json.generate([{id: "starter", title: "Getting started", source_project: "web_public_starter", revision: saved[:revision]}])
+  source = "web_public_starter_v2"
+  saved = core.handle("project.put", {project_id: source, command_id: "publish-starter-v2", base_revision: null, document: Json.generate(starter_document()), files: {}})
+  print Json.generate([{id: "starter", title: "Getting started", source_project: source, revision: saved[:revision]}])

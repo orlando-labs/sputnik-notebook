@@ -1,5 +1,7 @@
 package public_fixture
 
+from "../tools/starter" import starter_document
+
 export templates
 
 # Test-only trusted publication. No browser can call this setup or choose its
@@ -13,10 +15,8 @@ def templates(core):
       break
     rescue Exception: task.sleep(0.05)
   raise IOError("public fixture Core was not ready") unless ready
-  document = {format: "sputnik-notebook", version: 4, title: "Getting started", active_sheet: "main",
-    sheets: [{id: "main", title: "Main", cells: [{id: "1", kind: "code", mode: "manual", source: "message = \"Hello, Sputnik!\"\nmessage\n"}]}],
-    modules: [], auto_imports: [], dependencies: [], inputs: [], boards: [],
-    resource_policy: {run_seconds: 600, total_run_seconds: 600, project_bytes: 134217728}}
+  document = starter_document()
+  document[:resource_policy] = {run_seconds: 600, total_run_seconds: 600, project_bytes: 134217728}
   saved = core.handle("project.put", {project_id: "public_fixture_source", command_id: "publish-starter", base_revision: null, document: Json.generate(document), files: {}})
   # Advance head after publication: every visitor must still receive the pin.
   document[:sheets][0][:cells][0][:source] = "\"Unpublished private head\"\n"

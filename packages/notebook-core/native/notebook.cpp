@@ -2,6 +2,8 @@
 #include "notebook/core/execution.h"
 #include "notebook/core/worker/grants.h"
 #include "notebook/renderers.h"
+#include "frontend/lexer/lexer.h"
+#include "package/registry_json.h"
 #include "runtime/context.h"
 
 #include "notebook/project.h"
@@ -470,6 +472,19 @@ void append_source_range(std::string *out, const CodeErrorRange &range) {
   *out += '}';
 }
 
+void append_cell_exports(std::string *out, const sputnik::notebook::CellAnalysis &analysis) {
+  out->push_back('[');
+  bool first = true;
+  for (const auto &[name, binding] : analysis.exports) {
+    if (!first) out->push_back(',');
+    first = false;
+    out->append("{\"name\":"); append_json_string(out, name);
+    out->append(",\"binding\":"); append_json_string(out, binding);
+    out->push_back('}');
+  }
+  out->push_back(']');
+}
+
 void append_cell(std::string *out, const Cell &cell) {
   out->append("{\"id\":");
   append_json_string(out, std::to_string(cell.id));
@@ -477,6 +492,11 @@ void append_cell(std::string *out, const Cell &cell) {
   append_json_string(out, cell.kind);
   out->append(",\"source\":");
   append_json_string(out, cell.source);
+  if (cell.kind == "code" && cell.source.find("export") != std::string::npos) {
+    const auto analysis = sputnik::notebook::analyze_cell({cell.id, cell.source, "<cell>"});
+    out->append(",\"exports\":");
+    append_cell_exports(out, analysis);
+  }
   out->append(",\"formatting\":");
   append_json_string(out, cell.formatting);
   out->append(",\"watch\":");
@@ -684,6 +704,28 @@ std::string snapshot_json(const SputnikNotebook &notebook) {
     append_bool(&out, module_auto_imported(tab, project));
     out.append(",\"status\":");
     append_json_string(&out, session.status);
+    if (!tab.module) {
+      const auto sheet = std::find_if(project.document.sheets.begin(), project.document.sheets.end(),
+          [&](const auto &value) { return value.id == session.project_sheet_id; });
+      out += ",\"cyclic_imports\":";
+      append_bool(&out, notebook.tabs.sheet_has_cycle(session.project_sheet_id));
+      if (!tab.iteration_ready.empty()) {
+        out += ",\"iteration_cell\":";
+        append_json_string(&out, std::to_string(*tab.iteration_ready.begin()));
+      }
+      out += ",\"imports\":[";
+      bool first = true;
+      if (sheet != project.document.sheets.end()) for (const auto &link : sheet->imports) {
+        if (!first) out += ',';
+        first = false;
+        out += "{\"name\":"; append_json_string(&out, link.name);
+        out += ",\"sheet\":"; append_json_string(&out, link.sheet);
+        out += ",\"cell\":"; append_json_string(&out, std::to_string(link.cell));
+        out += ",\"export\":"; append_json_string(&out, link.export_name);
+        out += '}';
+      }
+      out += ']';
+    }
     out.append(",\"environment_error\":");
     append_json_string(&out, session.environment_error);
     out.append(",\"module_errors\":[");
@@ -775,6 +817,88 @@ void validate_editable_source(std::string_view source,
       throw std::runtime_error(std::string(description) + " is not valid UTF-8");
     offset += length;
   }
+}
+
+bool export_identifier(const std::string &name) {
+  using sputnik::lexer::TokenKind;
+  const auto lexed = sputnik::lexer::Lexer(name, "<export-name>").lex();
+  if (!lexed.ok() || lexed.tokens.empty() || lexed.tokens.front().lexeme != name) return false;
+  const auto kind = lexed.tokens.front().kind;
+  return kind == TokenKind::Identifier || kind == TokenKind::KeywordAttr ||
+      kind == TokenKind::KeywordProp || kind == TokenKind::KeywordClassProp;
+}
+
+void erase_export_declaration(std::string &source, const sputnik::lexer::Span &span) {
+  std::size_t start = span.start.offset, end = span.end.offset;
+  const auto previous_line = start == 0 ? std::string::npos : source.rfind('\n', start - 1);
+  const auto line_start = previous_line == std::string::npos ? 0 : previous_line + 1;
+  const auto after = source.find_first_not_of(" \t\r", end);
+  if (source.find_first_not_of(" \t", line_start) == start &&
+      (after == std::string::npos || source[after] == '\n')) {
+    start = line_start;
+    end = after == std::string::npos ? source.size() : after + 1;
+  } else if (after != std::string::npos && source[after] == ';') {
+    end = after + 1;
+  }
+  source.erase(start, end - start);
+}
+
+std::string cell_exports_json(const std::string &json) {
+  using namespace sputnik::pkg::registry_json;
+  const auto request = Parser(json).parse();
+  auto source = request.at("source").string();
+  validate_editable_source(source, "Cell source");
+  const auto analysis = sputnik::notebook::analyze_cell({1, source, "<cell>"});
+  if (!analysis.parsed)
+    throw std::invalid_argument(analysis.diagnostics.front().message);
+  const auto edits = request.object.find("exports");
+  if (edits == request.object.end()) {
+    std::string result = "{\"bindings\":[";
+    bool first = true;
+    for (const auto &name : analysis.writes) {
+      if (!export_identifier(name)) continue;
+      if (!first) result.push_back(',');
+      first = false;
+      append_json_string(&result, name);
+    }
+    result += "],\"exports\":";
+    append_cell_exports(&result, analysis);
+    return result + '}';
+  }
+
+  const auto &list = edits->second;
+  if (list.kind != Value::Array || list.array.size() > 128)
+    throw std::invalid_argument("Select up to 128 exports per cell.");
+  std::map<std::string, std::string> requested;
+  std::string declaration;
+  for (const auto &entry : list.array) {
+    const auto binding = entry.at("binding").string();
+    const auto name = entry.at("name").string();
+    if (!analysis.writes.count(binding) || !export_identifier(binding))
+      throw std::invalid_argument("Export requires a binding written in this cell.");
+    if (!export_identifier(name))
+      throw std::invalid_argument("Invalid export name '" + name + "'.");
+    if (!requested.emplace(name, binding).second)
+      throw std::invalid_argument("Duplicate export name '" + name + "'.");
+    declaration += declaration.empty() ? "export " : ", ";
+    declaration += binding;
+    if (name != binding) declaration += " as " + name;
+  }
+  if (!analysis.ok() || requested != analysis.exports) {
+    for (auto it = analysis.export_spans.rbegin(); it != analysis.export_spans.rend(); ++it)
+      erase_export_declaration(source, *it);
+    if (!declaration.empty()) {
+      if (!source.empty() && source.back() != '\n') source += '\n';
+      source += declaration + '\n';
+    }
+    const auto updated = sputnik::notebook::analyze_cell({1, source, "<cell>"});
+    if (!updated.ok()) throw std::invalid_argument(updated.diagnostics.front().message);
+    if (updated.exports != requested)
+      throw std::invalid_argument("The source generates export declarations. Edit those exports in the code.");
+  }
+  std::string result = "{\"source\":";
+  append_json_string(&result, source);
+  return result + '}';
 }
 
 void validate_project_sources(const SputnikNotebook &notebook) {
@@ -1109,6 +1233,11 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
     notebook->tabs.rename_sheet(session.project_sheet_id, require_text(text_raw, "Sheet name"));
     return;
   }
+  if (action == "sheet_imports") {
+    if (tab.module) throw std::invalid_argument("Imports require a sheet.");
+    notebook->tabs.save_sheet_imports(session.project_sheet_id, require_text(text_raw, "Imports"));
+    return;
+  }
   if (action == "delete_sheet") {
     if (tab.module) throw std::invalid_argument("Choose a sheet to delete.");
     const auto id = session.project_sheet_id;
@@ -1170,7 +1299,10 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
     const auto index = action == "run" ? find_cell_index(session, cell_raw) : 0;
     if (action == "run" && session.cells[index].kind != "code")
       throw std::invalid_argument("Run applies only to code cells");
-    notebook->execution->run(notebook->tabs, tab, action == "watch_run" ? "watch" : action, index);
+    notebook->tabs.run_linked(tab, action == "watch_run" ? "watch" : action, index,
+        [&](ProjectTab &target, const auto &command, auto start, const auto &) {
+          return notebook->execution->run(notebook->tabs, target, command, start);
+        });
     return;
   }
 
@@ -1270,7 +1402,15 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
         ~SelectedCellRestore() { session.selected = selected; }
       } restore{session, session.selected};
       session.selected = cell_index;
-      evaluate_from_with_progress(&session, cell_index, false, false, {});
+      notebook->tabs.run_linked(tab, "run", cell_index,
+          [](ProjectTab &target, const auto &command, auto start, const auto &changed) {
+            if (command == "inputs") apply_project_input_changes(&target.session, changed, target.iteration_deferred);
+            else {
+              invalidate_project_input_changes(&target.session, changed);
+              evaluate_from_with_progress(&target.session, start, command == "run_all", false, {});
+            }
+            return !sputnik::runtime::runtime_run_cancel_requested();
+          });
       return;
     }
     if (action == "delete_cell") {
@@ -1307,7 +1447,15 @@ void command_impl(SputnikNotebook *notebook, const char *action_raw,
   if (action == "run_all") {
     if (cell_raw != nullptr)
       (void)find_cell_index(session, cell_raw);
-    evaluate_from_with_progress(&session, 0U, true, false, {});
+    notebook->tabs.run_linked(tab, "run_all", 0,
+        [](ProjectTab &target, const auto &command, auto start, const auto &changed) {
+          if (command == "inputs") apply_project_input_changes(&target.session, changed, target.iteration_deferred);
+          else {
+            invalidate_project_input_changes(&target.session, changed);
+            evaluate_from_with_progress(&target.session, start, command == "run_all", false, {});
+          }
+          return !sputnik::runtime::runtime_run_cancel_requested();
+        });
     return;
   }
   if (action == "apply") {
@@ -1440,6 +1588,13 @@ char *sputnik_notebook_config_document(const char *text, const char *format, int
   if (error) *error = nullptr;
   try {
     return copy_c_string(sputnik::notebook::project_config_document(text ? text : "", format ? format : "json", pretty != 0));
+  } catch (...) { report_current_exception(error); return nullptr; }
+}
+
+char *sputnik_notebook_cell_exports(const char *request, char **error) {
+  if (error) *error = nullptr;
+  try {
+    return copy_c_string(cell_exports_json(request ? request : ""));
   } catch (...) { report_current_exception(error); return nullptr; }
 }
 
@@ -1828,8 +1983,13 @@ int sputnik_notebook_pump(SputnikNotebook *notebook, int *next_delay_ms,
       ProjectTab &tab = *notebook->tabs.tabs()[index];
       if (!tab.runtime_dispatch.due(now))
         continue;
-      const RuntimeEventPumpResult result =
-          pump_runtime_events_detailed(&tab.session, false, {});
+      RuntimeEventPumpResult result;
+      notebook->tabs.run_linked(tab, "watch", 0,
+          [&](ProjectTab &target, const auto &command, auto, const auto &changed) {
+            if (command == "watch") result = pump_runtime_events_detailed(&target.session, false, {});
+            else apply_project_input_changes(&target.session, changed, target.iteration_deferred);
+            return !sputnik::runtime::runtime_run_cancel_requested();
+          });
       tab.runtime_dispatch.complete(result, RuntimePumpDispatch::Clock::now());
       notebook->runtime_cursor = (index + 1U) % count;
       break;

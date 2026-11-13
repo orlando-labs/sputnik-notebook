@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue'
-import { api, type Snapshot, type Project, type Membership } from './api'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { api, APIError, type Snapshot, type Project, type Membership } from './api'
 import NotebookIcon from './NotebookIcon.vue'
 import NotebookLibrary from './NotebookLibrary.vue'
 import NotebookWorkspace from './NotebookWorkspace.vue'
 import NotebookImport from './NotebookImport.vue'
-import NotebookPreview from './NotebookPreview.vue'
+import { newId } from './notebook'
 import { formatDate, recordOpened } from './library'
 
 const props = defineProps<{ initial: Snapshot }>()
 const state = ref(props.initial)
-const publicPreview = ref<InstanceType<typeof NotebookPreview> | null>(null), publicTemplate = ref('')
-async function tryPublic(id: string) { publicTemplate.value = id; await nextTick(); publicPreview.value?.show() }
+const publicBook = ref<{ project: Project; leasePath: string; leaseSeconds: number } | null>(null)
+const publicOpening = ref<{ template: string; command: string } | null>(null)
 const busy = ref(false)
 const error = ref(props.initial.auth_error ? 'GitHub sign-in was not completed. Please try again.' : '')
 const notice = ref('')
@@ -26,6 +26,7 @@ const createDialog = ref<HTMLDialogElement>()
 const newTitleInput = ref<HTMLInputElement>()
 const notebook = ref<InstanceType<typeof NotebookWorkspace>>()
 const notebookDirty = ref(false)
+const publicDirty = ref(false)
 const importer = ref<InstanceType<typeof NotebookImport>>()
 function imported(project: Project) { location.assign(`/projects/${encodeURIComponent(project.id)}`) }
 const endpoint = () => `/api/projects/${encodeURIComponent(state.value.project!.id)}`
@@ -38,6 +39,48 @@ async function act(action: () => Promise<void>) {
   try { await action() } catch (cause) { error.value = cause instanceof Error ? cause.message : 'The request failed.' }
   finally { busy.value = false }
 }
+async function tryPublic(template: { id: string; title: string }) {
+  await act(async () => {
+    const command = publicOpening.value?.template === template.id ? publicOpening.value.command : newId('public_open')
+    publicOpening.value = { template: template.id, command }
+    try {
+      const opened = await api<{ session_id: string; lease_seconds: number }>('/api/public/sessions', 'POST', { template_id: template.id, command_id: command })
+      const path = '/api/public/sessions/' + encodeURIComponent(opened.session_id)
+      publicOpening.value = null
+      if (document.hidden) { await api(path, 'DELETE'); return }
+      const stamp = Math.floor(Date.now() / 1000)
+      publicBook.value = {
+        project: { id: 'guest_' + opened.session_id, title: template.title, role: 'editor', owner_account_id: '', created_at: stamp, updated_at: stamp, permissions: { read: true, write: true, execute: true, manage: false } },
+        leasePath: path + '/lease', leaseSeconds: opened.lease_seconds,
+      }
+    } catch (cause) {
+      if (cause instanceof APIError && cause.status < 500) publicOpening.value = null
+      throw cause
+    }
+  })
+}
+async function closePublic(message = '') {
+  const book = publicBook.value
+  if (!book) return
+  publicBook.value = null
+  publicDirty.value = false
+  error.value = message
+  busy.value = true
+  try { await api(book.leasePath.slice(0, -'/lease'.length), 'DELETE') }
+  catch { /* Core also expires the independent lease. */ }
+  finally { busy.value = false }
+}
+function leavePublic() {
+  if (publicDirty.value && !window.confirm('Discard unsaved edits and close this demo notebook?')) return
+  void closePublic()
+}
+function goHome(event: MouseEvent) {
+  if (!publicBook.value) return
+  event.preventDefault()
+  leavePublic()
+}
+function publicVisibility() { if (document.hidden) void closePublic('The demo notebook closed when this tab was hidden. Open a fresh copy to continue.') }
+function publicOffline() { void closePublic('Connection lost. Open a fresh demo notebook after reconnecting.') }
 async function login() {
   await act(async () => {
     const result = await api<{ authorize_url: string }>('/auth/github', 'POST')
@@ -111,13 +154,20 @@ async function copyAccountId() {
 onMounted(() => {
   if (state.value.project && state.value.account) recordOpened(state.value.account.id, state.value.project.id)
   if (state.value.project?.permissions.manage) void act(loadMembers)
+  document.addEventListener('visibilitychange', publicVisibility)
+  window.addEventListener('offline', publicOffline)
+})
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', publicVisibility)
+  window.removeEventListener('offline', publicOffline)
+  void closePublic()
 })
 </script>
 
 <template>
   <div class="workspace" data-testid="notebook-web" :aria-busy="busy">
     <header class="topbar">
-      <a class="brand" href="/" aria-label="Sputnik Notebook home"><NotebookIcon name="book" /><span>Sputnik Notebook</span></a>
+      <a class="brand" href="/" aria-label="Sputnik Notebook home" @click="goHome"><NotebookIcon name="book" /><span>Sputnik Notebook</span></a>
       <div v-if="state.account" class="identity">
         <span class="account-name"><NotebookIcon name="github" /><span data-testid="account-name">{{ state.account.name || state.account.login }}</span></span>
         <span class="topbar-divider" aria-hidden="true"></span>
@@ -129,7 +179,15 @@ onMounted(() => {
     <div v-if="error && !createDialog?.open" class="message error" role="alert">{{ error }}</div>
     <p v-if="notice" class="message notice" role="status">{{ notice }}</p>
 
-    <div v-if="!state.project" class="welcome-screen">
+    <div v-if="publicBook" class="project-screen">
+      <button class="plain back" @click="leavePublic"><NotebookIcon name="back" />Close demo notebook</button>
+      <section class="project-heading">
+        <div class="heading-icon"><NotebookIcon name="book" /></div>
+        <div><h1>{{ publicBook.project.title }}</h1><p>Temporary notebook · Export your work before closing.</p></div>
+      </section>
+      <NotebookWorkspace :key="publicBook.project.id" :project="publicBook.project" account-id="guest" :guest="publicBook" @dirty="publicDirty = $event" @expired="closePublic($event)" />
+    </div>
+    <div v-else-if="!state.project" class="welcome-screen">
       <section class="welcome" aria-labelledby="welcome-title">
         <div class="welcome-icon"><NotebookIcon name="book" /></div>
         <h1 id="welcome-title">Sputnik Notebook</h1>
@@ -159,8 +217,8 @@ onMounted(() => {
       <template v-else>
         <section v-if="state.public_templates?.length" class="public-welcome" aria-labelledby="public-title">
           <h2 id="public-title">Try Sputnik without signing in</h2>
-          <p>Open a temporary notebook. This browser session shares 60 seconds of computation across copies. Your edits do not change the published template.</p>
-          <div class="welcome-actions"><button v-for="template in state.public_templates" :key="template.id" @click="tryPublic(template.id)">Try {{ template.title }}</button></div>
+          <p>Open a temporary notebook. This browser session shares 60 seconds of execution across copies.</p>
+          <div class="welcome-actions"><button v-for="template in state.public_templates" :key="template.id" :disabled="busy" @click="tryPublic(template)">{{ publicOpening?.template === template.id && !busy ? 'Retry opening ' : 'Open ' }}{{ template.title }}</button></div>
         </section>
         <section v-if="state.sign_in_available !== false" class="guest-library">
           <NotebookIcon name="book" />
@@ -219,7 +277,6 @@ onMounted(() => {
     <footer>Sputnik Notebook<span aria-hidden="true">·</span>Server workspace</footer>
 
     <NotebookImport v-if="state.account" ref="importer" :account-id="state.account.id" @complete="imported" />
-    <NotebookPreview v-if="!state.account && publicTemplate" ref="publicPreview" :public-template="publicTemplate" :enabled="true" />
     <dialog v-if="state.account && !state.project" ref="createDialog" class="create-dialog" aria-labelledby="create-title" aria-describedby="create-description" @cancel.prevent="closeCreate">
       <form @submit.prevent="create">
         <div class="dialog-heading"><div class="heading-icon"><NotebookIcon name="book" /></div>

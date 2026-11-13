@@ -432,6 +432,8 @@ class FocusTrackingTextView: NSTextView {
     var onLayout: () -> Void = {}
     var showsLineNumbers = false
     private static let gutterFont = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+    private static let gutterLeadingPadding: CGFloat = 6
+    private static let gutterTrailingPadding: CGFloat = 8
     private var decoratedSource: String?
     private var sourceLines = NotebookSourceLines("")
     private var errorRanges: [NotebookSourceRange] = []
@@ -469,9 +471,10 @@ class FocusTrackingTextView: NSTextView {
         if sourceChanged {
             decoratedSource = source
             sourceLines = NotebookSourceLines(source)
-            let digits = max(3, String(sourceLines.lines.count).count)
+            let digits = String(sourceLines.lines.count).count
             let width = (String(repeating: "0", count: digits) as NSString).size(withAttributes: [.font: Self.gutterFont]).width
-            textContainerInset = NSSize(width: ceil(width) + 18, height: textContainerInset.height)
+            textContainerInset = NSSize(width: ceil(width) + Self.gutterLeadingPadding + Self.gutterTrailingPadding,
+                                        height: textContainerInset.height)
         }
         if !errorRanges.isEmpty {
             let all = NSRange(location: 0, length: textStorage.length)
@@ -516,7 +519,8 @@ class FocusTrackingTextView: NSTextView {
                     .foregroundColor: errorLines.contains(line) ? NSColor.systemRed : NotebookPalette.nativeMuted
                 ]
                 let size = label.size(withAttributes: attributes)
-                label.draw(at: NSPoint(x: origin.x - 8 - size.width, y: y + (rect.height - size.height) / 2),
+                label.draw(at: NSPoint(x: origin.x - Self.gutterTrailingPadding - size.width,
+                                       y: y + (rect.height - size.height) / 2),
                            withAttributes: attributes)
             }
             if glyphs.length > 0 {

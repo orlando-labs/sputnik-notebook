@@ -72,7 +72,11 @@ class Notebooks:
         elif status == 413: message = "The execution result exceeds the supported size limit."
         elif status == 422:
           message = if method == "media.source" then "The completed source is unavailable or exceeds its supported limit. Run the saved cell or apply an audio input first." else "The operation or parameter values are invalid. Check types, bounds, available choices and config syntax."
-        elif status == 429: message = "The execution service is busy. Try again after another run finishes."
+        elif status == 429:
+          message = "The execution service is busy. Try again after another run finishes."
+          if error.message == "public worker capacity reached":
+            code = "public_workers_busy"
+            message = "The public demo is busy. Try again after a worker finishes."
         raise WebError(status, code, message)
       messages = {
         400: "The notebook document is invalid.",
@@ -133,7 +137,7 @@ class Notebooks:
     # Merge bounded member edits into the exact base, preserving every other
     # bundled file. Core validates and commits the document and files together.
     original = call("revision.get", {project_id: core_id, revision: base})
-    files = apply_changes(original[:files], changes)
+    files = apply_changes(original[:files], changes, guest: @catalog.guest?(current))
     result = call("project.put", {project_id: core_id, command_id: command, base_revision: base,
       document: document, files: files})
     {notebook: {revision: result[:revision], document: document}}

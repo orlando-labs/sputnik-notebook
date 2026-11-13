@@ -138,11 +138,17 @@ keep that source/revision retained. Use a separate Core-only publication project
 Removing/changing an entry and restarting revokes access to existing copies;
 the short Core lease expires them. Keep configuration outside public assets.
 
-Guests get Try Getting started on the welcome page, then explicit source Save,
-Run All, Stop/Force Stop and rich/text results in a disposable copy. No account
-or catalog project is created. Requests require both the encrypted visitor cookie
+Guests open a disposable copy in the standard notebook editor. The starter
+includes two sheets and an interactive board. Guests can edit the book, work
+with bundled files and parameters, run code, inspect history and export the
+book. No account or catalog project is created. Requests require both the encrypted visitor cookie
 and opaque copy token, with normal Origin/CSRF checks. HTTP fields cannot select
 Core identities, billing principals, profiles, server paths or worker grants.
+
+Guests can attach files and media up to 256 KiB each. The editor and API accept
+up to 1 MiB of file changes per save or draft export, including folder uploads.
+The public nginx host accepts request bodies up to 2 MiB, including JSON and
+Base64 overhead.
 
 Core restricts each anonymous cookie principal to **60 seconds accumulated wall
 time across copies**; concurrent runs add their time. Each run also has a
@@ -154,16 +160,27 @@ heartbeat and lifetime at most fifteen minutes. Closing/hiding/disconnecting
 the view discards its token and heartbeats; Core expires copies and stops work
 independently of HTTP polling.
 
+The browser renews the lease and reads compact run and quota status in one
+request. An idle guest editor polls every five seconds by default. Live runs and
+command recovery poll every second. Shorter leases reduce both intervals.
+The browser reads the document when opening a copy, uses the accepted revision
+after Save, and keeps the displayed final result while that run remains selected.
+
 Admission allows one active copy per visitor, sixteen globally, ten openings
 per visitor/hour and 120 globally/hour. Uncertain open retries retain command/
 copy identity; later mutations use durable receipts without automatic replay.
 Opening records remain for 24 hours; expired older rows are removed on new opens.
 
-This quota identifies a signed browser session, not a physical person. Clearing
-cookies or using another browser creates a different anonymous identity. Global
-admission and Core-wide quotas still apply; configure operator Core/disk ceilings
-and proxy traffic limits for the exposed service. Private projects, package
-installation, environment preparation and worker settings still require login.
+Core also charges each anonymous run to a shared IP budget of **300 seconds per
+UTC day** by default. Set `core.public_ip_daily_seconds` in the operator policy
+file to change the limit. A run is charged to the day on which Core accepts it.
+New cookies share the same IP budget, and a copy opened on a different IP needs
+to be reopened before another run. The web adapter uses Orbit's verified client
+address and stores a keyed hash derived from the persistent session secret.
+Keep the session secret stable and configure the trusted proxy to overwrite
+`X-Forwarded-For` with the client address. Same-day usage survives service
+restarts. Global admission and Core-wide quotas still apply. Private projects,
+package installation, environment preparation and worker settings require login.
 Public copies cannot install dependencies or inherit template worker grants.
 Live OAuth, nginx/TLS and external deployment acceptance remain separate.
 

@@ -29,6 +29,7 @@ class Schemas:
   attr membership
   attr notebook
   attr module_diagnostics
+  attr cell_exports
   attr empty
   attr run
   attr invocation
@@ -46,10 +47,13 @@ class Schemas:
   attr worker_change
   attr run_history_change
   attr public_open
+  attr preview_lease
   def init():
     @public_open = orbit.params(unknown: :reject):
       field(:template_id, type: Str, required: true)
       field(:command_id, type: Str, required: true)
+    @preview_lease = orbit.params(unknown: :reject):
+      field(:status, type: Bool)
     @project = orbit.params(unknown: :reject):
       field(:title, type: Str, required: true)
     @membership = orbit.params(unknown: :reject):
@@ -58,6 +62,11 @@ class Schemas:
     @empty = orbit.ParamSchema([], unknown: :reject)
     @module_diagnostics = orbit.params(unknown: :reject):
       field(:source, type: Str, required: true)
+    @cell_exports = orbit.params(unknown: :reject):
+      field(:source, type: Str, required: true)
+      array(:exports, unknown: :reject):
+        field(:binding, type: Str, required: true)
+        field(:name, type: Str, required: true)
     @notebook = orbit.params(unknown: :reject):
       field(:command_id, type: Str, required: true)
       field(:base_revision, type: Str, required: true)
@@ -191,6 +200,11 @@ class Pages < oauth.Controller:
     raise AuthenticationRequired() unless current
     current
 
+  def notebook_account(id):
+    if id.starts_with?("guest_"):
+      return service(:public).workspace(session[:public_visitor], id, request.client_ip)
+    require_account()
+
   def snapshot(project: null):
     current = current_account()
     session[:public_visitor] = SecureRandom.hex(32) if service(:public).enabled? and not session[:public_visitor]
@@ -280,13 +294,13 @@ class Pages < oauth.Controller:
       json: {memberships: catalog.memberships(current, id)}
 
   def notebook(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:notebooks).read(current, id)
 
   def resource_status(id as Str):
     respond:
-      json: service(:resources).read(require_account(), id)
+      json: service(:resources).read(notebook_account(id), id)
 
   def create_notebook(id as Str):
     current = require_account()
@@ -311,44 +325,50 @@ class Pages < oauth.Controller:
     schema.expect(value).merge(extra)
 
   def save_notebook(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = file_params(service(:schemas).notebook)
     respond:
       json: service(:notebooks).save(current, id, params[:command_id], params[:base_revision], params[:document], params[?:changes] or {})
 
   def source_index(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:sources).index(current, id, request.query("revision"))
 
   def source_file(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:sources).read(current, id, request.query("revision"), request.query("path"))
 
   def module_diagnostics(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).module_diagnostics)
     respond:
       json: service(:sources).diagnostics(current, id, params[:source])
 
+  def cell_exports(id as Str):
+    current = notebook_account(id)
+    params = request.params.json.expect(service(:schemas).cell_exports)
+    respond:
+      json: service(:sources).cell_exports(current, id, params)
+
   def source_download(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     bytes = service(:sources).download(current, id, request.query("revision"), request.query("path"))
     render(body: bytes, headers: {"content-type": "application/octet-stream", "content-disposition": "attachment; filename=project-file", "cache-control": "private, no-store"})
 
   def notebook_archive(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     bytes = service(:sources).archive(current, id, request.query("revision"))
     render(body: bytes, headers: {"content-type": "application/zip", "content-disposition": "attachment; filename=Notebook.sputnikbook.zip", "cache-control": "private, no-store"})
 
   def notebook_history(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:sources).history(current, id, request.query("before"))
 
   def draft_archive(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = file_params(service(:schemas).draft, required: true)
     bytes = service(:sources).draft_archive(current, id, params[:base_revision], params[:document], params[:changes])
     render(body: bytes, headers: {"content-type": "application/zip", "content-disposition": "attachment; filename=Draft.sputnikbook.zip", "cache-control": "private, no-store"})
@@ -371,34 +391,34 @@ class Pages < oauth.Controller:
       json: service(:transfer).status(current, command)
 
   def input_state(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:inputs).read(current, id, request.query("cell"))
 
   def apply_inputs(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = file_params(service(:schemas).input_change, required: true, member: :values)
     respond:
       json: service(:inputs).change(current, id, request.query("cell"), params[:command_id], params[:revision], params[:base_version], params[:values])
 
   def input_receipt(id as Str, command as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:inputs).receipt(current, id, command)
 
   def accept_media(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).media_change)
     respond:
       json: service(:media_inputs).change(current, id, params)
 
   def media_receipt(id as Str, command as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:media_inputs).receipt(current, id, command)
 
   def annotation_source(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:media_inputs).source(current, id, request.query("revision"), request.query("board"), request.query("component"))
 
@@ -471,16 +491,16 @@ class Pages < oauth.Controller:
   def public_open():
     params = request.params.json.expect(service(:schemas).public_open)
     respond:
-      json: service(:public).open(session[:public_visitor], params[:template_id], params[:command_id])
+      json: service(:public).open(session[:public_visitor], params[:template_id], params[:command_id], request.client_ip)
 
   def public_read(session as Str):
     respond:
       json: service(:public).read(self.session[:public_visitor], session)
 
   def public_touch(session as Str):
-    request.params.json.expect(service(:schemas).empty)
+    params = request.params.json.expect(service(:schemas).preview_lease)
     respond:
-      json: service(:public).touch(self.session[:public_visitor], session)
+      json: service(:public).touch(self.session[:public_visitor], session, status: params[?:status] == true)
 
   def public_close(session as Str):
     respond:
@@ -493,7 +513,7 @@ class Pages < oauth.Controller:
   def public_start(session as Str):
     params = request.params.json.expect(service(:schemas).run)
     respond:
-      json: service(:public).start(self.session[:public_visitor], session, params)
+      json: service(:public).start(self.session[:public_visitor], session, params, request.client_ip)
 
   def public_stop(session as Str, run as Str):
     params = request.params.json.expect(service(:schemas).stop)
@@ -515,9 +535,9 @@ class Pages < oauth.Controller:
 
   def preview_touch(session as Str):
     current = require_account()
-    request.params.json.expect(service(:schemas).empty)
+    params = request.params.json.expect(service(:schemas).preview_lease)
     respond:
-      json: service(:preview).touch(current, session)
+      json: service(:preview).touch(current, session, status: params[?:status] == true)
 
   def preview_close(session as Str):
     respond:
@@ -551,80 +571,80 @@ class Pages < oauth.Controller:
 
   def run_snapshot(id as Str, run_id as Str):
     respond:
-      json: service(:run_history).snapshot(require_account(), id, run_id)
+      json: service(:run_history).snapshot(notebook_account(id), id, run_id)
 
   def run_history_change(id as Str, run_id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).run_history_change)
     respond:
       json: service(:run_history).change(current, id, run_id, params)
 
   def history_receipt(id as Str, command as Str):
     respond:
-      json: service(:run_history).receipt(require_account(), id, command)
+      json: service(:run_history).receipt(notebook_account(id), id, command)
 
   def execution_history(id as Str):
     respond:
-      json: service(:execution).history(require_account(), id, request.query("before"))
+      json: service(:execution).history(notebook_account(id), id, request.query("before"))
 
   def execution_registry(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:execution).registry(current, id, request.query("board_id"))
 
   def invoke(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).invocation)
     respond:
       json: service(:execution).invoke(current, id, params[:command_id], params[:revision], params[:board_id], params[:component_id])
 
   def services(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:execution).services(current, id)
 
   def service_history(id as Str, board as Str, component as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:execution).service_history(current, id, board, component, request.query("before"))
 
   def configure_service(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).service_change)
     respond:
       json: service(:execution).configure_service(current, id, params[:command_id], params[:revision], params[:board_id], params[:component_id], params[:operation])
 
   def restart_invocation(id as Str, run_id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).invocation_restart)
     respond:
       json: service(:execution).restart_invocation(current, id, run_id, params[:command_id], params[:runtime_epoch])
 
   def show_run(id as Str, run_id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:execution).read(current, id, run_id)
 
   def start_run(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).run)
     respond:
       json: service(:execution).start(current, id, params[:command_id], params[:revision], params[:sheet_id], params[:cell_id], params[:action])
 
   def stop_run(id as Str, run_id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).stop)
     respond:
       json: service(:execution).stop(current, id, run_id, params[:command_id], params[:runtime_epoch], params[:force])
 
   def restart_worker(id as Str):
-    current = require_account()
+    current = notebook_account(id)
     params = request.params.json.expect(service(:schemas).restart)
     respond:
       json: service(:execution).restart(current, id, params[:command_id], params[:sheet_id], params[:runtime_epoch])
 
   def execution_receipt(id as Str, command_id as Str):
-    current = require_account()
+    current = notebook_account(id)
     respond:
       json: service(:execution).receipt(current, id, command_id)
 
@@ -648,6 +668,7 @@ routes = orbit.routes:
   get "/api/projects/:id/notebook/files", to: &Pages#source_index
   get "/api/projects/:id/notebook/file", to: &Pages#source_file
   post "/api/projects/:id/notebook/module-diagnostics", to: &Pages#module_diagnostics
+  post "/api/projects/:id/notebook/cell-exports", to: &Pages#cell_exports
   get "/api/projects/:id/notebook/download", to: &Pages#source_download
   get "/api/projects/:id/notebook/archive", to: &Pages#notebook_archive
   get "/api/projects/:id/notebook/revisions", to: &Pages#notebook_history
@@ -722,7 +743,7 @@ def application(provider, assets, database, catalog, session_secret:, csrf_secre
   resources = Resources(catalog, notebooks)
   execution = Execution(catalog, notebooks)
   orbit.App(routes: routes, security: security, expose_exceptions: debug,
-    services: {authentication: {available: provider != null}, public: PublicSessions(catalog, notebooks, database, public_templates), run_history: RunHistory(catalog, notebooks, execution), environments: Environments(catalog, notebooks, environment_preparation, worker_grants), resources: resources, preview: PreviewSessions(catalog, notebooks, database), assets: assets, catalog: catalog, core: core, notebooks: notebooks, execution: execution, sources: Sources(catalog, notebooks), transfer: Transfer(catalog, notebooks), packages: Packages(catalog, notebooks, native_packages), inputs: Inputs(catalog, notebooks), media_inputs: MediaInputs(catalog, notebooks), schemas: Schemas(), oauth: oauth.Registry(if provider then [oauth.Flow(provider, max_pending: 1)] else [])},
+    services: {authentication: {available: provider != null}, public: PublicSessions(catalog, notebooks, database, public_templates, session_secret), run_history: RunHistory(catalog, notebooks, execution), environments: Environments(catalog, notebooks, environment_preparation, worker_grants), resources: resources, preview: PreviewSessions(catalog, notebooks, database), assets: assets, catalog: catalog, core: core, notebooks: notebooks, execution: execution, sources: Sources(catalog, notebooks), transfer: Transfer(catalog, notebooks), packages: Packages(catalog, notebooks, native_packages), inputs: Inputs(catalog, notebooks), media_inputs: MediaInputs(catalog, notebooks), schemas: Schemas(), oauth: oauth.Registry(if provider then [oauth.Flow(provider, max_pending: 1)] else [])},
     integrations: [orm_pool(database), WebBoundary()],
     middleware: [StaticFiles(), sessions.Middleware(store: sessions.CookieStore(), secret: session_secret, secure: security.origin.secure?),
       CsrfMiddleware(secret: csrf_secret, session_service: :session)])

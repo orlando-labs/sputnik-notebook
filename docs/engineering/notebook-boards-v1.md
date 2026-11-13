@@ -172,6 +172,35 @@ edit the board layout.
 
 ## Project format
 
+### Values shared by sheets
+
+Project schema 5 adds an optional `imports` array to a sheet. Each entry has
+`name`, `sheet`, `cell` and `export`. The source cell ID is a decimal string.
+An import is a read-only binding visible in code cells on its sheet. A source
+sheet with incoming references must be unlinked before deletion.
+
+In a code cell, `export value as public_name` declares a transfer of the final
+value of `value`. The VM snapshots it after the cell body. An unsuccessful
+execution or transfer leaves the publication unavailable for fresh imports.
+The notebook reuses the Watch and Manual modes for dependent cells.
+
+The transfer preserves the type and topology of Sputnik collections and
+instances. The receiving environment must load the module that defines an
+imported class. Packages can implement the instance method
+`sputnik_transfer_dump()` returning `Bytes` and the class method
+`sputnik_transfer_load(bytes)` returning an instance of that class. The
+package owns compatibility of its payload. Torch's tensor adapter uses its
+checkpoint reader and writer and restores tensors on CPU. File descriptors,
+sockets and running tasks have no transfer representation.
+
+The current worker transport accepts up to 7 MiB of encoded imports per sheet,
+128 links per sheet and 128 exports per cell. Remote run provenance retains
+the exact imported snapshots and their SHA-256 digests. Snapshots are captured
+before dispatch and stay fixed throughout that invocation.
+
+The desktop identifies cyclic sheet links. An automatic pass defers feedback
+to cells already evaluated in that iteration and offers an explicit next Run.
+
 Version 1 projects stay version 1 until an input or board is saved. Version 2
 requires `inputs` and `boards` arrays. Existing cells, modules and auto-imports
 keep their format and behavior. Sources remain in `project.json` and `.s`

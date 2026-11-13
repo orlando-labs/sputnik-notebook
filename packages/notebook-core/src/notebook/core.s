@@ -5,7 +5,7 @@ from notebook.core.common import APIError, fail, identifier, decode, digest, can
 from notebook.core.host import Worker, pid, environment as inspect_environment, environment_log, book_base64?
 
 from notebook.core.environments import Environments
-from notebook.core.dependencies import Dependencies, installed_packages
+from notebook.core.dependencies import Dependencies, installed_packages, notebook_packages
 from notebook.core.services import Services
 from notebook.core.storage import Storage
 from notebook.core.policy import Policies
@@ -33,12 +33,24 @@ class Runtime:
   attr controller
   attr revision
   attr storage_error
+  attr export_revision
+  attr exports
+  attr imports
+  attr cells
+  attr transfer_wave
+  attr iteration_ready
 
   def init(@core, @project, @sheet, @environment, @grants, @environment_directory, @foreign_environment, @managed_environment, controller: null):
     @invocation = null
     @controller = controller or @sheet
     @revision = null
     @storage_error = null
+    @export_revision = null
+    @exports = []
+    @imports = []
+    @cells = []
+    @transfer_wave = null
+    @iteration_ready = []
     @id = SecureRandom.hex(16)
     @epoch = SecureRandom.hex(16)
     @directory = @core.root + "/runtimes/" + @id
@@ -60,12 +72,22 @@ class Runtime:
   def release!(): @active = null
   def set_invocation(source): @invocation = source
 
-  def prepare(run):
+  def publish_exports(revision, values, cells):
+    @export_revision = revision
+    @exports = values
+    @cells = cells
+
+  def accept_imports(values): @imports = values
+
+  def prepare(run, transfer_wave):
     @storage_error = null
     @active = run
     @request = 0
     @forced = false
     @stopped = false
+    @transfer_wave = transfer_wave
+
+  def ready_for_iteration(cells): @iteration_ready = cells
 
   def stop(force: false):
     @stopped = true
@@ -101,7 +123,7 @@ class Runtime:
         elif kind == "result":
           return event
 
-  def execute(run, revision):
+  def execute(run, revision, transfers, deferred):
     try:
       @revision = run[:revision]
       if @forced:
@@ -109,6 +131,9 @@ class Runtime:
         @core.finished(self, "force-stopped", error: @storage_error or "cancelled before worker start")
         return
       @core.await_environment(@project, @managed_environment, @environment_directory): @stopped
+      if transfers and ["run", "run_all"].include?(run[:action]):
+        transfers = @core.prepare_transfer_sources(self, run, revision, transfers)
+      @core.record_transfer_snapshot(run[:id], transfers) if transfers
       if @stopped:
         terminate() if @forced
         @core.finished(self, if @forced then "force-stopped" else "cancelled", error: @storage_error or "cancelled while preparing environment")
@@ -122,12 +147,20 @@ class Runtime:
       @request = @worker.send(14, [run[:execution_document], "0", revision[:directory]])
       @worker.stop!(@request, true) if @forced
       receive_result()
+      if transfers:
+        fields = []
+        transfers.each |entry|:
+          fields.push!(entry[0])
+          fields.push!(entry[1])
+        @request = @worker.send(22, fields)
+        receive_result()
+        accept_imports(transfers)
       if @stopped:
         terminate() if @forced
         @core.finished(self, if @forced then "force-stopped" else "cancelled", error: @storage_error or "cancelled before dispatch")
         return
       @request = case run[:action]:
-        when "inputs": @worker.send(18, [])
+        when "inputs": @worker.send(18, deferred)
         when "watch": @worker.send(21, [])
         else: @worker.send(4, [run[:cell_id], (if run[:action] == "run_all" then "1" else "0")])
       @worker.stop!(@request, @forced) if @stopped
@@ -136,7 +169,7 @@ class Runtime:
         terminate()
         @core.finished(self, "force-stopped", error: @storage_error or "worker termination confirmed")
       else:
-        unless @core.complete(self, decode(result[2]), result[3]):
+        unless @core.complete(self, decode(result[2]), result[3], result[4]):
           terminate()
           @core.finished(self, "force-stopped", error: "worker termination confirmed before publication")
     rescue Exception |error|:
@@ -151,6 +184,7 @@ class Core:
   def init(@root, @worker_path, python: "python3", ruby: "ruby", compiler: "sputnik", package_directory: null, storage_policy: {}, allow_book_policy_overrides: false):
     @compiler = compiler
     @checking_module = false
+    @checking_cell_exports = false
     @ruby_executable = ruby
     @package_directory_override = package_directory
     created = []
@@ -164,6 +198,7 @@ class Core:
     ["revisions", "runtimes", "runs"].each: fs.mkdir_p(@root + "/" + $it)
     @mutex = Mutex.new()
     @runtimes = {}
+    @transfer_waves = {}
     @owned = {}
     @db = sqlite3.open(@root + "/metadata.sqlite", busy_timeout: 5.0)
     @db.exec("""
@@ -381,12 +416,15 @@ class Core:
   def pump_work():
     @storage.tick()
     @services.tick()
+    pump_transfer_waves()
     @runtimes.values.filter |r|: not r.active and not r.dead and not r.retiring and not r.storage_error and r.worker and r.controller == r.sheet .each |runtime|:
       current = project(runtime.project)
       next unless current[:state] == "active" and current[:head] == runtime.revision
+      next if @transfer_waves[?runtime.project]
       document = decode(revision(current[:head])[:document])
       sheet = document[:sheets].find: $it[:id] == runtime.sheet
-      next unless sheet and sheet[:cells].any? |c|: c[:kind] == "code" and c[:mode] == "watch"
+      next unless sheet
+      next unless sheet[:cells].any? |c|: c[:kind] == "code" and c[:mode] == "watch"
       ready = false
       try: ready = runtime.worker.activity?()
       rescue Exception |error|:
@@ -664,6 +702,137 @@ class Core:
     if fs.dir?(path) and not fs.metadata(path).symlink?: fs.entries(path).each: remove_tree($it.to_str)
     fs.remove(path)
 
+  def cyclic_imports?(document, sheet_id):
+    visited = {}
+    queue = [sheet_id]
+    until queue.empty?:
+      id = queue.pop!
+      next if visited[?id]
+      visited[id] = true
+      sheet = document[:sheets].find: $it[:id] == id
+      if sheet:
+        (sheet[?:imports] or []).each |link|:
+          return true if link[:sheet] == sheet_id
+          queue.push!(link[:sheet])
+    false
+
+  def sheet_imports(project_id, revision_id, links):
+    values = []
+    links.each |link|:
+      provider = @runtimes[?key(project_id, link[:sheet])]
+      next unless provider and not provider.dead and provider.export_revision == revision_id
+      value = provider.exports.find |entry|: entry[0] == link[:cell] and entry[1] == link["export"]
+      values.push!([link[:name], value[2]]) if value
+    bytes = values.reduce(0) |size, entry|: size + entry[0].bytes.count + entry[1].count
+    fail(413, "Sheet import snapshot exceeds the 7 MiB worker transfer limit") if bytes > 7340032
+    values
+
+  def record_transfer_snapshot(id, values):
+    @mutex.synchronize:
+      record = run(id)
+      provenance = record[:provenance]
+      provenance[:sheet_imports] = values.map |entry|:
+        {name: entry[0], sha256: Digest.sha256(entry[1]).hex, data: Base64.encode(entry[1])}
+      payload = Json.generate(provenance)
+      @storage.check_space(record[:project], payload.bytes.count)
+      @db.transaction: sql("UPDATE run_provenance SET payload=? WHERE run=?", [payload, id])
+
+  def prepare_transfer_sources(runtime, requested, revision, values):
+    document = decode(revision[:document])
+    sheet = document[:sheets].find: $it[:id] == runtime.controller
+    return values if cyclic_imports?(document, runtime.controller)
+    links = sheet[?:imports] or []
+    missing = links.filter |link|: not values.any? |entry|: entry[0] == link[:name]
+    missing.each |link|:
+      next if runtime.stopped
+      provider = document[:sheets].find: $it[:id] == link[:sheet]
+      source = provider[:cells].find: $it[:id] == link[:cell]
+      next unless source[:mode] == "watch"
+      prerequisite = @mutex.synchronize:
+        next null unless project(runtime.project)[:head] == requested[:revision]
+        next null unless sheet_imports(runtime.project, requested[:revision], [link]).empty?
+        owner = @runtimes[?key(runtime.project, link[:sheet])]
+        next owner.active if owner and owner.active
+        result = start_run({project_id: runtime.project, revision: requested[:revision],
+          sheet_id: link[:sheet], cell_id: link[:cell], action: "run", command_id: SecureRandom.hex(16)}, internal: true)
+        result[:run_id]
+      if prerequisite:
+        until runtime.stopped or transfer_run_finished?(prerequisite):
+          task.sleep(50)
+    @mutex.synchronize:
+      values + sheet_imports(runtime.project, requested[:revision], missing)
+
+  def transfer_run_finished?(id):
+    @mutex.synchronize: terminal?(run(id)[:state])
+
+  def order_sheet(document, sheet, visited, ordered):
+    return if visited[?sheet[:id]]
+    visited[sheet[:id]] = true
+    (sheet[?:imports] or []).each |link|:
+      provider = document[:sheets].find |item|: item[:id] == link[:sheet]
+      order_sheet(document, provider, visited, ordered) if provider
+    ordered.push!(sheet)
+
+  def pump_transfer_waves():
+    @transfer_waves.keys.each |id|:
+      wave = @transfer_waves[id]
+      next if @runtimes.values.any? |runtime|: runtime.project == id and runtime.active and runtime.transfer_wave == wave[:id]
+      current = project(id)
+      if wave[:failed] or current[:head] != wave[:revision] or current[:state] != "active":
+        @transfer_waves.delete!(id)
+        next
+      document = decode(revision(wave[:revision])[:document])
+      ordered = []
+      visited = {}
+      document[:sheets].each |sheet|: order_sheet(document, sheet, visited, ordered)
+      launched = false
+      if wave[:explicit]:
+        document[:sheets].each |sheet|:
+          next if launched
+          next if @runtimes[?key(id, sheet[:id])]
+          links = sheet[?:imports] or []
+          next if links.empty? or sheet_imports(id, wave[:revision], links).count != links.count
+          next unless links.any? |link|: wave[:sheets][?link[:sheet]]
+          cell = sheet[:cells].find |value|: value[:kind] == "code" and value[:mode] == "watch"
+          next unless cell
+          start_run({project_id: id, command_id: SecureRandom.hex(16), revision: wave[:revision],
+            sheet_id: sheet[:id], cell_id: cell[:id], action: "run"}, internal: true)
+          launched = true
+      next if launched
+      ordered.each |sheet|:
+        next if launched
+        runtime = @runtimes[?key(id, sheet[:id])]
+        next unless runtime and runtime.controller == runtime.sheet and runtime.revision == wave[:revision] and not runtime.dead and not runtime.stopped
+        links = sheet[?:imports] or []
+        next if links.empty?
+        latest = sheet_imports(id, wave[:revision], links)
+        next if latest == runtime.imports
+        changed = links.filter |link|:
+          after = latest.find |entry|: entry[0] == link[:name]
+          before = runtime.imports.find |entry|: entry[0] == link[:name]
+          after != before
+        deferred = runtime.iteration_ready
+        if cyclic_imports?(document, runtime.sheet):
+          seen = runtime.cells.filter |cell|: cell[:ok] and wave[:evaluated][?cell[:id]]
+          seen_ids = seen.map |cell|: cell[:id]
+          deferred = (deferred + seen_ids).uniq
+          feedback = seen.filter |cell|:
+            changed.any? |link|: (cell[?:import_reads] or []).include?(link[:name])
+          unless feedback.empty?:
+            feedback_ids = feedback.map |cell|: cell[:id]
+            wave[:feedback][runtime.sheet] = ((wave[:feedback][?runtime.sheet] or []) + feedback_ids).uniq
+        cell = sheet[:cells].find: $it[:kind] == "code"
+        next unless cell
+        start_run({project_id: id, command_id: SecureRandom.hex(16), revision: wave[:revision],
+          sheet_id: runtime.sheet, cell_id: cell[:id], action: "inputs", deferred: deferred}, internal: true)
+        launched = true
+      next if launched
+      wave[:feedback].each |sheet, cells|:
+        runtime = @runtimes[?key(id, sheet)]
+        runtime.ready_for_iteration((runtime.iteration_ready + cells).uniq) if runtime
+      @transfer_waves.delete!(id)
+      event(id, {type: "iteration", state: "ready", wave_id: wave[:id]}) unless wave[:feedback].empty?
+
   def prepare_run(params, input_state: null, input_document: null, internal: false):
     id = identifier(params[?:project_id])
     current = project(id)
@@ -689,6 +858,8 @@ class Core:
     fail(422, "unsupported cell semantics") if sheet[:cells].any? |c|: not ["code", "text"].include?(c[:kind])
     cell = sheet[:cells].find: $it[:id] == params[?:cell_id] and $it[:kind] == "code"
     fail(404, "code cell not found") unless cell
+    linked = not target and document[:sheets].any? |item|: not (item[?:imports] or []).empty?
+    fail(409, "a linked sheet iteration is running") if linked and @transfer_waves[?id] and not internal
     fail(422, "unsupported execution action") unless ["run", "run_all", "action_run"].include?(action) or (internal and ["inputs", "watch", "periodic_run"].include?(action))
     input_state = input_state or cell_inputs(id)
     input_document = input_document or resolve_inputs(revision, input_state[:values])[:document]
@@ -714,7 +885,10 @@ class Core:
     else:
       fail(429, "runtime limit reached") if (@owned.values.filter |r|: not r.dead).count >= 8
       runtime = Runtime(self, id, owner, revision[:environment], settings[:grants], foreign[:directory], foreign[:fingerprint], foreign[?:id], controller: sheet[:id])
-    {id: SecureRandom.hex(16), project: id, revision: revision, runtime: runtime, cell: cell[:id], action: action, inputs: input_state, document: input_document, target: target, source: cell[:source], replaced: replaced}
+    links = sheet[?:imports] or []
+    transfers = if links.empty? then null else sheet_imports(id, revision[:id], links)
+    {id: SecureRandom.hex(16), project: id, revision: revision, runtime: runtime, cell: cell[:id], action: action, inputs: input_state, document: input_document, target: target, source: cell[:source], replaced: replaced, transfers: transfers,
+      linked: linked, explicit: not internal, deferred: if internal then (params[?:deferred] or []) else []}
 
   def persist_run(plan):
     @storage.admit(plan[:project], plan[:document])
@@ -741,11 +915,19 @@ class Core:
     runtime.set_invocation(plan[:source]) if plan[:target]
     @runtimes[key(plan[:project], runtime.sheet)] = runtime
     @owned[runtime.id] = runtime
-    runtime.prepare(plan[:id])
+    wave = if plan[:linked] then @transfer_waves[?plan[:project]] else null
+    if plan[:linked] and not wave:
+      wave = {id: SecureRandom.hex(16), revision: plan[:revision][:id], evaluated: {}, feedback: {}, failed: false,
+        explicit: plan[:explicit], sheets: {}}
+      @transfer_waves[plan[:project]] = wave
+    wave[:sheets][runtime.sheet] = true if wave
+    if wave and plan[:explicit] and ["run", "run_all"].include?(plan[:action]):
+      runtime.ready_for_iteration([])
+    runtime.prepare(plan[:id], if wave then wave[:id] else null)
     @policies.launched(plan[:id])
     @policies.supervise()
     record = run(plan[:id])
-    task.async: runtime.execute(record, plan[:revision])
+    task.async: runtime.execute(record, plan[:revision], plan[:transfers], plan[:deferred])
 
   def start_run(params, input_state: null, input_document: null, input_command: null, internal: false):
     id = identifier(params[?:project_id])
@@ -780,7 +962,7 @@ class Core:
         @storage.published(runtime.active, binary.count, live: true)
         sql("UPDATE runs SET live_json=? WHERE id=?", [text, runtime.active])
 
-  def complete(runtime, summary, binary):
+  def complete(runtime, summary, binary, exports):
     @mutex.synchronize:
       # Force Stop may acquire the owner lock after execute's last flag check.
       # The caller must still confirm exit and publish the terminal lifecycle.
@@ -797,14 +979,25 @@ class Core:
       elif record[:action] == "watch": bad = bad or summary[:cells].any? |c|: not c[:ok] and not c[:dirty]
       else: bad = bad or summary[:cells].any? |c|: targets.include?(c[:id]) and not c[:ok]
       state = if summary[:cancelled] then "cancelled" else if bad then "failed" else "succeeded"
+      wave = @transfer_waves[?runtime.project]
+      if wave and wave[:id] == runtime.transfer_wave:
+        summary[:cells].each |cell|:
+          previous = runtime.cells.find: $it[:id] == cell[:id]
+          if cell[:ok] and (not previous or previous[?:evaluations] != cell[?:evaluations]):
+            wave[:evaluated][cell[:id]] = true
+        wave[:failed] = true unless state == "succeeded"
       artifact = @root + "/runs/" + record[:id] + ".bin"
       @storage.output(record[:id], Json.generate(summary), binary)
       fs.atomic_write_bytes(artifact, binary)
       finish(runtime, state, summary: summary, presentation: artifact, binary_bytes: binary.count)
+      runtime.publish_exports(record[:revision], exports, summary[:cells]) if runtime.controller == runtime.sheet
       true
 
   def finished(runtime, state, error: ""):
-    @mutex.synchronize: finish(runtime, state, error: error)
+    @mutex.synchronize:
+      wave = @transfer_waves[?runtime.project]
+      wave[:failed] = true if wave and wave[:id] == runtime.transfer_wave
+      finish(runtime, state, error: error)
 
   def finish(runtime, state, error: "", summary: null, presentation: null, binary_bytes: null):
     @db.transaction(mode: :immediate):
@@ -1012,6 +1205,7 @@ class Core:
 
   def handle(method, params):
     return module_diagnostics(params) if method == "module.diagnostics"
+    return cell_exports(params) if method == "cell.exports"
     if method == "dependency.catalog":
       @mutex.synchronize:
         id = identifier(params[?:project_id])
@@ -1020,6 +1214,29 @@ class Core:
       # A registry request must not hold the core lock or delay running cells.
       return @dependencies.catalog(params)
     @mutex.synchronize: dispatch(method, params)
+
+  def cell_exports(params):
+    source = params[?:source]
+    fail(400, "invalid cell source") unless Str === source and source.bytes.count <= 1048576
+    request = {source: source}
+    if params.has_key?(:exports):
+      exports = params[:exports]
+      fail(400, "invalid cell exports") unless Array === exports and exports.count <= 128
+      request[:exports] = exports
+    @mutex.synchronize:
+      id = identifier(params[?:project_id])
+      fail(409, "project deleted") unless project(id)[:state] == "active"
+      fail(429, "cell export analyzer is busy") if @checking_cell_exports
+      @checking_cell_exports = true
+    try:
+      checked = system.command(@worker_path, "--cell-exports").capture(input: Json.generate(request), timeout: 3.0, limit: 8388608, check: false)
+      raise ValueError("invalid cell export report") unless checked.success?
+      decode(checked.stdout.to_str)
+    rescue Exception:
+      fail(503, "cell export analyzer unavailable")
+    ensure:
+      @mutex.synchronize:
+        @checking_cell_exports = false
 
   def module_diagnostics(params):
     source = params[?:source]
@@ -1097,7 +1314,7 @@ class Core:
       when "policy.configure": return @policies.configure(params[:scope], params[:id], params[:limits])
       when "policy.bind": return @policies.bind(identifier(params[:project_id]), identifier(params[:user_id]), params[?:profile])
       when "session.open": return open_session(params)
-      when "session.touch": return @policies.touch(identifier(params[:project_id]))
+      when "session.touch": return touch_session(params)
       when "session.close": return @policies.close(identifier(params[:project_id]))
       when "project.put": return put_project(params)
       when "media.accept": return accept_media(params)
@@ -1136,7 +1353,8 @@ class Core:
       when "dependency.status":
         environments = @environments.list(id)
         ready = environments.reversed.find: $it[:state] == "ready"
-        return {packages: installed_packages(package_directory(id)), package_scopes: ["shared", "local"], jobs: @dependencies.list(id), environments: environments, ready: if ready then @environments.details(ready) else null}
+        revision_home = revision(current[:head])[:directory] + "/packages"
+        return {packages: notebook_packages(package_directory(id), revision_home), package_scopes: ["shared", "local"], jobs: @dependencies.list(id), environments: environments, ready: if ready then @environments.details(ready) else null}
       when "dependency.get": return @dependencies.get(id, identifier(params[?:operation_id]))
       when "environment.get":
         found = @environments.record(id, identifier(params[?:environment_id]))
@@ -1254,6 +1472,8 @@ class Core:
       runtime = @owned[?record[:id]]
       record[:worker_pid] = if runtime and runtime.worker and not runtime.dead then runtime.worker.pid else null
       record[:storage_error] = if runtime then runtime.storage_error else null
+      record[:iteration_ready] = if runtime then runtime.iteration_ready else []
+      record[:iteration_running] = @transfer_waves.has_key?(id)
       owner = @runtimes[?key(id, record[:sheet_id])]
       record[:needs_restart] = false
       if owner and owner.id == record[:id]:
@@ -1280,6 +1500,23 @@ class Core:
     @services.forget(project)
     @storage.purge(project)
 
+  def touch_session(params):
+    id = identifier(params[:project_id])
+    renewed = @policies.touch(id)
+    return renewed unless params[?:status] == true
+    # Preview needs the latest attempt per sheet and any active attempts, not
+    # the full registry's runtime, input, history and presentation records.
+    runs = rows("""
+      SELECT r.id, r.revision, r.sheet_id, r.cell_id, r.action, r.epoch, r.state
+      FROM runs r JOIN run_storage s ON s.run=r.id
+      WHERE r.id IN (
+        SELECT latest FROM run_heads WHERE project=?
+        UNION SELECT id FROM runs WHERE project=? AND state NOT IN ('succeeded','failed','cancelled','force-stopped','interrupted')
+      )
+      ORDER BY s.seq
+    """, [id, id])
+    renewed.merge({runs: runs, policy: @policies.status(id)})
+
   def open_session(params):
     source = project(identifier(params[:source_project]))
     fail(409, "session template must be active") unless source[:state] == "active"
@@ -1293,13 +1530,19 @@ class Core:
     fail(400, "invalid temporary project identity") unless id.starts_with?("session_")
     user = if params[?:user_id] then identifier(params[:user_id]) else null
     profile = identifier(params[?:profile] or "public")
-    @policies.public_user(user) if profile == "public" and user and user.starts_with?("anonymous_")
+    public_ip = params[?:public_ip]
+    if @policies.anonymous_public?(user, profile):
+      valid_ip = Str === public_ip and public_ip.length == 64 and public_ip.chars.all? |c|: "0123456789abcdef".contains?(c)
+      fail(400, "anonymous sessions require a network identity") unless valid_ip
+      @policies.public_user(user)
+    else:
+      fail(400, "network identity is only available to anonymous sessions") unless public_ip == null
     previous = @policies.binding(id)
     if previous:
-      fail(409, "project policy owner is immutable") unless previous[:user_id] == user and previous[:profile] == profile
+      fail(409, "project policy owner is immutable") unless previous[:user_id] == user and previous[:profile] == profile and previous[:public_ip] == public_ip
       @policies.require_open(id)
     else:
-      @policies.open(id, user, profile)
+      @policies.open(id, user, profile, public_ip)
     try:
       saved = put_project({project_id: id, command_id: "session-initialize", base_revision: null, document: revision[:document], files: files})
       @policies.supervise()

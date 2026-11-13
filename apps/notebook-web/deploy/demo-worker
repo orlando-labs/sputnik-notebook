@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+
+worker="${0%/*}/sputnik-notebook-worker"
+if [ "${1-}" != "--notebook-worker" ]; then
+  exec "$worker" "$@"
+fi
+
+cpu_seconds=${NOTEBOOK_DEMO_WORKER_CPU_SECONDS:-30}
+memory_bytes=${NOTEBOOK_DEMO_WORKER_MEMORY_BYTES:-201326592}
+for value in "$cpu_seconds" "$memory_bytes"; do
+  case "$value" in ''|*[!0-9]*) exit 64;; esac
+  [ "$value" -gt 0 ] || exit 64
+done
+
+# Pick one CPU from the container's allowed list. All worker threads inherit it.
+cpu=$(awk -v generation="$2" '
+  $1 == "Cpus_allowed_list:" {
+    ranges = split($2, range, ",")
+    for (i = 1; i <= ranges; i++) {
+      fields = split(range[i], ends, "-")
+      last = (fields == 2 ? ends[2] : ends[1]) + 0
+      for (id = ends[1] + 0; id <= last; id++) cpus[count++] = id
+    }
+    if (count) print cpus[(generation - 1) % count]
+  }
+' /proc/self/status)
+[ -n "$cpu" ] || exit 69
+
+export SPUTNIK_TASK_MAX_THREADS=4 SPUTNIK_FFI_MAX_THREADS=4
+exec /usr/bin/taskset -c "$cpu" /usr/bin/prlimit --cpu="$cpu_seconds:$cpu_seconds" \
+  --as="$memory_bytes:$memory_bytes" --core=0:0 -- "$worker" "$@"

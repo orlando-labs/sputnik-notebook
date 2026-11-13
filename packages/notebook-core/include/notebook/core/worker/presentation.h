@@ -12,6 +12,9 @@ constexpr std::size_t kPresentationChunkBytes = 1024U * 1024U;
 // selection, project inputs or runtime Values. Diagnostic source snapshots
 // are immutable provenance; hosts retain their own drafts.
 struct CellPresentation {
+  std::vector<std::pair<std::string, std::string>> exports;
+  std::uint64_t evaluations = 0;
+  std::vector<std::string> import_reads;
   CellId id = 0;
   std::uint64_t source_revision = 0;
   bool dirty = true, ok = false;

@@ -14,6 +14,7 @@ export type ResourceKey = typeof resourceFields[number]['key']
 export type ResourceLimits = Record<ResourceKey, string | null>
 export interface ResourceStatus {
   effective: ResourceLimits; defaults: ResourceLimits; spent_ms: string; remaining_ms: string | null
+  ip_remaining_ms?: string
   temporary: boolean; allow_book_policy_overrides: boolean
   storage?: { project_bytes: string; retained_runs: string; active_runs: string }
 }

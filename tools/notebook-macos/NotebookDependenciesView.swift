@@ -131,9 +131,13 @@ struct NotebookDependenciesView: View {
             }
     }
     private var sputnik: some View {
-        ScrollView {
+        ScrollViewReader { scroll in
+            ScrollView { sputnikContent(scroll) }
+        }
+    }
+    private func sputnikContent(_ scroll: ScrollViewProxy) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Installed in this notebook").font(.headline)
+            Text("Notebook packages").font(.headline)
             List {
                 if controller.inventory.packages.isEmpty { Text("No Sputnik packages installed here.").foregroundStyle(.secondary) }
                 ForEach(controller.inventory.packages) { package in
@@ -145,10 +149,19 @@ struct NotebookDependenciesView: View {
                                     .help(package.digest ?? variant).textSelection(.enabled)
                             }
                         }
-                        Text(package.version).foregroundStyle(.secondary)
+                        if !package.version.isEmpty { Text(package.version).foregroundStyle(.secondary) }
                         if let scope = package.scope { Text(scope == "shared" ? "Shared" : "This notebook").font(.caption).foregroundStyle(.secondary) }
                         Spacer()
-                        Button("Remove", role: .destructive) { removing = package }.disabled(!controller.canChange)
+                        if package.isMissing {
+                            Label("Missing", systemImage: "exclamationmark.triangle").foregroundStyle(NotebookPalette.sputnik)
+                            Button("Find in Registry…") {
+                                scroll.scrollTo("registry-installer", anchor: .top)
+                                Task { await controller.findPackageVersions(for: package) }
+                            }.disabled(controller.busy || controller.catalogBusy)
+                            .accessibilityIdentifier("dependency-find-missing-" + package.name)
+                        } else {
+                            Button("Remove", role: .destructive) { removing = package }.disabled(!controller.canChange)
+                        }
                     }
                 }
             }.frame(height: controller.inventory.packages.isEmpty ? 48 : 125)
@@ -171,7 +184,7 @@ struct NotebookDependenciesView: View {
                 Text(controller.grantScopeDetail)
                     .font(.caption).foregroundStyle(.secondary)
             }
-            registryInstaller
+            registryInstaller.id("registry-installer")
             Divider()
             localInstaller
             Text(controller.isRemote
@@ -207,7 +220,6 @@ struct NotebookDependenciesView: View {
                     Button("View Log") { showLog = true; Task { await controller.inspectJob(controller.inventory.jobs.first!.id) } }.disabled(controller.busy || controller.catalogBusy)
                 }
             }
-        }
         }
     }
     private var registryInstaller: some View {

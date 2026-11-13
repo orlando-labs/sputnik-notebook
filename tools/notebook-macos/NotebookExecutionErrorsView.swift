@@ -4,6 +4,7 @@ struct NotebookExecutionErrorsView: View {
     @ObservedObject var model: NotebookModel
     let tab: NotebookTab
     var environmentOnly = false
+    var onNavigate: () -> Void = {}
 
     var body: some View {
         let issues = environmentOnly && tab.environment_error.isEmpty ? [] : model.executionIssues(in: tab)
@@ -12,7 +13,10 @@ struct NotebookExecutionErrorsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(Array(issues.enumerated()), id: \.offset) { index, issue in
                         if issue.location != nil {
-                            Button { model.showExecutionIssue(issue) } label: { card(issue) }
+                            Button {
+                                model.showExecutionIssue(issue)
+                                onNavigate()
+                            } label: { card(issue) }
                                 .buttonStyle(.plain)
                                 .disabled(!model.canNavigate)
                                 .help("Open the source of this error")

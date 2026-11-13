@@ -8,7 +8,7 @@ import { defaultJSON, type InputState } from './inputs'
 import { download } from './rich'
 import NotebookCellOutput from './NotebookCellOutput.vue'
 import { emptyPresentation } from './boards'
-const props = defineProps<{ projectId: string; accountId: string; document: NotebookDocument; revision: string; sheetId: string; writable: boolean; canRestore: boolean; states: Record<string, InputState>; onRestore: (cell: string | null, values: Record<string, string>, version: string) => Promise<boolean> }>()
+const props = defineProps<{ projectId: string; accountId: string; guest?: boolean; document: NotebookDocument; revision: string; sheetId: string; writable: boolean; canRestore: boolean; states: Record<string, InputState>; onRestore: (cell: string | null, values: Record<string, string>, version: string) => Promise<boolean> }>()
 const emit = defineEmits<{ changed: [] }>()
 const dialog = ref<HTMLDialogElement>(), runs = ref<RunSummary[]>([]), before = ref<string | null>(null), selected = ref(''), baseline = ref(''), compare = ref(false)
 const snapshot = ref<RunSnapshot | null>(null), other = ref<RunSnapshot | null>(null), metadata = ref<RunMetadata | null>(null)
@@ -17,7 +17,7 @@ const frozenVersion = ref(''), frozenRevision = ref(''), pending = ref<{ run: st
 const base = `/api/projects/${encodeURIComponent(props.projectId)}`
 const storageKey = `sputnik.history.pending.v1:${props.accountId}:${props.projectId}`
 let disposed = false, generation = 0, timer: ReturnType<typeof setTimeout> | undefined, controller: AbortController | undefined
-try { const value = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); if (typeof value?.run === 'string' && typeof value.body?.command_id === 'string' && ['update', 'delete'].includes(value.body?.operation)) pending.value = value } catch { /* Receipts remain authoritative. */ }
+if (!props.guest) try { const value = JSON.parse(sessionStorage.getItem(storageKey) || 'null'); if (typeof value?.run === 'string' && typeof value.body?.command_id === 'string' && ['update', 'delete'].includes(value.body?.operation)) pending.value = value } catch { /* Receipts remain authoritative. */ }
 const visible = computed(() => runs.value.filter(run => !sheetFilter.value || run.sheet_id === sheetFilter.value))
 const comparisons = computed(() => snapshot.value && other.value ? compareRuns(other.value, snapshot.value) : [])
 const currentState = computed(() => props.states[scope.value])
@@ -25,11 +25,11 @@ const restore = computed(() => snapshot.value ? restoreValues(snapshot.value, pr
 const invalid = computed(() => snapshot.value ? restoreError(snapshot.value, props.document, scope.value) : 'Choose a run.')
 const stale = computed(() => props.revision !== frozenRevision.value || currentState.value?.version !== frozenVersion.value)
 const disabled = computed(() => busy.value || loading.value || !!pending.value)
-function remember(value: typeof pending.value) { pending.value = value; unknown.value = false; try { if (value) sessionStorage.setItem(storageKey, JSON.stringify(value)); else sessionStorage.removeItem(storageKey) } catch { /* Optional recovery cache. */ } }
+function remember(value: typeof pending.value) { pending.value = value; unknown.value = false; if (props.guest) return; try { if (value) sessionStorage.setItem(storageKey, JSON.stringify(value)); else sessionStorage.removeItem(storageKey) } catch { /* Optional recovery cache. */ } }
 function clearContent() { snapshot.value = null; other.value = null; metadata.value = null; runs.value = []; review.value = false; deleting.value = false }
 function close() { dialog.value?.close(); controller?.abort(); generation++; clearTimeout(timer); loading.value = false; clearContent() }
 function fail(cause: unknown) { error.value = cause instanceof Error ? cause.message : 'Could not read run history.'; if (cause instanceof APIError && [401, 403, 404].includes(cause.status)) close() }
-function scheduleAccessCheck() { clearTimeout(timer); if (disposed || !dialog.value?.open) return; timer = setTimeout(async () => { try { await api(`${base}/execution/history`); } catch (cause) { if (!disposed) fail(cause) } finally { scheduleAccessCheck() } }, 4000) }
+function scheduleAccessCheck() { clearTimeout(timer); if (props.guest || disposed || !dialog.value?.open) return; timer = setTimeout(async () => { try { await api(`${base}/execution/history`); } catch (cause) { if (!disposed) fail(cause) } finally { scheduleAccessCheck() } }, 4000) }
 async function checkPending() { if (!pending.value) return; const response = await api<{ command: { state: string } }>(`${base}/history-commands/${encodeURIComponent(pending.value.body.command_id)}`); if (response.command.state === 'accepted') { remember(null); note.value = 'History command accepted.'; emit('changed'); return true } unknown.value = true; return false }
 async function load(older = false) {
   if (loading.value) return

@@ -2,6 +2,7 @@ import { computed, onUnmounted, ref, watch, type Ref } from 'vue'
 import { api, apiBlob, type Project } from './api'
 import { download } from './rich'
 import type { NotebookDocument } from './notebook'
+import { base64ByteLength, guestUpload } from './upload-limits'
 
 export interface FileEdit { encoding: 'utf8' | 'base64'; data: string }
 export interface ProjectFile { path: string; size: number; digest: string; kind: 'module' | 'dependency' | 'resource'; module_id: string | null }
@@ -13,7 +14,7 @@ const memberLimit = 16 * 1024 * 1024
 const bundleLimit = 64 * 1024 * 1024
 export const markdownDocument = (path: string) => path.startsWith('docs/') && /\.md$/i.test(path)
 export const attachment = (file: ProjectFile) => file.kind === 'resource' && !markdownDocument(file.path)
-const encodedSize = (data: string) => data.length * 3 / 4 - (data.endsWith('==') ? 2 : data.endsWith('=') ? 1 : 0)
+const editSize = (edit: FileEdit) => edit.encoding === 'utf8' ? encoder.encode(edit.data).length : base64ByteLength(edit.data)
 export function moduleIDFromName(name: string) {
   const id = name.trim().replace(/[\s-]+/g, '_')
   return moduleIDPattern.test(id) ? id : null
@@ -33,7 +34,7 @@ export function fileBase64(file: File): Promise<string> {
   })
 }
 export const archiveName = (title: string) => `${title.replace(/[\x00-\x1f\x7f/\\:*?"<>|]/g, '_').slice(0, 120) || 'Notebook'}.sputnikbook.zip`
-export function useSources(project: () => Project, document: Ref<NotebookDocument | null>, revision: Ref<string>) {
+export function useSources(project: () => Project, document: Ref<NotebookDocument | null>, revision: Ref<string>, guest = false) {
   const base = `/api/projects/${encodeURIComponent(project().id)}/notebook`
   const selected = ref('')
   const entries = ref<ProjectFile[]>([])
@@ -46,12 +47,16 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
   const controller = new AbortController()
   let generation = 0, disposed = false
   const dirty = computed(() => Object.keys(changes.value).length > 0)
+  const fileLimit = guest ? guestUpload.fileBytes : memberLimit
+  const fileLabel = guest ? guestUpload.fileLabel : '16 MiB'
+  const textLimit = guest ? guestUpload.fileBytes : 1048576
+  const textLabel = guest ? guestUpload.fileLabel : '1 MiB'
   const files = computed(() => {
     const values = new Map(entries.value.map(entry => [entry.path, entry]))
     for (const [path, edit] of Object.entries(changes.value)) {
       if (edit === null) { values.delete(path); continue }
       const module = document.value?.modules?.find(module => module.path === path)
-      values.set(path, { path, size: edit.encoding === 'utf8' ? encoder.encode(edit.data).length : encodedSize(edit.data), digest: '',
+      values.set(path, { path, size: editSize(edit), digest: '',
         kind: module ? 'module' : ['requirements.txt', 'requirements.lock', 'Gemfile', 'Gemfile.lock'].includes(path) ? 'dependency' : 'resource', module_id: module?.id || null })
     }
     return [...values.values()].map(file => {
@@ -64,7 +69,7 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     const edit = changes.value[selected.value]
     if (edit?.encoding === 'utf8') return { revision: revision.value, path: selected.value, size: encoder.encode(edit.data).length, text: edit.data, preview: edit.data, editable: true, truncated: false }
     if (edit?.encoding === 'base64') {
-      const size = encodedSize(edit.data)
+      const size = base64ByteLength(edit.data)
       let text: string | null = null
       if (size <= 1048576) try {
         const decoded = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(edit.data), char => char.charCodeAt(0)))
@@ -96,33 +101,50 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     finally { if (!disposed) fileBusy.value = false }
   }
   function text(value: string) {
-    if (!selected.value || encoder.encode(value).length > 1048576) { error.value = 'Text files are limited to 1 MiB.'; return }
+    if (!selected.value) return
+    const size = encoder.encode(value).length
+    if (size > textLimit) { error.value = `Text files are limited to ${textLabel}.`; return }
     const path = selected.value
     if (!cache.value[path]?.draft && cache.value[path]?.text === value && entries.value.some(item => item.path === path)) delete changes.value[path]
-    else changes.value[path] = { encoding: 'utf8', data: value }
+    else {
+      try { verifyGuestBatch([{ path, size }]) }
+      catch (cause) { error.value = (cause as Error).message; return }
+      changes.value[path] = { encoding: 'utf8', data: value }
+    }
+    error.value = ''
   }
   function addModule(id: string) {
     if (!document.value || !moduleIDPattern.test(id)) throw new Error('Use a module name with letters, digits and underscores.')
     const path = `modules/${id}.s`
     if (document.value.modules?.some(module => module.id === id) || files.value.some(file => file.path.toLowerCase() === path.toLowerCase())) throw new Error('This module or file already exists.')
+    const edit: FileEdit = { encoding: 'utf8', data: `package ${id}\n\n` }
+    verifyGuestBatch([{ path, size: editSize(edit) }])
     document.value.modules ||= []
     document.value.modules.push({ id, path })
-    changes.value[path] = { encoding: 'utf8', data: `package ${id}\n\n` }
+    changes.value[path] = edit
     selected.value = path
   }
   function verifyMembers(incoming: { path: string; size: number }[], excluded = new Set<string>()) {
+    if (incoming.some(file => file.size > fileLimit)) throw new Error(`Files are limited to ${fileLabel} each.`)
+    verifyGuestBatch(incoming, excluded)
     const existing = files.value.filter(file => !excluded.has(file.path))
     if (existing.length + incoming.length > 2048 || [...existing, ...incoming].reduce((sum, file) => sum + file.size, 0) > bundleLimit)
       throw new Error('A notebook accepts up to 2048 files and 64 MiB of bundled data.')
     const paths = new Set(existing.map(file => file.path.toLowerCase()))
-    for (const { path, size } of incoming) {
+    for (const { path } of incoming) {
       if (!memberPath(path)) throw new Error('Use a relative project file path without traversal.')
-      if (size > memberLimit) throw new Error('Files are limited to 16 MiB.')
       const lower = path.toLowerCase()
       if ([...paths].some(other => other === lower || other.startsWith(lower + '/') || lower.startsWith(other + '/')))
         throw new Error(`The destination conflicts with a project file: ${path}`)
       paths.add(lower)
     }
+  }
+  function verifyGuestBatch(incoming: { path: string; size: number }[], excluded = new Set<string>()) {
+    if (!guest) return
+    const replaced = new Set([...excluded, ...incoming.map(file => file.path)])
+    const staged = files.value.filter(file => changes.value[file.path] && !replaced.has(file.path))
+    const size = [...staged, ...incoming].reduce((total, file) => total + file.size, 0)
+    if (size > guestUpload.batchBytes) throw new Error(`Save up to ${guestUpload.batchLabel} of file changes at a time.`)
   }
   function addDocument(name: string) {
     const path = 'docs/' + (/\.md$/i.test(name) ? name : name + '.md')
@@ -193,17 +215,18 @@ export function useSources(project: () => Project, document: Ref<NotebookDocumen
     let edit = changes.value[from]
     if (!edit) {
       const blob = await apiBlob(`${base}/download?revision=${version}&path=${encodeURIComponent(from)}`)
-      if (blob.size > 16777216) throw new Error('Files are limited to 16 MiB.')
+      if (blob.size > fileLimit) throw new Error(`Files are limited to ${fileLabel} each.`)
       edit = { encoding: 'base64', data: await fileBase64(new File([blob], from.split('/').at(-1)!)) }
     }
     if (disposed || revision.value !== version || document.value !== targetDocument || selected.value !== from) throw new Error('The notebook changed while reading the file. Try again.')
     if (linked && moduleID && linked.id !== moduleID) {
       const text = edit.encoding === 'utf8' ? edit.data : new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(edit.data), char => char.charCodeAt(0)))
       const renamed = text.replace(new RegExp(`^(\\s*package[ \\t]+)${linked.id}\\b`, 'm'), `$1${moduleID}`)
-      if (encoder.encode(renamed).length > 1048576) throw new Error('Renaming a module requires a UTF-8 source within 1 MiB.')
+      if (encoder.encode(renamed).length > textLimit) throw new Error(`Renaming a module requires a UTF-8 source within ${textLabel}.`)
       edit = { encoding: 'utf8', data: renamed }
     }
     if (path === from && (!linked || linked.id === moduleID)) return
+    verifyGuestBatch([{ path, size: editSize(edit) }], new Set([from]))
     if (path !== from) stageRemoval(from)
     changes.value[path] = edit
     if (linked && moduleID) {

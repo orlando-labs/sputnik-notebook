@@ -28,7 +28,7 @@ class Packages:
     project = @catalog.require_project(current, id)
     source = @notebooks.call("dependency.status", {project_id: project[:core_project_id]})
     {can_manage: @catalog.role(current, project) == "owner", native_allowed: @native, package_scopes: source[?:package_scopes] or ["shared"],
-      packages: source[:packages].map |item|: {name: item[:name], display_name: item[?:display_name] or item[:name], version: item[:version], variant: item[?:variant], digest: item[:digest], scope: item[?:scope]},
+      packages: source[:packages].map |item|: {name: item[:name], display_name: item[?:display_name] or item[:name], version: item[:version], variant: item[?:variant], digest: item[?:digest], scope: item[?:scope], missing: item[?:missing] or false},
       jobs: source[:jobs].map: job($it)}
 
   def read(current, id, operation):

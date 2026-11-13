@@ -57,7 +57,13 @@ static std::string summary(const Presentation &p) {
     out += "{\"id\":" + quote(std::to_string(c.id)) + ",\"source_revision\":" +
         quote(std::to_string(c.source_revision)) + ",\"ok\":" + (c.ok ? "true" : "false") +
         ",\"dirty\":" + (c.dirty ? "true" : "false") + ",\"result\":" + quote(c.result) +
-        ",\"error\":" + quote(c.error) + ",\"output\":[";
+        ",\"error\":" + quote(c.error) + ",\"evaluations\":" + quote(std::to_string(c.evaluations)) +
+        ",\"import_reads\":[";
+    for (std::size_t i = 0; i < c.import_reads.size(); ++i) {
+      if (i) out += ',';
+      out += quote(c.import_reads[i]);
+    }
+    out += "],\"output\":[";
     bool first_output = true;
     for (const auto &e : c.output) {
       if (!first_output) out += ',';
@@ -444,11 +450,25 @@ HostWorker *worker(SputnikCtx *cx, SputnikValue self) {
   return static_cast<HostWorker *>(ptr);
 }
 SputnikStatus event(SputnikCtx *cx, const char *name, std::uint64_t request,
-                    const std::string &text, const std::string *binary, SputnikValue *out) {
-  SputnikValue items[4] = {sputnik_make_str(cx, name, strlen(name)),
+                    const std::string &text, const std::string *binary, SputnikValue *out,
+                    const Presentation *presentation = nullptr) {
+  SputnikValue items[5] = {sputnik_make_str(cx, name, strlen(name)),
     sputnik_make_int(cx, request), sputnik_make_str(cx, text.data(), text.size()),
     binary ? sputnik_make_bytes(cx, reinterpret_cast<const uint8_t *>(binary->data()), binary->size()) : sputnik_make_null(cx)};
-  *out = sputnik_make_list(cx, items, 4); return SPUTNIK_OK;
+  if (presentation) {
+    std::vector<SputnikValue> exports;
+    for (const auto &cell : presentation->cells) {
+      const auto id = std::to_string(cell.id);
+      for (const auto &[name, value] : cell.exports) {
+        SputnikValue entry[]{sputnik_make_str(cx, id.data(), id.size()),
+            sputnik_make_str(cx, name.data(), name.size()),
+            sputnik_make_bytes(cx, reinterpret_cast<const uint8_t *>(value.data()), value.size())};
+        exports.push_back(sputnik_make_list(cx, entry, 3));
+      }
+    }
+    items[4] = sputnik_make_list(cx, exports.data(), exports.size());
+  }
+  *out = sputnik_make_list(cx, items, presentation ? 5 : 4); return SPUTNIK_OK;
 }
 }
 extern "C" SputnikStatus nb_core_worker_new(SputnikCtx *cx, const SputnikValue *args, size_t argc, SputnikValue *out) {
@@ -470,9 +490,19 @@ extern "C" SputnikStatus nb_core_worker_send(SputnikCtx *cx, SputnikValue self, 
     auto w = worker(cx, self); if (!w) return SPUTNIK_ERR;
     int64_t kind = 0;
     if (argc != 2 || !sputnik_as_int(cx, args[0], &kind) || !sputnik_is_list(cx, args[1])) throw ProtocolError("invalid worker command");
-    if (kind != 2 && kind != 4 && kind != 14 && kind != static_cast<int64_t>(Kind::Inputs) && kind != static_cast<int64_t>(Kind::Watch)) throw ProtocolError("unsupported remote worker command");
+    if (kind != 2 && kind != 4 && kind != 14 && kind != static_cast<int64_t>(Kind::Inputs) &&
+        kind != static_cast<int64_t>(Kind::Watch) && kind != static_cast<int64_t>(Kind::Transfer))
+      throw ProtocolError("unsupported remote worker command");
     std::vector<std::string> fields;
-    for (size_t i = 0; i < sputnik_list_len(cx, args[1]); ++i) fields.push_back(str(cx, sputnik_list_at(cx, args[1], i)));
+    for (size_t i = 0; i < sputnik_list_len(cx, args[1]); ++i) {
+      const auto value = sputnik_list_at(cx, args[1], i);
+      if (kind == static_cast<int64_t>(Kind::Transfer) && i % 2) {
+        const uint8_t *bytes = nullptr;
+        size_t size = 0;
+        if (!sputnik_bytes_view(cx, value, &bytes, &size)) throw ProtocolError("expected import bytes");
+        fields.emplace_back(reinterpret_cast<const char *>(bytes), size);
+      } else fields.push_back(str(cx, value));
+    }
     w->request = w->process.send(static_cast<Kind>(kind), std::move(fields)).request;
     w->terminal.emplace(w->process.generation(), w->request); w->live.reset(); w->latest = {};
     *out = sputnik_make_int(cx, w->request); return SPUTNIK_OK;
@@ -504,7 +534,7 @@ extern "C" SputnikStatus nb_core_worker_poll(SputnikCtx *cx, SputnikValue self, 
     if (!w->terminal) throw ProtocolError("worker command not started");
     if (auto p = w->terminal->accept(*message)) {
       auto binary = encode_presentation(*p); w->terminal.reset();
-      return event(cx, "result", w->request, summary(*p), &binary, out);
+      return event(cx, "result", w->request, summary(*p), &binary, out, &*p);
     }
     return SPUTNIK_OK;
   } catch (const std::exception &e) { return sputnik_fault(cx, "IOError", e.what()); }

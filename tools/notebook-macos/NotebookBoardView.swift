@@ -3,18 +3,22 @@ import SwiftUI
 struct NotebookBoardView: View {
     @ObservedObject var model: NotebookModel
     let board: NotebookBoard
+    var detached = false
+    var onOpenSheet: () -> Void = {}
     let onDesign: () -> Void
     private var layout: NotebookBoard { board.rowLayout }
 
     var body: some View {
+        let controller = model.controller(for: board)
+        let needsApply = !model.remote.isSelected && controller?.environment_stale == true
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Text(board.title).font(.headline).lineLimit(1)
-                NotebookPageBadge(kind: .board, detail: "Controller sheet: \(model.controller(for: board)?.title ?? board.sheet)")
-                if model.controller(for: board)?.environment_stale == true {
+                NotebookPageBadge(kind: .board, detail: "Controller sheet: \(controller?.title ?? board.sheet)")
+                if needsApply {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .foregroundStyle(NotebookPalette.sputnik)
-                        .help("Modules changed. Open the sheet and Apply Modules before running.")
+                        .help("Modules changed. Apply Modules before running.")
                         .accessibilityLabel("Module environment changed")
                 }
                 Spacer()
@@ -22,15 +26,29 @@ struct NotebookBoardView: View {
                 Button("Design…", systemImage: "slider.horizontal.3", action: onDesign)
                     .disabled(model.busy)
                 Button("Open Sheet", systemImage: "doc.text") {
-                    if let tab = model.controller(for: board) { model.selectTab(tab) }
+                    if let controller {
+                        model.selectTab(controller)
+                        onOpenSheet()
+                    }
                 }.disabled(!model.canNavigate)
+                NotebookBoardWindowButton(model: model)
+                Button("Apply Modules", systemImage: "arrow.triangle.2.circlepath") {
+                    if let controller { model.perform("apply", tab: controller) }
+                }
+                .help(model.remote.isSelected ? "Sync modules and restart the server worker to use a new environment" : "Build and apply the saved module environment to the controller sheet")
+                .buttonStyle(.bordered)
+                .disabled(!(controller.map { model.canApplyModules($0) } ?? false))
+                .accessibilityIdentifier("board-apply-modules")
                 Button("Run Sheet", systemImage: "play.fill") {
-                    if let tab = model.controller(for: board) { model.perform("run_all", tab: tab) }
-                }.buttonStyle(.borderedProminent).tint(NotebookPalette.sputnik).disabled(model.busy)
+                    if let controller { model.perform("run_all", tab: controller) }
+                }
+                .buttonStyle(.borderedProminent).tint(NotebookPalette.sputnik)
+                .disabled(needsApply || !(controller.map { model.canRun($0) } ?? false))
+                .accessibilityIdentifier("board-run-sheet")
             }.padding(18)
             Divider()
-            if let tab = model.controller(for: board), !model.executionIssues(in: tab).isEmpty {
-                NotebookExecutionErrorsView(model: model, tab: tab).padding(18)
+            if let tab = controller, !model.executionIssues(in: tab).isEmpty {
+                NotebookExecutionErrorsView(model: model, tab: tab, onNavigate: onOpenSheet).padding(18)
                 Divider()
             }
             if board.components.isEmpty {
@@ -41,7 +59,7 @@ struct NotebookBoardView: View {
                 GeometryReader { geometry in
                     ScrollView([.horizontal, .vertical]) {
                         VStack(alignment: .leading, spacing: 18) {
-                            if let tab = model.controller(for: board) {
+                            if let tab = controller {
                                 gridView(rows: layout.rows ?? [], components: layout.components, tab: tab)
                             } else { unavailable("Controller sheet unavailable") }
                             if !board.services.isEmpty {
@@ -57,8 +75,14 @@ struct NotebookBoardView: View {
                 }
             }
         }.background(NotebookPalette.canvas).accessibilityIdentifier("notebook-board")
-            .onAppear { model.periodicBoardVisible = board.id }
-            .onDisappear { if model.periodicBoardVisible == board.id { model.periodicBoardVisible = nil } }
+            .onAppear {
+                if detached == (model.boardWindowSheetID != nil) { model.periodicBoardVisible = board.id }
+            }
+            .onDisappear {
+                if detached == (model.boardWindowSheetID != nil) && model.periodicBoardVisible == board.id {
+                    model.periodicBoardVisible = nil
+                }
+            }
     }
 
     private func gridView(rows: [NotebookBoardRow], components: [NotebookBoardComponent], tab: NotebookTab) -> AnyView {
@@ -214,6 +238,68 @@ struct NotebookBoardView: View {
     }
     private func unavailable(_ message: String) -> some View {
         Label(message, systemImage: "questionmark.circle").font(.callout).foregroundStyle(NotebookPalette.muted)
+    }
+}
+
+struct NotebookBoardWindowButton: View {
+    @ObservedObject var model: NotebookModel
+
+    var body: some View {
+        let detached = model.boardWindowSheetID != nil
+        let title = detached ? "Attach Board" : "Detach Board"
+        Button(title, systemImage: detached ? "arrow.down.left.square" : "arrow.up.right.square") {
+            model.toggleBoardWindow()
+        }
+        .labelStyle(.iconOnly)
+        .help(detached ? "Return the board to the notebook window" : "Open the board in a separate window")
+        .disabled(!model.canToggleBoardWindow)
+        .accessibilityIdentifier("board-window-toggle")
+    }
+}
+
+struct NotebookDetachedBoardView: View {
+    @ObservedObject var model: NotebookModel
+    let onOpenSheet: () -> Void
+    let onTitle: (String) -> Void
+    @State private var boardToDesign: NotebookBoard?
+
+    var body: some View {
+        Group {
+            if let board = model.detachedBoard {
+                NotebookBoardView(model: model, board: board, detached: true, onOpenSheet: onOpenSheet) {
+                    boardToDesign = board
+                }.id(board.id)
+            } else {
+                VStack(spacing: 0) {
+                    HStack {
+                        Text(model.boardWindowSheet?.title ?? "Board").font(.headline)
+                        Spacer()
+                        NotebookBoardWindowButton(model: model)
+                    }.padding(18)
+                    Divider()
+                    ContentUnavailableView("No board for this sheet", systemImage: "square.grid.2x2")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+        }
+        .background(NotebookPalette.canvas)
+        .foregroundStyle(NotebookPalette.ink)
+        .tint(NotebookPalette.sputnik)
+        .accessibilityIdentifier("detached-board-window")
+        .alert("Notebook", isPresented: Binding(
+            get: { model.error != nil && model.boardWindowFocused },
+            set: { if !$0 { model.clearError() } }
+        )) {
+            Button("OK", role: .cancel) { model.clearError() }
+        } message: {
+            Text(model.error ?? "")
+        }
+        .onChange(of: model.detachedBoard?.title, initial: true) { _, title in
+            onTitle(title ?? "Notebook Board")
+        }
+        .sheet(item: $boardToDesign) { board in
+            NotebookBoardEditor(model: model, board: board, document: model.documentIdentity)
+        }
     }
 }
 

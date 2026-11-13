@@ -52,7 +52,7 @@ def main():
       environment_preparation: args[:allow_environment_preparation], worker_grants: web_grants(args[:web_worker_grants]),
       public_templates: templates,
       session_secret: args[:session_secret], csrf_secret: args[:csrf_secret], origin: origin,
-      behind_proxy: args[:behind_proxy], trusted_proxy_cidrs: trusted, native_packages: args[:allow_native_packages], debug: mode == :development).run(host: args[:host], port: args[:port], max_body_bytes: 117440512)
+      behind_proxy: args[:behind_proxy], trusted_proxy_cidrs: trusted, native_packages: args[:allow_native_packages], debug: mode == :development).run(host: args[:host], port: args[:port], max_body_bytes: if args[:public_only] then 2097152 else 117440512)
   ensure:
     provider.close! if provider
     opened[0].close! unless opened[0].closed?

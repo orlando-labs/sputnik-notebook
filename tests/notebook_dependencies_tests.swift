@@ -186,10 +186,19 @@ struct NotebookDependencyTests {
         try require(controller.error != nil && controller.inventory.packages.isEmpty, "do not install with unconfirmed missing grants")
         // A book copied from another Mac can contain shared references to its old store.
         let book = URL(fileURLWithPath: model.snapshot!.path)
-        let staleReference = book.appendingPathComponent("packages/previous-owner/previous-package/1.0.0/source")
-        let missingPackage = book.deletingLastPathComponent().appendingPathComponent("old-store/previous-owner/previous-package/1.0.0/source")
+        let staleReference = book.appendingPathComponent("packages/test/editor-probe/1.0.0/source")
+        let missingPackage = book.deletingLastPathComponent().appendingPathComponent("old-store/test/editor-probe/1.0.0/source")
         try FileManager.default.createDirectory(at: staleReference.deletingLastPathComponent(), withIntermediateDirectories: true)
         try FileManager.default.createSymbolicLink(at: staleReference, withDestinationURL: missingPackage)
+        await controller.load()
+        guard let missingDependency = controller.inventory.packages.first(where: \.isMissing) else {
+            throw Failure(message: controller.error ?? "show the missing shared package reference")
+        }
+        try require(missingDependency.name == "test/editor-probe" && missingDependency.version == "1.0.0", "retain the missing package identity and version")
+        await controller.findPackageVersions(for: missingDependency)
+        try require(controller.packageName == missingDependency.name && controller.packageVersion == "1.0.0" && controller.registryVariant == "source",
+            "find the exact missing release and select a compatible build")
+        controller.registryInstallValues["fixture-directory"] = build.path
         let installing = Task { await controller.installRegistryPackage(approval: .init(tab: tab, missing: ["fs.read=/package-fixture"])) }
         for _ in 0..<80 {
             if controller.progress.fraction == 0 { break }
@@ -209,7 +218,7 @@ struct NotebookDependencyTests {
         try require(Set(combined.grants) == ["time.now=*", "fs.read=/package-fixture"], "combined install preserves the worker's other grants")
         let unchanged = try await model.workerSettings(for: active)
         try require(unchanged.grants == activeSettings.grants, "combined install only adds grants to the selected sheet")
-        try require(controller.inventory.packages.first?.name == "test/editor-probe" && controller.inventory.packages.first?.version == "1.0.0" && controller.inventory.packages.first?.variant == "source", "install exact selected version and variant")
+        try require(controller.inventory.packages.count == 1 && controller.inventory.packages.first?.isMissing == false && controller.inventory.packages.first?.version == "1.0.0" && controller.inventory.packages.first?.variant == "source", "replace the missing reference with the installed version and variant")
         await controller.findPackageVariants()
         try require(controller.reusesSharedPackage, "catalog offers the already installed shared build")
         await controller.installRegistryPackage()

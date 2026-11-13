@@ -3,7 +3,69 @@ package notebook.core.dependencies
 from notebook.core.common import fail, decode, identifier, command_at
 from notebook.core.host import environment_log, package_home, package_link, package_adopt, package_unlink, package_reference?
 
-export Dependencies, installed_packages
+export Dependencies, installed_packages, notebook_packages, package_requirements_index
+
+def package_part?(part):
+  return false if part == "" or part.bytes.count > 128 or part.contains?("..")
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".contains?(part[0]) and part.contains_only?("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
+
+def package_name?(name):
+  parts = name.split("/")
+  not name.ends_with?("/") and parts.count <= 2 and parts.all?: package_part?($it)
+
+def remember_package(requirements, name, version):
+  return unless package_name?(name)
+  requirements[name] = version if package_part?(version)
+  requirements[name] = "" unless requirements.has_key?(name)
+
+def read_package_index(home, filename):
+  return [] unless fs.exists?(home) and not fs.metadata(home).symlink?
+  path = home + "/" + filename
+  return [] unless fs.exists?(path) and fs.metadata(path).file? and not fs.metadata(path).symlink?
+  fs.read_text(path, limit: 1048576).split("\n").map: $it.split("\t")
+rescue Exception:
+  []
+
+def package_requirements(home, requirements):
+  read_package_index(home, "imports.index").each |parts|:
+    remember_package(requirements, parts[0], "") if parts.count == 3
+  read_package_index(home, "dependencies.index").each |parts|:
+    remember_package(requirements, parts[0], parts[1]) if parts.count == 2
+
+def package_requirements_index(packages, existing: ""):
+  requirements = {}
+  existing.split("\n").each |line|:
+    parts = line.split("\t")
+    remember_package(requirements, parts[0], parts[1]) if parts.count == 2
+  packages.each |item|: remember_package(requirements, item[:name], item[:version])
+  lines = requirements.keys.sorted.map |name|: name + "\t" + requirements[name] + "\n"
+  lines.join("")
+
+def update_package_requirements(home, name, packages):
+  path = home + "/dependencies.index"
+  requirements = []
+  read_package_index(home, "dependencies.index").each |parts|:
+    requirements.push!({name: parts[0], version: parts[1]}) if parts.count == 2 and parts[0] != name
+  contents = package_requirements_index(requirements + packages)
+  if contents != "": fs.atomic_write_text(path, contents)
+  elif fs.exists?(path): fs.remove(path)
+
+def notebook_packages(home, revision_home):
+  packages = []
+  requirements = {}
+  if fs.exists?(home) and not fs.metadata(home).symlink?:
+    scan_packages(home, packages, 0, requirements: requirements)
+  package_requirements(revision_home, requirements) if revision_home != home
+  package_requirements(home, requirements)
+  installed = packages.map: $it[:name]
+  if not requirements.empty? and revision_home != home and fs.exists?(revision_home):
+    metadata = fs.metadata(revision_home)
+    if metadata.dir? and not metadata.symlink?:
+      installed += installed_packages(revision_home).map: $it[:name]
+  requirements.keys.sorted.each |name|:
+    unless installed.include?(name):
+      packages.push!({name: name, display_name: name.split("/").last, version: requirements[name], missing: true})
+  packages
 
 # Read indexes, never evaluate a package or a gemspec while showing inventory.
 def installed_packages(directory):
@@ -12,7 +74,7 @@ def installed_packages(directory):
   scan_packages(directory, result, 0)
   result
 
-def scan_packages(directory, result, depth):
+def scan_packages(directory, result, depth, requirements: null, relative: ""):
   return null if depth > 4
   index = directory.to_str + "/modules.index"
   if fs.exists?(index):
@@ -31,9 +93,20 @@ def scan_packages(directory, result, depth):
     path = fs.Path(name)
     next if path.basename.starts_with?(".")
     metadata = fs.metadata(path)
-    # Only core-managed links into the shared store are traversed.
-    next unless metadata.dir? or (metadata.symlink? and package_reference?(name))
-    scan_packages(path, result, depth + 1)
+    member = if relative == "" then path.basename else relative + "/" + path.basename
+    if metadata.symlink? and not package_reference?(name):
+      # A copied book can retain a link into the original machine's store.
+      # Use its notebook-relative identity and never read through the link.
+      if requirements != null and [2, 3].include?(depth):
+        parts = member.split("/")
+        # A three-part path is either a scoped legacy reference or an unscoped build.
+        if depth == 2 and parts[1].contains?(".") and "0123456789".contains?(parts[1][0]):
+          remember_package(requirements, parts[0], parts[1])
+        else:
+          remember_package(requirements, parts[0] + "/" + parts[1], parts[2])
+      next
+    if metadata.dir? or metadata.symlink?:
+      scan_packages(path, result, depth + 1, requirements: requirements, relative: member)
 
 def matching_package(packages, metadata, artifact):
   packages.find |item|: item[:name] == metadata[:package_ref] and item[:version] == metadata[:version] and item[?:variant] == artifact[:variant] and item[:digest] == artifact[:sha256]
@@ -171,7 +244,9 @@ class Dependencies:
               args = ["pkg", "uninstall", item[:name], "--version", item[:version]]
               args += ["--variant", item[:variant]] if item[?:variant]
               command(directory, @compiler, args, {SPUTNIK_PKG_HOME: home})
-          update_imports(home, source, null, null) unless installed_packages(home).any?: $it[:name] == source
+          remaining = installed_packages(home).filter: $it[:name] == source
+          update_imports(home, source, null, null) if remaining.empty?
+          update_package_requirements(home, source, remaining)
           progress(directory, "Package removed.")
           update(project, id, "succeeded")
           return
@@ -233,6 +308,7 @@ class Dependencies:
             relative = item[:name] + "/" + item[:version] + (if item[?:variant] then "/" + item[:variant] else "")
             if local: package_adopt(destination, home, relative)
             else: package_link(item[:directory], home, relative)
+          update_package_requirements(home, null, selected)
           unless params[?:local_source]:
             root = null
             if metadata: root = selected.find: $it[:name] == metadata[:package_ref]

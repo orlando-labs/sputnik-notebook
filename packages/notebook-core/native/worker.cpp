@@ -1,4 +1,5 @@
 #include "notebook/core/worker/main.h"
+#include "notebook/core/notebook.h"
 #include "notebook/core/worker/telemetry.h"
 #include "notebook/audio_components.h"
 #include "notebook/core/worker/process.h"
@@ -441,6 +442,13 @@ int serve(std::uint64_t generation, std::vector<sputnik::capability::CapabilityR
             reserve_cell_id(source.id);
           }
           auto inputs = std::make_shared<sputnik::runtime::NotebookInputSnapshot>(*project_input_defaults(document));
+          std::set<std::string> import_names;
+          if (!session.module_editor) for (const auto &link : sheet->imports) {
+            import_names.insert(link.name);
+            const auto key = sputnik::runtime::notebook_sheet_import_key(link.name);
+            if (session.project_inputs && session.project_inputs->count(key))
+              inputs->emplace(key, session.project_inputs->at(key));
+          }
           session.runtime_capability_grants.erase(std::remove_if(session.runtime_capability_grants.begin(), session.runtime_capability_grants.end(),
             [](const auto &grant) { return grant.reason == "managed File Input"; }), session.runtime_capability_grants.end());
           const auto managed = std::filesystem::current_path() / "managed-inputs";
@@ -508,12 +516,35 @@ int serve(std::uint64_t generation, std::vector<sputnik::capability::CapabilityR
             for (auto &m : session.bundled_modules) m.auto_import = false;
           }
           session.project_inputs = inputs;
+          session.sheet_import_names = std::move(import_names);
           session.project_images = image_inputs;
           session.project_audio_inputs = audio_inputs;
           session.project_audio = project_audio_components(project->document, session.project_sheet_id);
           session.cells.swap(cells); source_revisions.swap(revisions);
           session.environment_stale = stale;
           session.selected = std::min(session.selected, session.cells.empty() ? 0U : session.cells.size() - 1);
+        } else if (message->kind == Kind::Transfer) {
+          if (session.module_editor || message->fields.size() % 2 || message->fields.size() > 256)
+            throw ProtocolError("invalid sheet import snapshot");
+          auto next = std::make_shared<sputnik::runtime::NotebookInputSnapshot>(*session.project_inputs);
+          for (const auto &name : session.sheet_import_names)
+            next->erase(sputnik::runtime::notebook_sheet_import_key(name));
+          for (std::size_t i = 0; i < message->fields.size(); i += 2) {
+            const auto &name = message->fields[i];
+            const auto &value = message->fields[i + 1];
+            if (!session.sheet_import_names.count(name) || value.compare(0, 4, "SPV1") ||
+                !next->emplace(sputnik::runtime::notebook_sheet_import_key(name), value).second)
+              throw ProtocolError("invalid sheet import: " + name);
+          }
+          for (const auto &name : session.sheet_import_names) {
+            const auto key = sputnik::runtime::notebook_sheet_import_key(name);
+            const auto old = session.project_inputs->find(key);
+            const auto value = next->find(key);
+            if ((old == session.project_inputs->end()) != (value == next->end()) ||
+                (old != session.project_inputs->end() && value != next->end() && old->second != value->second))
+              pending_inputs.insert(key);
+          }
+          session.project_inputs = std::move(next);
         } else if (message->kind == Kind::Source) {
           arity(*message, 3);
           const auto index = cell_index(session, message->fields[0]);
@@ -523,7 +554,11 @@ int serve(std::uint64_t generation, std::vector<sputnik::capability::CapabilityR
           session.cells[index].dirty = true;
           source_revisions[session.cells[index].id] = previous;
         } else if (message->kind == Kind::Run || message->kind == Kind::Apply || message->kind == Kind::Inputs || message->kind == Kind::Watch) {
-          arity(*message, (message->kind == Kind::Inputs || message->kind == Kind::Watch) ? 0 : message->kind == Kind::Run ? 2 : 1);
+          if (message->kind != Kind::Inputs)
+            arity(*message, message->kind == Kind::Watch ? 0 : message->kind == Kind::Run ? 2 : 1);
+          std::set<CellId> deferred;
+          if (message->kind == Kind::Inputs) for (const auto &id : message->fields)
+            deferred.insert(parse_id(id));
           const auto index = message->kind == Kind::Run ? cell_index(session, message->fields[0]) : 0;
           const bool force = (message->kind == Kind::Run || message->kind == Kind::Apply) && boolean(message->fields.back());
           RunOutputCapture output(session);
@@ -549,7 +584,7 @@ int serve(std::uint64_t generation, std::vector<sputnik::capability::CapabilityR
               const auto result = pump_runtime_events_detailed(&session, false, {});
               watch_dispatch.complete(result, RuntimePumpDispatch::Clock::now());
             } else if (message->kind == Kind::Inputs) {
-              apply_project_input_changes(&session, changed_inputs);
+              apply_project_input_changes(&session, changed_inputs, deferred);
             }
             else
               apply_project_environment(&session, load_project(project->directory), force, false);
@@ -954,8 +989,21 @@ static std::string accept_media_input(char **argv, const std::string &publicatio
   return result;
 }
 
+static std::string edit_cell_exports() {
+  const std::string input((std::istreambuf_iterator<char>(std::cin)), {});
+  if (input.find('\0') != std::string::npos) throw ProtocolError("invalid cell export request");
+  char *error = nullptr;
+  std::unique_ptr<char, decltype(&sputnik_notebook_string_free)> result(
+      sputnik_notebook_cell_exports(input.c_str(), &error), sputnik_notebook_string_free);
+  std::unique_ptr<char, decltype(&sputnik_notebook_string_free)> message(error, sputnik_notebook_string_free);
+  if (result) return result.get();
+  return "{\"error\":" + serialize_project_input_value(
+      std::string(message ? message.get() : "Could not analyze cell exports.")) + '}';
+}
+
 int sputnik::notebook::worker::worker_main(int argc, char **argv) {
   try {
+    if (argc == 2 && std::string_view(argv[1]) == "--cell-exports") { std::cout << edit_cell_exports(); return 0; }
     if ((argc == 9 || argc == 10) && std::string(argv[1]) == "--media-input") { std::cout << accept_media_input(argv, argc == 10 ? argv[9] : ""); return 0; }
     if (argc == 6 && std::string(argv[1]) == "--annotation-source") { std::cout << annotation_source(argv); return 0; }
     if (argc == 5 && std::string(argv[1]) == "--action-document") { std::cout << action_document(argv); return 0; }

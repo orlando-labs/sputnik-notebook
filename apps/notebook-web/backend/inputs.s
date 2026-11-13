@@ -1,7 +1,7 @@
 package inputs
 
 from notebook.core.common import decode
-from sources import command_id, revision_id
+from sources import command_id, revision_id, check_guest_base64
 from models import WebError, InvalidInput, NotFound
 
 export Inputs, MediaInputs
@@ -83,6 +83,7 @@ class MediaInputs:
     command_id(params[:component_id])
     name = params[:name]
     raise InvalidInput("Use a file name without control characters, up to 1024 UTF-8 bytes.") if name.bytes.count > 1024 or name.contains?("\u{0}") or name.chars.any? |c|: c.bytes[0] < 32 or c.bytes[0] == 127
+    check_guest_base64(params[:data]) if @catalog.guest?(current)
     response = @notebooks.call("media.accept", params.merge({project_id: project[:core_project_id]}), execution: true)
     {command: {state: "accepted", revision: response[:revision]}}
 

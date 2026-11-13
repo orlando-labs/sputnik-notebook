@@ -21,7 +21,10 @@ class Policies:
       CREATE TABLE IF NOT EXISTS policy_projects(project TEXT PRIMARY KEY,user_id TEXT,profile TEXT,session INTEGER NOT NULL DEFAULT 0,expires INTEGER,deadline INTEGER,closed INTEGER NOT NULL DEFAULT 0);
       CREATE TABLE IF NOT EXISTS policy_usage(kind TEXT,id TEXT,milliseconds INTEGER NOT NULL,PRIMARY KEY(kind,id));
       CREATE TABLE IF NOT EXISTS run_usage(run TEXT PRIMARY KEY,project TEXT,user_id TEXT,elapsed INTEGER NOT NULL,last_at INTEGER NOT NULL,active INTEGER NOT NULL,limits TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS run_usage_active_project ON run_usage(project) WHERE active=1;
     """)
+    columns = @core.rows("PRAGMA table_info(policy_projects)").map: $it[:name]
+    @core.schema("ALTER TABLE policy_projects ADD COLUMN public_ip TEXT") unless columns.include?("public_ip")
     @core.sql("INSERT OR IGNORE INTO policy_scopes VALUES('profile','public',?)", [Json.generate({persistence: "session", total_run_seconds: 60, run_seconds: 60, project_bytes: 67108864, max_run_bytes: 8388608, lease_seconds: 15, session_seconds: 900})])
     fail(400, "policy configuration must be an object") unless Map === options
     options = decode(Json.generate(options))
@@ -38,6 +41,7 @@ class Policies:
     @live = {}
     @supervising = false
     @fault = null
+    @public_ip_cleanup_day = null
     # Reconcile the final unflushed interval conservatively after a crash. The
     # durable scope counters survive both history GC and agent restarts.
     @core.transaction:
@@ -45,6 +49,7 @@ class Policies:
         charge(record, elapsed_since(record))
         @core.sql("UPDATE run_usage SET active=0 WHERE run=?", [record[:run]])
       @core.sql("UPDATE policy_projects SET closed=1 WHERE session=1")
+      collect_public_ip_usage()
 
   def now(): Time.now.unix_milliseconds
   def monotonic(): (Time.monotonic.total_nanoseconds / 1000000).to_int
@@ -59,6 +64,12 @@ class Policies:
     fail(400, "policy limits must be an object") unless Map === limits
     limits = decode(Json.generate(limits))
     limits.each |key, value|:
+      if key == "public_ip_daily_seconds":
+        fail(400, "public IP budget must be a positive integer of seconds on the Core scope") unless kind == "core" and Int === value and value > 0 and value <= 2147483647
+        next
+      if key == "public_max_active_workers":
+        fail(400, "public worker limit must be an integer from 1 to 8 on the Core scope") unless kind == "core" and Int === value and value >= 1 and value <= 8
+        next
       fail(400, "unknown policy limit: " + key) unless @defaults.has_key?(key)
       if key == "persistence":
         fail(400, "invalid persistence policy") unless ["durable", "session"].include?(value)
@@ -66,6 +77,8 @@ class Policies:
         fail(400, "policy limits must be positive integers or null") unless value == null or (Int === value and value > 0)
     @core.sql("INSERT INTO policy_scopes VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET limits=excluded.limits", [kind, id, Json.generate(limits)])
     {scope: kind, id: id, limits: limits}
+
+  def anonymous_public?(user, profile): profile == "public" and user and user.starts_with?("anonymous_")
 
   def public_user(user):
     # Anonymous copies share a concrete user ledger. Restrict atomically in
@@ -132,21 +145,23 @@ class Policies:
     fail(410, "Temporary notebook session expired; open a fresh session") if project and project.starts_with?("session_") and not owner
     if owner and owner[:session] == 1:
       fail(410, "Temporary notebook session expired; open a fresh session") if owner[:closed] == 1 or owner[:expires] <= now() or owner[:deadline] <= now()
+      fail(410, "Open a fresh public session to apply the IP execution budget") if anonymous_public?(owner[:user_id], owner[:profile]) and not owner[:public_ip]
     elif effective(project)[:persistence] == "session":
       fail(409, "This policy requires a temporary notebook session")
 
-  def open(project, user, profile):
+  def open(project, user, profile, public_ip):
     bind(project, user, profile)
     policy = effective(project)
     fail(400, "session profile must require temporary persistence") unless policy[:persistence] == "session"
-    @core.sql("UPDATE policy_projects SET session=1,expires=?,deadline=? WHERE project=?", [now() + policy[:lease_seconds] * 1000, now() + policy[:session_seconds] * 1000, project])
+    @core.sql("UPDATE policy_projects SET session=1,expires=?,deadline=?,public_ip=? WHERE project=?", [now() + policy[:lease_seconds] * 1000, now() + policy[:session_seconds] * 1000, public_ip, project])
 
   def touch(project):
     require_open(project)
     owner = binding(project)
     fail(400, "not a temporary session") unless owner and owner[:session] == 1
-    @core.sql("UPDATE policy_projects SET expires=? WHERE project=?", [now() + effective(project)[:lease_seconds] * 1000, project])
-    {project_id: project, expires_at: now() + effective(project)[:lease_seconds] * 1000}
+    expires = now() + effective(project)[:lease_seconds] * 1000
+    @core.sql("UPDATE policy_projects SET expires=? WHERE project=?", [expires, project])
+    {project_id: project, expires_at: expires}
 
   def close(project):
     owner = binding(project)
@@ -159,10 +174,22 @@ class Policies:
     owner = binding(project)
     owner != null and owner[:session] == 1
 
-  def groups(project):
-    result = [{kind: "core", id: "core", limits: scope("core", "core")}]
+  def public_ip_day(): now() // 86400000
+
+  def collect_public_ip_usage():
+    day = public_ip_day()
+    return null if day == @public_ip_cleanup_day
+    @core.sql("DELETE FROM policy_usage WHERE kind='public_ip' AND CAST(substr(id,1,instr(id,':')-1) AS INTEGER)<?", [day - 1])
+    @public_ip_cleanup_day = day
+
+  def groups(project, day = null):
+    limits = scope("core", "core")
+    result = [{kind: "core", id: "core", limits: limits}]
     owner = binding(project)
     result.push!({kind: "user", id: owner[:user_id], limits: scope("user", owner[:user_id])}) if owner and owner[:user_id]
+    if owner and owner[:public_ip]:
+      bucket = (if day == null then public_ip_day() else day).to_str + ":" + owner[:public_ip]
+      result.push!({kind: "public_ip", id: bucket, limits: {total_run_seconds: limits[?:public_ip_daily_seconds] or 300}})
     # A profile's total is per concrete project/session, never shared across
     # all visitors of that profile. User/core scopes can additionally cap them.
     result.push!({kind: "project", id: project, limits: effective(project)})
@@ -172,17 +199,28 @@ class Policies:
     row = @core.row("SELECT milliseconds FROM policy_usage WHERE kind=? AND id=?", [kind, id])
     if row then row[:milliseconds] else 0
 
-  def check(project):
+  def check(project, day = null):
     fail(503, "Execution policy accounting is unavailable; work is paused") if @fault
     require_open(project)
-    groups(project).each |group|:
+    budgets = groups(project, day)
+    budgets.each |group|:
       limit = group[:limits][?:total_run_seconds]
       fail(403, "Execution time budget exhausted for " + group[:kind]) if limit and spent(group[:kind], group[:id]) >= limit * 1000
+    slots = budgets[0][:limits][?:public_max_active_workers]
+    guest = budgets.find: $it[:kind] == "public_ip"
+    if slots and guest:
+      active = @core.row("SELECT COUNT(*) AS n FROM run_usage r JOIN policy_projects p ON p.project=r.project WHERE r.active=1 AND p.public_ip IS NOT NULL")[:n]
+      fail(429, "public worker capacity reached") if active >= slots
 
   def start(plan):
-    check(plan[:project])
+    stamp = now()
+    day = stamp // 86400000
+    check(plan[:project], day)
     owner = binding(plan[:project])
-    @core.sql("INSERT INTO run_usage VALUES(?,?,?,?,?,?,?)", [plan[:id], plan[:project], (if owner then owner[:user_id] else null), 0, now(), 1, Json.generate(effective(plan[:project]))])
+    limits = effective(plan[:project])
+    # A run crossing midnight is charged to the UTC day on which it was accepted.
+    limits[:public_ip_day] = day if owner and owner[:public_ip]
+    @core.sql("INSERT INTO run_usage VALUES(?,?,?,?,?,?,?)", [plan[:id], plan[:project], (if owner then owner[:user_id] else null), 0, stamp, 1, Json.generate(limits)])
 
   def launched(run): @live[run] = monotonic()
   def elapsed_since(record):
@@ -195,7 +233,7 @@ class Policies:
       remaining = policy[:run_seconds] * 1000 - record[:elapsed]
       delta = if delta > remaining then remaining else delta
     delta = 0 if delta < 0
-    groups(record[:project]).each |group|:
+    groups(record[:project], policy[?:public_ip_day]).each |group|:
       @core.sql("INSERT INTO policy_usage VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET milliseconds=milliseconds+excluded.milliseconds", [group[:kind], group[:id], delta])
     @core.sql("UPDATE run_usage SET elapsed=elapsed+?,last_at=? WHERE run=?", [delta, now(), record[:run]])
 
@@ -226,6 +264,7 @@ class Policies:
         break unless keep
 
   def tick():
+    collect_public_ip_usage()
     active = @core.rows("SELECT * FROM run_usage WHERE active=1")
     live_ids = active.map: $it[:run]
     @live.keys.each |run|:
@@ -236,7 +275,7 @@ class Policies:
       limits = effective(record[:project])
       reason = null
       reason = "Per-run execution time limit reached" if limits[:run_seconds] and record[:elapsed] >= limits[:run_seconds] * 1000
-      groups(record[:project]).each |group|:
+      groups(record[:project], decode(record[:limits])[?:public_ip_day]).each |group|:
         limit = group[:limits][?:total_run_seconds]
         reason = "Execution time budget exhausted for " + group[:kind] if limit and spent(group[:kind], group[:id]) >= limit * 1000
       @core.policy_stop(record[:project], reason, run: record[:run]) if reason

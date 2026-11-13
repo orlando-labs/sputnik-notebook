@@ -39,7 +39,7 @@ RUN npm run build
 
 FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates curl tini g++ pkg-config libssl-dev libarchive-dev libyaml-dev zlib1g-dev \
+    ca-certificates curl tini util-linux g++ pkg-config libssl-dev libarchive-dev libyaml-dev zlib1g-dev \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 10197 notebook && useradd --uid 10197 --gid 10197 --create-home notebook \
     && ! command -v python3 && ! command -v python
@@ -47,6 +47,7 @@ COPY --from=native /opt/pcre2 /opt/pcre2
 COPY --from=native /src/sputnik-lang /src/sputnik-lang
 COPY --from=native /src/sputnik-notebook/build/sputnik-notebook-remote /usr/local/bin/
 COPY --from=native /src/sputnik-notebook/build/sputnik-notebook-worker /usr/local/bin/
+COPY sputnik-notebook/apps/notebook-web/deploy/demo-worker /usr/local/bin/notebook-demo-worker
 COPY --from=native /src/sputnik-lang/packages/notebook_ui /usr/local/share/sputnik-notebook/essentials
 COPY --from=native /src/sputnik-notebook/apps/notebook-web/build/native/notebook-web /usr/local/bin/
 COPY --from=native /src/sputnik-notebook/apps/notebook-web/build/native/notebook-public-template /usr/local/bin/
@@ -55,9 +56,11 @@ COPY --from=native /src/SOURCE-MANIFEST.json /opt/notebook-evidence/SOURCE-MANIF
 COPY --from=native /src/sputnik-lang/build/argparser-environment-native-build.json \
     /src/sputnik-lang/build/argparser-environment-native.out /src/sputnik-lang/build/argparser-environment-vm.out /opt/notebook-evidence/sdk/
 COPY sputnik-notebook/apps/notebook-web/db/migrations/ /opt/notebook-web/db/migrations/
+COPY sputnik-notebook/apps/notebook-web/assets/ /opt/notebook-web/assets/
 COPY --from=frontend /frontend/dist/ /opt/notebook-web/frontend/dist/
 COPY sputnik-notebook/apps/notebook-web/deploy/healthcheck /usr/local/bin/notebook-web-healthcheck
 RUN ln -s /src/sputnik-lang/build/sputnik /usr/local/bin/sputnik \
+    && chmod 0755 /usr/local/bin/notebook-demo-worker \
     && mkdir -p /var/lib/notebook-core /var/lib/notebook-web /var/lib/notebook-packages /var/cache/notebook \
     && chown -R notebook:notebook /var/lib/notebook-core /var/lib/notebook-web /var/lib/notebook-packages /var/cache/notebook
 ENV MALLOC_ARENA_MAX=2 SPUTNIK_PKG_HOME=/var/lib/notebook-packages \

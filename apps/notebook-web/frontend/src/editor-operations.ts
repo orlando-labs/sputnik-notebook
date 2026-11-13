@@ -29,6 +29,9 @@ export function moveSheet(document: NotebookDocument, id: string, direction: -1 
 export function deleteSheet(document: NotebookDocument, id: string, replacement: string) {
   const removed = document.sheets.find(sheet => sheet.id === id)
   if (!removed) throw new Error('Select a sheet to delete.')
+  const consumers = document.sheets.flatMap(sheet =>
+    (sheet.imports || []).filter(link => link.sheet === id).map(link => `${sheet.title} · ${link.name}`))
+  if (consumers.length) throw new Error(`Remove or change these imports before deleting the sheet: ${consumers.join(', ')}.`)
   if (document.sheets.length === 1) {
     const blank = { id: newId('sheet'), title: 'Main', cells: [newCell('code', new Set(removed.cells.map(cell => cell.id)))] }
     document.sheets.push(blank)

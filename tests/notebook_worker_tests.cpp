@@ -163,7 +163,10 @@ static void presentation_tests() {
   require(timed_copy.cells[0].elapsed_ms == 1234 && timed_copy.cells[0].environment_rebuild_ms == 3000 && timed_copy.cells[0].timing_running &&
           timed_copy.cells[0].stopwatches[0].elapsed_ms == 456 && !timed_copy.cells[0].stopwatches[0].done,
           "cell timing and running Stopwatch channels survive worker transport");
-  auto preparation_previous = bytes.substr(0, bytes.size() - 8);
+  auto module_previous = bytes.substr(0, bytes.size() - original.cells.size() * 24);
+  module_previous.replace(8, std::string("sputnik.notebook.presentation.v18").size(), "sputnik.notebook.presentation.v17");
+  require(decode_presentation(module_previous).cells[0].exports.empty(), "v17 results remain readable without exports");
+  auto preparation_previous = module_previous.substr(0, module_previous.size() - 8);
   preparation_previous.replace(8, std::string("sputnik.notebook.presentation.v17").size(), "sputnik.notebook.presentation.v16");
   require(decode_presentation(preparation_previous).module_errors.empty(), "v16 results remain readable without module diagnostics");
   auto module_failure = original;
@@ -258,12 +261,12 @@ static void presentation_tests() {
   invalid_count.replace(invalid_count.size() - 8, 8, std::string(8, '\xff'));
   rejects([&] { decode_presentation(invalid_count); }, "invalid collection count before allocation");
   // Header is one length-prefixed string; next field is a canonical Bool.
-  malformed = bytes; malformed[8 + std::string("sputnik.notebook.presentation.v17").size() + 7] = 2;
+  malformed = bytes; malformed[8 + std::string("sputnik.notebook.presentation.v18").size() + 7] = 2;
   rejects([&] { decode_presentation(malformed); }, "invalid presentation bool");
   const Message begin{Kind::SnapshotBegin, 11, 12,
-      {"sputnik.notebook.presentation.v17", std::to_string(bytes.size())}};
+      {"sputnik.notebook.presentation.v18", std::to_string(bytes.size())}};
   const Message chunk{Kind::SnapshotChunk, 11, 12, {"0", bytes.substr(0, kPresentationChunkBytes)}};
-  const Message end{Kind::Result, 11, 12, {"sputnik.notebook.presentation.v17"}};
+  const Message end{Kind::Result, 11, 12, {"sputnik.notebook.presentation.v18"}};
   PresentationAssembler incomplete(11, 12);
   require(!incomplete.accept(begin) && !incomplete.accept(chunk), "partial snapshot stays unpublished");
   rejects([&] { incomplete.accept(end); }, "premature Result");

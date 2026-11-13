@@ -85,7 +85,7 @@ try {
       return
     }
     if(/^\/(\.vite|\.sputnik|build|db|backend|test|deploy)(\/|$)/.test(url.pathname)){outgoing.writeHead(404);outgoing.end();return}
-    const headers={...incoming.headers,host,'x-forwarded-host':host,'x-forwarded-proto':'https','x-forwarded-for':'127.0.0.1',connection:'close'}
+    const headers={...incoming.headers,host,'x-forwarded-host':host,'x-forwarded-proto':'https','x-forwarded-for':'2001:db8::42',connection:'close'}
     const upstream=http.request({hostname:'127.0.0.1',port:backendPort,path:incoming.url,method:incoming.method,headers},reply=>{outgoing.writeHead(reply.statusCode,reply.headers);reply.pipe(outgoing)})
     upstream.on('error',()=>{outgoing.writeHead(502);outgoing.end()});incoming.pipe(upstream)
   });await new Promise(resolve=>edge.listen(port,'127.0.0.1',resolve)) } await ready()
@@ -118,6 +118,7 @@ try {
   const visitor = new Map(), guest = (route,method='GET',data) => request(route,method,data,{jar:visitor})
   assert.equal((await guest('/api/session')).json.account,null)
   const opened=await guest('/api/public/sessions','POST',{template_id:'starter',command_id:'public-open'});assert.equal(opened.status,200,opened.text)
+  const publicDay = Math.floor(Date.now() / 86400000)
   const publicBase='/api/public/sessions/'+opened.json.session_id, publicDoc=(await guest(publicBase)).json.notebook
   assert.equal(opened.json.resources.remaining_ms,'60000');assert.equal((await request(publicBase)).status,404,'private account cookie must not own anonymous copy')
   const changed=JSON.parse(publicDoc.document);changed.sheets[0].cells[0].source='import task\ntask.sleep(1800)\n99\n'
@@ -125,11 +126,33 @@ try {
   const publicRun=await guest(publicBase+'/runs','POST',{command_id:'public-run',revision:edited.json.notebook.revision,sheet_id:'main',cell_id:'1',action:'run_all'});assert.equal(publicRun.status,200,publicRun.text)
   await stop(web,false);web=application();await ready()
   const publicFinal=await until(()=>guest(publicBase+'/runs/'+publicRun.json.run.id),r=>r.status===200&&r.json.run.state==='succeeded','anonymous run survives HTTP restart')
-  assert.equal(publicFinal.json.run.cells[0].result,'99');const charged=(await guest(publicBase)).json.resources.spent_ms;assert.ok(BigInt(charged)>0n)
+  assert.equal(publicFinal.json.run.cells[0].result,'99')
+  const heartbeat = await guest(publicBase + '/lease', 'POST', { status: true })
+  assert.equal(heartbeat.status, 200, heartbeat.text)
+  assert.deepEqual(Object.keys(heartbeat.json).sort(), ['lease_seconds', 'renewed', 'resources', 'runs'])
+  assert.equal(heartbeat.json.runs.length, 1)
+  assert.equal(heartbeat.json.runs[0].id, publicRun.json.run.id)
+  assert.equal(heartbeat.json.runs[0].state, 'succeeded')
+  const publicResources = heartbeat.json.resources
+  const charged = publicResources.spent_ms
+  assert.ok(BigInt(charged) > 0n)
+  if (Math.floor(Date.now() / 86400000) === publicDay) {
+    assert.ok(BigInt(publicResources.ip_remaining_ms) < BigInt(opened.json.resources.ip_remaining_ms))
+  }
   await guest(publicBase,'DELETE');await stop(core,false);core=agent();await until(()=>request(base+'/resources'),r=>r.status===200,'Core ready for new public copy')
   const fresh=await guest('/api/public/sessions','POST',{template_id:'starter',command_id:'after-core-restart'});assert.equal(fresh.status,200,fresh.text)
   assert.ok(BigInt(fresh.json.resources.spent_ms)>=BigInt(charged));assert.ok(BigInt(fresh.json.resources.remaining_ms)<60000n);await guest('/api/public/sessions/'+fresh.json.session_id,'DELETE')
-  checks.push('anonymous pinned template/session, current cookie ownership, HTTP restart and aggregate budget across Core restart')
+  const freshVisitor = new Map()
+  await request('/api/session', 'GET', undefined, { jar: freshVisitor })
+  const freshCopy = await request('/api/public/sessions', 'POST', { template_id: 'starter', command_id: 'ip-after-restart' },
+    { jar: freshVisitor, headers: { 'X-Forwarded-For': '192.0.2.42' } })
+  assert.equal(freshCopy.status, 200, freshCopy.text)
+  assert.equal(freshCopy.json.resources.spent_ms, '0')
+  if (Math.floor(Date.now() / 86400000) === publicDay) {
+    assert.equal(freshCopy.json.resources.ip_remaining_ms, publicResources.ip_remaining_ms)
+  }
+  await request('/api/public/sessions/' + freshCopy.json.session_id, 'DELETE', undefined, { jar: freshVisitor })
+  checks.push('anonymous pinned template and ownership, HTTP/Core restart retains cookie and shared IP budgets, proxy replaces client forwarding headers')
   if(nginx){
     const marker='never-log-query-'+randomBytes(12).toString('hex')
     await request('/api/session?code='+marker)

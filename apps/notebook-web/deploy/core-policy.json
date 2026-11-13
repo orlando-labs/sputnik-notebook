@@ -4,6 +4,8 @@
     "project_bytes": 67108864,
     "max_run_bytes": 8388608,
     "minimum_free_bytes": 536870912,
+    "public_ip_daily_seconds": 300,
+    "public_max_active_workers": 3,
     "run_seconds": 60
   }
 }

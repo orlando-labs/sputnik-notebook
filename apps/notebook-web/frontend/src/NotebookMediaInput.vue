@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { apiBlob } from './api'
 import type { BoardComponent } from './boards'
 import { mediaFile, type MediaRuntime } from './media-inputs'
+import { guestUpload } from './upload-limits'
 import NotebookAudio from './NotebookAudio.vue'
 import NotebookAudioRecorder from './NotebookAudioRecorder.vue'
 import NotebookImageAnnotator from './NotebookImageAnnotator.vue'
@@ -72,7 +73,7 @@ watch([() => props.runtime.revision, () => JSON.stringify(paths.value), selected
 async function chooseFile(value:File) {
   busy.value=true;error.value=''
   try {
-    const item=await mediaFile(value)
+    const item=await mediaFile(value, props.runtime.guest)
     if(image.value && !['png','jpg','jpeg'].includes(item.extension))throw new Error('Choose a PNG or JPEG image.')
     if(!audio.value && !image.value && filter.value && !filter.value.split(',').includes('.'+item.extension))throw new Error('Choose a file with an allowed extension.')
     if(image.value){const bitmap=await createImageBitmap(value);bitmap.close()}
@@ -97,7 +98,7 @@ onBeforeUnmount(()=>{disposed=true;generation++;emit('dirty',false)})
     <h3>{{ component.title }}</h3>
     <div class="media-input-actions"><button :disabled="!canEdit || busy || recording" @click="file?.click()">Choose {{ audio ? 'audio' : image ? 'image' : 'file' }}…</button><input ref="file" type="file" :accept="filter" :aria-label="'Choose ' + component.title" :disabled="!canEdit || busy || recording" hidden @change="choose"><button :disabled="!canEdit || busy || recording" @click="draft=null;clear=true">Clear</button></div>
     <NotebookAudioRecorder v-if="component.kind === 'audio_input' && component.audio_recording !== false" :disabled="!canEdit || busy || !runtime.readable" :identity="runtime.revision + boardId + component.id + String(component.audio_id)" @active="recording = $event" @captured="chooseFile" />
-    <p class="source-note">{{ dirty ? 'Draft · not applied' : paths.length ? 'Accepted media' : 'No accepted media' }} · up to 16 MiB per file</p>
+    <p class="source-note">{{ dirty ? 'Draft · not applied' : paths.length ? 'Accepted media' : 'No accepted media' }} · up to {{ runtime.guest ? guestUpload.fileLabel : '16 MiB' }} per file</p>
     <p v-if="clear">Clear on Apply</p><p v-else-if="current">{{ current.name }}</p>
     <details v-if="filePreview"><summary>Text preview{{ filePreview.truncated ? ' · first 64 KiB' : '' }}</summary><pre class="media-file-preview">{{ filePreview.text }}</pre></details>
     <NotebookAudio v-if="audioAsset && !recording && !annotationOpen" :asset="audioAsset" />

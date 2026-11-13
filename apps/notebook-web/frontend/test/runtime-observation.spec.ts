@@ -75,6 +75,49 @@ test('captured Inspect/Pretty/table, literal Unicode Find and filtered logs expo
   } finally {await release(page,id)}
 })
 
+test('Apply Modules on a board prepares its sheet to run the saved module revision', async ({ page }) => {
+  await login(page)
+  const { id } = await book(page, 'from jobs import work\nwork()\n', [], {
+    'modules/jobs.s': { encoding: 'utf8', data: 'package jobs\nexport work\ndef work(): 1\n' },
+  })
+  const apply = page.getByRole('button', { name: 'Apply Modules', exact: true })
+  const run = page.getByRole('button', { name: 'Run Sheet', exact: true })
+  try {
+    await expect(apply).toBeDisabled()
+    await run.click()
+    const previous = await finish(page, id)
+    expect(previous.state).toBe('succeeded')
+    expect(previous.cells[0].result).toBe('1')
+
+    await page.getByRole('button', { name: 'jobs', exact: true }).click()
+    await page.getByRole('textbox', { name: 'Module jobs', exact: true }).fill('package jobs\nexport work\ndef work(): 42\n')
+    await open(page)
+    await expect(apply).toBeDisabled()
+    await page.getByRole('button', { name: 'Save notebook', exact: true }).click()
+    await expect(page.getByTestId('execution-status')).toHaveText('Restart required')
+    await expect(run).toBeDisabled()
+
+    page.once('dialog', dialog => dialog.dismiss())
+    await apply.click()
+    await expect(run).toBeDisabled()
+    page.once('dialog', dialog => dialog.accept())
+    await apply.click()
+    await expect(run).toBeEnabled()
+    const reset = await registry(page, id)
+    expect(reset.reset_epochs).toContain(previous.runtime_epoch)
+    expect(reset.runs.map((entry: any) => entry.id)).toEqual([previous.id])
+    await expect(page.getByTestId('notebook-board')).toBeVisible()
+
+    await run.click()
+    await expect.poll(async () => (await registry(page, id)).runs.at(-1)?.id).not.toBe(previous.id)
+    const updated = await finish(page, id)
+    expect(updated.state).toBe('succeeded')
+    expect(updated.runtime_epoch).not.toBe(previous.runtime_epoch)
+    expect(updated.revision).toBe((await stored(page, id)).revision)
+    expect(updated.cells[0].result).toBe('42')
+  } finally { await release(page, id) }
+})
+
 test('artifact references use the captured revision, reject external/traversal paths and preserve exact downloads',async({page})=>{
   await login(page)
   const binary=Buffer.from([0,255,128,1,13,10]), source='[{path: "resources/report.txt", name: "Report", caption: "literal <b>caption</b>"}, {path: "resources/data.bin", name: "Binary"}, {path: "/etc/passwd", name: "External"}, {path: "../secrets", name: "Traversal"}, {path: "resources/missing.txt", name: "Missing"}]\n'
@@ -89,7 +132,7 @@ test('artifact references use the captured revision, reject external/traversal p
     await row('Missing').getByRole('button',{name:'Preview',exact:true}).click();await expect(files.getByRole('alert')).toBeVisible()
     const current=await stored(page,id);expect((await request(page,base(id)+'/notebook','PUT',{command_id:crypto.randomUUID(),base_revision:current.revision,document:current.document,changes:{'resources/report.txt':{encoding:'utf8',data:'new revision'}}})).status()).toBe(200)
     await page.reload();await open(page);await expect(files).toContainText('Previous run · stale');await row('Report').getByRole('button',{name:'Preview',exact:true}).click();await expect(row('Report')).toContainText('old revision 🛰️')
-    page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Restart Worker…',exact:true}).click();await expect(page.getByRole('button',{name:'Run Sheet',exact:true})).toBeEnabled()
+    page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Apply Modules',exact:true}).click();await expect(page.getByRole('button',{name:'Run Sheet',exact:true})).toBeEnabled()
     await page.getByRole('button',{name:'Run Sheet',exact:true}).click();await expect.poll(async()=>(await registry(page,id)).runs.filter((run:any)=>run.id!==oldRun.id).length).toBe(1);const newRun=await finish(page,id);expect(newRun.id).not.toBe(oldRun.id);expect(newRun.revision).toBe((await stored(page,id)).revision);await row('Report').getByRole('button',{name:'Preview',exact:true}).click();await expect(row('Report')).toContainText('new revision')
     const invalid=await request(page,base(id)+'/notebook/file?revision='+current.revision+'&path=../secret');expect(invalid.status()).toBe(422)
   } finally {await release(page,id)}

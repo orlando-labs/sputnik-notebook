@@ -109,10 +109,93 @@ static void module_apply_tests(const std::filesystem::path &root, const char *wo
   succeeds(host, "set_input", "gain", "2");
   sputnik_notebook_destroy(host); sputnik_notebook_control_destroy(control);
 }
+static void sheet_transfers(const char *worker, const std::filesystem::path &root) {
+  using namespace sputnik::notebook;
+  auto document = make_project_document("Sheet transfers");
+  document.version = 5;
+  auto &source = document.sheets.front().cells.front();
+  source.source = "values = [9223372036854775807, :first]\nexport values as dataset\nvalues.push!(values)\n42\n";
+  const auto source_id = std::to_string(source.id);
+  ProjectSheet consumer;
+  consumer.id = "consumer";
+  consumer.title = "Consumer";
+  consumer.imports.push_back({"sample", document.active_sheet, source.id, "dataset"});
+  consumer.cells.push_back({allocate_cell_id(), "code", "[sample[0], sample[1], sample[2].count]\n", CellMode::Watch, {}, {}});
+  document.sheets.push_back(std::move(consumer));
+  auto project = create_project(root / "Transfers.sputnikbook", document);
+  create_project_module(&project, {"dataset_types", "modules/dataset_types.s", {}},
+      "package dataset_types\nexport Dataset\nclass Dataset:\n  def init(@items)\n  attr items from @items\n");
+  auto typed = project.document;
+  typed.auto_imports.push_back("dataset_types");
+  typed.sheets[0].cells[0].source =
+      "import task\nvalues = [9223372036854775807, :first]\n"
+      "dataset = Dataset(values)\nexport dataset\nvalues.push!(values)\n"
+      "task.spawn: 7\n42\n";
+  typed.sheets[1].cells[0].source = "values = sample.items\n[values[0], values[1], values[2].count]\n";
+  save_project(&project, typed);
+  char *error = nullptr;
+  auto *host = sputnik_notebook_open(project.directory.c_str(), 0, nullptr, &error);
+  require(host && !error, "transfer project opens");
+  auto *control = sputnik_notebook_enable_worker(host, worker, &error);
+  require(control && !error, "transfer project enables isolated workers");
+  require(command(host, "run_all", nullptr, nullptr, "sheet:consumer").empty(), "run import with Watch prerequisite");
+  auto state = snapshot(host);
+  require(state.find("\"result\":\"[9223372036854775807, :first, 3]\"") != std::string::npos,
+          "export captures the final object graph in a different worker");
+  require(state.find("\"result\":\"42\"") != std::string::npos, "export preserves the cell result");
+  require(command(host, "delete_sheet", nullptr, "replacement").find("Consumer") != std::string::npos,
+          "import prevents deleting the producer");
+  require(command(host, "source", source_id.c_str(),
+      "values = [17, :second]\ndataset = Dataset(values)\nexport dataset\nvalues.push!(values)\n0\n").empty(),
+          "edit producer draft");
+  succeeds(host, "run", source_id.c_str());
+  state = snapshot(host);
+  require(state.find("\"result\":\"[17, :second, 3]\"") != std::string::npos, "export change wakes an initialized Watch consumer");
+  sputnik_notebook_destroy(host); sputnik_notebook_control_destroy(control);
+}
+
+static void sheet_feedback(const char *worker, const std::filesystem::path &root) {
+  using namespace sputnik::notebook;
+  auto document = make_project_document("Sheet feedback");
+  document.version = 5;
+  document.inputs.push_back({"bootstrap", "Bootstrap", "boolean", true, {}, {}, {}});
+  auto &a = document.sheets.front();
+  const auto first = a.cells.front().id;
+  const auto second = allocate_cell_id();
+  const auto step = allocate_cell_id();
+  a.cells.front().source = "a = if notebook.input(\"bootstrap\") then 1 else back + 1\nexport a\na\n";
+  a.cells.push_back({second, "code", "back + 100\n", CellMode::Watch, {}, {}});
+  a.imports.push_back({"back", "second", step, "b"});
+  ProjectSheet b;
+  b.id = "second";
+  b.title = "Second";
+  b.imports.push_back({"forward", a.id, first, "a"});
+  b.cells.push_back({step, "code", "b = forward * 2\nexport b\nb\n", CellMode::Watch, {}, {}});
+  document.sheets.push_back(std::move(b));
+  const auto project = create_project(root / "Feedback.sputnikbook", document);
+  char *error = nullptr;
+  auto *host = sputnik_notebook_open(project.directory.c_str(), 0, nullptr, &error);
+  require(host && !error, "feedback project opens");
+  auto *control = sputnik_notebook_enable_worker(host, worker, &error);
+  require(control && !error, "feedback project enables isolated workers");
+  succeeds(host, "run", std::to_string(first).c_str());
+  auto state = snapshot(host);
+  require(state.find("\"result\":\"102\"") != std::string::npos, "return to first sheet evaluates the distinct downstream cell");
+  require(state.find("\"iteration_cell\":\"" + std::to_string(first) + "\"") != std::string::npos,
+          "return to an evaluated cell waits for a manual iteration");
+  succeeds(host, "source", std::to_string(first).c_str(), "a = back + 1\nexport a\na\n");
+  succeeds(host, "run", std::to_string(first).c_str());
+  state = snapshot(host);
+  require(state.find("\"result\":\"106\"") != std::string::npos, "manual iteration consumes the previous feedback");
+  sputnik_notebook_destroy(host); sputnik_notebook_control_destroy(control);
+}
+
 int main(int argc, char **argv) {
   require(argc == 2, "worker path"); alarm(40);
   char pattern[] = "/tmp/sputnik-worker-host-XXXXXX";
   const char *root = mkdtemp(pattern); require(root, "temporary directory");
+  sheet_transfers(argv[1], root);
+  sheet_feedback(argv[1], root);
   auto document = sputnik::notebook::make_project_document("Worker host");
   document.sheets[0].cells.resize(1); document.sheets[0].cells[0].source = "1\n";
   const auto cell = std::to_string(document.sheets[0].cells[0].id);

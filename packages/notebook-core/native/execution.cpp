@@ -138,6 +138,9 @@ void merge(Session &session, const Presentation &result, std::uint64_t revision,
     if (cell.id != value.id || value.source_revision != revision)
       throw ProtocolError("stale worker cell revision");
     cell.dirty = value.dirty; cell.ok = value.ok;
+    cell.exports = sputnik::runtime::NotebookExports(value.exports.begin(), value.exports.end());
+    cell.evaluations = value.evaluations;
+    cell.import_reads = value.import_reads;
     cell.result = value.result; cell.error = value.error;
     cell.result_format = value.result_format;
     cell.locals = value.locals; cell.output_events = value.output; cell.displays = value.displays;
@@ -248,7 +251,18 @@ bool NotebookExecution::run(ProjectTabs &tabs, ProjectTab &tab, const std::strin
     if (tab.module) sync_fields.push_back(session.cells.at(0).source);
     const auto sync = sheet.process->send(Kind::Sync, std::move(sync_fields));
     (void)receive_snapshot(*sheet.process, sync, *control, false);
-    const auto request = action == "watch" ? sheet.process->send(Kind::Watch) : action == "inputs" ? sheet.process->send(Kind::Inputs) : action == "apply"
+    if (!tab.module && !session.sheet_import_names.empty()) {
+      std::vector<std::string> imports;
+      for (const auto &[name, value] : tab.imported_values) {
+        imports.push_back(name);
+        imports.push_back(value);
+      }
+      const auto transfer = sheet.process->send(Kind::Transfer, std::move(imports));
+      (void)receive_snapshot(*sheet.process, transfer, *control, false);
+    }
+    std::vector<std::string> deferred;
+    for (const auto id : tab.iteration_deferred) deferred.push_back(std::to_string(id));
+    const auto request = action == "watch" ? sheet.process->send(Kind::Watch) : action == "inputs" ? sheet.process->send(Kind::Inputs, std::move(deferred)) : action == "apply"
         ? sheet.process->send(Kind::Apply, {"0"})
         : sheet.process->send(Kind::Run, {std::to_string(session.cells.at(index).id), action == "run_all" ? "1" : "0"});
     control->running(request);
@@ -276,7 +290,10 @@ void NotebookExecution::inputs_changed(ProjectTabs &tabs) {
   for (const auto &tab : tabs.tabs()) if (!tab->module) {
     const auto found = sheets_.find("sheet:" + tab->session.project_sheet_id);
     if (found != sheets_.end() && found->second.process && !found->second.interrupted) {
-      if (!run(tabs, *tab, "inputs", 0)) break;
+      if (!tabs.run_linked(*tab, "inputs", 0,
+          [&](ProjectTab &target, const auto &command, auto index, const auto &) {
+            return run(tabs, target, command, index);
+          })) break;
     } else for (auto &cell : tab->session.cells) if (cell.kind == "code") cell.dirty = true;
   }
 }
@@ -288,6 +305,10 @@ void NotebookExecution::restart(ProjectTab &tab, const std::string &runtime_key)
     sheets_.erase(found);
   }
   invalidate(tab.session); tab.session.environment_stale = false;
+  if (runtime_key.empty()) {
+    tab.iteration_ready.clear();
+    for (auto &cell : tab.session.cells) cell.exports.clear();
+  }
   tab.session.status = "Worker reset; next Run starts a fresh runtime. No cells replayed.";
 }
 

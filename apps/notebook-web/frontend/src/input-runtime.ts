@@ -3,7 +3,7 @@ import { api, APIError, type Project } from './api'
 import { newId, type NotebookDocument } from './notebook'
 import type { InputState } from './inputs'
 interface Command { cell: string | null; body: { command_id: string; revision: string; base_version: string; values: Record<string, string> } }
-export function useInputRuntime(accountId: string, project: () => Project, document: Ref<NotebookDocument | null>, revision: Ref<string>, sheet: Ref<string>, inputVersion: Readonly<Ref<string>>, refreshed: () => Promise<void>) {
+export function useInputRuntime(accountId: string, project: () => Project, document: Ref<NotebookDocument | null>, revision: Ref<string>, sheet: Ref<string>, inputVersion: Readonly<Ref<string>>, refreshed: () => Promise<void>, guest = false) {
   const base = `/api/projects/${encodeURIComponent(project().id)}/inputs`
   const key = `sputnik.inputs.pending.v1:${accountId}:${project().id}`
   const states = ref<Record<string, InputState>>({}), error = ref(''), busy = ref(false), loading = ref(false), pending = ref<Command | null>(null), unknown = ref(false)
@@ -12,8 +12,8 @@ export function useInputRuntime(accountId: string, project: () => Project, docum
   let disposed = false, again = false, refreshPromise: Promise<void> | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
   const controller = new AbortController()
-  try { const value = JSON.parse(sessionStorage.getItem(key) || 'null'); if (value && (value.cell === null || typeof value.cell === 'string') && typeof value.body?.command_id === 'string' && typeof value.body.revision === 'string' && typeof value.body.base_version === 'string' && value.body.values && typeof value.body.values === 'object' && Object.values(value.body.values).every(item => typeof item === 'string')) pending.value = value } catch { /* Server receipts remain authoritative. */ }
-  function remember(command: Command | null) { clearTimeout(timer); pending.value = command; unknown.value = false; try { if (command) sessionStorage.setItem(key, JSON.stringify(command)); else sessionStorage.removeItem(key) } catch { /* Optional journal. */ } }
+  if (!guest) try { const value = JSON.parse(sessionStorage.getItem(key) || 'null'); if (value && (value.cell === null || typeof value.cell === 'string') && typeof value.body?.command_id === 'string' && typeof value.body.revision === 'string' && typeof value.body.base_version === 'string' && value.body.values && typeof value.body.values === 'object' && Object.values(value.body.values).every(item => typeof item === 'string')) pending.value = value } catch { /* Server receipts remain authoritative. */ }
+  function remember(command: Command | null) { clearTimeout(timer); pending.value = command; unknown.value = false; if (guest) return; try { if (command) sessionStorage.setItem(key, JSON.stringify(command)); else sessionStorage.removeItem(key) } catch { /* Optional journal. */ } }
   async function receipt() {
     if (!pending.value) return false
     const result = await api<{ command: { state: string } }>(`${base}/commands/${pending.value.body.command_id}`, 'GET', undefined, controller.signal)

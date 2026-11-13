@@ -10,16 +10,18 @@ export interface NotebookCell {
   formatting?: unknown
   [key: string]: unknown
 }
+export interface NotebookSheetImport { name: string; sheet: string; cell: string; export: string }
 export interface NotebookSheet {
   id: string
   title: string
   cells: NotebookCell[]
+  imports?: NotebookSheetImport[]
   [key: string]: unknown
 }
 export interface NotebookModule { id: string; path: string; [key: string]: unknown }
 export interface NotebookDocument {
   format: 'sputnik-notebook'
-  version: 1 | 2 | 3 | 4
+  version: 1 | 2 | 3 | 4 | 5
   title: string
   active_sheet?: string
   sheets: NotebookSheet[]
@@ -34,7 +36,7 @@ export interface NotebookResponse { notebook: StoredNotebook | null }
 
 export function parseNotebook(stored: StoredNotebook): NotebookDocument {
   const document = parseDocumentJSON(stored.document) as NotebookDocument
-  if (!/^[a-f0-9]{64}$/.test(stored.revision) || document?.format !== 'sputnik-notebook' || ![1, 2, 3, 4].includes(document.version) ||
+  if (!/^[a-f0-9]{64}$/.test(stored.revision) || document?.format !== 'sputnik-notebook' || ![1, 2, 3, 4, 5].includes(document.version) ||
       typeof document.title !== 'string' || !Array.isArray(document.sheets) || document.sheets.length === 0 ||
       !document.sheets.every((sheet: NotebookSheet) => typeof sheet?.id === 'string' && typeof sheet.title === 'string' &&
         Array.isArray(sheet.cells) && sheet.cells.every(cell => typeof cell?.id === 'string' && typeof cell.kind === 'string' && typeof cell.source === 'string')) ||

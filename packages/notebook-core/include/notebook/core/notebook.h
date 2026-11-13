@@ -51,6 +51,9 @@ char *sputnik_notebook_missing_grants(const char *existing, const char *required
 // Stateless Config Editor validation/formatting; never creates a runtime.
 char *sputnik_notebook_config_json(const char *text, int pretty, char **error);
 char *sputnik_notebook_config_document(const char *text, const char *format, int pretty, char **error);
+// Analyze a code-cell draft. The request has a source string and an optional exports array.
+// Returns JSON with bindings and exports, or the updated source. Free with string_free.
+char *sputnik_notebook_cell_exports(const char *request, char **error);
 
 // Stable IDs: tab is "sheet:<id>" or "module:<id>"; cell is a decimal string.
 // Actions: select, source, watch (text "on"/"off"), run, run_all, apply,

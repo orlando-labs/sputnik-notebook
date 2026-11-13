@@ -48,7 +48,19 @@ struct NotebookLocal: Decodable {
         text_value = try values.decodeIfPresent(String.self, forKey: .text_value)
     }
 }
+struct NotebookCellExport: Codable, Sendable {
+    let name: String
+    let binding: String
+}
+struct NotebookSheetImport: Codable, Identifiable, Hashable {
+    var name: String
+    let sheet: String
+    let cell: String
+    let `export`: String
+    var id: String { name }
+}
 struct NotebookCell: Decodable, Identifiable {
+    var exports: [NotebookCellExport]? = nil
     var error_ranges: [NotebookSourceRange]? = nil
     var diagnostics: [NotebookSourceDiagnostic]? = nil
     var cell_ui: NotebookCellUI? = nil
@@ -193,6 +205,9 @@ struct NotebookCellNavigation: Equatable {
     let request = UUID()
 }
 struct NotebookTab: Decodable, Identifiable {
+    var imports: [NotebookSheetImport]? = nil
+    var cyclic_imports: Bool? = nil
+    var iteration_cell: String? = nil
     var module_errors: [NotebookModuleError]? = nil
     var telemetry: NotebookRuntimeTelemetry? = nil
     let id: String, kind: String, title: String
@@ -628,7 +643,7 @@ final class NotebookModel: ObservableObject {
         remote.onChange = { [weak self] in self?.remoteChanged() }
         remote.onResultReset = { [weak self] sheet in self?.discardResults(in: "sheet:" + sheet) }
         remote.focusedSheet = { [weak self] in
-            guard let self, let tab = self.activeBoard.flatMap({ self.controller(for: $0) }) ?? self.activeTab, tab.kind == "sheet" else { return nil }
+            guard let tab = self?.focusedSheet else { return nil }
             return String(tab.id.dropFirst(6))
         }
         remote.exportSnapshot = { [weak self] in
@@ -1092,7 +1107,7 @@ final class NotebookModel: ObservableObject {
         return executingWorker && executionPhase > 0
     }
     var executionLabel: String {
-        if remote.isSelected, let tab = activeBoard.flatMap({ controller(for: $0) }) ?? activeTab,
+        if remote.isSelected, let tab = focusedSheet,
            remote.runtimes.contains(where: { $0["sheet_id"] as? String == String(tab.id.dropFirst(6)) && $0["needs_restart"] as? Bool == true }) {
             return "Restart required"
         }
@@ -1109,10 +1124,10 @@ final class NotebookModel: ObservableObject {
         default: return "Ready"
         }
     }
-    func stopExecution(force: Bool = false) {
+    func stopExecution(force: Bool = false, tab target: NotebookTab? = nil) {
         for key in pendingRunHistory.keys { pendingRunHistory[key]?.cancelled = true }
         if remote.isSelected {
-            let tab = activeBoard.flatMap { controller(for: $0) } ?? activeTab
+            let tab = target ?? focusedSheet
             if let tab { remote.stop(sheet: String(tab.id.dropFirst(6)), force: force) }
             return
         }
@@ -1153,6 +1168,9 @@ final class NotebookModel: ObservableObject {
     @Published var error: String?
     @Published var selectedCellID = ""
     @Published var selectedBoardID: String?
+    @Published private(set) var boardWindowSheetID: String?
+    @Published var boardWindowFocused = false
+    @Published private var selectedBoardsBySheet: [String: String] = [:]
     @Published private(set) var bookPage: NotebookBookPage?
     @Published private(set) var markdownPaths: [String] = []
     @Published private(set) var markdownDrafts: [String: NotebookMarkdownDraft] = [:]
@@ -1187,7 +1205,7 @@ final class NotebookModel: ObservableObject {
         }
     }
     private var executingPeriodicKey: String?
-    var boardEditorOpen = false
+    @Published var boardEditorOpen = false
     @Published private(set) var documentIdentity = UUID()
     @Published private var draftVersion = 0
     var requestNew: (() -> Void)?
@@ -1200,10 +1218,23 @@ final class NotebookModel: ObservableObject {
         guard !busy, !dependencyOperationActive, !boardEditorOpen,
               cell == nil || cell?.kind == "code" else { return false }
         if remote.isSelected {
+            if remote.runtimes.contains(where: {
+                $0["sheet_id"] as? String == String(tab.id.dropFirst(6)) && $0["iteration_running"] as? Bool == true
+            }) { return false }
             return remote.connected && !remote.busy && !remote.conflict && !remote.hasPending &&
                 !executingCurrentWorker && tab.kind == "sheet"
         }
         return !executingCurrentWorker && (cell == nil || tab.kind == "module" || !tab.environment_stale)
+    }
+    func canApplyModules(_ tab: NotebookTab) -> Bool {
+        tab.kind == "sheet" && !busy && !closing && !dependencyOperationActive && !boardEditorOpen && !remote.isSelected
+    }
+    func iterationReady(_ tab: NotebookTab, cell: NotebookCell) -> Bool {
+        if !remote.isSelected { return tab.iteration_cell == cell.id }
+        return remote.runtimes.contains {
+            $0["sheet_id"] as? String == String(tab.id.dropFirst(6)) &&
+            ($0["iteration_ready"] as? [String] ?? []).contains(cell.id)
+        }
     }
     func canCheckModule(_ tab: NotebookTab) -> Bool {
         tab.kind == "module" && !busy && !closing && !dependencyOperationActive && !boardEditorOpen
@@ -1311,6 +1342,58 @@ final class NotebookModel: ObservableObject {
     func controller(for board: NotebookBoard) -> NotebookTab? {
         snapshot?.tabs.first { $0.id == "sheet:" + board.sheet }
     }
+    private func preferredBoard(for sheetID: String) -> NotebookBoard? {
+        let boards = snapshot?.boards ?? []
+        let preferredID = selectedBoardsBySheet[sheetID]
+        return boards.first { "sheet:" + $0.sheet == sheetID && $0.id == preferredID }
+            ?? boards.first { "sheet:" + $0.sheet == sheetID }
+    }
+    var boardWindowSheet: NotebookTab? { snapshot?.tabs.first { $0.id == boardWindowSheetID } }
+    var detachedBoard: NotebookBoard? { boardWindowSheetID.flatMap { preferredBoard(for: $0) } }
+    private var focusedSheet: NotebookTab? {
+        if let board = activeBoard { return controller(for: board) }
+        if let tab = activeTab, tab.kind == "sheet" { return tab }
+        return boardWindowSheet
+    }
+    private var boardToDetach: NotebookBoard? {
+        guard bookPage == nil else { return nil }
+        return activeBoard ?? activeTab.flatMap { preferredBoard(for: $0.id) }
+    }
+    var showsBoardWindowToggle: Bool { boardWindowSheetID != nil || boardToDetach != nil }
+    var canToggleBoardWindow: Bool {
+        !boardEditorOpen && !closing && (boardWindowSheetID != nil || (canNavigate && boardToDetach != nil))
+    }
+    func toggleBoardWindow() {
+        guard canToggleBoardWindow else { return }
+        if boardWindowSheetID != nil {
+            let board = detachedBoard
+            boardWindowSheetID = nil
+            periodicBoardVisible = nil
+            if bookPage == nil, let board, controller(for: board)?.id == activeTab?.id {
+                selectedBoardID = board.id
+            }
+            return
+        }
+        guard let board = boardToDetach, let tab = controller(for: board) else { return }
+        let detach = { [weak self] in
+            guard let self else { return }
+            self.selectedBoardsBySheet[tab.id] = board.id
+            self.selectedBoardID = nil
+            self.periodicBoardVisible = nil
+            self.boardWindowSheetID = tab.id
+        }
+        if activeTab?.id == tab.id { detach() }
+        else { selectTab(tab, completion: detach) }
+    }
+
+    private func updateBoardWindowSheet() {
+        guard let paired = boardWindowSheetID else { return }
+        if let tab = activeTab, tab.kind == "sheet" {
+            if paired != tab.id { boardWindowSheetID = tab.id }
+        } else if boardWindowSheet == nil {
+            boardWindowSheetID = snapshot?.tabs.first { $0.kind == "sheet" }?.id
+        }
+    }
     func liveChart(_ id: String, in tab: NotebookTab) -> NotebookLiveChart? {
         chartSource(id, in: tab)?.chart
     }
@@ -1403,7 +1486,12 @@ final class NotebookModel: ObservableObject {
         return providers.count == 1 ? providers.first : nil
     }
     func selectBoard(_ board: NotebookBoard) {
-        guard canNavigate else { return }
+        guard canNavigate, let tab = controller(for: board) else { return }
+        selectedBoardsBySheet[tab.id] = board.id
+        if boardWindowSheetID != nil {
+            if activeTab?.id != tab.id || bookPage != nil { selectTab(tab) }
+            return
+        }
         navigationRevision &+= 1
         bookPage = nil
         selectedBoardID = board.id
@@ -1458,7 +1546,7 @@ final class NotebookModel: ObservableObject {
         do {
             let json = String(decoding: try JSONEncoder().encode(board.rowLayout), as: UTF8.self)
             perform("save_board", text: json) { [weak self] success in
-                if success { self?.selectedBoardID = board.id }
+                if success { self?.selectBoard(board) }
                 completion(success)
             }
         } catch { self.error = error.localizedDescription; completion(false) }
@@ -1804,18 +1892,25 @@ final class NotebookModel: ObservableObject {
         draftVersion &+= 1
         onChange?()
     }
-    func selectTab(_ tab: NotebookTab) {
+    func selectTab(_ tab: NotebookTab, completion: (() -> Void)? = nil) {
         guard canNavigate else { return }
         navigationRevision &+= 1
+        let revision = navigationRevision
+        let selected = { [weak self] in
+            guard let self, self.navigationRevision == revision else { return }
+            self.selectedBoardID = nil
+            self.bookPage = nil
+            self.updateBoardWindowSheet()
+            completion?()
+        }
         if executingWorker {
             selectedTabID = tab.id
             selectedCellID = tab.selected_cell.isEmpty ? tab.cells.first?.id ?? "" : tab.selected_cell
-            selectedBoardID = nil
-            bookPage = nil
+            selected()
             return
         }
-        perform("select", tab: tab) { [weak self] success in
-            if success { self?.selectedBoardID = nil; self?.bookPage = nil }
+        perform("select", tab: tab) { success in
+            if success { selected() }
         }
     }
     func newProject() { requestNew?() }
@@ -1858,6 +1953,7 @@ final class NotebookModel: ObservableObject {
         if oldTab != activeTab?.id || !(activeTab?.cells.contains { $0.id == selectedCellID } ?? false) {
             selectedCellID = activeTab?.selected_cell ?? activeTab?.cells.first?.id ?? ""
         }
+        updateBoardWindowSheet()
         onChange?()
     }
 
@@ -1885,6 +1981,8 @@ final class NotebookModel: ObservableObject {
                 self.runHistory.open(project: state.path); self.pendingRunHistory = [:]; self.workerLastContact = nil; self.runtimeTelemetry = [:]; self.runtimeSampleDates = [:]
                 self.documentIdentity = identity
                 self.selectedBoardID = nil
+                self.boardWindowSheetID = nil
+                self.selectedBoardsBySheet = [:]
                 self.bookPage = nil
                 self.markdownDrafts = [:]
                 self.markdownPaths = []
@@ -1931,7 +2029,7 @@ final class NotebookModel: ObservableObject {
         guard !dependencyOperationActive || ["restart_worker", "worker_environment", "worker_grants", "book_worker_grants"].contains(action) else { completion?(false); return }
         guard !busy, snapshot != nil else { completion?(false); return }
         do {
-            if action == "save", case .markdown(let path) = bookPage {
+            if action == "save", tab == nil, case .markdown(let path) = bookPage {
                 try saveMarkdown([path])
                 error = nil
                 completion?(true)
@@ -1949,7 +2047,7 @@ final class NotebookModel: ObservableObject {
             catch { self.error = error.localizedDescription; completion?(false); return }
         }
         let target = tab ?? activeTab
-        let targetCell = cell ?? (action == "select" ? nil : selectedCell)
+        let targetCell = cell ?? (action == "select" || target?.id != activeTab?.id ? nil : selectedCell)
         if remote.isSelected {
             if ["run", "run_all", "restart_worker"].contains(action) {
                 guard let target, target.kind == "sheet" else { error = "Remote execution requires a sheet."; completion?(false); return }
@@ -1992,7 +2090,11 @@ final class NotebookModel: ObservableObject {
                 completion?(false); return
             }
         }
-        let edits = drafts.map { SourceEdit(key: $0.key, draft: $0.value) }.sorted {
+        let replacedSource: SourceKey?
+        if action == "source", let target, let targetCell {
+            replacedSource = SourceKey(tab: target.id, cell: targetCell.id)
+        } else { replacedSource = nil }
+        let edits = drafts.filter { $0.key != replacedSource }.map { SourceEdit(key: $0.key, draft: $0.value) }.sorted {
             ($0.key.tab, $0.key.cell) < ($1.key.tab, $1.key.cell)
         }
         let explicitExecution = ["run", "run_all", "apply", "action_run", "periodic_run", "periodic_tick", "watch_run"].contains(action)
@@ -2050,6 +2152,7 @@ final class NotebookModel: ObservableObject {
                 }
             }
             if let state {
+                if error == nil, let replacedSource { self.drafts.removeValue(forKey: replacedSource) }
                 let fresh: Set<String> = !executes ? [] : ["set_input", "set_inputs", "set_cell_inputs"].contains(action)
                     ? Set(state.tabs.map(\.id)) : Set([target?.id].compactMap { $0 })
                 self.accept(state, freshResultsFor: fresh)
@@ -2115,6 +2218,8 @@ final class NotebookModel: ObservableObject {
         closeCompletions.append(completion)
         guard !closing else { return }
         closing = true
+        boardWindowSheetID = nil
+        periodicBoardVisible = nil
         watchTimer?.invalidate(); watchTimer = nil
         periodicTimer?.invalidate(); periodicTimer = nil
         for key in periodicStates.keys { periodicStates[key]?.pause() }

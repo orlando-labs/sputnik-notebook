@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ name: 'book' | 'plus' | 'folder' | 'chevron' | 'refresh' | 'back' | 'arrow' | 'github' | 'close' | 'search' | 'copy' | 'sheet' | 'save' | 'up' | 'down' | 'trash' | 'play' | 'stop' }>()
+defineProps<{ name: 'book' | 'plus' | 'folder' | 'chevron' | 'refresh' | 'back' | 'arrow' | 'github' | 'close' | 'search' | 'copy' | 'sheet' | 'save' | 'up' | 'down' | 'trash' | 'play' | 'stop' | 'components' | 'exports' }>()
 </script>
 
 <template>
@@ -22,6 +22,8 @@ defineProps<{ name: 'book' | 'plus' | 'folder' | 'chevron' | 'refresh' | 'back' 
     <path v-else-if="name === 'trash'" d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7" />
     <path v-else-if="name === 'play'" fill="currentColor" stroke="none" d="M7 4.5a1 1 0 0 1 1.5-.86l12 7.5a1 1 0 0 1 0 1.72l-12 7.5A1 1 0 0 1 7 19.5Z" />
     <rect v-else-if="name === 'stop'" x="5" y="5" width="14" height="14" rx="2" fill="currentColor" stroke="none" />
+    <path v-else-if="name === 'components'" d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z" />
+    <path v-else-if="name === 'exports'" d="M7 8H4v13h16V8h-3M12 16V3m-4 4 4-4 4 4" />
     <template v-else-if="name === 'search'">
       <circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4.5 4.5" />
     </template>

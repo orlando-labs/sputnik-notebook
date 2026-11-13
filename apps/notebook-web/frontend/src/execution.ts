@@ -41,7 +41,7 @@ export interface RunResult extends RunSummary {
   text_limited?: boolean
   environment_stale?: boolean
 }
-interface Runtime { sheet_id: string; input_version: string | null; runtime_epoch: string; state: string; needs_restart: boolean }
+interface Runtime { sheet_id: string; input_version: string | null; runtime_epoch: string; state: string; needs_restart: boolean; iteration_ready?: string[]; iteration_running?: boolean }
 interface Registry { resources?: ResourceStatus; services: ServiceSummary[]; input_version: string; dependency_busy: boolean; revision: string; runs: RunSummary[]; runtimes: Runtime[]; reset_epochs: string[]; can_execute: boolean }
 type Command = { kind: 'run' | 'stop' | 'restart' | 'invoke' | 'service' | 'restart_invocation'; run_id?: string; body: Record<string, unknown> & { command_id: string } }
 
@@ -59,7 +59,9 @@ function readCommand(key: string): Command | null {
   } catch { return null }
 }
 
-export function useExecution(accountId: string, project: () => Project, document: Ref<NotebookDocument | null>, revision: Ref<string>, dirty: Readonly<Ref<boolean>>, editorBusy: Readonly<Ref<boolean>>, activeSheet: Ref<string>, activeBoard: Ref<string>) {
+type GuestLease = { leasePath: string; leaseSeconds: number; expired: (message: string) => void }
+
+export function useExecution(accountId: string, project: () => Project, document: Ref<NotebookDocument | null>, revision: Ref<string>, dirty: Readonly<Ref<boolean>>, editorBusy: Readonly<Ref<boolean>>, activeSheet: Ref<string>, activeBoard: Ref<string>, guest?: GuestLease) {
   const base = `/api/projects/${encodeURIComponent(project().id)}/execution`
   const storageKey = `sputnik.execution.pending.v1:${accountId}:${project().id}`
   const registry = ref<Registry | null>(null)
@@ -71,7 +73,7 @@ export function useExecution(accountId: string, project: () => Project, document
   const selectedService = ref<{ board: string; component: string; before: string | null } | null>(null)
   const serviceHistory = ref<ServiceHistory | null>(null), serviceError = ref('')
   let generation = 0, historyRequest = 0
-  const pending = ref<Command | null>(readCommand(storageKey))
+  const pending = ref<Command | null>(guest ? null : readCommand(storageKey))
   const pendingState = ref<'unknown' | 'not_recorded'>('unknown')
   const requestBusy = ref(false)
   const connected = ref(false)
@@ -81,6 +83,7 @@ export function useExecution(accountId: string, project: () => Project, document
   let disposed = false
   let timer: ReturnType<typeof setTimeout> | undefined
   let refreshing: Promise<void> | null = null
+  let heartbeatRuns: string | undefined
   const readController = new AbortController()
   const runs = computed(() => registry.value?.runs || [])
   const historyRows = computed(() => {
@@ -96,7 +99,10 @@ export function useExecution(accountId: string, project: () => Project, document
   const canExecute = computed(() => !accessLost.value && (registry.value?.can_execute ?? project().permissions.execute))
   const canStart = computed(() => canExecute.value && connected.value && registry.value?.resources?.remaining_ms !== '0' && !registry.value?.dependency_busy && !pending.value && !requestBusy.value && !editorBusy.value && !dirty.value && !outdated.value)
   const canControl = computed(() => canExecute.value && connected.value && !pending.value && !requestBusy.value)
-  const canRun = computed(() => canStart.value && !activeRun.value && !runtime.value?.needs_restart)
+  const canRestart = computed(() => canControl.value && !activeRun.value)
+  const canApplyModules = computed(() => canRestart.value && !!runtime.value && !runtime.value.iteration_running &&
+    !registry.value?.dependency_busy && !editorBusy.value && !dirty.value && !outdated.value)
+  const canRun = computed(() => canStart.value && !activeRun.value && !runtime.value?.needs_restart && !runtime.value?.iteration_running)
   const invocationRun = computed(() => historyRows.value.find(run => run.id === selectedInvocation.value && !sheetRun(run)))
   const invocationResult = computed(() => invocationRun.value ? details.value[invocationRun.value.id] : undefined)
   const status = computed(() => connectionError.value ? 'Disconnected' : !connected.value ? 'Connecting…' : requestBusy.value ? 'Updating execution status…' : activeRun.value ? runLabel(activeRun.value.state) : pending.value ? 'Checking command status' : !canExecute.value ? 'Read-only runtime' : registry.value?.dependency_busy ? 'Updating dependencies…' : runtime.value?.needs_restart ? 'Restart required' : outdated.value ? 'Newer notebook version available' : dirty.value ? 'Save changes to run' : 'Ready to run')
@@ -122,6 +128,7 @@ export function useExecution(accountId: string, project: () => Project, document
   function setPending(command: Command | null) {
     pending.value = command
     pendingState.value = 'unknown'
+    if (guest) return
     try { if (command) sessionStorage.setItem(storageKey, JSON.stringify(command)); else sessionStorage.removeItem(storageKey) }
     catch { /* Read-only registry recovery also works without browser storage. */ }
   }
@@ -154,10 +161,27 @@ export function useExecution(accountId: string, project: () => Project, document
   }
   function schedule() {
     clearTimeout(timer)
-    if (!disposed && !accessLost.value && document.value && !window.document.hidden) timer = setTimeout(() => void refresh(), runs.value.some(run => !terminal(run.state)) || pending.value ? 500 : 2000)
+    if (disposed || accessLost.value || !document.value || window.document.hidden) return
+    const active = runs.value.some(run => !terminal(run.state)) || !!pending.value
+    const delay = guest ? Math.min(guest.leaseSeconds * 1000 / 3, active ? 1000 : 5000) : active ? 500 : 2000
+    timer = setTimeout(() => void refresh(true), delay)
   }
-  async function refreshOnce() {
+  async function refreshOnce(poll: boolean) {
     try {
+      if (guest && poll) {
+        const response = await api<{ runs: RunSummary[]; resources: ResourceStatus }>(guest.leasePath, 'POST', { status: true }, readController.signal)
+        if (disposed) return
+        const current = registry.value
+        const signature = JSON.stringify(response.runs.map(run => [run.id, run.state, run.runtime_epoch]))
+        const changed = heartbeatRuns === undefined
+          ? response.runs.some(run => !current?.runs.some(previous => previous.id === run.id && previous.state === run.state))
+          : heartbeatRuns !== signature
+        heartbeatRuns = signature
+        if (current && connected.value && !changed && !pending.value && !response.runs.some(run => !terminal(run.state))) {
+          current.resources = response.resources
+          return
+        }
+      }
       const response = await api<Registry>(base + (activeBoard.value ? '?board_id=' + encodeURIComponent(activeBoard.value) : ''), 'GET', undefined, readController.signal)
       if (disposed) return
       if (!Array.isArray(response.services) || !Array.isArray(response.runs) || !Array.isArray(response.runtimes) || !Array.isArray(response.reset_epochs) || typeof response.revision !== 'string' || typeof response.can_execute !== 'boolean') throw new Error('Could not read execution status.')
@@ -182,6 +206,11 @@ export function useExecution(accountId: string, project: () => Project, document
       if (disposed) return
       connected.value = false
       connectionError.value = cause instanceof Error ? cause.message : 'Could not refresh execution status.'
+      if (guest && (!(cause instanceof APIError) || [401, 403, 404, 410, 503].includes(cause.status))) {
+        accessLost.value = true
+        guest.expired('The demo notebook expired or lost its connection. Open a fresh copy to continue.')
+        return
+      }
       if (cause instanceof APIError && [401, 403, 404].includes(cause.status)) {
         generation++; historyRequest++
         accessLost.value = true
@@ -192,11 +221,11 @@ export function useExecution(accountId: string, project: () => Project, document
       }
     }
   }
-  function refresh(): Promise<void> {
+  function refresh(poll = false): Promise<void> {
     if (disposed || !document.value) return Promise.resolve()
     if (refreshing) return refreshing
     clearTimeout(timer)
-    refreshing = refreshOnce().finally(() => { refreshing = null; schedule() })
+    refreshing = refreshOnce(poll).finally(() => { refreshing = null; schedule() })
     return refreshing
   }
   async function send(command: Command) {
@@ -233,10 +262,18 @@ export function useExecution(accountId: string, project: () => Project, document
     if (force && !window.confirm('Force stop this worker? Its current variables and in-progress work will be discarded.')) return
     return send({ kind: 'stop', run_id: run.id, body: { command_id: newId('stop'), runtime_epoch: run.runtime_epoch, force } })
   }
-  function restart() {
-    if (!canExecute.value || requestBusy.value || pending.value || activeRun.value || !connected.value) return
-    if (!window.confirm('Restart this worker? Its variables and current results will be cleared. The saved notebook will be kept.')) return
+  function resetWorker() {
     return send({ kind: 'restart', body: { command_id: newId('restart'), sheet_id: activeSheet.value, runtime_epoch: runtime.value?.runtime_epoch || null } })
+  }
+  function restart() {
+    if (!canRestart.value) return
+    if (!window.confirm('Restart this worker? Its variables and current results will be cleared. The saved notebook will be kept.')) return
+    return resetWorker()
+  }
+  function applyModules() {
+    if (!canApplyModules.value) return
+    if (!window.confirm("Restart this sheet's worker to apply the saved modules? Current variables and results will be cleared. The next run will load the saved modules.")) return
+    return resetWorker()
   }
   function retry() {
     if (canExecute.value && pending.value && pendingState.value === 'not_recorded') return send(pending.value)
@@ -312,5 +349,5 @@ export function useExecution(accountId: string, project: () => Project, document
   onMounted(() => { window.addEventListener('focus', visibility); window.document.addEventListener('visibilitychange', visibility) })
   onUnmounted(() => { disposed = true; clearTimeout(timer); readController.abort(); window.removeEventListener('focus', visibility); window.document.removeEventListener('visibilitychange', visibility) })
   function checkStatus() { error.value = ''; return refresh() }
-  return { historyRows, historyBefore, historyLoaded, historyBusy, historyError, loadHistory, textVariables, selectedInvocation, invocationRun, invocationResult, selectedService, serviceHistory, serviceError, canStart, canControl, invoke, configureService, restartInvocation, inspectInvocation, inspectService, registry, runs, runtime, activeRun, displayedRun, displayedResult, selectedHistory, pending, pendingState, requestBusy, connected, error, connectionError, canExecute, canRun, outdated, status, refresh: checkStatus, start, stop, restart, retry, cellPresentation }
+  return { historyRows, historyBefore, historyLoaded, historyBusy, historyError, loadHistory, textVariables, selectedInvocation, invocationRun, invocationResult, selectedService, serviceHistory, serviceError, canStart, canControl, invoke, configureService, restartInvocation, inspectInvocation, inspectService, registry, runs, runtime, activeRun, displayedRun, displayedResult, selectedHistory, pending, pendingState, requestBusy, connected, error, connectionError, canExecute, canRun, canApplyModules, outdated, status, refresh: checkStatus, start, stop, restart, applyModules, retry, cellPresentation }
 }

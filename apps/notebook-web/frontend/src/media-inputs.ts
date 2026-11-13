@@ -1,12 +1,14 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { api, APIError } from './api'
 import { newId } from './notebook'
+import { base64ByteLength, guestUpload } from './upload-limits'
 export interface MediaEdit { board_id: string; component_id: string; operation: 'replace' | 'append' | 'clear' | 'annotations'; extension: string; name: string; data: string }
 interface Command extends MediaEdit { command_id: string; revision: string; base_version: string }
-export interface MediaRuntime { projectId: string; revision: string; readable: boolean; canApply: boolean; version: string; values?: Record<string, string>; apply: (edit: MediaEdit, source?: { revision: string; version: string }) => Promise<boolean> }
+export interface MediaRuntime { projectId: string; revision: string; readable: boolean; canApply: boolean; version: string; guest?: boolean; values?: Record<string, string>; apply: (edit: MediaEdit, source?: { revision: string; version: string }) => Promise<boolean> }
 const maxBytes = 16 * 1024 * 1024
-export async function mediaFile(file: File): Promise<{ data: string; extension: string }> {
-  if (!file.size || file.size > maxBytes) throw new Error('Choose a non-empty file up to 16 MiB.')
+export async function mediaFile(file: File, guest = false): Promise<{ data: string; extension: string }> {
+  if (!file.size || file.size > (guest ? guestUpload.fileBytes : maxBytes))
+    throw new Error(`Choose a non-empty file up to ${guest ? guestUpload.fileLabel : '16 MiB'}.`)
   const extension = file.name.split('.').at(-1)?.toLowerCase() || ''
   if (!/^[a-z0-9]{1,16}$/.test(extension)) throw new Error('Choose a file with an ordinary extension.')
   if (new TextEncoder().encode(file.name).length > 1024 || /[\x00-\x1f\x7f]/.test(file.name)) throw new Error('The file name is too long or contains control characters.')
@@ -27,11 +29,11 @@ function journal(key: string, value?: Command | null): Promise<Command | null> {
     }
   })
 }
-export function useMediaInputs(account: string, project: string, revision: () => string, version: () => string, confirmed: () => Promise<void>) {
+export function useMediaInputs(account: string, project: string, revision: () => string, version: () => string, confirmed: () => Promise<void>, guest = false) {
   const key = `${account}:${project}`, base = `/api/projects/${encodeURIComponent(project)}/media-inputs`
   const pending = ref<Command | null>(null), busy = ref(false), checking = ref(false), unknown = ref(false), error = ref(''), ready = ref(false)
   let disposed = false
-  async function complete() { await journal(key, null); pending.value = null; unknown.value = false; error.value = ''; if (!disposed) await confirmed() }
+  async function complete() { if (!guest) await journal(key, null); pending.value = null; unknown.value = false; error.value = ''; if (!disposed) await confirmed() }
   async function check() {
     if (!pending.value || checking.value) return
     checking.value = true
@@ -47,18 +49,27 @@ export function useMediaInputs(account: string, project: string, revision: () =>
     busy.value = true; error.value = ''; unknown.value = false
     let accepted = false
     try {
-      await journal(key, command); pending.value = command
+      if (!guest) await journal(key, command)
+      pending.value = command
       await api(base, 'POST', command); accepted = true; await complete()
     } catch (cause) {
       error.value = (cause as Error).message
-      if (cause instanceof APIError && cause.status < 500) { await journal(key, null); pending.value = null }
+      if (cause instanceof APIError && cause.status < 500) { if (!guest) await journal(key, null); pending.value = null }
       else if (pending.value) { await check(); accepted = pending.value === null }
     } finally { busy.value = false }
     return accepted
   }
-  function apply(edit: MediaEdit, source?: { revision: string; version: string }) { return pending.value || !ready.value ? Promise.resolve(false) : send({ ...edit, command_id: newId('media'), revision: source?.revision || revision(), base_version: source?.version || version() }) }
+  async function apply(edit: MediaEdit, source?: { revision: string; version: string }) {
+    if (pending.value || !ready.value) return false
+    if (guest && base64ByteLength(edit.data) > guestUpload.fileBytes) {
+      error.value = `Media uploads are limited to ${guestUpload.fileLabel} each.`
+      return false
+    }
+    return send({ ...edit, command_id: newId('media'), revision: source?.revision || revision(), base_version: source?.version || version() })
+  }
   function retry() { return pending.value && unknown.value ? send(pending.value) : Promise.resolve(false) }
   onMounted(async () => {
+    if (guest) { ready.value = true; return }
     try {
       const saved = await journal(key)
       if (saved) {

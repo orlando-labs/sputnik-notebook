@@ -4,7 +4,7 @@ test('public-only deployment has no sign-in or private workspace authority', asy
   test.skip(process.env.NOTEBOOK_WEB_TEST_PUBLIC_ONLY !== '1' && process.env.NOTEBOOK_WEB_DEPLOY_PUBLIC_ONLY !== '1', 'Explicit public-only server acceptance.')
   await page.goto('/')
   await expect(page.getByRole('button', { name: 'Continue with GitHub' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Try Getting started', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Open Getting started', exact: true })).toBeVisible()
   const response = await page.request.get('/api/session', { headers: { Accept: 'application/json' } })
   expect(response.status()).toBe(200)
   const snapshot = await response.json()

@@ -12,6 +12,67 @@ export main
 
 def equal(left, right, message): check(digest(left) == digest(right), message)
 
+def sheet_transfers(h):
+  project = "sheet-transfers"
+  doc = document("sample[0] + sample[1]\n")
+  doc[:version] = 5
+  doc[:inputs] = []
+  doc[:boards] = []
+  doc[:dependencies] = []
+  doc[:sheets][0][:cells][0][:mode] = "watch"
+  doc[:sheets][0][:imports] = [{name: "sample", sheet: "dataset", cell: "2", "export": "data"}]
+  doc[:sheets].push!({id: "dataset", title: "Dataset", cells: [
+    {id: "2", kind: "code", mode: "watch", source: "values = [20, 21]\nexport values as data\nvalues.push!(1)\n42\n"}]})
+  saved = h.upload(project, doc)
+  started = h.start(project, saved[:revision])
+  done = h.wait_run(started[:run_id])
+  check(done[:state] == "succeeded" and done[:result][:cells][0][:result] == "41", Json.generate(done))
+  check(done[:provenance][:sheet_imports].count == 1 and done[:provenance][:sheet_imports][0][:name] == "sample",
+    "run history retains the imported value snapshot")
+  eventually:
+    registry = h.call("GET", "/v1/projects/" + project + "/registry")
+    not registry[:runtimes].any? |runtime|: runtime[?:iteration_running]
+  removed = Json.parse(Json.generate(doc))
+  removed[:sheets] = removed[:sheets].take(1)
+  reply = h.request("PUT", "/v1/projects/" + project, {command_id: "remove-source", base_revision: saved[:revision], document: Json.generate(removed), files: {}})
+  check(reply[0] == 400, "connected source sheet cannot be deleted")
+  h.delete(project)
+
+  project = "sheet-feedback"
+  doc = document("a = if notebook.input(\"bootstrap\") then 1 else back + 1\nexport a\na\n")
+  doc[:version] = 5
+  doc[:inputs] = [{id: "bootstrap", title: "Bootstrap", type: "boolean", default: true}]
+  doc[:boards] = []
+  doc[:dependencies] = []
+  doc[:sheets][0][:cells][0][:mode] = "watch"
+  doc[:sheets][0][:cells].push!({id: "3", kind: "code", mode: "watch", source: "back + 100\n"})
+  doc[:sheets][0][:imports] = [{name: "back", sheet: "second", cell: "2", "export": "b"}]
+  doc[:sheets].push!({id: "second", title: "Second", imports: [
+    {name: "forward", sheet: "main", cell: "1", "export": "a"}], cells: [
+    {id: "2", kind: "code", mode: "watch", source: "b = forward * 2\nexport b\nb\n"}]})
+  saved = h.upload(project, doc)
+  started = h.start(project, saved[:revision])
+  check(h.wait_run(started[:run_id])[:state] == "succeeded", "cyclic root completes")
+  eventually:
+    registry = h.call("GET", "/v1/projects/" + project + "/registry")
+    main = registry[:runtimes].find: $it[:sheet_id] == "main"
+    main and (main[?:iteration_ready] or []).include?("1")
+  registry = h.call("GET", "/v1/projects/" + project + "/registry")
+  completed = registry[:runs].filter |run|: run[:sheet_id] == "main" and run[:state] == "succeeded"
+  latest = h.call("GET", "/v1/runs/" + completed[-1][:id])
+  returned = latest[:result][:cells].find |cell|: cell[:id] == "3"
+  check(returned[:result] == "102", "cyclic return computes the next cell on the original sheet")
+  count = registry[:runs].count
+  task.sleep(0.3)
+  check(h.call("GET", "/v1/projects/" + project + "/registry")[:runs].count == count, "feedback waits for a manual iteration")
+  started = h.start(project, saved[:revision])
+  check(h.wait_run(started[:run_id])[:state] == "succeeded", "explicit next iteration completes")
+  eventually:
+    registry = h.call("GET", "/v1/projects/" + project + "/registry")
+    not registry[:runtimes].any? |runtime|: runtime[?:iteration_running]
+  h.delete(project)
+  print "PASS sheet transfers, prerequisite execution, deletion and manual feedback"
+
 def catalog(h, origin):
   project = "catalog"
   saved, run, _result = h.value(project, "42\n")
@@ -364,11 +425,16 @@ def main():
   parser.arg("--worker", required: true)
   parser.arg("--compiler", required: true)
   parser.arg("--root", required: true)
-  parser.arg("--mode", default: "remote", choices: ["remote", "serve", "catalog", "catalog-ui", "command", "restart", "desktop-actions", "grants"])
+  parser.arg("--mode", default: "remote", choices: ["remote", "serve", "catalog", "catalog-ui", "command", "restart", "desktop-actions", "grants", "transfers"])
   parser.arg("--ui-test")
   args = parser.parse_or_raise
   root = args[:root]
   fs.mkdir_p(root)
+  if args[:mode] == "transfers":
+    h = Harness(args, root + "/transfers")
+    try: sheet_transfers(h)
+    ensure: h.close!()
+    return 0
   if args[:mode] == "desktop-actions":
     desktop_actions(args, root)
     return 0

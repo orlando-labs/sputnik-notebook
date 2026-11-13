@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { api, apiBlob, APIError, type Project } from './api'
-import { newCell, newId, parseNotebook, plainCell, type NotebookCell, type NotebookDocument, type NotebookResponse } from './notebook'
+import { newCell, newId, parseNotebook, plainCell, type NotebookCell, type NotebookDocument, type NotebookResponse, type NotebookSheetImport } from './notebook'
 import NotebookIcon from './NotebookIcon.vue'
 import NotebookFileEditor from './NotebookFileEditor.vue'
 import NotebookFileExplorer from './NotebookFileExplorer.vue'
@@ -19,6 +19,7 @@ import NotebookCellComponents from './NotebookCellComponents.vue'
 import NotebookInputDesigner from './NotebookInputDesigner.vue'
 import { useInputRuntime } from './input-runtime'
 import { useMediaInputs } from './media-inputs'
+import { guestUpload } from './upload-limits'
 import { runLabel, terminal, sheetRun, useExecution, type RunSummary } from './execution'
 import NotebookBoardView from './NotebookBoardView.vue'
 import NotebookTextEditor from './NotebookTextEditor.vue'
@@ -32,12 +33,13 @@ import NotebookResourceLimits from './NotebookResourceLimits.vue'
 import { secondsLabel } from './resource-policy'
 import NotebookPreview from './NotebookPreview.vue'
 import NotebookCodeEditor from './NotebookCodeEditor.vue'
+import NotebookCellExports from './NotebookCellExports.vue'
 import { duplicateSheet, moveSheet, deleteSheet } from './editor-operations'
 import { localDrafts, writeDraft, removeDraft, type DraftRecord, type SaveCommand } from './draft-journal'
 import NotebookSaveConflict from './NotebookSaveConflict.vue'
 
-const props = defineProps<{ project: Project; accountId: string }>()
-const emit = defineEmits<{ dirty: [value: boolean]; resumeImport: [command: string] }>()
+const props = defineProps<{ project: Project; accountId: string; guest?: { leasePath: string; leaseSeconds: number } }>()
+const emit = defineEmits<{ dirty: [value: boolean]; resumeImport: [command: string]; expired: [message: string] }>()
 const document = ref<NotebookDocument | null>(null)
 const revision = ref('')
 const saved = ref('')
@@ -62,8 +64,12 @@ let journalReady = false, journalTimer: ReturnType<typeof setTimeout> | undefine
 let recoveredFrom: DraftRecord | null = null
 const conflictReview = ref<InstanceType<typeof NotebookSaveConflict>>()
 const sheetDialog = ref<HTMLDialogElement>(), replacementSheet = ref(''), sheetError = ref('')
+const importsDialog = ref<HTMLDialogElement>()
+const exportsEditor = ref<InstanceType<typeof NotebookCellExports>>()
+const importDraft = ref<NotebookSheetImport[]>([])
+const validBinding = (name: string) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(name)
 const relocateDialog = ref<HTMLDialogElement>(), relocatedPath = ref(''), relocatedModule = ref(''), relocateError = ref(''), relocating = ref(false)
-const sources = reactive(useSources(() => props.project, document, revision))
+const sources = reactive(useSources(() => props.project, document, revision, !!props.guest))
 const errorTarget = ref<{ cell: string; diagnostic: CodeDiagnostic }>()
 function revealError(cell: NotebookCell, diagnostic: CodeDiagnostic) {
   collapsedCells.value.delete(cellKey(cell))
@@ -103,7 +109,8 @@ const busy = computed(() => loading.value || saving.value || relocating.value ||
 const sheet = computed(() => document.value?.sheets.find(value => value.id === activeSheet.value))
 const validTitles = computed(() => document.value?.sheets.every(value => value.title.trim().length > 0))
 const fileChangesDisabled = computed(() => busy.value || !!pending.value || conflict.value || !sources.ready)
-const execution = reactive(useExecution(props.accountId, () => props.project, document, revision, dirty, computed(() => busy.value || parameterMutating.value), activeSheet, activeBoardID))
+const execution = reactive(useExecution(props.accountId, () => props.project, document, revision, dirty, computed(() => busy.value || parameterMutating.value), activeSheet, activeBoardID,
+  props.guest && { ...props.guest, expired: message => emit('expired', message) }))
 const environmentErrorTarget = computed(() => {
   const result = execution.displayedResult
   if (result?.error || !result?.environment_error) return null
@@ -115,8 +122,8 @@ const environmentErrorTarget = computed(() => {
   }
   return null
 })
-const inputs = reactive(useInputRuntime(props.accountId, () => props.project, document, revision, activeSheet, computed(() => execution.registry?.input_version || ''), () => execution.refresh()))
-const media = reactive(useMediaInputs(props.accountId, props.project.id, () => revision.value, () => inputState()?.version || '', async () => { accept(await api<NotebookResponse>(endpoint())); await inputs.refresh(); await execution.refresh(); await checkpoint() }))
+const inputs = reactive(useInputRuntime(props.accountId, () => props.project, document, revision, activeSheet, computed(() => execution.registry?.input_version || ''), () => execution.refresh(), !!props.guest))
+const media = reactive(useMediaInputs(props.accountId, props.project.id, () => revision.value, () => inputState()?.version || '', async () => { accept(await api<NotebookResponse>(endpoint())); await inputs.refresh(); await execution.refresh(); await checkpoint() }, !!props.guest))
 const designer = ref<InstanceType<typeof NotebookInputDesigner>>()
 const boardDesigner = ref<InstanceType<typeof NotebookBoardDesigner>>()
 const boardDesignDirty = ref(false)
@@ -165,6 +172,25 @@ function showInputs(cell?: NotebookCell) { if (discardParameterDrafts()) designe
 function inputDraftChanged() { parameterPage.value = 0 }
 function parameterPageTo(page: number) { if (discardParameterDrafts()) parameterPage.value = page }
 const firstCode = computed(() => sheet.value?.cells.find(cell => cell.kind === 'code'))
+const cyclicImports = computed(() => {
+  const origin = sheet.value?.id
+  const seen = new Set<string>()
+  const queue = origin ? [origin] : []
+  while (queue.length) {
+    const id = queue.pop()!
+    if (seen.has(id)) continue
+    seen.add(id)
+    for (const link of document.value?.sheets.find(item => item.id === id)?.imports || []) {
+      if (link.sheet === origin) return true
+      queue.push(link.sheet)
+    }
+  }
+  return false
+})
+const validImports = computed(() => importDraft.value.every(link =>
+  validBinding(link.name) && validBinding(link.export) &&
+  document.value?.sheets.some(item => item.id === link.sheet && item.cells.some(cell => cell.id === link.cell && cell.kind === 'code'))) &&
+  new Set(importDraft.value.map(link => link.name)).size === importDraft.value.length)
 const boardContext = computed<BoardContext>(() => ({
   projectId: props.project.id, savedRevision: revision.value,
   observation: { result: execution.displayedResult, stale: dirty.value || execution.outdated || execution.runtime?.needs_restart === true || execution.displayedResult?.environment_stale === true || !!execution.registry?.reset_epochs.includes(execution.displayedRun?.runtime_epoch || '') || !!execution.displayedRun && (execution.displayedRun.revision !== revision.value || execution.displayedRun.id !== execution.runs.filter(run => sheetRun(run) && run.sheet_id === activeSheet.value).at(-1)?.id), connected: execution.connected, status: execution.status, needsRestart: execution.runtime?.needs_restart === true, state: execution.runtime?.state, epoch: execution.runtime?.runtime_epoch, resources: execution.registry?.resources },
@@ -177,7 +203,7 @@ const boardContext = computed<BoardContext>(() => ({
   textVariables: execution.textVariables(),
   components: (document.value?.boards || []).filter(board => board.sheet === activeSheet.value).flatMap(board => board.components),
   canConfigure: projectCanConfigure(), onConfigure: configurePresets,
-  media: { projectId: props.project.id, revision: revision.value, readable: execution.connected, boardId: activeBoardID.value, values: inputState()?.values, version: inputState()?.version || '', canApply: media.ready && canApply(null) && !inputs.dirty && !boardDesignDirty.value && !resourceDraftDirty.value && Object.values(mediaDrafts.value).filter(Boolean).length <= 1, apply: media.apply, onDirty: (id, value) => { if(value)mediaDrafts.value[id]=true;else delete mediaDrafts.value[id] } },
+  media: { projectId: props.project.id, revision: revision.value, readable: execution.connected, boardId: activeBoardID.value, guest: !!props.guest, values: inputState()?.values, version: inputState()?.version || '', canApply: media.ready && canApply(null) && !inputs.dirty && !boardDesignDirty.value && !resourceDraftDirty.value && Object.values(mediaDrafts.value).filter(Boolean).length <= 1, apply: media.apply, onDirty: (id, value) => { if(value)mediaDrafts.value[id]=true;else delete mediaDrafts.value[id] } },
   sheet: sheet.value, presentations: Object.fromEntries((sheet.value?.cells || []).filter(cell => cell.kind === 'code').map(cell => [cell.id, execution.cellPresentation(cell.id, cell.source)])),
   definitions: document.value?.inputs || [], state: inputState(), disabled: !sheet.value || !canApply(null) || inputState()?.can_apply !== true,
   canRun: !!sheet.value && execution.canRun, canExecute: execution.canExecute, identity: `${execution.displayedRun?.id || ''}:${activeSheet.value}`,
@@ -231,7 +257,7 @@ function accept(result: NotebookResponse) {
 }
 function checkpoint() {
   if (journalTimer) { clearTimeout(journalTimer); journalTimer = undefined }
-  if (!journalReady || !document.value || !props.project.permissions.write) return journalQueue
+  if (props.guest || !journalReady || !document.value || !props.project.permissions.write) return journalQueue
   const record: DraftRecord | null = dirty.value || pending.value ? {
     id: journalID, account: props.accountId, project: props.project.id, updated: Date.now(), base_revision: revision.value,
     base_document: saved.value, document: documentJSON(document.value), changes: JSON.parse(JSON.stringify(sources.changes)),
@@ -251,13 +277,14 @@ function checkpoint() {
   return journalQueue
 }
 function queueCheckpoint() {
-  if (!journalReady) return
+  if (props.guest || !journalReady) return
   if (dirty.value || pending.value) journalStatus.value = 'Keeping local draft…'
   if (journalTimer) clearTimeout(journalTimer)
   journalTimer = setTimeout(() => { void checkpoint() }, 200)
 }
 watch([() => document.value && documentJSON(document.value), () => JSON.stringify(sources.changes), pending], queueCheckpoint, { deep: true })
 async function readRecovery() {
+  if (props.guest) return
   try { recovery.value = (await localDrafts(props.accountId, props.project.id)).filter(item => item.id !== journalID) }
   catch (cause) { journalError.value = cause instanceof Error ? cause.message : 'Local recovery is unavailable.' }
 }
@@ -355,6 +382,26 @@ function removeSheet() {
   if (!document.value || busy.value || conflict.value || !props.project.permissions.write) return
   try { selectSheet(deleteSheet(document.value, activeSheet.value, replacementSheet.value)); sheetDialog.value?.close() }
   catch (cause) { sheetError.value = String(cause) }
+}
+function showImports() {
+  importDraft.value = (sheet.value?.imports || []).map(link => ({ ...link }))
+  importsDialog.value?.showModal()
+}
+function saveImports() {
+  if (!sheet.value || !document.value || !validImports.value || busy.value || conflict.value) return
+  sheet.value.imports = importDraft.value.map(link => ({ ...link }))
+  if (sheet.value.imports.length) document.value.version = 5
+  importsDialog.value?.close()
+}
+function showExports(cell: NotebookCell, index: number) {
+  const source = cell.source
+  void exportsEditor.value?.show({ label: `Cell ${index + 1}`, source, update(updated) {
+    if (busy.value || conflict.value || !props.project.permissions.write ||
+        !sheet.value?.cells.includes(cell) || cell.source !== source) {
+      throw new Error('The cell changed. Reopen Exports to refresh the list.')
+    }
+    cell.source = updated
+  } })
 }
 function showRelocate() {
   if (busy.value || pending.value || conflict.value || !props.project.permissions.write) return
@@ -529,10 +576,10 @@ onUnmounted(() => {
           </template>
         </div>
         <button class="plain sheet-link" :disabled="!project.permissions.write || busy || conflict" @click="showInputs()"><NotebookIcon name="sheet" /><span>Project Inputs…</span></button>
-        <button class="plain sheet-link environments-link" @click="environments?.show()"><NotebookIcon name="folder" /><span>Environments…</span></button>
-        <button class="plain sheet-link dependencies-link" @click="dependencies?.show()"><NotebookIcon name="folder" /><span>Dependencies…</span></button>
+        <button v-if="!guest" class="plain sheet-link environments-link" @click="environments?.show()"><NotebookIcon name="folder" /><span>Environments…</span></button>
+        <button v-if="!guest" class="plain sheet-link dependencies-link" @click="dependencies?.show()"><NotebookIcon name="folder" /><span>Dependencies…</span></button>
         <button class="plain sheet-link" @click="resourceLimits?.show()"><NotebookIcon name="book" /><span>Resource limits…</span></button>
-        <button v-if="execution.canExecute" class="plain sheet-link" :disabled="busy || dirty || conflict" @click="preview?.show()"><NotebookIcon name="play" /><span>Temporary preview…</span></button>
+        <button v-if="!guest && execution.canExecute" class="plain sheet-link" :disabled="busy || dirty || conflict" @click="preview?.show()"><NotebookIcon name="play" /><span>Temporary preview…</span></button>
         <template v-if="document.boards?.length || project.permissions.write"><div class="sidebar-section-title"><h3>Boards</h3><button v-if="project.permissions.write" class="icon-button plain" aria-label="New board" :disabled="busy || conflict || !execution.canExecute" @click="designBoard()"><NotebookIcon name="plus" /></button></div><nav class="sheet-list" aria-label="Boards"><button v-for="board in document.boards" :key="board.id" class="plain sheet-link" :class="{ active: board.id === activeBoardID && !sources.selected }" :aria-current="board.id === activeBoardID && !sources.selected ? 'page' : undefined" @click="selectBoard(board.id)"><NotebookIcon name="sheet" /><span>{{ board.title || 'Untitled board' }}</span></button></nav></template>
         <div class="notebook-sidebar-footer">{{ project.permissions.write ? 'Server notebook' : 'Read-only notebook' }}</div>
       </aside>
@@ -552,6 +599,8 @@ onUnmounted(() => {
           <button :disabled="busy || conflict || document.sheets[0]?.id === activeSheet" @click="changeSheet('up')">Move sheet up</button>
           <button :disabled="busy || conflict || document.sheets.at(-1)?.id === activeSheet" @click="changeSheet('down')">Move sheet down</button>
           <button :disabled="busy || conflict" @click="showDeleteSheet">Delete sheet…</button>
+          <button :disabled="busy || conflict" @click="showImports">Imports…</button>
+          <span v-if="cyclicImports" role="status">Cyclic imports</span>
         </div>
         <p v-if="pending" class="execution-note" role="status" data-testid="pending-save">A Save response was not confirmed. Retrying checks the original command. Newer notebook edits are kept; resolve this Save before editing bundled files. <button :disabled="busy || conflict" @click="save">Retry original save</button></p>
         <div v-if="execution.registry?.resources" class="resource-summary" data-testid="resource-summary"><span>Execution: {{ secondsLabel(execution.registry.resources.spent_ms) }} used<span v-if="execution.registry.resources.remaining_ms !== null"> · {{ secondsLabel(execution.registry.resources.remaining_ms) }} remaining</span></span><span v-if="execution.registry.resources.effective.run_seconds">One run: {{ execution.registry.resources.effective.run_seconds }} s</span><button class="plain text-button" @click="resourceLimits?.show()">Limits &amp; storage…</button><p v-if="execution.registry.resources.remaining_ms === '0'" role="status">Execution budget exhausted. Stop and saved results remain available.</p></div>
@@ -564,10 +613,11 @@ onUnmounted(() => {
         <div v-if="!sources.selected" class="execution-toolbar">
           <span class="execution-status" role="status" data-testid="execution-status"><span class="runtime-dot" :class="{ 'is-running': execution.activeRun, 'is-offline': !execution.connected }"></span>{{ execution.status }}</span>
           <div v-if="execution.canExecute" class="execution-actions">
+            <button v-if="activeBoard" :disabled="!execution.canApplyModules" title="Restart the controller sheet’s worker to load saved modules on its next run" @click="execution.applyModules"><NotebookIcon name="refresh" />Apply Modules</button>
             <button :disabled="!execution.canRun || !firstCode" title="Run all code cells in the saved sheet" @click="firstCode && execution.start(firstCode.id, 'run_all')"><NotebookIcon name="play" />{{ activeBoard ? 'Run Sheet' : 'Run All' }}</button>
             <button :disabled="!execution.activeRun || execution.requestBusy || !!execution.pending" @click="execution.activeRun && execution.stop(execution.activeRun)"><NotebookIcon name="stop" />Stop</button>
             <button v-if="execution.activeRun" class="plain" :disabled="execution.requestBusy || !!execution.pending" @click="execution.stop(execution.activeRun, true)">Force Stop…</button>
-            <button v-else-if="execution.runtime" :disabled="execution.requestBusy || !!execution.pending || !execution.connected" @click="execution.restart">Restart Worker…</button>
+            <button v-else-if="execution.runtime && !activeBoard" :disabled="execution.requestBusy || !!execution.pending || !execution.connected" @click="execution.restart">Restart Worker…</button>
           </div>
         </div>
         <div v-if="execution.error || execution.connectionError || execution.pending" class="execution-message" :class="{ 'execution-warning': execution.pending }" :role="execution.error || execution.connectionError ? 'alert' : 'status'" data-testid="execution-message">
@@ -582,7 +632,7 @@ onUnmounted(() => {
         <div v-if="execution.displayedResult?.error || execution.displayedResult?.environment_error || execution.displayedResult?.task_errors.length" class="execution-failure" role="alert">
           <p v-if="environmentErrorTarget"><button class="plain text-button" @click="revealError(environmentErrorTarget.cell, environmentErrorTarget.diagnostic)">{{ execution.displayedResult?.environment_error }}</button></p>
           <p v-else>{{ execution.displayedResult?.error || execution.displayedResult?.environment_error }}</p>
-          <button v-if="execution.displayedResult?.environment_error" class="plain" @click="dependencies?.show()">Open Dependencies…</button>
+          <button v-if="!guest && execution.displayedResult?.environment_error" class="plain" @click="dependencies?.show()">Open Dependencies…</button>
           <pre v-for="(message, index) in execution.displayedResult?.task_errors" :key="index">{{ message }}</pre>
         </div>
         <div v-if="execution.selectedHistory" class="execution-note">Viewing run {{ execution.selectedHistory.slice(0, 8) }}. <button class="text-button" @click="execution.selectedHistory = ''">Show latest results</button></div>
@@ -591,10 +641,12 @@ onUnmounted(() => {
           <article v-for="(cell, index) in sheet.cells" :key="cell.id" class="notebook-cell" :class="{ selected: cell.id === selectedCell, 'text-cell': cell.kind === 'text' }" data-testid="notebook-cell" @focusin="selectedCell = cell.id">
             <div class="cell-toolbar"><span class="cell-number">{{ index + 1 }}</span><span class="cell-kind">{{ cell.kind === 'code' ? 'Code' : cell.kind === 'text' ? 'Text' : cell.kind }}</span>
               <select v-if="cell.kind === 'code' && project.permissions.write" :value="cell.mode || 'manual'" @change="cell.mode = ($event.target as HTMLSelectElement).value" class="cell-mode-select" :aria-label="`Execution mode for cell ${index + 1}`" :disabled="busy || conflict"><option value="manual">Manual</option><option value="watch">Watch</option></select><span v-else-if="cell.kind === 'code'" class="cell-mode">{{ cell.mode === 'watch' ? 'Watch' : 'Manual' }}</span>
+              <span v-if="execution.runtime?.iteration_ready?.includes(cell.id)" role="status">Cycle completed · ready for the next manual iteration</span>
               <div v-if="project.permissions.write || execution.canExecute" class="cell-actions">
-                <button v-if="cell.kind === 'code' && execution.canExecute" class="icon-button plain cell-run-button" :aria-label="`Run cell ${index + 1}`" title="Run saved cell · Shift+Enter" :disabled="!execution.canRun" @click="execution.start(cell.id, 'run')"><NotebookIcon name="play" /></button>
+                <button v-if="cell.kind === 'code' && execution.canExecute" class="icon-button plain cell-run-button" :aria-label="execution.runtime?.iteration_ready?.includes(cell.id) ? 'Run next iteration' : `Run cell ${index + 1}`" :title="execution.runtime?.iteration_ready?.includes(cell.id) ? 'Run next iteration' : 'Run saved cell · Shift+Enter'" :disabled="!execution.canRun || execution.runtime?.iteration_running" @click="execution.start(cell.id, 'run')"><NotebookIcon :name="execution.runtime?.iteration_ready?.includes(cell.id) ? 'refresh' : 'play'" /></button>
                 <template v-if="project.permissions.write">
-                <button v-if="cell.kind === 'code'" class="plain cell-components-button" :disabled="busy || conflict" :aria-label="`Components for cell ${index + 1}`" @click="showInputs(cell)">Components…</button>
+                <button v-if="cell.kind === 'code'" class="icon-button plain cell-components-button" :disabled="busy || conflict" :aria-label="`Components for cell ${index + 1}`" title="Components" @click="showInputs(cell)"><NotebookIcon name="components" /></button>
+                <button v-if="cell.kind === 'code'" class="icon-button plain" :disabled="busy || conflict" :aria-label="`Exports for cell ${index + 1}`" title="Exports" @click="showExports(cell, index)"><NotebookIcon name="exports" /></button>
                 <button class="icon-button plain" :aria-label="`Move cell ${index + 1} up`" :disabled="busy || conflict || index === 0" @click="moveCell(index, -1)"><NotebookIcon name="up" /></button>
                 <button class="icon-button plain" :aria-label="`Move cell ${index + 1} down`" :disabled="busy || conflict || index === sheet.cells.length - 1" @click="moveCell(index, 1)"><NotebookIcon name="down" /></button>
                 <button class="icon-button plain" :aria-label="`Delete cell ${index + 1}`" :disabled="busy || conflict" @click="deleteCell(index)"><NotebookIcon name="trash" /></button>
@@ -637,13 +689,32 @@ onUnmounted(() => {
     </div>
     <NotebookInputDesigner v-if="document" ref="designer" :document="document" :disabled="busy || conflict || !project.permissions.write" @changed="inputDraftChanged" />
     <NotebookBoardDesigner v-if="document" ref="boardDesigner" :document="document" :disabled="busy || conflict || !project.permissions.write || !execution.canExecute" @commit="commitBoard" @dirty="boardDesignDirty = $event" />
-    <NotebookRuns v-if="document" ref="runSnapshots" :project-id="project.id" :account-id="accountId" :document="document" :revision="revision" :sheet-id="activeSheet" :writable="project.permissions.write && execution.canExecute" :can-restore="canApply(null) && !inputs.busy && !inputs.pending && !inputs.dirty" :states="inputs.states" :on-restore="(cell,values,version) => inputs.apply(cell,values,version)" @changed="execution.loadHistory(); execution.refresh()" />
+    <NotebookRuns v-if="document" ref="runSnapshots" :project-id="project.id" :account-id="accountId" :guest="!!guest" :document="document" :revision="revision" :sheet-id="activeSheet" :writable="project.permissions.write && execution.canExecute" :can-restore="canApply(null) && !inputs.busy && !inputs.pending && !inputs.dirty" :states="inputs.states" :on-restore="(cell,values,version) => inputs.apply(cell,values,version)" @changed="execution.loadHistory(); execution.refresh()" />
     <NotebookHistory ref="history" :project-id="project.id" :title="project.title" />
-    <NotebookEnvironments v-if="document" ref="environments" :project-id="project.id" :account-id="accountId" :revision="revision" :sheets="document.sheets" :sheet-id="activeSheet" :writable="project.permissions.manage && execution.canExecute" :disabled="busy || dirty || !!execution.pending" @changed="execution.refresh" />
-    <NotebookDependencies ref="dependencies" :project-id="project.id" :account-id="accountId" @changed="execution.refresh" @permissions="environments?.show(true, $event)" />
+    <NotebookEnvironments v-if="!guest && document" ref="environments" :project-id="project.id" :account-id="accountId" :revision="revision" :sheets="document.sheets" :sheet-id="activeSheet" :writable="project.permissions.manage && execution.canExecute" :disabled="busy || dirty || !!execution.pending" @changed="execution.refresh" />
+    <NotebookDependencies v-if="!guest" ref="dependencies" :project-id="project.id" :account-id="accountId" @changed="execution.refresh" @permissions="environments?.show(true, $event)" />
     <NotebookResourceLimits v-if="document" ref="resourceLimits" :project-id="project.id" :policy="document.resource_policy" :writable="project.permissions.write && execution.canExecute" :disabled="busy || conflict" @change="document.resource_policy = $event" @dirty="resourceDraftDirty = $event" />
-    <NotebookPreview v-if="document" ref="preview" :project-id="project.id" :enabled="execution.canExecute && !busy && !dirty && !conflict" />
+    <NotebookPreview v-if="!guest && document" ref="preview" :project-id="project.id" :enabled="execution.canExecute && !busy && !dirty && !conflict" />
     <NotebookSaveConflict ref="conflictReview" :project-id="project.id" @rebase="rebaseDraft" />
+    <dialog ref="importsDialog" class="notebook-dialog" aria-labelledby="sheet-imports-title"><form @submit.prevent="saveImports">
+      <h2 id="sheet-imports-title">Imports · {{ sheet?.title }}</h2>
+      <fieldset v-for="(link, index) in importDraft" :key="index">
+        <label>Local name <input v-model="link.name" required></label>
+        <label>Source sheet <select v-model="link.sheet" required @change="link.cell = ''">
+          <option value="" disabled>Choose a sheet</option>
+          <option v-for="source in document?.sheets.filter(item => item.id !== sheet?.id) || []" :key="source.id" :value="source.id">{{ source.title }}</option>
+        </select></label>
+        <label>Source cell <select v-model="link.cell" required>
+          <option value="" disabled>Choose a cell</option>
+          <option v-for="(source, position) in document?.sheets.find(item => item.id === link.sheet)?.cells || []" v-show="source.kind === 'code'" :key="source.id" :value="source.id">Cell {{ position + 1 }}</option>
+        </select></label>
+        <label>Export name <input v-model="link.export" required></label>
+        <button type="button" @click="importDraft.splice(index, 1)">Remove import</button>
+      </fieldset>
+      <button type="button" :disabled="importDraft.length >= 128" @click="importDraft.push({ name: '', sheet: '', cell: '', export: '' })">Add import</button>
+      <div class="dialog-actions"><button type="button" @click="importsDialog?.close()">Cancel</button><button class="primary" :disabled="!validImports">Apply</button></div>
+    </form></dialog>
+    <NotebookCellExports ref="exportsEditor" :project-id="project.id" :disabled="busy || conflict || !project.permissions.write" />
     <dialog ref="sheetDialog" class="notebook-dialog" aria-labelledby="delete-sheet-title"><form @submit.prevent="removeSheet">
       <div class="dialog-heading"><h2 id="delete-sheet-title">Delete sheet {{ sheet?.title }}</h2><button type="button" class="plain icon-button" aria-label="Close delete sheet" @click="sheetDialog?.close()">×</button></div>
       <p>The sheet and its cells will be removed from your draft. Save notebook commits the deletion. Existing run history stays available.</p>
@@ -667,8 +738,8 @@ onUnmounted(() => {
       <div class="dialog-heading"><h2 id="file-dialog-title">{{ fileDialogTitle }}</h2><button type="button" class="plain icon-button" aria-label="Close file dialog" :disabled="addingFile" @click="fileDialog?.close()">×</button></div>
       <template v-if="fileMode === 'module'"><label for="module-name">Module name</label><input id="module-name" v-model="moduleName" required maxlength="64" placeholder="helpers"><p class="source-note">Source will be saved in modules/{{ moduleName || 'helpers' }}.s</p></template>
       <template v-else-if="fileMode === 'document'"><label for="markdown-name">Document name</label><input id="markdown-name" v-model="moduleName" required maxlength="200" placeholder="README.md"><p class="source-note">Markdown documents are stored in docs/.</p></template>
-      <template v-else-if="fileMode === 'folder'"><label for="resource-folder">Folder to attach</label><input id="resource-folder" type="file" webkitdirectory multiple required :disabled="addingFile" @change="folderFiles = Array.from(($event.target as HTMLInputElement).files || [])"><p class="source-note">Files are copied into resources/ with their folder structure. Up to 16 MiB per file and 64 MiB per book.</p></template>
-      <template v-else><label for="resource-file">Resource file</label><input id="resource-file" type="file" required :disabled="addingFile" @change="resource = ($event.target as HTMLInputElement).files?.[0] || null; resourcePath = resource ? 'resources/' + resource.name : ''"><label for="resource-path">Project path</label><input id="resource-path" v-model="resourcePath" required :disabled="addingFile" placeholder="resources/data.csv"><p class="source-note">Up to 16 MiB per file. Text up to 1 MiB can be edited here.</p></template>
+      <template v-else-if="fileMode === 'folder'"><label for="resource-folder">Folder to attach</label><input id="resource-folder" type="file" webkitdirectory multiple required :disabled="addingFile" @change="folderFiles = Array.from(($event.target as HTMLInputElement).files || [])"><p class="source-note">Files are copied into resources/ with their folder structure. {{ guest ? `Up to ${guestUpload.fileLabel} per file and ${guestUpload.batchLabel} of file changes per save.` : 'Up to 16 MiB per file and 64 MiB per book.' }}</p></template>
+      <template v-else><label for="resource-file">Resource file</label><input id="resource-file" type="file" required :disabled="addingFile" @change="resource = ($event.target as HTMLInputElement).files?.[0] || null; resourcePath = resource ? 'resources/' + resource.name : ''"><label for="resource-path">Project path</label><input id="resource-path" v-model="resourcePath" required :disabled="addingFile" placeholder="resources/data.csv"><p class="source-note">{{ guest ? `Up to ${guestUpload.fileLabel} per file and ${guestUpload.batchLabel} of file changes per save.` : 'Up to 16 MiB per file. Text up to 1 MiB can be edited here.' }}</p></template>
       <p v-if="fileError" class="source-error" role="alert">{{ fileError }}</p><div class="dialog-actions"><button type="button" :disabled="addingFile" @click="fileDialog?.close()">Cancel</button><button class="primary" :disabled="fileChangesDisabled">{{ addingFile ? 'Reading files…' : 'Add to draft' }}</button></div>
     </form></dialog>
   </section>
