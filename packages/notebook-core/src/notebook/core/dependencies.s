@@ -2,21 +2,9 @@ package notebook.core.dependencies
 
 from notebook.core.common import fail, decode, identifier, command_at
 from notebook.core.host import environment_log, package_home, package_link, package_adopt, package_unlink, package_reference?
+from notebook.core.package_index import remember_package, package_requirements_index
 
-export Dependencies, installed_packages, notebook_packages, package_requirements_index
-
-def package_part?(part):
-  return false if part == "" or part.bytes.count > 128 or part.contains?("..")
-  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".contains?(part[0]) and part.contains_only?("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
-
-def package_name?(name):
-  parts = name.split("/")
-  not name.ends_with?("/") and parts.count <= 2 and parts.all?: package_part?($it)
-
-def remember_package(requirements, name, version):
-  return unless package_name?(name)
-  requirements[name] = version if package_part?(version)
-  requirements[name] = "" unless requirements.has_key?(name)
+export Dependencies, installed_packages, notebook_packages
 
 def read_package_index(home, filename):
   return [] unless fs.exists?(home) and not fs.metadata(home).symlink?
@@ -31,15 +19,6 @@ def package_requirements(home, requirements):
     remember_package(requirements, parts[0], "") if parts.count == 3
   read_package_index(home, "dependencies.index").each |parts|:
     remember_package(requirements, parts[0], parts[1]) if parts.count == 2
-
-def package_requirements_index(packages, existing: ""):
-  requirements = {}
-  existing.split("\n").each |line|:
-    parts = line.split("\t")
-    remember_package(requirements, parts[0], parts[1]) if parts.count == 2
-  packages.each |item|: remember_package(requirements, item[:name], item[:version])
-  lines = requirements.keys.sorted.map |name|: name + "\t" + requirements[name] + "\n"
-  lines.join("")
 
 def update_package_requirements(home, name, packages):
   path = home + "/dependencies.index"

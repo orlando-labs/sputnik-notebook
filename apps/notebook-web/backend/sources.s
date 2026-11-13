@@ -1,7 +1,7 @@
 package sources
 
 from notebook.core.common import decode
-from notebook.core.dependencies import package_requirements_index
+from notebook.core.package_index import package_requirements_index
 from notebook.core.host import book_text, book_pack, book_base64?
 from models import InvalidInput, NotFound, WebError
 

@@ -12,6 +12,7 @@ files:
   - "src/notebook/core/host.s"
   - "src/notebook/core/environments.s"
   - "src/notebook/core/dependencies.s"
+  - "src/notebook/core/package_index.s"
   - "src/notebook/core/services.s"
   - "src/notebook/core/client.s"
   - "src/notebook/core/storage.s"
