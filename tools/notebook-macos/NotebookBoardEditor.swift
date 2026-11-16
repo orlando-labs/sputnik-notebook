@@ -10,6 +10,7 @@ struct NotebookBoardEditor: View {
     @State private var selectedComponent: String?
     @State private var insertionSpan = 6
     @State private var paletteCategory = NotebookComponentCategory.controls
+    @State private var palettePackage: String?
     @State private var paletteQuery = ""
     @State private var undoBoards: [NotebookBoard] = []
     @State private var redoBoards: [NotebookBoard] = []
@@ -40,9 +41,14 @@ struct NotebookBoardEditor: View {
         board.allRows.contains { $0.height.map { !$0.isFinite || $0 < 48 || $0 > 4096 } ?? false }
             ? "Row height must be between 48 and 4096 pt." : nil
     }
-    private var periodicError: String? { board.services.compactMap { $0.periodicSettings.validationError }.first }
+    private var periodicError: String? { board.services.filter { $0.kind == "periodic_work" }.compactMap { $0.periodicSettings.validationError }.first }
     private var bindingError: String? {
         if let error = board.inputBindingError(inputs: model.snapshot?.inputs ?? []) { return error }
+        for component in board.allComponents {
+            guard let ref = component.package_component, let (_, definition) = model.packageDefinition(for: component) else { continue }
+            do { _ = try definition.settings(ref) }
+            catch { return "\(component.title): \(error.localizedDescription)" }
+        }
         return board.allComponents.contains { $0.kind == "progress" && ($0.cell ?? "").isEmpty }
             ? "Choose the cell that publishes progress in the Object Inspector." : nil
     }
@@ -93,7 +99,10 @@ struct NotebookBoardEditor: View {
         .frame(width: 1120, height: 740).background(NotebookPalette.canvas)
         .disabled(model.busy).interactiveDismissDisabled()
         .accessibilityIdentifier("notebook-board-designer")
-        .onAppear { model.boardEditorOpen = true; observedBoard = board }
+        .onAppear { model.boardEditorOpen = true; observedBoard = board; model.refreshComponentPackages() }
+        .onChange(of: model.componentPackages.map(\.id)) {
+            if let palettePackage, !model.componentPackages.contains(where: { $0.id == palettePackage }) { self.palettePackage = nil }
+        }
         .onChange(of: try? JSONEncoder().encode(board)) {
             if restoringBoard { restoringBoard = false }
             else if let previous = observedBoard {
@@ -132,33 +141,50 @@ struct NotebookBoardEditor: View {
                 Text("COMPONENT PALETTE").font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(NotebookPalette.muted)
                 Spacer()
-                if paletteCategory == .services {
+                if palettePackage == nil && paletteCategory == .services {
                     Text("Nonvisual · belongs to the board").font(.caption).foregroundStyle(NotebookPalette.muted)
                 } else {
-                Text(selectedRow == nil ? "Add a row to place components" :
-                     "Add to row \(rowNumber(selectedRow)) · \(freeColumns)/12 free")
-                    .font(.caption).foregroundStyle(NotebookPalette.muted)
-                Stepper("Width: \(insertionSpan)/12", value: $insertionSpan, in: 1...12)
-                    .frame(width: 150).accessibilityIdentifier("board-insertion-span")
+                    Text(selectedRow == nil ? "Add a row to place components" :
+                         "Add to row \(rowNumber(selectedRow)) · \(freeColumns)/12 free")
+                        .font(.caption).foregroundStyle(NotebookPalette.muted)
+                    Stepper("Width: \(insertionSpan)/12", value: $insertionSpan, in: 1...12)
+                        .frame(width: 150).accessibilityIdentifier("board-insertion-span")
                 }
             }
             HStack(spacing: 4) {
-                ForEach(NotebookComponentCategory.allCases) { category in
-                    Button { paletteCategory = category } label: {
-                        Text(category.rawValue).font(.callout.weight(paletteCategory == category ? .semibold : .regular))
-                            .foregroundStyle(paletteCategory == category ? NotebookPalette.category(category.rawValue) : NotebookPalette.ink)
-                            .padding(.horizontal, 16).padding(.vertical, 6)
-                            .background(paletteCategory == category ? NotebookPalette.category(category.rawValue).opacity(0.15) : .clear,
-                                        in: RoundedRectangle(cornerRadius: 5))
-                    }.buttonStyle(.plain).accessibilityIdentifier("board-category-\(category.rawValue.lowercased())")
+                ScrollView(.horizontal) {
+                    HStack(spacing: 4) {
+                        ForEach(NotebookComponentCategory.allCases) { category in
+                            let selected = palettePackage == nil && paletteCategory == category
+                            Button { paletteCategory = category; palettePackage = nil; paletteQuery = "" } label: {
+                                Text(category.rawValue).font(.callout.weight(selected ? .semibold : .regular))
+                                    .foregroundStyle(selected ? NotebookPalette.category(category.rawValue) : NotebookPalette.ink)
+                                    .padding(.horizontal, 14).padding(.vertical, 6)
+                                    .background(selected ? NotebookPalette.category(category.rawValue).opacity(0.15) : .clear,
+                                                in: RoundedRectangle(cornerRadius: 5))
+                            }.buttonStyle(.plain).accessibilityIdentifier("board-category-\(category.rawValue.lowercased())")
+                        }
+                        ForEach(model.componentPackages) { package in
+                            let color = NotebookPalette.package(package.id)
+                            let selected = palettePackage == package.id
+                            Button { palettePackage = package.id; paletteQuery = "" } label: {
+                                Label(package.name, systemImage: "shippingbox")
+                                    .font(.callout.weight(selected ? .semibold : .regular)).foregroundStyle(NotebookPalette.ink)
+                                    .padding(.horizontal, 12).padding(.vertical, 6)
+                                    .background(color.opacity(selected ? 0.28 : 0.12), in: RoundedRectangle(cornerRadius: 5))
+                                    .overlay(RoundedRectangle(cornerRadius: 5).stroke(color.opacity(selected ? 0.9 : 0.4)))
+                            }.buttonStyle(.plain).help(package.id + " " + package.version)
+                                .accessibilityAddTraits(selected ? .isSelected : [])
+                                .accessibilityIdentifier("board-package-\(package.id)")
+                        }
+                    }
                 }
-                Spacer()
                 TextField("Search components…", text: $paletteQuery).textFieldStyle(.roundedBorder).frame(width: 240)
                     .accessibilityIdentifier("board-palette-search")
             }
             ScrollView(.horizontal) {
               HStack(spacing: 8) {
-                ForEach(NotebookComponentTool.all.filter { paletteQuery.isEmpty ? $0.category == paletteCategory : ($0.title + " " + $0.detail + " " + $0.category.rawValue).localizedCaseInsensitiveContains(paletteQuery) }) { tool in
+                ForEach(palettePackage == nil ? NotebookComponentTool.all.filter { paletteQuery.isEmpty ? $0.category == paletteCategory : ($0.title + " " + $0.detail + " " + $0.category.rawValue).localizedCaseInsensitiveContains(paletteQuery) } : []) { tool in
                     Button { add(tool) } label: {
                         HStack(spacing: 8) {
                             Image(systemName: tool.symbol).font(.system(size: 18)).frame(width: 22)
@@ -177,10 +203,46 @@ struct NotebookBoardEditor: View {
                         .accessibilityIdentifier("board-palette-\(tool.id)")
                         .help(unavailableReason(tool) ?? (tool.category == .services ? "Add a nonvisual service to this board" : "Add \(tool.title) to the selected row, using \(insertionSpan) of 12 columns"))
                 }
+                ForEach(model.componentPackages.filter { $0.id == palettePackage || (palettePackage == nil && !paletteQuery.isEmpty) }) { package in
+                    ForEach(package.components.filter { paletteQuery.isEmpty || ($0.title + " " + $0.detail + " " + package.name).localizedCaseInsensitiveContains(paletteQuery) }) { definition in
+                        packageTile(definition, package: package)
+                    }
+                }
                 Spacer(minLength: 0)
               }
             }
         }.padding(.horizontal, 18).padding(.vertical, 12)
+    }
+
+    private func packageTile(_ definition: NotebookPackageComponentDefinition, package: NotebookComponentPackage) -> some View {
+        let color = NotebookPalette.package(package.id)
+        let fits = definition.kind == .service || (selectedRow != nil && insertionSpan <= freeColumns)
+        return Button {
+            var component = NotebookBoardComponent(id: NotebookBoard.newID("component"), kind: definition.savedKind, title: definition.title)
+            component.package_component = NotebookPackageComponentReference(provider: package.id, type: definition.id)
+            if definition.kind == .service { board.components.append(component) }
+            else {
+                component.row = selectedRow
+                component.span = insertionSpan
+                grid.components.append(component)
+            }
+            selectedComponent = component.id
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: definition.icon).font(.system(size: 18)).frame(width: 22).foregroundStyle(color)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(definition.title).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                    Text(definition.detail).font(.system(size: 10)).foregroundStyle(NotebookPalette.muted).lineLimit(2)
+                }
+                Spacer(minLength: 0)
+            }.padding(8).frame(width: 164, height: 56)
+                .background(NotebookPalette.card, in: RoundedRectangle(cornerRadius: 6))
+                .background(color.opacity(0.13), in: RoundedRectangle(cornerRadius: 6))
+                .overlay(RoundedRectangle(cornerRadius: 6).fill(color.opacity(0.11)).allowsHitTesting(false))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(color.opacity(0.7)))
+        }.buttonStyle(.plain).disabled(!fits || board.allComponents.count >= 256)
+            .help(fits ? definition.detail : "Select a row with enough free columns.")
+            .accessibilityIdentifier("board-package-tile-\(package.id)-\(definition.id)")
     }
 
     private var canvas: some View {
@@ -245,15 +307,17 @@ struct NotebookBoardEditor: View {
             VStack(alignment: .leading, spacing: 12) {
                 Label("Services · nonvisual", systemImage: "gearshape.2").font(.headline)
                 ForEach(board.services) { component in
+                    let package = model.packageDefinition(for: component)
+                    let tint = component.package_component.map { NotebookPalette.package($0.provider) } ?? NotebookPalette.categoryServices
                     Button { selectedComponent = component.id } label: {
                         HStack {
-                            Image(systemName: "timer").foregroundStyle(NotebookPalette.categoryServices)
+                            Image(systemName: package?.1.icon ?? "timer").foregroundStyle(tint)
                             Text(component.title).fontWeight(.semibold)
-                            Text("\(component.module_id ?? "?").\(component.function ?? "?")()")
+                            Text(component.package_component?.provider ?? "\(component.module_id ?? "?").\(component.function ?? "?")()")
                                 .font(.system(.caption, design: .monospaced)).foregroundStyle(NotebookPalette.muted)
                             Spacer()
                         }.padding(12).background(NotebookPalette.card, in: RoundedRectangle(cornerRadius: 6))
-                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(NotebookPalette.categoryServices.opacity(selectedComponent == component.id ? 1 : 0.4)))
+                            .overlay(RoundedRectangle(cornerRadius: 6).stroke(tint.opacity(selectedComponent == component.id ? 1 : 0.4)))
                     }.buttonStyle(.plain).accessibilityIdentifier("board-service-\(component.id)")
                 }
             }.padding(14).background(NotebookPalette.editor, in: RoundedRectangle(cornerRadius: 6))
@@ -322,12 +386,14 @@ struct NotebookBoardEditor: View {
 
     private func componentPreview(_ component: NotebookBoardComponent) -> some View {
         let tool = NotebookComponentTool.tool(for: component)
+        let package = model.packageDefinition(for: component)
+        let tint = component.package_component.map { NotebookPalette.package($0.provider) } ?? NotebookPalette.category(tool.category.rawValue)
         let selected = component.id == selectedComponent
         let content = VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: component.horizontalAlignment, spacing: 10) {
                 let heading = HStack(spacing: 5) {
-                    Image(systemName: tool.symbol)
-                        .foregroundStyle(NotebookPalette.category(tool.category.rawValue))
+                    Image(systemName: package?.1.icon ?? tool.symbol)
+                        .foregroundStyle(tint)
                     Text(component.title).fontWeight(.semibold).lineLimit(2)
                 }.font(.system(size: 12))
                 if component.kind == "rich_text" {
@@ -335,7 +401,7 @@ struct NotebookBoardEditor: View {
                         .buttonStyle(.plain).simultaneousGesture(componentDrag(component))
                 } else { heading }
                 previewContent(component)
-                Text("\(tool.title) · \(component.columnSpan)/12")
+                Text("\(package?.0.name ?? component.package_component?.provider ?? tool.title) · \(component.columnSpan)/12")
                     .font(.system(size: 10, design: .monospaced)).foregroundStyle(NotebookPalette.muted)
             }
             .frame(maxWidth: component.h_align == nil || component.h_align == "stretch" ? .infinity : nil,
@@ -496,12 +562,14 @@ struct NotebookBoardEditor: View {
         let siblings = grid.components(in: component.row ?? "")
         let index = siblings.firstIndex { $0.id == component.id } ?? 0
         return VStack(alignment: .leading, spacing: 14) {
-            Label(tool.title, systemImage: tool.symbol)
+            Label(component.package_component == nil ? tool.title : component.title,
+                  systemImage: model.packageDefinition(for: component)?.1.icon ?? tool.symbol)
                 .font(.title3.bold())
             NotebookPlotField(title: "Component title") {
                 TextField("Title", text: item.title).textFieldStyle(.roundedBorder)
             }
-            Text(tool.detail).font(.system(size: 10)).foregroundStyle(NotebookPalette.muted)
+            Text(model.packageDefinition(for: component)?.1.detail ?? component.package_component?.provider ?? tool.detail)
+                .font(.system(size: 10)).foregroundStyle(NotebookPalette.muted)
             if editsInput {
                 bindingInspector(component, item: item)
             }
@@ -575,7 +643,9 @@ struct NotebookBoardEditor: View {
     }
 
     @ViewBuilder private func bindingInspector(_ component: NotebookBoardComponent, item: Binding<NotebookBoardComponent>) -> some View {
-        if component.isService {
+        if component.package_component != nil {
+            NotebookPackagePropertyInspector(model: model, component: item)
+        } else if component.isService {
             periodicInspector(component, item: item)
         } else if component.kind == "split" {
             Picker("Direction", selection: Binding(get: { item.wrappedValue.split_axis ?? "horizontal" }, set: { item.wrappedValue.split_axis = $0 })) { Text("Side by side").tag("horizontal"); Text("Stacked").tag("vertical") }

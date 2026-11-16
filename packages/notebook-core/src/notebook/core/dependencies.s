@@ -90,6 +90,9 @@ def scan_packages(directory, result, depth, requirements: null, relative: ""):
 def matching_package(packages, metadata, artifact):
   packages.find |item|: item[:name] == metadata[:package_ref] and item[:version] == metadata[:version] and item[?:variant] == artifact[:variant] and item[:digest] == artifact[:sha256]
 
+def registry_leaf?(release, artifact):
+  (release[?:dependencies] or []).empty? and (artifact[?:dependencies] or []).empty?
+
 def runtime_grants(capabilities, native):
   grants = capabilities.map |request|:
     target = request[?:target] or ""
@@ -136,6 +139,7 @@ class Dependencies:
     if query == "variants":
       metadata[:artifacts].each |artifact|:
         artifact[:shared_installed] = matching_package(shared, metadata, artifact) != null
+        artifact[:shared_reusable] = artifact[:shared_installed] and registry_leaf?(metadata, artifact)
         native = artifact[?:kind] != "native" and (artifact[?:native_mode] or "none") != "none"
         artifact[:runtime_grants] = runtime_grants(metadata[?:capabilities] or [], native)
     else:
@@ -259,7 +263,7 @@ class Dependencies:
               if artifact:
                 fail(422, "This package build is incompatible with the execution server.") unless artifact[:host_selection][:compatible]
                 fail(422, "This package requires explicit permission to install native code.") if artifact[:host_selection][:allow_native] and not params[?:allow_native]
-                if not local and (params[?:install_options] or {}).empty?:
+                if not local and (params[?:install_options] or {}).empty? and registry_leaf?(metadata, artifact):
                   cached = matching_package(installed_packages(shared), metadata, artifact)
                 unless cached:
                   fail(422, "This package requires explicit permission to build native code.") if artifact[:host_selection][:build_from_source] and not params[?:build_from_source]

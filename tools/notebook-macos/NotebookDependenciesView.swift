@@ -165,6 +165,19 @@ struct NotebookDependenciesView: View {
                     }
                 }
             }.frame(height: controller.inventory.packages.isEmpty ? 48 : 125)
+            ForEach(controller.notebookPackageSuggestions) { suggestion in
+                HStack {
+                    Label("\(suggestion.provider) recommends \(suggestion.id)", systemImage: "shippingbox")
+                        .font(.callout)
+                    Spacer()
+                    Button("Find in Registry…") {
+                        controller.packageName = suggestion.id
+                        scroll.scrollTo("registry-installer", anchor: .top)
+                        Task { await controller.findPackageVersions() }
+                    }.disabled(controller.busy || controller.catalogBusy)
+                        .accessibilityIdentifier("dependency-notebook-package-" + suggestion.id)
+                }
+            }
             Divider()
             Picker("Package storage", selection: $controller.packageScope) {
                 Text(controller.isRemote ? "Shared on server" : "Shared on this Mac").tag("shared")

@@ -380,9 +380,10 @@ struct NotebookBoardComponent: Codable, Identifiable {
     var control: NotebookInputControl? = nil
     var fields: [NotebookFormField]? = nil
     var p1: NotebookP1Settings? = nil
+    var package_component: NotebookPackageComponentReference? = nil
 
     var columnSpan: Int { max(1, min(12, span ?? 12)) }
-    var isService: Bool { kind == "periodic_work" }
+    var isService: Bool { kind == "periodic_work" || kind == "package_service" }
     var periodicSettings: NotebookPeriodicSettings {
         NotebookPeriodicSettings(module: module_id ?? "", function: function ?? "",
             period: period_seconds ?? 60, timing: timing ?? "fixed_delay", retention: retention ?? "tail",

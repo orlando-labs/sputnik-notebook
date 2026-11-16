@@ -4,14 +4,23 @@ struct NotebookBoardView: View {
     @ObservedObject var model: NotebookModel
     let board: NotebookBoard
     var detached = false
+    var embedded = false
     var onOpenSheet: () -> Void = {}
     let onDesign: () -> Void
     private var layout: NotebookBoard { board.rowLayout }
 
-    var body: some View {
+    @ViewBuilder var body: some View {
+        if embedded {
+            boardContent(tab: model.controller(for: board))
+        } else {
+            fullBoard
+        }
+    }
+
+    private var fullBoard: some View {
         let controller = model.controller(for: board)
         let needsApply = !model.remote.isSelected && controller?.environment_stale == true
-        VStack(spacing: 0) {
+        return VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Text(board.title).font(.headline).lineLimit(1)
                 NotebookPageBadge(kind: .board, detail: "Controller sheet: \(controller?.title ?? board.sheet)")
@@ -23,6 +32,7 @@ struct NotebookBoardView: View {
                 }
                 Spacer()
                 if model.busy { ProgressView().controlSize(.small) }
+                NotebookBoardSessionControls(model: model, runtime: model.packageRuntime, board: board)
                 Button("Design…", systemImage: "slider.horizontal.3", action: onDesign)
                     .disabled(model.busy)
                 Button("Open Sheet", systemImage: "doc.text") {
@@ -58,17 +68,7 @@ struct NotebookBoardView: View {
             } else {
                 GeometryReader { geometry in
                     ScrollView([.horizontal, .vertical]) {
-                        VStack(alignment: .leading, spacing: 18) {
-                            if let tab = controller {
-                                gridView(rows: layout.rows ?? [], components: layout.components, tab: tab)
-                            } else { unavailable("Controller sheet unavailable") }
-                            if !board.services.isEmpty {
-                                Label("Services", systemImage: "gearshape.2").font(.headline)
-                                ForEach(board.services) { component in
-                                    NotebookPeriodicWorkView(model: model, board: board, component: component)
-                                }
-                            }
-                        }
+                        boardContent(tab: controller)
                         .frame(width: max(720, geometry.size.width - 48), alignment: .leading).padding(24)
                         .frame(minHeight: geometry.size.height, alignment: .topLeading)
                     }
@@ -85,18 +85,46 @@ struct NotebookBoardView: View {
             }
     }
 
+    private func boardContent(tab: NotebookTab?) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if let tab {
+                gridView(rows: layout.rows ?? [], components: layout.components, tab: tab)
+            } else { unavailable("Controller sheet unavailable") }
+            if !board.services.isEmpty {
+                Label("Services", systemImage: "gearshape.2").font(.headline)
+                ForEach(board.services) { component in
+                    if component.kind == "package_service" {
+                        NotebookPackageServiceView(runtime: model.packageRuntime, board: board, component: component,
+                                                   available: model.packageDefinition(for: component) != nil)
+                    } else {
+                        NotebookPeriodicWorkView(model: model, board: board, component: component)
+                    }
+                }
+            }
+        }
+    }
+
     private func gridView(rows: [NotebookBoardRow], components: [NotebookBoardComponent], tab: NotebookTab) -> AnyView {
         AnyView(VStack(spacing: 16) {
             ForEach(rows) { row in
                 NotebookBoardRowLayout(height: row.height) {
                     ForEach(components.filter { !$0.isService && $0.row == row.id }) { component in
-                        componentCard(component, tab: tab, height: row.height)
+                        boardItem(component, tab: tab, height: row.height)
                             .id("\(model.documentIdentity):\(board.id):\(component.id)")
                             .layoutValue(key: BoardColumnSpan.self, value: component.columnSpan)
                     }
                 }.clipped()
             }
         })
+    }
+
+    @ViewBuilder private func boardItem(_ component: NotebookBoardComponent, tab: NotebookTab, height: Double?) -> some View {
+        if component.kind == "package_board" {
+            if model.remote.isSelected { unavailable("Package boards require local execution") }
+            else { NotebookPackageBoardView(model: model, runtime: model.packageRuntime, board: board, component: component, height: height) }
+        } else {
+            componentCard(component, tab: tab, height: height)
+        }
     }
 
     private func componentCard(_ component: NotebookBoardComponent, tab: NotebookTab, height: Double?) -> some View {

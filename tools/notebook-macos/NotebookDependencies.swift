@@ -8,6 +8,7 @@ struct NotebookInstalledPackage: Decodable, Identifiable {
     let variant: String?
     let digest: String?
     let scope: String?
+    let directory: String?
     private let missing: Bool?
     var id: String { name + "@" + version + (variant.map { "/" + $0 } ?? "") }
     var displayName: String { display_name ?? name.split(separator: "/").last.map(String.init) ?? name }
@@ -81,6 +82,7 @@ struct NotebookPackageVariant: Decodable, Identifiable {
     let size: UInt64?
     let shared_installed: Bool?
     let host_selection: Selection
+    let shared_reusable: Bool?
     let runtime_grants: [String]?
     var install_options: [NotebookPackageInstallOption]? = nil
     var id: String { variant }
@@ -142,6 +144,10 @@ struct NotebookDependencyFiles {
 
 @MainActor
 final class NotebookDependencyController: ObservableObject {
+    struct NotebookPackageSuggestion: Identifiable {
+        let id: String
+        let provider: String
+    }
     enum GrantScope: String, CaseIterable {
         case selectedSheet, currentSheets, entireBook
         var title: String {
@@ -172,7 +178,10 @@ final class NotebookDependencyController: ObservableObject {
         let settings: NotebookWorkerSettings
         let missing: [String]
     }
-    @Published var inventory = NotebookDependencyInventory()
+    @Published var inventory = NotebookDependencyInventory() {
+        didSet { updateNotebookPackageSuggestions() }
+    }
+    @Published private(set) var notebookPackageSuggestions: [NotebookPackageSuggestion] = []
     @Published var requirementFile = "requirements.txt"
     @Published var requirements = ""
     @Published var gemfile = ""
@@ -360,7 +369,8 @@ final class NotebookDependencyController: ObservableObject {
         return GrantApproval(scope: grantScope, tabs: grantTabs, missing: missing)
     }
     var reusesSharedPackage: Bool {
-        packageScope == "shared" && selectedPackageVariant?.shared_installed == true &&
+        guard let build = selectedPackageVariant else { return false }
+        return packageScope == "shared" && (build.shared_reusable ?? build.shared_installed) == true &&
             registryInstallValues.values.allSatisfy(\.isEmpty)
     }
     var canInstallRegistryPackage: Bool {
@@ -421,6 +431,22 @@ final class NotebookDependencyController: ObservableObject {
             if packageVersion.isEmpty { catalogError = "No available releases in this registry."; return }
             try await fetchPackageVariants(generation: generation)
         } catch { if current && generation == catalogGeneration { catalogError = error.localizedDescription } }
+    }
+
+    private func updateNotebookPackageSuggestions() {
+        guard !isRemote, let home = model.componentPackageHome else { notebookPackageSuggestions = []; return }
+        let root = home.standardizedFileURL.path + "/"
+        let installed = inventory.packages.filter { !$0.isMissing }
+        var seen = Set(installed.map(\.name) + installed.map(\.displayName))
+        notebookPackageSuggestions = installed.flatMap { package -> [NotebookPackageSuggestion] in
+            guard let path = package.directory else { return [] }
+            let directory = URL(fileURLWithPath: path).standardizedFileURL
+            guard directory.path.hasPrefix(root) else { return [] }
+            return NotebookComponentPackage.recommendations(in: directory).compactMap { ref in
+                guard seen.insert(ref).inserted else { return nil }
+                return NotebookPackageSuggestion(id: ref, provider: package.displayName)
+            }
+        }
     }
     func findPackageVariants() async {
         guard current, !busy, !catalogBusy, let catalog = packageCatalog,
@@ -665,6 +691,7 @@ final class NotebookDependencyController: ObservableObject {
         do {
             try await operation()
             inventory = try decode(await status())
+            if mutation { model.refreshComponentPackages() }
             if message == title { message = "Saved" }
         } catch { self.error = error.localizedDescription }
     }

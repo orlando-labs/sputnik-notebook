@@ -623,7 +623,7 @@ final class NotebookModel: ObservableObject {
         }
     }
     var pendingRunHistory: [String: NotebookRunStart] = [:]
-    private let workerExecutable: String?
+    let workerExecutable: String?
     let remote: NotebookRemoteController
     init(workerExecutable: String? = nil, remoteExecutable: String? = nil, remoteStorage: URL? = nil,
          library: NotebookLibrary = NotebookLibrary(defaults: nil)) {
@@ -634,6 +634,8 @@ final class NotebookModel: ObservableObject {
         remote.onError = { [weak self] in self?.error = $0 }
         remote.onExternal = { [weak self] enabled in
             guard let self else { return }
+            if enabled { self.packageRuntime.stopAll() }
+            self.refreshComponentPackages()
             self.livePollGeneration &+= 1; self.liveCells = [:]
             self.executingCells = [:]
             self.retainedResults = [:]; self.suppressedResults = []; self.observedResetEpochs = []
@@ -1160,9 +1162,14 @@ final class NotebookModel: ObservableObject {
         RunLoop.main.add(timer, forMode: .common)
     }
     @Published var snapshot: NotebookSnapshot?
+    @Published var componentPackages: [NotebookComponentPackage] = []
+    let packageRuntime = NotebookPackageRuntime()
+    var packageHomeOverride: URL?
+    var packageBoardDepth = 0
     @Published var busy = false
     @Published var dependencyOperationActive = false
     func pauseForDependencyChanges() {
+        packageRuntime.stopAll()
         for key in periodicStates.keys { periodicStates[key]?.pause() }
     }
     @Published var error: String?
@@ -1614,7 +1621,7 @@ final class NotebookModel: ObservableObject {
     }
     private func reconcilePeriodic() {
         let components = (snapshot?.boards ?? []).flatMap { board in
-            board.services.map { (board.id + ":" + $0.id, $0.periodicSettings) }
+            board.services.filter { $0.kind == "periodic_work" }.map { (board.id + ":" + $0.id, $0.periodicSettings) }
         }
         let settings = Dictionary(uniqueKeysWithValues: components)
         periodicStates = periodicStates.filter { settings[$0.key] != nil }
@@ -1920,6 +1927,7 @@ final class NotebookModel: ObservableObject {
     private func accept(_ state: NotebookSnapshot, freshResultsFor: Set<String> = []) {
         let oldTab = activeTab?.id
         snapshot = state
+        packageRuntime.reconcile(state.boards ?? [])
         for tab in state.tabs where freshResultsFor.contains(tab.id) {
             if let telemetry = tab.telemetry, telemetry.sampled_ms > 0 { runtimeTelemetry[tab.id] = telemetry; runtimeSampleDates[tab.id] = Date() }
         }
@@ -1968,6 +1976,7 @@ final class NotebookModel: ObservableObject {
             guard let self else { return }
             self.busy = false
             if let state {
+                self.packageRuntime.stopAll()
                 self.nativeTrusted = false
                 self.livePollGeneration &+= 1
                 self.liveCells = [:]
@@ -1990,12 +1999,15 @@ final class NotebookModel: ObservableObject {
                 self.actionSignatures = [:]; self.componentUpdatedAt = [:]; self.executingTargetID = nil; self.executionStarted = nil
                 self.periodicBoardVisible = nil
                 self.accept(state)
+                self.refreshComponentPackages()
                 self.scheduleWatchPolling()
-                self.remote.open(url)
+                if self.packageBoardDepth == 0 { self.remote.open(url) }
                 do { self.markdownPaths = try self.bookFiles?.markdownFiles() ?? [] }
                 catch { /* Leave notebooks with an unavailable docs directory openable. */ }
-                self.library.recordOpened(url)
-                NSDocumentController.shared.noteNewRecentDocumentURL(url)
+                if self.packageBoardDepth == 0 {
+                    self.library.recordOpened(url)
+                    NSDocumentController.shared.noteNewRecentDocumentURL(url)
+                }
             }
             self.error = error
             self.onChange?()
@@ -2218,6 +2230,7 @@ final class NotebookModel: ObservableObject {
         closeCompletions.append(completion)
         guard !closing else { return }
         closing = true
+        packageRuntime.stopAll()
         boardWindowSheetID = nil
         periodicBoardVisible = nil
         watchTimer?.invalidate(); watchTimer = nil
