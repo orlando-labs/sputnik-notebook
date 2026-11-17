@@ -1,6 +1,6 @@
 // Offline registry for browser integration tests. Never used by backend/main.s.
 import http from 'node:http'
-import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { execFile } from 'node:child_process'
@@ -10,7 +10,18 @@ export async function packageFixture(compiler) {
   const root = await mkdtemp(path.join(tmpdir(), 'notebook-web-registry-'))
   await writeFile(path.join(root, 'main.s'), 'package test.web_probe\nexport answer\ndef answer(): 42\n')
   const installOptions = [{ name: 'fixture-directory', type: 'path', env: 'WEB_FIXTURE_DIRECTORY', description: 'Directory for the package fixture.' }]
-  await writeFile(path.join(root, 'sputnik.build.yaml'), JSON.stringify({ schema: 'sputnik.build.v1', name: 'test/web-probe', version: '1.0.0', requires: { sputnik: '>=1.0.0 <2.0.0' }, files: ['main.s'], module_names: { 'main.s': 'test.web_probe' }, install_options: installOptions }))
+  await mkdir(path.join(root, 'notebook'))
+  await writeFile(path.join(root, 'notebook/components.json'), JSON.stringify({ version: 1, components: [
+    { id: 'probe_service', kind: 'service', title: 'Probe Service', detail: 'Test service', module: 'test.web_probe', entry: 'answer', properties: [{ id: 'port', kind: 'integer', title: 'Probe port', initial: '0', minimum: 0, maximum: 65535 }] },
+    { id: 'probe_board', kind: 'board', title: 'Probe Board', detail: 'Test board', board: 'notebook/board.json' },
+  ] }))
+  await writeFile(path.join(root, 'notebook/board.json'), JSON.stringify({ format: 'sputnik-notebook', version: 2, title: 'Probe Board',
+    sheets: [{ id: 'probe', title: 'Private controller', cells: [] }],
+    boards: [{ id: 'probe', title: 'Probe Board', sheet: 'probe', columns: 1, rows: [{ id: 'intro' }], components: [
+      { id: 'text', title: 'Probe text', kind: 'rich_text', row: 'intro', span: 12, text_mode: 'markdown', text_content: { source: 'Packaged board content' } },
+    ] }],
+  }))
+  await writeFile(path.join(root, 'sputnik.build.yaml'), JSON.stringify({ schema: 'sputnik.build.v1', name: 'test/web-probe', version: '1.0.0', requires: { sputnik: '>=1.0.0 <2.0.0' }, files: ['main.s', 'notebook/components.json', 'notebook/board.json'], module_names: { 'main.s': 'test.web_probe' }, install_options: installOptions, notebook_packages: ['test/web-companion'] }))
   const archive = path.join(root, 'package.sputnikpkg')
   await promisify(execFile)(compiler, ['pkg', 'build', root, '--out', archive])
   const bytes = await readFile(archive), digest = 'sha256:' + createHash('sha256').update(bytes).digest('hex')

@@ -6,6 +6,7 @@ from notebook.core.host import Worker, pid, environment as inspect_environment, 
 
 from notebook.core.environments import Environments
 from notebook.core.dependencies import Dependencies, installed_packages, notebook_packages
+from notebook.core.package_components import package_components, package_board
 from notebook.core.services import Services
 from notebook.core.storage import Storage
 from notebook.core.policy import Policies
@@ -1350,6 +1351,13 @@ class Core:
     @policies.require_open(id)
     current = project(id)
     case method:
+      when ("dependency.components" | "dependency.board"):
+        fail(403, "temporary sessions cannot access installed package components") if @policies.temporary?(id)
+        packages = installed_packages(package_directory(id))
+        return package_components(packages) if method == "dependency.components"
+        document = package_board(packages, params[?:provider], params[?:type])
+        fail(404, "installed package board not found") unless document
+        return {document: Json.generate(document)}
       when "dependency.status":
         environments = @environments.list(id)
         ready = environments.reversed.find: $it[:state] == "ready"

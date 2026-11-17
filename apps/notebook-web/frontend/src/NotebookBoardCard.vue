@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotebookPackageBoard from './NotebookPackageBoard.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { boardPresentation, referenceID, type BoardComponent, type BoardContext } from './boards'
 import { displayKinds } from './displays'
@@ -73,7 +74,8 @@ function tabKey(event: KeyboardEvent, index: number) {
 </script>
 <template>
   <section class="board-card" :class="{ 'board-container-card': ['group', 'tabs', 'split'].includes(component.kind) }" :style="{ textAlign: component.h_align === 'center' ? 'center' : component.h_align === 'trailing' ? 'right' : 'left' }" :aria-label="component.title" :data-h-align="component.h_align || 'stretch'" :data-v-align="component.v_align || 'top'" :data-board-component="component.id" :data-kind="component.kind" data-testid="board-card">
-    <template v-if="depth < 8 && component.panels && ['group', 'tabs', 'split'].includes(component.kind)">
+    <NotebookPackageBoard v-if="component.kind === 'package_board'" :component="component" :context="context" />
+    <template v-else-if="depth < 8 && component.panels && ['group', 'tabs', 'split'].includes(component.kind)">
       <template v-if="component.kind === 'group'"><button class="plain board-group-toggle" :aria-expanded="expanded" @click="expanded = !expanded">{{ expanded ? '▾' : '▸' }} {{ component.title }}</button><div v-show="expanded"><NotebookBoardGrid v-if="component.panels[0]" :rows="component.panels[0].rows" :components="component.panels[0].components" :context="context" :depth="depth + 1" /></div></template>
       <template v-else-if="component.kind === 'tabs'">
         <h3 class="board-card-title">{{ component.title }}</h3>

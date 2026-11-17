@@ -28,6 +28,7 @@ import NotebookInvocationResult from './NotebookInvocationResult.vue'
 import NotebookServiceHistory from './NotebookServiceHistory.vue'
 import { allBoardComponents } from './board-execution'
 import type { BoardContext, NotebookBoard } from './boards'
+import type { PackageCatalog } from './package-components'
 import NotebookBoardDesigner from './NotebookBoardDesigner.vue'
 import NotebookResourceLimits from './NotebookResourceLimits.vue'
 import { secondsLabel } from './resource-policy'
@@ -79,6 +80,22 @@ function revealError(cell: NotebookCell, diagnostic: CodeDiagnostic) {
 const history = ref<InstanceType<typeof NotebookHistory>>()
 const runSnapshots = ref<InstanceType<typeof NotebookRuns>>()
 const dependencies = ref<InstanceType<typeof NotebookDependencies>>()
+const packageCatalog = ref<PackageCatalog>({ providers: [], recommendations: [] })
+let catalogRequest = 0
+async function refreshPackageCatalog() {
+  if (props.guest) return
+  const request = ++catalogRequest
+  try {
+    const catalog = await api<PackageCatalog>(`/api/projects/${encodeURIComponent(props.project.id)}/dependencies/components`)
+    if (request === catalogRequest) packageCatalog.value = catalog
+  } catch {
+    // An older Core can still open and edit ordinary boards.
+  }
+}
+function dependenciesChanged() {
+  void refreshPackageCatalog()
+  void execution.refresh()
+}
 const environments = ref<InstanceType<typeof NotebookEnvironments>>()
 const resourceLimits = ref<InstanceType<typeof NotebookResourceLimits>>()
 const resourceDraftDirty = ref(false)
@@ -150,6 +167,7 @@ function selectBoard(id: string) {
 }
 function designBoard(board?: NotebookBoard, duplicate = false) {
   if (!document.value || busy.value || conflict.value || !props.project.permissions.write || !execution.canExecute || !discardParameterDrafts()) return
+  void refreshPackageCatalog()
   boardDesigner.value?.show(board, duplicate, document.value.sheets.some(sheet => sheet.id === activeSheet.value) ? activeSheet.value : undefined)
 }
 function commitBoard(board: NotebookBoard, original: string | null) {
@@ -688,11 +706,11 @@ onUnmounted(() => {
       </div>
     </div>
     <NotebookInputDesigner v-if="document" ref="designer" :document="document" :disabled="busy || conflict || !project.permissions.write" @changed="inputDraftChanged" />
-    <NotebookBoardDesigner v-if="document" ref="boardDesigner" :document="document" :disabled="busy || conflict || !project.permissions.write || !execution.canExecute" @commit="commitBoard" @dirty="boardDesignDirty = $event" />
+    <NotebookBoardDesigner v-if="document" ref="boardDesigner" :document="document" :project-id="guest ? undefined : project.id" :providers="packageCatalog.providers" :disabled="busy || conflict || !project.permissions.write || !execution.canExecute" @commit="commitBoard" @dirty="boardDesignDirty = $event" />
     <NotebookRuns v-if="document" ref="runSnapshots" :project-id="project.id" :account-id="accountId" :guest="!!guest" :document="document" :revision="revision" :sheet-id="activeSheet" :writable="project.permissions.write && execution.canExecute" :can-restore="canApply(null) && !inputs.busy && !inputs.pending && !inputs.dirty" :states="inputs.states" :on-restore="(cell,values,version) => inputs.apply(cell,values,version)" @changed="execution.loadHistory(); execution.refresh()" />
     <NotebookHistory ref="history" :project-id="project.id" :title="project.title" />
     <NotebookEnvironments v-if="!guest && document" ref="environments" :project-id="project.id" :account-id="accountId" :revision="revision" :sheets="document.sheets" :sheet-id="activeSheet" :writable="project.permissions.manage && execution.canExecute" :disabled="busy || dirty || !!execution.pending" @changed="execution.refresh" />
-    <NotebookDependencies v-if="!guest" ref="dependencies" :project-id="project.id" :account-id="accountId" @changed="execution.refresh" @permissions="environments?.show(true, $event)" />
+    <NotebookDependencies v-if="!guest" ref="dependencies" :project-id="project.id" :account-id="accountId" :recommendations="packageCatalog.recommendations" @opened="refreshPackageCatalog" @changed="dependenciesChanged" @permissions="environments?.show(true, $event)" />
     <NotebookResourceLimits v-if="document" ref="resourceLimits" :project-id="project.id" :policy="document.resource_policy" :writable="project.permissions.write && execution.canExecute" :disabled="busy || conflict" @change="document.resource_policy = $event" @dirty="resourceDraftDirty = $event" />
     <NotebookPreview v-if="!guest && document" ref="preview" :project-id="project.id" :enabled="execution.canExecute && !busy && !dirty && !conflict" />
     <NotebookSaveConflict ref="conflictReview" :project-id="project.id" @rebase="rebaseDraft" />

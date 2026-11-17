@@ -946,3 +946,22 @@ button.sheet-link.active { background: var(--surface); }
 .artifact-list article { padding: 8px 0; border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
 .artifact-list article p { margin: 6px 0; }
 .artifact-list .observation-output { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+
+.board-palette-toolbar .package-palette-item,
+.component-palette .package-palette-item {
+  border-color: var(--package-accent);
+  background: color-mix(in srgb, var(--package-accent) 14%, transparent);
+}
+.board-palette-toolbar .package-palette-item[aria-selected="true"],
+.component-palette .package-palette-item:hover {
+  background: color-mix(in srgb, var(--package-accent) 30%, transparent);
+}
+.package-subboard {
+  border: 1px solid var(--package-accent);
+  border-radius: .5rem;
+  background: color-mix(in srgb, var(--package-accent) 8%, transparent);
+  padding: .75rem;
+}
+.package-subboard summary { cursor: pointer; }
+.package-subboard summary span { margin-inline-start: .75rem; font-size: .85em; }
+.package-subboard .board-grid { margin-block-start: .75rem; }

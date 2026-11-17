@@ -6,6 +6,7 @@ import { documentJSON } from './document-json'
 import type { BoardRuntime } from './board-execution'
 import type { TextVariable } from './text-variables'
 import type { MediaRuntime } from './media-inputs'
+import type { PackageReference } from './package-components'
 export interface BoardRow { id: string; height?: number; [key: string]: unknown }
 export interface BoardPanel { id: string; title: string; rows: BoardRow[]; components: BoardComponent[]; [key: string]: unknown }
 export interface BoardComponent extends CellComponent {
@@ -15,10 +16,12 @@ export interface BoardComponent extends CellComponent {
   image_items?: unknown[]
   module_id?: string; function?: string; period_seconds?: number; timing?: string; retention?: string; tail_limit?: number
   store_values?: boolean; store_errors?: boolean; run_immediately?: boolean; stop_on_error?: boolean; pause_when_hidden?: boolean
+  package_component?: PackageReference
 }
 export interface NotebookBoard { id: string; title: string; sheet: string; columns: number; rows?: BoardRow[]; components: BoardComponent[]; [key: string]: unknown }
 export interface BoardContext {
   projectId?: string; savedRevision?: string
+  packageDepth?: number
   observation?: { result?: RunResult; stale: boolean; connected: boolean; status: string; needsRestart: boolean; state?: string; epoch?: string; resources?: ResourceStatus }
   onOpenSource?: (cell?: string, module?: string) => void
   sheet?: NotebookSheet; presentations: Record<string, CellPresentation>; definitions: InputDefinition[]; state?: InputState
@@ -32,10 +35,11 @@ export interface BoardContext {
   media?: MediaRuntime & { boardId: string; onDirty: (id: string, dirty: boolean) => void }
 }
 export function referenceID(value: unknown) { return typeof value === 'string' ? value : value == null ? '' : documentJSON(value) }
+export function isBoardService(kind: string) { return kind === 'periodic_work' || kind === 'package_service' }
 export function boardLayout(board: Pick<NotebookBoard, 'rows' | 'components' | 'columns'>) {
   if (board.rows) return { rows: board.rows, components: board.components }
   const columns = Math.min(6, Math.max(1, board.columns || 2))
-  const visual = board.components.filter(item => item.kind !== 'periodic_work')
+  const visual = board.components.filter(item => !isBoardService(item.kind))
   const rows = Array.from({ length: Math.max(1, Math.ceil(visual.length / columns)) }, (_, index) => ({ id: `row_${index + 1}` }))
   return { rows, components: visual.map((item, i) => ({ ...item, row: rows[Math.floor(i / columns)]!.id, span: Math.floor((i % columns + 1) * 12 / columns) - Math.floor(i % columns * 12 / columns) })) }
 }

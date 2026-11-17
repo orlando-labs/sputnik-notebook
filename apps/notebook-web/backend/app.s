@@ -460,6 +460,16 @@ class Pages < oauth.Controller:
     respond:
       json: service(:packages).read(current, id, operation)
 
+  def package_components(id as Str):
+    current = require_account()
+    respond:
+      json: service(:packages).components(current, id)
+
+  def package_board(id as Str):
+    current = require_account()
+    respond:
+      json: service(:packages).board(current, id, request.query("provider"), request.query("type"))
+
   def package_catalog(id as Str):
     current = require_account()
     respond:
@@ -690,6 +700,8 @@ routes = orbit.routes:
   get "/api/projects/:id/runtime-commands/:command", to: &Pages#runtime_receipt
   get "/api/projects/:id/dependencies", to: &Pages#package_status
   get "/api/projects/:id/dependencies/catalog", to: &Pages#package_catalog
+  get "/api/projects/:id/dependencies/components", to: &Pages#package_components
+  get "/api/projects/:id/dependencies/board", to: &Pages#package_board
   post "/api/projects/:id/dependencies", to: &Pages#package_change
   get "/api/projects/:id/dependencies/jobs/:operation", to: &Pages#package_job
   get "/api/projects/:id/dependencies/commands/:command", to: &Pages#package_receipt

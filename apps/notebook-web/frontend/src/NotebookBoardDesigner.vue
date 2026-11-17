@@ -3,11 +3,12 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import type { NotebookDocument } from './notebook'
 import { newId } from './notebook'
 import { documentJSON, parseDocumentJSON } from './document-json'
-import { emptyPresentation, type NotebookBoard, type BoardComponent, type BoardContext } from './boards'
+import { emptyPresentation, isBoardService, type NotebookBoard, type BoardComponent, type BoardContext } from './boards'
 import { BoardHistory, addComponent, addPanel, addRow, boardCounts, boardError, boardTools, cloneBoard, designBoard, duplicateComponent, freeColumns, gridAt, moveComponent, newBoard, type GridPath } from './board-editor'
+import { packageColor, packageDefinition, type ComponentProvider, type PackageComponent } from './package-components'
 import NotebookBoardInspector from './NotebookBoardInspector.vue'
 import NotebookBoardView from './NotebookBoardView.vue'
-const props = defineProps<{ document: NotebookDocument; disabled: boolean }>()
+const props = defineProps<{ document: NotebookDocument; disabled: boolean; providers: ComponentProvider[]; projectId?: string }>()
 const emit = defineEmits<{ commit: [board: NotebookBoard, original: string | null]; dirty: [value: boolean] }>()
 const dialog = ref<HTMLDialogElement>(), draft = ref<NotebookBoard | null>(null), path = ref<GridPath>([]), selectedRow = ref(''), selectedComponent = ref('')
 const original = ref<string | null>(null), initial = ref(''), error = ref(''), query = ref(''), category = ref('Controls'), span = ref(6), preview = ref(false), history = ref(new BoardHistory())
@@ -20,14 +21,25 @@ const component = computed(() => grid.value.components.find(component => compone
 const row = computed(() => grid.value.rows.find(row => row.id === selectedRow.value))
 const counts = computed(() => draft.value ? boardCounts(draft.value) : { components: 0, rows: 0, panels: 0 })
 const invalid = computed(() => draft.value ? boardError(draft.value, props.document) : '')
-const tools = computed(() => boardTools.filter(tool => query.value ? `${tool.title} ${tool.category}`.toLowerCase().includes(query.value.toLowerCase()) : tool.category === category.value))
+const categories = ['Controls', 'Display', 'Layout', 'Services']
+const tools = computed(() => {
+  const packageTools = props.providers.flatMap(provider => provider.components.map(definition => ({
+    id: `${provider.id}:${definition.id}`, kind: `package_${definition.kind}`, title: definition.title,
+    category: provider.id, search: `${provider.name} ${definition.detail}`, supplied: { provider, definition },
+  })))
+  const builtins = boardTools.map(tool => ({ ...tool, id: tool.kind, search: tool.category, supplied: undefined }))
+  return [...builtins, ...packageTools].filter(tool => query.value
+    ? `${tool.title} ${tool.search}`.toLowerCase().includes(query.value.toLowerCase())
+    : tool.category === category.value)
+})
+const definition = computed(() => packageDefinition(props.providers, component.value?.package_component))
 const crumbs = computed(() => {
   if (!draft.value) return []
   return path.value.map((step, index) => gridAt(draft.value!, path.value.slice(0, index)).components.find(component => component.id === step.component)?.panels?.find(panel => panel.id === step.panel)?.title || 'Panel')
 })
 const previewContext = computed<BoardContext>(() => {
   const sheet = props.document.sheets.find(sheet => sheet.id === draft.value?.sheet)
-  return { sheet, presentations: Object.fromEntries((sheet?.cells || []).map(cell => [cell.id, emptyPresentation('design')])), definitions: props.document.inputs || [], disabled: true, canRun: false, canExecute: false, identity: 'design', onApply: async () => false, onDirty: () => {}, onRun: () => {} }
+  return { projectId: props.projectId, sheet, presentations: Object.fromEntries((sheet?.cells || []).map(cell => [cell.id, emptyPresentation('design')])), definitions: props.document.inputs || [], disabled: true, canRun: false, canExecute: false, identity: 'design', onApply: async () => false, onDirty: () => {}, onRun: () => {} }
 })
 watch(changed, value => emit('dirty', value), { immediate: true })
 watch(serialized, (value, previous) => {
@@ -68,9 +80,9 @@ function restore(backwards: boolean) {
   const value = history.value.restore(serialized.value, backwards)
   if (value !== undefined) { ignore.value = value; draft.value = parseDocumentJSON(value) as NotebookBoard; resetSelection(); error.value = '' }
 }
-function add(kind: string) {
+function add(kind: string, supplied?: { provider: ComponentProvider; definition: PackageComponent }) {
   let id = ''
-  const applied = act(board => { id = addComponent(board, path.value, selectedRow.value, kind, span.value, props.document) })
+  const applied = act(board => { id = addComponent(board, path.value, selectedRow.value, kind, span.value, props.document, supplied) })
   if (applied && id) { selectedComponent.value = id; selectedRow.value = grid.value.components.find(component => component.id === id)?.row || selectedRow.value }
 }
 function appendRow() { let id = ''; const applied = act(board => { id = addRow(board, path.value) }); if (applied && id) { selectedRow.value = id; selectedComponent.value = '' } }
@@ -119,19 +131,32 @@ defineExpose({ show, isOpen: () => !!dialog.value?.open })
   <dialog ref="dialog" class="notebook-dialog board-designer" aria-labelledby="board-designer-title" @cancel.prevent="close" @keydown="shortcut" @focusin="focusKey = ($event.target as HTMLElement).getAttribute('aria-label') || ''">
     <template v-if="draft">
       <header class="board-designer-header"><div><h2 id="board-designer-title">Board Designer</h2><p>12 columns per row · Changes join your notebook draft</p></div><label>Board title<input v-model="draft.title" aria-label="Board title" maxlength="200" :disabled="disabled"></label><label>Controller sheet<select v-model="draft.sheet" aria-label="Controller sheet" :disabled="disabled"><option v-for="sheet in document.sheets" :key="sheet.id" :value="sheet.id">{{ sheet.title }}</option></select></label></header>
-      <div class="board-designer-palette"><div class="board-palette-toolbar"><div role="tablist" aria-label="Component categories"><button v-for="name in ['Controls', 'Display', 'Layout', 'Services']" :key="name" role="tab" :aria-selected="category === name" @click="category = name; query = ''">{{ name }}</button></div><input v-model="query" type="search" aria-label="Search components" placeholder="Search components…"><label>Insert width<select v-model.number="span" aria-label="Insert width"><option v-for="width in 12" :key="width" :value="width">{{ width }} / 12</option></select></label></div><div class="component-palette"><button v-for="tool in tools" :key="tool.kind" type="button" :disabled="disabled || (tool.kind === 'periodic_work' && !!path.length)" @click="add(tool.kind)">Add {{ tool.title }}</button><p v-if="!tools.length" class="source-note">No matching components</p></div></div>
+      <div class="board-designer-palette">
+        <div class="board-palette-toolbar">
+          <div role="tablist" aria-label="Component categories">
+            <button v-for="name in categories" :key="name" role="tab" :aria-selected="category === name" @click="category = name; query = ''">{{ name }}</button>
+            <button v-for="provider in providers" :key="provider.id" role="tab" class="package-palette-item" :style="packageColor(provider.id)" :title="provider.id" :aria-selected="category === provider.id" @click="category = provider.id; query = ''">{{ provider.name }}</button>
+          </div>
+          <input v-model="query" type="search" aria-label="Search components" placeholder="Search components…">
+          <label>Insert width<select v-model.number="span" aria-label="Insert width"><option v-for="width in 12" :key="width" :value="width">{{ width }} / 12</option></select></label>
+        </div>
+        <div class="component-palette">
+          <button v-for="tool in tools" :key="tool.id" type="button" :class="{ 'package-palette-item': tool.supplied }" :style="tool.supplied && packageColor(tool.category)" :title="tool.supplied?.definition.detail" :disabled="disabled || (isBoardService(tool.kind) && !!path.length)" @click="add(tool.kind, tool.supplied)">Add {{ tool.title }}</button>
+          <p v-if="!tools.length" class="source-note">No matching components</p>
+        </div>
+      </div>
       <div class="board-designer-viewbar"><nav aria-label="Designer panels"><button class="plain" @click="navigate(0)">{{ draft.title || 'Board' }}</button><template v-for="(title, index) in crumbs" :key="index"><span aria-hidden="true">›</span><button class="plain" @click="navigate(index + 1)">{{ title }}</button></template></nav><button @click="preview = !preview">{{ preview ? 'Edit layout' : 'Preview layout' }}</button></div>
       <div v-if="preview" class="board-designer-preview"><p class="source-note">Layout preview · runtime controls are disabled</p><NotebookBoardView :key="draft.id" :board="draft" :context="previewContext" passive /></div>
       <div v-else class="board-designer-body">
         <div class="board-designer-canvas" aria-label="Board layout" data-testid="board-designer-canvas">
           <article v-for="(row, index) in grid.rows" :key="row.id" class="designer-row" :class="{ selected: selectedRow === row.id, 'drop-target': dropRow === row.id }" :data-designer-row="row.id" @dragover="dragOver($event, row.id)" @drop="drop($event, row.id)" @dragleave="dropRow = ''">
             <div class="designer-row-header"><button class="plain" :aria-label="`Select row ${index + 1}`" @click="selectRow(row.id)">Row {{ index + 1 }} · {{ freeColumns(grid, row.id) }} / 12 free</button><div><button :disabled="disabled || index === 0" :aria-label="`Move row ${index + 1} up`" @click="moveRow(row.id, -1)">↑</button><button :disabled="disabled || index + 1 === grid.rows.length" :aria-label="`Move row ${index + 1} down`" @click="moveRow(row.id, 1)">↓</button><button :disabled="disabled" :aria-label="`Delete row ${index + 1}`" @click="removeRow(row.id)">×</button></div></div>
-            <div class="designer-row-grid" :style="{ minHeight: Math.min(row.height || 96, 240) + 'px' }"><button v-for="item in grid.components.filter(component => component.row === row.id && component.kind !== 'periodic_work')" :key="item.id" class="designer-component" :class="{ selected: selectedComponent === item.id }" :style="{ gridColumn: `span ${item.span || 12}` }" :aria-pressed="selectedComponent === item.id" :aria-label="`Select ${item.title}`" :data-designer-component="item.id" :draggable="!disabled" @click="selectComponent(item)" @dragstart="dragStart($event, item.id)" @dragend="dragged = ''; dropRow = ''"><strong>{{ item.title }}</strong><span>{{ item.kind }} · {{ item.span || 12 }} / 12</span><small v-if="item.panels">{{ item.panels.length }} panels</small></button><button v-if="!grid.components.some(component => component.row === row.id)" class="designer-empty-row plain" @click="selectRow(row.id)">Choose a component from the palette</button></div>
+            <div class="designer-row-grid" :style="{ minHeight: Math.min(row.height || 96, 240) + 'px' }"><button v-for="item in grid.components.filter(component => component.row === row.id && !isBoardService(component.kind))" :key="item.id" class="designer-component" :class="{ selected: selectedComponent === item.id }" :style="{ gridColumn: `span ${item.span || 12}` }" :aria-pressed="selectedComponent === item.id" :aria-label="`Select ${item.title}`" :data-designer-component="item.id" :draggable="!disabled" @click="selectComponent(item)" @dragstart="dragStart($event, item.id)" @dragend="dragged = ''; dropRow = ''"><strong>{{ item.title }}</strong><span>{{ item.kind }} · {{ item.span || 12 }} / 12</span><small v-if="item.panels">{{ item.panels.length }} panels</small></button><button v-if="!grid.components.some(component => component.row === row.id)" class="designer-empty-row plain" @click="selectRow(row.id)">Choose a component from the palette</button></div>
           </article>
           <button :disabled="disabled || counts.rows >= 256" @click="appendRow">Add row</button>
-          <section v-if="!path.length && draft.components.some(component => component.kind === 'periodic_work')" class="designer-services"><h3>Services</h3><button v-for="service in draft.components.filter(component => component.kind === 'periodic_work')" :key="service.id" class="designer-component" :aria-label="`Select ${service.title}`" @click="selectComponent(service)"><strong>{{ service.title }}</strong><span>Saved service settings</span></button></section>
+          <section v-if="!path.length && draft.components.some(component => isBoardService(component.kind))" class="designer-services"><h3>Services</h3><button v-for="service in draft.components.filter(component => isBoardService(component.kind))" :key="service.id" class="designer-component" :aria-label="`Select ${service.title}`" @click="selectComponent(service)"><strong>{{ service.title }}</strong><span>Saved service settings</span></button></section>
         </div>
-        <aside class="board-designer-inspector" aria-label="Object Inspector"><NotebookBoardInspector v-if="component" :key="component.id" :component="component" :board="draft" :grid="grid" :document="document" :disabled="disabled" @move="move" @width="width" @reorder="reorder" @duplicate="duplicate" @remove="removeComponent" @enter="enter" @add-panel="appendPanel" @remove-panel="removePanel" @move-panel="movePanel" /><fieldset v-else class="board-inspector-fields" :disabled="disabled"><legend>Row Inspector</legend><template v-if="row"><label>Row height<input type="number" :value="row.height" aria-label="Row height" min="48" max="4096" step="any" placeholder="Automatic" @input="height"></label><p class="source-note">48–4096 points, or empty for automatic height.</p><p>{{ freeColumns(grid, row.id) }} of 12 columns available</p></template><p v-else class="source-note">Add a row, then choose a component from the palette.</p></fieldset></aside>
+        <aside class="board-designer-inspector" aria-label="Object Inspector"><NotebookBoardInspector v-if="component" :key="component.id" :component="component" :board="draft" :grid="grid" :document="document" :definition="definition" :disabled="disabled" @move="move" @width="width" @reorder="reorder" @duplicate="duplicate" @remove="removeComponent" @enter="enter" @add-panel="appendPanel" @remove-panel="removePanel" @move-panel="movePanel" /><fieldset v-else class="board-inspector-fields" :disabled="disabled"><legend>Row Inspector</legend><template v-if="row"><label>Row height<input type="number" :value="row.height" aria-label="Row height" min="48" max="4096" step="any" placeholder="Automatic" @input="height"></label><p class="source-note">48–4096 points, or empty for automatic height.</p><p>{{ freeColumns(grid, row.id) }} of 12 columns available</p></template><p v-else class="source-note">Add a row, then choose a component from the palette.</p></fieldset></aside>
       </div>
       <footer class="board-designer-footer"><p v-if="error || invalid" class="parameter-error" role="alert">{{ error || invalid }}</p><p v-else class="source-note">{{ counts.rows }} rows · {{ counts.components }} components · Save notebook after updating this draft</p><div class="board-inspector-actions"><button :disabled="disabled || !history.undo.length" @click="restore(true)">Undo</button><button :disabled="disabled || !history.redo.length" @click="restore(false)">Redo</button><button @click="close">Cancel</button><button class="primary" :disabled="disabled" @click="commit">Update notebook draft</button></div></footer>
     </template>

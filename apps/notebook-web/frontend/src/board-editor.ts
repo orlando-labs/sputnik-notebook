@@ -1,4 +1,5 @@
-import { boardLayout, referenceID, type NotebookBoard, type BoardComponent, type BoardPanel, type BoardRow } from './boards'
+import { boardLayout, isBoardService, referenceID, type NotebookBoard, type BoardComponent, type BoardPanel, type BoardRow } from './boards'
+import type { ComponentProvider, PackageComponent } from './package-components'
 import type { NotebookDocument } from './notebook'
 import { newId } from './notebook'
 import { documentJSON, parseDocumentJSON } from './document-json'
@@ -29,7 +30,7 @@ export const boardTools = [
   { kind: 'run', title: 'Run Cell', category: 'Controls' }, { kind: 'group', title: 'Group', category: 'Layout' }, { kind: 'tabs', title: 'Tabs', category: 'Layout' }, { kind: 'split', title: 'Split View', category: 'Layout' },
 ] as const
 export function designBoard(source: NotebookBoard): NotebookBoard {
-  const copy = cloneBoard(source), services = copy.components.filter(component => component.kind === 'periodic_work')
+  const copy = cloneBoard(source), services = copy.components.filter(component => isBoardService(component.kind))
   const layout = boardLayout(copy)
   copy.rows = layout.rows; copy.components = source.rows ? layout.components : [...layout.components, ...services]
   return copy
@@ -57,22 +58,30 @@ export function boardCounts(board: NotebookBoard) {
   visitComponents(board.components, component => { components++; panels += component.panels?.length || 0; rows += component.panels?.reduce((sum, panel) => sum + panel.rows.length, 0) || 0 })
   return { components, panels, rows }
 }
-export function freeColumns(grid: BoardGrid, row: string, exclude = '') { return 12 - grid.components.filter(component => component.row === row && component.id !== exclude && component.kind !== 'periodic_work').reduce((sum, component) => sum + (component.span || 12), 0) }
+export function freeColumns(grid: BoardGrid, row: string, exclude = '') { return 12 - grid.components.filter(component => component.row === row && component.id !== exclude && !isBoardService(component.kind)).reduce((sum, component) => sum + (component.span || 12), 0) }
 export function addRow(board: NotebookBoard, path: GridPath) {
   if (boardCounts(board).rows >= 256) throw new Error('A board permits at most 256 rows across all panels.')
   const row = { id: newId('row') }; gridAt(board, path).rows.push(row); return row.id
 }
 const emptyPanel = (title: string): BoardPanel => ({ id: newId('panel'), title, rows: [{ id: newId('row') }], components: [] })
-export function addComponent(board: NotebookBoard, path: GridPath, row: string, kind: string, span: number, document: NotebookDocument) {
-  const tool = boardTools.find(tool => tool.kind === kind)
+export function addComponent(board: NotebookBoard, path: GridPath, row: string, kind: string, span: number, document: NotebookDocument, supplied?: { provider: ComponentProvider; definition: PackageComponent }) {
+  const tool = supplied?.definition ?? boardTools.find(tool => tool.kind === kind)
   if (!tool) throw new Error('This component cannot be authored in the web designer yet.')
-  if (kind === 'periodic_work' && path.length) throw new Error('Services belong to the board root.')
+  if (isBoardService(kind) && path.length) throw new Error('Services belong to the board root.')
   if (['group', 'tabs', 'split'].includes(kind) && path.length >= 8) throw new Error('Nested panels may be at most 8 levels deep.')
   if (!Number.isInteger(span) || span < 1 || span > 12) throw new Error('Choose an insertion width from 1 to 12.')
   if (boardCounts(board).components >= 256) throw new Error('A board permits at most 256 components across all panels.')
   const grid = gridAt(board, path)
-  if (kind !== 'periodic_work' && (!grid.rows.some(item => item.id === row) || freeColumns(grid, row) < span)) row = addRow(board, path)
-  const component: BoardComponent = { id: newId('component'), kind, title: tool.title, row, span }
+  const service = isBoardService(kind)
+  if (!service && (!grid.rows.some(item => item.id === row) || freeColumns(grid, row) < span)) row = addRow(board, path)
+  const component: BoardComponent = { id: newId('component'), kind, title: tool.title, ...(service ? {} : { row, span }) }
+  if (supplied) {
+    component.package_component = {
+      provider: supplied.provider.id,
+      type: supplied.definition.id,
+      properties: Object.fromEntries(supplied.definition.properties.filter(property => property.initial !== null).map(property => [property.id, property.initial!])),
+    }
+  }
   if (['metric', 'table', 'result', 'progress', 'plot', 'log', 'artifacts', 'run', 'text', 'audio'].includes(kind)) component.cell = document.sheets.find(sheet => sheet.id === board.sheet)?.cells.find(cell => cell.kind === 'code')?.id || '1'
   if (kind === 'input' || kind === 'range_input') { component.input = document.inputs?.find(input => kind !== 'range_input' || input.type === 'range')?.id || ''; component.control = { style: 'automatic' } }
   if (kind === 'date_input') { component.input = document.inputs?.find(input => input.type === 'string')?.id || ''; component.date_mode = 'date_time'; component.date_time_zone = 'UTC' }
@@ -97,7 +106,7 @@ export function addComponent(board: NotebookBoard, path: GridPath, row: string, 
 }
 export function moveComponent(board: NotebookBoard, path: GridPath, id: string, row: string) {
   const grid = gridAt(board, path), component = grid.components.find(component => component.id === id)
-  if (!component || component.kind === 'periodic_work' || !grid.rows.some(item => item.id === row)) throw new Error('Choose an available row and component.')
+  if (!component || isBoardService(component.kind) || !grid.rows.some(item => item.id === row)) throw new Error('Choose an available row and component.')
   if (freeColumns(grid, row, id) < (component.span || 12)) throw new Error('Not enough columns in this row. Reduce the width or choose another row.')
   if (component.row !== row) { grid.components.splice(grid.components.indexOf(component), 1); component.row = row; grid.components.push(component) }
 }
@@ -116,7 +125,7 @@ export function duplicateComponent(board: NotebookBoard, path: GridPath, id: str
   remapIds(copy)
   visitComponents([copy], component => { const id = component.p1?.target_component; if (typeof id === 'string' && identities.has(id)) component.p1!.target_component = identities.get(id) })
   copy.title += ' copy'
-  if (copy.kind !== 'periodic_work' && freeColumns(grid, copy.row || '') < (copy.span || 12)) copy.row = addRow(board, path)
+  if (!isBoardService(copy.kind) && freeColumns(grid, copy.row || '') < (copy.span || 12)) copy.row = addRow(board, path)
   grid.components.push(copy)
   return copy.id
 }
@@ -145,7 +154,7 @@ export function boardError(board: NotebookBoard, document: NotebookDocument): st
       if (component.kind === 'rich_text' && component.text_content && component.text_mode !== 'markdown') { const invalid = formattingError(component.text_content); if (invalid) return `${component.title}: ${invalid}` }
       const invalidCommand = commandSettingsError(component, document)
       if (invalidCommand) return `${component.title}: ${invalidCommand}`
-      if (component.kind === 'periodic_work') { if (depth || component.row) return 'Services belong to the root service tray.'; continue }
+      if (isBoardService(component.kind)) { if (depth || component.row) return 'Services belong to the root service tray.'; continue }
       if (!rows.has(component.row || '') || !Number.isInteger(component.span ?? 12) || (component.span ?? 12) < 1 || (component.span ?? 12) > 12 || freeColumns(grid, component.row!) < 0) return 'Components must fit within 12 columns in an existing row.'
       if (['image','image_carousel'].includes(component.kind) && component.image_annotator && component.annotation_classes !== undefined) { const invalid=annotationClassesError(component.annotation_classes as AnnotationClass[]); if(invalid)return `${component.title}: ${invalid}` }
       if (component.kind === 'parameter_presets') { const scope = (component.p1?.preset_inputs || []) as string[]; if (new Set(scope).size !== scope.length || scope.some(id => !document.inputs?.some(input => input.id === id))) return 'Choose available preset parameters.'; const invalid = presetListError((component.p1?.presets || []) as ParameterPreset[], document.inputs || [], scope); if (invalid) return invalid }

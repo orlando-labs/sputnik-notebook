@@ -2,8 +2,9 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { api, APIError } from './api'
 import { newId } from './notebook'
-const props = defineProps<{ projectId: string; accountId: string }>()
-const emit = defineEmits<{ changed: []; permissions: [grants: string[]] }>()
+import type { PackageCatalog } from './package-components'
+const props = defineProps<{ projectId: string; accountId: string; recommendations: PackageCatalog['recommendations'] }>()
+const emit = defineEmits<{ changed: []; opened: []; permissions: [grants: string[]] }>()
 interface Job { id: string; action: string; state: string; message: string }
 interface Package { name: string; display_name?: string; version: string; variant: string | null; digest: string | null; scope?: 'shared' | 'local'; missing?: boolean }
 interface Status { can_manage: boolean; native_allowed: boolean; package_scopes?: string[]; packages: Package[]; jobs: Job[] }
@@ -41,7 +42,10 @@ async function refresh() {
   if (disposed) return
   if (timer) clearTimeout(timer)
   try {
+    const previous = status.value
     status.value = await api<Status>(base)
+    if (previous && status.value.jobs.some(job => ['succeeded', 'failed', 'interrupted'].includes(job.state) &&
+      !previous.jobs.some(old => old.id === job.id && old.state === job.state))) emit('changed')
     if (pending.value) {
       const result = await api<{ command: { state: string; job?: Job } }>(`${base}/commands/${pending.value.command_id}`)
       if (result.command.state === 'accepted') { remember(null); emit('changed') }
@@ -102,7 +106,7 @@ function remove(item: Package) {
     remember(command); await send(command)
   })
 }
-function show() { dialog.value?.showModal(); error.value = ''; void refresh() }
+function show() { dialog.value?.showModal(); error.value = ''; emit('opened'); void refresh() }
 function close() { dialog.value?.close(); if (timer) clearTimeout(timer) }
 onUnmounted(() => { disposed = true; if (timer) clearTimeout(timer) })
 defineExpose({ show })
@@ -114,6 +118,15 @@ defineExpose({ show })
     <div v-if="pending" class="execution-message" role="status"><p>Checking the package command. An explicit retry uses the same command ID.</p><button :disabled="busy" @click="refresh">Check command</button><button v-if="unknown && status?.can_manage" :disabled="busy" @click="act(() => send(pending!))">Retry pending package command</button></div>
     <template v-if="status">
       <p v-if="!status.can_manage" class="source-note">Only the project owner can change dependencies.</p>
+      <section v-if="recommendations.length" aria-label="Companion notebook packages">
+        <h3>Companion notebook packages</h3>
+        <ul class="package-list">
+          <li v-for="item in recommendations" :key="item.name">
+            <div><strong>{{ item.name }}</strong><p class="source-note">Suggested by {{ item.suggested_by }}</p></div>
+            <button v-if="status.can_manage" :disabled="busy || running()" @click="lookup({ name: item.name, version: '', variant: null, digest: null })">Choose version…</button>
+          </li>
+        </ul>
+      </section>
       <ul class="package-list" aria-label="Notebook packages">
         <li v-for="item in status.packages" :key="`${item.name}@${item.version}/${item.variant}`">
           <div>

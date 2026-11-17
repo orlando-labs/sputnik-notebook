@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { NotebookBoard, BoardComponent } from './boards'
+import { isBoardService, referenceID, type NotebookBoard, type BoardComponent } from './boards'
 import type { BoardGrid } from './board-editor'
 import { freeColumns } from './board-editor'
 import type { NotebookDocument } from './notebook'
-import { referenceID } from './boards'
+import type { PackageComponent, PackageProperty } from './package-components'
 import { displayKinds } from './displays'
 import type { InputControl, FormField } from './inputs'
 import NotebookDisplaySettings from './NotebookDisplaySettings.vue'
@@ -13,12 +13,12 @@ import NotebookCommandSettings from './NotebookCommandSettings.vue'
 import NotebookTextEditor from './NotebookTextEditor.vue'
 import NotebookMarkdown from './NotebookMarkdown.vue'
 import { replaceSource } from './rich-text'
-const props = defineProps<{ component: BoardComponent; board: NotebookBoard; grid: BoardGrid; document: NotebookDocument; disabled: boolean }>()
+const props = defineProps<{ component: BoardComponent; board: NotebookBoard; grid: BoardGrid; document: NotebookDocument; disabled: boolean; definition?: PackageComponent }>()
 const emit = defineEmits<{ move: [row: string]; width: [span: number]; reorder: [direction: number]; duplicate: []; remove: []; enter: [panel: string]; addPanel: []; removePanel: [panel: string]; movePanel: [panel: string, direction: number] }>()
 const cells = computed(() => props.document.sheets.find(sheet => sheet.id === props.board.sheet)?.cells.filter(cell => cell.kind === 'code') || [])
 const isContainer = computed(() => ['group', 'tabs', 'split'].includes(props.component.kind))
 const isDisplay = computed(() => props.component.kind === 'audio_annotator' || displayKinds.includes((props.component.kind === 'image_carousel' ? 'image' : props.component.kind) as typeof displayKinds[number]))
-const siblings = computed(() => props.grid.components.filter(component => component.row === props.component.row && component.kind !== 'periodic_work'))
+const siblings = computed(() => props.grid.components.filter(component => component.row === props.component.row && !isBoardService(component.kind)))
 const siblingIndex = computed(() => siblings.value.findIndex(component => component.id === props.component.id))
 const markdownError = ref('')
 function editMarkdown(event: Event) {
@@ -37,13 +37,38 @@ function addField() {
   if (input && (props.component.fields?.length || 0) < 128) (props.component.fields ||= []).push({ input: input.id })
 }
 function definition(field: FormField) { return props.document.inputs?.find(input => input.id === field.input) }
+function propertyValue(property: PackageProperty) {
+  return props.component.package_component?.properties?.[property.id] ?? property.initial ?? ''
+}
+function setProperty(property: PackageProperty, value: string) {
+  const reference = props.component.package_component
+  if (reference) (reference.properties ||= {})[property.id] = value
+}
 </script>
 <template>
   <fieldset class="board-inspector-fields" :disabled="disabled">
     <legend>Object Inspector</legend>
     <p class="source-note">{{ component.kind }} · <code>{{ component.id }}</code></p>
     <label>Component title<input v-model="component.title" aria-label="Component title" maxlength="200"></label>
-    <template v-if="component.kind !== 'periodic_work'">
+    <template v-if="component.package_component">
+      <p class="source-note">{{ component.package_component.provider }}</p>
+      <p v-if="!$props.definition" class="source-note">Install the component package in Dependencies to edit its properties.</p>
+      <template v-else>
+        <label><input type="checkbox" :checked="component.package_component.enabled !== false" @change="component.package_component.enabled = ($event.target as HTMLInputElement).checked">Enabled</label>
+        <label v-for="property in $props.definition.properties" :key="property.id">
+          {{ property.title }}
+          <input v-if="property.kind === 'toggle'" type="checkbox" :checked="propertyValue(property) === 'true'" @change="setProperty(property, String(($event.target as HTMLInputElement).checked))">
+          <select v-else-if="property.kind === 'input'" :value="propertyValue(property)" @change="setProperty(property, ($event.target as HTMLSelectElement).value)">
+            <option value="">Choose an input</option>
+            <option v-if="propertyValue(property) && !document.inputs?.some(input => input.id === propertyValue(property))" :value="propertyValue(property)">{{ propertyValue(property) }} (unavailable)</option>
+            <option v-for="input in document.inputs" :key="input.id" :value="input.id">{{ input.title }}</option>
+          </select>
+          <input v-else-if="property.kind === 'integer'" type="number" required step="1" :min="property.minimum ?? undefined" :max="property.maximum ?? undefined" :value="propertyValue(property)" @input="setProperty(property, ($event.target as HTMLInputElement).value)">
+          <input v-else type="text" maxlength="8192" :value="propertyValue(property)" :placeholder="property.kind === 'module' ? 'module.export' : undefined" @input="setProperty(property, ($event.target as HTMLInputElement).value)">
+        </label>
+      </template>
+    </template>
+    <template v-if="!isBoardService(component.kind)">
       <label>Row<select :value="component.row" aria-label="Component row" @change="emit('move', ($event.target as HTMLSelectElement).value)"><option v-for="(row, index) in grid.rows" :key="row.id" :value="row.id" :disabled="freeColumns(grid, row.id, component.id) < (component.span || 12)">Row {{ index + 1 }} · {{ freeColumns(grid, row.id, component.id) }} columns available</option></select></label>
       <label>Width / 12 columns<input type="number" :value="component.span || 12" aria-label="Component width" min="1" :max="freeColumns(grid, component.row || '', component.id)" step="1" @change="emit('width', Number(($event.target as HTMLInputElement).value))"></label>
       <div class="input-definition-grid"><label>Horizontal alignment<select :value="component.h_align || 'stretch'" @change="component.h_align = ($event.target as HTMLSelectElement).value" aria-label="Horizontal alignment"><option value="leading">Left</option><option value="center">Center</option><option value="trailing">Right</option><option value="stretch">Stretch</option></select></label><label>Vertical alignment<select :value="component.v_align || 'top'" @change="component.v_align = ($event.target as HTMLSelectElement).value" aria-label="Vertical alignment"><option value="top">Top</option><option value="center">Center</option><option value="bottom">Bottom</option><option value="stretch">Stretch</option></select></label></div>

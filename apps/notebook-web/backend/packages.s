@@ -37,6 +37,14 @@ class Packages:
     raise NotFound() unless record[:project] == project[:core_project_id]
     {job: job(record)}
 
+  def components(current, id):
+    project = @catalog.require_project(current, id)
+    @notebooks.call("dependency.components", {project_id: project[:core_project_id]})
+
+  def board(current, id, provider, type):
+    project = @catalog.require_project(current, id)
+    @notebooks.call("dependency.board", {project_id: project[:core_project_id], provider: package_name(provider), type: bounded(type, "component type", 128)})
+
   def catalog(current, id, name, version):
     project = @catalog.require_project(current, id)
     query = if version == null then "versions" else "variants"
